@@ -1,4 +1,6 @@
 garbled
 =======
 
-Test on garbled
+Test on garbled circuit
+
+Rice University
