@@ -1,0 +1,11 @@
+hamming optimized
+
+NOR cells:    14070
+NOT cells:    14726
+XOR cells:     9795
+
+hamming NON optimized
+
+NOR cells:    19644
+NOT cells:    15655
+XOR cells:     8476
