@@ -1,0 +1,124 @@
+library(and_or_xor_equal) {
+cell(AND) {
+  area : 2;
+  pin(A) {
+    direction : input;
+    capacitance : 1;
+  }
+  pin(B) {
+    direction : input;
+    capacitance : 1;
+  }
+  pin(Z) {
+    direction : output;
+    function : "A B";
+	timing() {
+      intrinsic_rise : 48;
+      intrinsic_fall : 77;
+      rise_resistance : 14.43;
+      fall_resistance : 5.23;
+      slope_rise : 0.0;
+      slope_fall : 0.0;
+      related_pin : "A";
+    }
+    timing() {
+      intrinsic_rise : 48;
+      intrinsic_fall : 77;
+      rise_resistance : 14.43;
+      fall_resistance : 5.23;
+      slope_rise : 0.0;
+      slope_fall : 0.0;
+      related_pin : "B";
+    }
+  }
+}
+
+cell(OR) {
+  area : 2;
+  pin(A) {
+    direction : input;
+    capacitance : 1;
+  }
+  pin(B) {
+    direction : input;
+    capacitance : 1;
+  }
+  pin(Z) {
+    direction : output;
+    function : "A+B";
+	timing() {
+      intrinsic_rise : 48;
+      intrinsic_fall : 77;
+      rise_resistance : 14.43;
+      fall_resistance : 5.23;
+      slope_rise : 0.0;
+      slope_fall : 0.0;
+      related_pin : "A";
+    }
+    timing() {
+      intrinsic_rise : 48;
+      intrinsic_fall : 77;
+      rise_resistance : 14.43;
+      fall_resistance : 5.23;
+      slope_rise : 0.0;
+      slope_fall : 0.0;
+      related_pin : "B";
+    }
+  }
+}
+
+cell(IV) {
+  area : 1;
+  pin(A) {
+    direction : input;
+    capacitance : 1;
+  }
+  pin(Z) {
+    direction : output;
+    function : "A'";
+	timing() {
+      intrinsic_rise : 0.48;
+      intrinsic_fall : 0.77;
+      rise_resistance : 0.1443;
+      fall_resistance : 0.0523;
+      slope_rise : 0.0;
+      slope_fall : 0.0;
+      related_pin : "A";
+    }
+  }
+}
+
+cell(XOR) {
+  area : 2;
+  pin(A) {
+    direction : input;
+    capacitance : 1;
+  }
+  pin(B) {
+    direction : input;
+    capacitance : 1;
+  }
+  pin(Z) {
+    direction : output;
+    function : "A^B";
+	timing() {
+      intrinsic_rise : 0.48;
+      intrinsic_fall : 0.77;
+      rise_resistance : 0.1443;
+      fall_resistance : 0.0523;
+      slope_rise : 0.0;
+      slope_fall : 0.0;
+      related_pin : "A";
+    }
+    timing() {
+      intrinsic_rise : 0.48;
+      intrinsic_fall : 0.77;
+      rise_resistance : 0.1443;
+      fall_resistance : 0.0523;
+      slope_rise : 0.0;
+      slope_fall : 0.0;
+      related_pin : "B";
+    }
+  }
+}
+}
