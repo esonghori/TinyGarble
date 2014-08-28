@@ -6,7 +6,7 @@ Test on garbled circuit
 Rice University
 
 
-#manual for design_vision
+##manual for design_vision
 
 
 1.Changing library format using synopsis lc_shell (.lib to .db) [already done, skip]
