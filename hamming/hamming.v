@@ -2,16 +2,16 @@
 
 module hamming
 #(
-	parameter N=1024
+	parameter N=160
 )
 (
 	x,
 	y,
 	o
 );
-	input[N-1:0] x,
-	input[N-1:0] y,
-	output reg[log2(N)-1:0] o
+	input[N-1:0] x;
+	input[N-1:0] y;
+	output reg[log2(N)-1:0] o;
 
 
 	function integer log2;
