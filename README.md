@@ -12,6 +12,7 @@ Rice University
 1.Changing library format using synopsis lc_shell (.lib to .db) [already done, skip]
 
 Please create ~/our_lib/ directory and put our_lib.lib and generic.sdb inside it. Go inside the directory and call the bewlo commands. Note that commands starting with "lc_shell>" should be called inside lc_shell. Please ignore "lc_shell>" for them.
+
 		lc_shell
 		lc_shell> set search_path [concat ~/ ~/our_lib/]
 		lc_shell> read_lib our_lib.lib
