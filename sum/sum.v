@@ -2,7 +2,7 @@
 
 module sum
 #(
-	parameter N=1024
+	parameter N=256
 )
 ( 
 	a,

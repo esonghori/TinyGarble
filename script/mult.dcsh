@@ -1,0 +1,9 @@
+set search_path [concat . ../lib/nor_xor_large_nor/]
+set target_library ../lib/nor_xor_large_nor/nor_xor.db
+set link_library ../lib/nor_xor_large_nor/nor_xor.db
+set symbol_library ../lib/generic.sdb
+analyze -format verilog mult.v
+elaborate mult -architecture verilog -library DEFAULT -update
+set_max_area 0
+compile_ultra -exact_map -no_design_rule -area_high_effort_script
+write -hierarchy -format verilog -output mult_nor_xor_large_nor_syn.v

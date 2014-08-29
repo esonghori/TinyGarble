@@ -1,14 +1,30 @@
-hamming optimized
+Synopsys Design_vision
 
-NOR cells:    14354
-NOT cells:    11642
-XOR cells:     8227
+hamming 160
+834
+1095
+1357
+
+hamming 1600
+12780
+18603
+22718
+
+sum 128
+370
+486
+384
+sum 256
+756
+1002
+768
 
 
-hamming NON optimized
-
-NOR cells:     14584
-NOT cells:     11779
-XOR cells:     7932
-
-
+mult 64
+8028
+7337
+16593
+mult 128
+32489
+27891
+66070

@@ -2,7 +2,7 @@
 
 module hamming
 #(
-	parameter N=160
+	parameter N=1600
 )
 (
 	x,
@@ -34,7 +34,11 @@ module hamming
 				if(xy[j*1024+i])
 					o = o + 1;
 			end
-
+		for(i=N-N%1024;i<N;i=i+1)
+		begin
+			if(xy[i])
+           			o = o + 1;
+		end
 	end
 
 endmodule

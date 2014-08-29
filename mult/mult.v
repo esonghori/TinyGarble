@@ -2,7 +2,7 @@
 
 module mult
 #(
-	parameter N=1024
+	parameter N=128
 )
 ( 
 	a,
@@ -11,9 +11,9 @@ module mult
 );
 	input  [N-1:0] a;
 	input  [N-1:0] b;
-	output [2*N-1:0] z;
+	output [2*N-1:0] c;
 		
-	assign z = a*b;
+	assign c = a*b;
 
 endmodule
 
