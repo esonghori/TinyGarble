@@ -1,6 +1,6 @@
 library(nor_xor) {
 cell(NOR) {
-  area : 1000;
+  area : 5;
   pin(A) {
     direction : input;
     capacitance : 1;
