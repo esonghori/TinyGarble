@@ -21,25 +21,43 @@ module hamming
 	endfunction
 
 
-	reg[N-1:0] xy;
+	wire[N-1:0] xy;
 	integer i, j;
+	
 
-	always@(*)
-	begin
-		o = 0;
-		xy = x^y;
-		for(j=0;j<N/1024;j=j+1)
-			for(i=0;i<1024;i=i+1)
-			begin
-				if(xy[j*1024+i])
-					o = o + 1;
-			end
-		for(i=N-N%1024;i<N;i=i+1)
+	assign xy = x^y;
+
+
+	generate if (N <= 1024) 
+		always@(*)
 		begin
-			if(xy[i])
-           			o = o + 1;
+			for(i=0;i<N;i=i+1)
+			begin
+		 		o = o + xy[i];
+			end
 		end
-	end
+	else if(N%1024 == 0)
+		always@(*)
+		begin
+			for(i=0;i<N/1024;i=i+1)
+				for(j=0;j<1024;j = j + 1)
+				begin
+			 		o = o + xy[1024*i+j];
+				end
+		end
+	else
+		always@(*)
+		begin
+			for(i=0;i<N/1024;i=i+1)
+				for(j=0;j<1024;j = j + 1)
+				begin
+			 		o = o + xy[1024*i+j];
+				end
+			for(i=N-N%1024;i<N;i = i + 1)
+			begin
+			 		o = o + xy[i];
+			end
+		end
+	endgenerate
 
 endmodule
-
