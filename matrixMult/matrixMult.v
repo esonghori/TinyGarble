@@ -16,7 +16,7 @@ module matrixMult
 
 	wire [M-1:0] xij[N-1:0][N-1:0];
 	wire [M-1:0] yij[N-1:0][N-1:0];
-	reg [M-1:0] oij[N-1:0][N-1:0];
+	reg  [M-1:0] oij[N-1:0][N-1:0];
 
 	genvar i;
 	genvar j;
