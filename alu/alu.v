@@ -29,8 +29,6 @@ module alu
 			o = x + 1;
 		'h04://mult
 			o = x * y;
-		'h05://dev
-			o = x / y;
 		default:
 			o = 'h0;
 		endcase
