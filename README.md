@@ -35,3 +35,20 @@ Here, we supposed that our_lib.lib is located in ~/our_lib directory and adder.v
 		design_vision> write -hierarchy -format verilog -output adder_syn.v
 		design_vision> exit
 3.Counting # of gates in adder_syn.v
+
+
+##manual for Yosys
+
+Here is how to compile a verilog file named "hamming.v" using the custom library "asic_cell.lib". We assume that the files are inside a folder named "Synthesis_yosys-abc" inside the "yosys" directory. The final output will be written in "hamming_synth.v"
+
+	cd ~/yosys
+	./yosys
+	yosys> read_verilog Synthesis_yosys-abc/hamming.v
+	yosys> hierarchy -check -top hamming
+	yosys> proc; opt; memory; opt; techmap; opt; 
+	yosys> abc -liberty Synthesis_yosys-abc/asic_cell.lib
+	yosys> opt
+	yosys> write_verilog Synthesis_yosys-abc/hamming_synth.v
+	yosys> exit
+	
+Note that commands starting with "yosys>" should be called inside yosys. Please ignore "yosys>" for them
