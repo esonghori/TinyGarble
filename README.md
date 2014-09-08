@@ -13,7 +13,7 @@ Rice University
 
 Please create ~/our_lib/ directory and put our_lib.lib and generic.sdb inside it. Go inside the directory and call the bewlo commands. Note that commands starting with "lc_shell>" should be called inside lc_shell. Please ignore "lc_shell>" for them.
 
-		lc_shell
+		$ lc_shell
 		lc_shell> set search_path [concat ~/ ~/our_lib/]
 		lc_shell> read_lib our_lib.lib
 		lc_shell> write_lib our_lib -format db
@@ -22,7 +22,7 @@ Please create ~/our_lib/ directory and put our_lib.lib and generic.sdb inside it
 
 Here, we supposed that our_lib.lib is located in ~/our_lib directory and adder.v is located in ~/ directory. Note that commands starting with "design_vision>" should be called inside lc_shell. Please ignore "design_vision>" for them
 
-		design_vision
+		$ design_vision
 		design_vision> set search_path [concat ~/ ~/our_lib/]
 		design_vision> set target_library ~/our_lib/our_lib.db
 		design_vision> set link_library ~/our_lib/our_lib.db
@@ -41,8 +41,8 @@ Here, we supposed that our_lib.lib is located in ~/our_lib directory and adder.v
 
 Here is how to compile a verilog file named "hamming.v" using the custom library "asic_cell.lib". We assume that the files are inside a folder named "Synthesis_yosys-abc" inside the "yosys" directory. The final output will be written in "hamming_synth.v"
 
-	cd ~/yosys
-	./yosys
+	$ cd ~/yosys
+	$ ./yosys
 	yosys> read_verilog Synthesis_yosys-abc/hamming.v
 	yosys> hierarchy -check -top hamming
 	yosys> proc; opt; memory; opt; techmap; opt; 
@@ -52,3 +52,23 @@ Here is how to compile a verilog file named "hamming.v" using the custom library
 	yosys> exit
 	
 Note that commands starting with "yosys>" should be called inside yosys. Please ignore "yosys>" for them
+
+##compile just garbled
+Download msgpack-c from msgpack.org. Compile it using:
+	$ ./bootstrap
+	$ ./configure
+	$ make 
+Add these two ~/.profile: 
+if [ -n "$LD_LIBRARY_PATH"]; 
+	then
+		export LD_LIBRARY_PATH=path/to/msgpack-c/src/.libs
+	else
+		export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:path/to/msgpack-c/src/.libs
+	fi
+	export MSGPACK=path/to/msgpack-c/src
+Remember change path/to/msgpack-c to msgpack path. This way, it doesn't need "sudo make install".
+Go to justGarble and make it:
+	$ make
+And test it:
+	$ bin/AESFullTest.out
+
