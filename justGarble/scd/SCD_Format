@@ -1,0 +1,57 @@
+
+                          The SCD File Format
+
+
+  Description
+  -----------
+
+  An SCD file contains a compact description of a boolean circuit or a boolean
+  circuit topology (a description with gate types are unspecified). Circuits
+  are modeled closely after Foundations of garbled circuits by Bellare, Hoang 
+  and Roagaway, available from eprint.iacr.org. Here a circuit is a 6-tuple
+  f= (n, m, q, A, B, G, O) where n,m, and q are integers representing 
+  the number of inputs, outputs, and gates in the circuit. 
+  
+  The wires in the cirucit are numbered in increasing order starting with 
+  the n input wires. The gates are also numbered in increasing order, with
+  the output of the i-th gate going to wire i+n+1. The extra 1 comes from the
+  fact that the n-th wire in the circuit is used as a dummy wire for making
+  single-input gates look like two-input gates, explained below.
+  
+  We assume that all gates take two inputs. This is without loss of generality,
+  since larger gates can be broken up into two-input gates, and unary gates get
+  are provided with the dummy wire as the second input. The two arrays 
+  A and B specify the two input wires for each gate, i.e. gate i takes 
+  inputs from wires A[i] and B[i], and it holds that 
+  A[i] < i + n + 1 and  B[i] < i + n + 1 for all i. 
+
+  The G array specifies the types of the gates. Each element of G is an integer
+  between 1 and 15, representing the sum of the entries of the truth table 
+  of the gate. More specificially, the value is 
+  b_11 * 8 + b_10 * 4 + b_01 * 2 + b_00, where b_ij  = f(i,j). For example,
+  an AND gate, with b_11 = 1 and b_10 = b_01 = b_00 = 0, gets 8, and the 
+  constant gate that always outputs 1 gets 15.
+ 
+  In an SCD files, all these values are stored as 64 bit integers. This is 
+  just for simplicity, and enabling writing and reading SCD files even if 
+  MessagePack support is not available in the environment.
+
+
+  An example
+  -----------
+  Consider a simple circuit implementing f(a_1,a_2,a_3) = (a_1 & a_2) | a_3. 
+  There are three inputs, one output, two gates, and five logical wires. We 
+  will add the extra dummy wire to make it six wires overall. An SCD 
+  representation of this circuit could be as follows:
+  (3, 1, 2, [1,4], [2,3], [8, 14], [5]), indicating that there are 3 inputs, 
+  1 output, 2 gates, the first inputs to the gates are 1, 4, the second inputs
+  are 2, 3, the gate types are 8 = 1000 = AND, and 14 = 1110 = OR, and the 
+  output of the circuit is wire 5.
+
+
+  A simple SCD reading/writing application
+  -----------
+  The accompanying scd.c contains reader and writer functions that demonstrate
+  how to read and write SCD files. Compiling this file needs MessagePack,
+  download from msgpack.org. Once MessagePack is installed, the file can be 
+  compiled in GCC, with the -lmsgpack switch.  
