@@ -6,3 +6,6 @@
 *.svf
 *~
 .~*#
+justGarble/bin/*
+justGarble/obj/*
+
