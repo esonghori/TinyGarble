@@ -54,21 +54,29 @@ Here is how to compile a verilog file named "hamming.v" using the custom library
 Note that commands starting with "yosys>" should be called inside yosys. Please ignore "yosys>" for them
 
 ##compile just garbled
+
 Download msgpack-c from msgpack.org. Compile it using:
+
 	$ ./bootstrap
 	$ ./configure
 	$ make 
+
 Add these two ~/.profile: 
-if [ -n "$LD_LIBRARY_PATH"]; 
+
+	if [ -n "$LD_LIBRARY_PATH"]; 
 	then
 		export LD_LIBRARY_PATH=path/to/msgpack-c/src/.libs
 	else
 		export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:path/to/msgpack-c/src/.libs
 	fi
 	export MSGPACK=path/to/msgpack-c/src
+
 Remember change path/to/msgpack-c to msgpack path. This way, it doesn't need "sudo make install".
 Go to justGarble and make it:
+
 	$ make
+
 And test it:
+
 	$ bin/AESFullTest.out
 
