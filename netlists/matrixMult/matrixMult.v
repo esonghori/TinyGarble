@@ -2,7 +2,7 @@
 
 module matrixMult
 #(
-	parameter N=3,
+	parameter N=5,
 	parameter M=32
 )
 (
@@ -23,32 +23,32 @@ module matrixMult
 	integer k;
 	generate
 	for (i=0;i<N;i=i+1)
-	begin
+	begin:ASS_ROW
 		for (j=0;j<N;j=j+1)
-		begin
+		begin:ASS_COL
 			assign xij[i][j] = x[M*(N*i+j+1)-1:M*(N*i+j)];
 			assign yij[i][j] = y[M*(N*i+j+1)-1:M*(N*i+j)];
-			assign oij[i][j] = o[M*(N*i+j+1)-1:M*(N*i+j)];
+			assign o[M*(N*i+j+1)-1:M*(N*i+j)] = oij[i][j];
 		end
 	end
 	endgenerate
 
 	generate
 	for (i=0;i<N;i=i+1)
-	begin
+	begin:MUL_ROW
 		for (j=0;j<N;j=j+1)
-		begin
+		begin:MUL_COL
 			always@(*)
 			begin
+				oij[i][j] = xij[i][j]&yij[i][j];
 				oij[i][j] = 0;
 				for (k=0;k<N;k=k+1)
 				begin
-					oij[i][j] = oij[i][j] + x[i][k]*y[k][j];
+					oij[i][j] = oij[i][j] + xij[i][k]*yij[k][j];
 				end			
 			end
 		end
 	end
 	endgenerate
-
 
 endmodule
