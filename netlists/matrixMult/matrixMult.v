@@ -2,7 +2,7 @@
 
 module matrixMult
 #(
-	parameter N=5,
+	parameter N=3,
 	parameter M=32
 )
 (
