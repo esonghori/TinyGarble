@@ -7,6 +7,7 @@ module matrixMultSeq
 )
 (
 	clk,
+	rst,
 	x,
 	y,
 	o
@@ -18,7 +19,7 @@ module matrixMultSeq
 			value = value>>1;
 	endfunction
 
-	input clk;
+	input clk,rst;
 	input[M*N*N-1:0] x;
 	input[M*N*N-1:0] y;
 	output[M*N*N-1:0] o;
@@ -49,7 +50,7 @@ module matrixMultSeq
 	reg[M-1:0] sum;
 	
 	
-`ifndef SYNTHESIS
+/*`ifndef SYNTHESIS
 	integer ii,jj;
 	initial
 	begin
@@ -65,10 +66,27 @@ module matrixMultSeq
 				end
 		end
 	end
-`endif
-	
-	always@(posedge clk)
+`endif*/
+
+	integer ii,jj;
+	always@(posedge clk or posedge rst)
 	begin
+		if(rst)
+		begin
+			i <= 'b0;
+			j <= 'b0;
+			k <= 'b0;
+			sum <= 'b0; 
+			for(ii=0;ii<N;ii=ii+1) 
+			begin
+					for(jj=0;jj<N;jj=jj+1)
+					begin
+					  oij[ii][jj] <= 'b0;
+					end
+			end
+		end
+		else
+		begin
 			if(i<N)
 			begin
 				sum <= sum + xij[i][k] * yij[k][j]; 
@@ -85,5 +103,6 @@ module matrixMultSeq
 					end
 				end
 			end
+		end
 	end
 endmodule
