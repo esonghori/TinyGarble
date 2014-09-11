@@ -11,32 +11,32 @@ module matrixMultSeqTest();
 	wire[M*N*N-1:0] o;
 
 
-	matrixMultSeq UTT
+	matrixMultSeq 
 	#(
 	.N(N),
 	.M(M)
 	)
+	UTT
 	(
 		.clk(clk),
-		.rst(rst),
 		.x(x),
 		.y(y),
 		.o(o)
 	);
 
+  integer i;
 	initial
 	begin
 		clk=0;
-		rst=1;
-		x = $random;
-		y = $random;
-		@(negedge clk);
-		@(negedge clk);
-		rst=0;
-		for(i=0;i<N*N;i=i+1)
+	  x = {N*N*M/32{$random}};
+	  y = {N*N*M/32{$random}};
+		for(i=0;i<N*N*N;i=i+1)
 			@(negedge clk);
 		$stop;
 	end
+
+  initial 
+    $monitor($time,"o = %x",o); 
 
 	always #5 clk = !clk;
 endmodule
