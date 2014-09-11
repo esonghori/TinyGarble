@@ -72,6 +72,7 @@ library(dff_nor_xor){
 		ff(IQ,IQN){
 			next_state : "D";
 			clocked_on : "CLK";
+			clear : "RST";
 		}
 		pin(D){
 			direction : input;
@@ -85,12 +86,21 @@ library(dff_nor_xor){
 			capacitance : 1;
 			clock : true;
 		}
+		pin(RST){
+			direction : input;
+			capacitance : 1;
+		}
 		pin(Q){
 			direction : output;
 			function : "IQ";
 			timing() {
 			  related_pin : "CLK";
 			  timing_type : falling_edge;
+			}
+			timing() {
+				related_pin : "RST";
+				timing_type : clear;
+				timing_sense : positive_unate;
 			}
 		}
 	}
