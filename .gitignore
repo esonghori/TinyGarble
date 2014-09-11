@@ -6,6 +6,7 @@ alib-52/
 *.svf
 *~
 .~*#
+.nfs*
 justGarble/bin/*
 justGarble/obj/*
 
