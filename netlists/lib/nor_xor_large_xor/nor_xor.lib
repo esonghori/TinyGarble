@@ -1,4 +1,11 @@
 library(nor_xor) {
+	/* unit attributes */
+	time_unit : "1ns";
+	voltage_unit : "1V";
+	current_unit : "1uA";
+	pulling_resistance_unit : "1kohm";
+	leakage_power_unit : "1nW";
+	capacitive_load_unit (1,pf);
 cell(NOR) {
   area : 1;
   pin(A) {
