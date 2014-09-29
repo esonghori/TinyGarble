@@ -1,4 +1,5 @@
 alib-52/
+*.alib
 *.log
 *.mr
 *.syn
