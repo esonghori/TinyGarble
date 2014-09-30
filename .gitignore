@@ -12,3 +12,4 @@ justGarble/bin/*
 justGarble/obj/*
 .cproject
 .project
+.metadata
