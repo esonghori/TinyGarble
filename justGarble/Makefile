@@ -22,10 +22,13 @@ LARGE = LargeCircuitTest
 FILE = CircuitFileTest
 rm = rm --f
 
-all: CHECK_MSGPACK $(BINDIR)/$(AES).out $(BINDIR)/$(LARGE).out $(BINDIR)/$(FILE).out
+all: MAKE_DIR CHECK_MSGPACK $(BINDIR)/$(AES).out $(BINDIR)/$(LARGE).out $(BINDIR)/$(FILE).out
 
-.PHONY: CHECK_MSGPACK clean
+.PHONY: CHECK_MSGPACK MAKE_DIR clean
 
+MAKE_DIR:
+	mkdir -p $(OBJDIR)
+	mkdir -p $(BINDIR)
 
 CHECK_MSGPACK:
 ifeq ($(MSGPACK),)
