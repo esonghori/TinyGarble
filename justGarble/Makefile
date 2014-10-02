@@ -26,16 +26,12 @@ LARGE = LargeCircuitTest
 FILE = CircuitFileTest
 rm = rm --f
 
-.PHONY: all debug check_msgpack clean
+.PHONY: all release debug check_msgpack prep clean
 
-all: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out 
+all: release debug
 
-MAKE_DIR:
-	mkdir -p $(OBJDIR)
-	mkdir -p $(BINDIR)
-
-debug: check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out 
-
+release: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out
+debug:   check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out 
 
 
 #check MSGPACK library
