@@ -8,7 +8,7 @@ alib-52/
 *~
 .~*#
 .nfs*
-justGarble/bin/*
-justGarble/obj/*
+justGarble/bin
+justGarble/debug
 .cproject
 .project

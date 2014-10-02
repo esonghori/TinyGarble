@@ -4,17 +4,21 @@
 
 SRCDIR   = src
 OBJDIR   = obj
-BINDIR   = bin
+RELDIR   = bin
+DEBDIR = debug
+RELOBJDIR = $(RELDIR)/$(OBJDIR)
+DEBOBJDIR = $(DEBDIR)/$(OBJDIR)
 TESTDIR   = test
-OBJECTFULL = obj/*.o
+IDIR =include
+
+CC=gcc 
+CFLAGS= -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result -march=native -I$(IDIR) -I$(MSGPACK) -L$(MSGPACK)/.libs
+DBGCFLAGS = -g -O0 -DDEBUG
+RELCFLAGS = -O3 -DNDEBUG
 
 SOURCES  := $(wildcard $(SRCDIR)/*.c)
-INCLUDES := $(wildcard $(SRCDIR)/*.h)
-OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-
-IDIR =../include
-CC=gcc 
-CFLAGS= -O3 -lm -lrt -lpthread -maes -msse4 -lmsgpack -march=native -I$(IDIR) -I$(MSGPACK) -L$(MSGPACK)/.libs
+RELOBJECT := $(SOURCES:$(SRCDIR)/%.c=$(RELOBJDIR)/%.o)
+DEBOBJECT := $(SOURCES:$(SRCDIR)/%.c=$(DEBOBJDIR)/%.o)
 
 
 AES = AESFullTest
@@ -22,32 +26,62 @@ LARGE = LargeCircuitTest
 FILE = CircuitFileTest
 rm = rm --f
 
-all: CHECK_MSGPACK $(BINDIR)/$(AES).out $(BINDIR)/$(LARGE).out $(BINDIR)/$(FILE).out
+.PHONY: all debug check_msgpack clean
 
-.PHONY: CHECK_MSGPACK clean
+all: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out 
 
 
-CHECK_MSGPACK:
+debug: check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out 
+
+
+
+#check MSGPACK library
+check_msgpack:
 ifeq ($(MSGPACK),)
 	$(error MSGPACK is not set.)
 endif
 
-$(BINDIR)/$(AES).out: $(OBJECTS) $(TESTDIR)/$(AES).c
-	$(CC) $(OBJECTFULL) $(TESTDIR)/$(AES).c -o $(BINDIR)/$(AES).out $(LIBS) $(CFLAGS) 
+$(RELDIR)/$(AES).out: $(RELOBJECT) $(TESTDIR)/$(AES).c
+	$(CC) $(RELOBJECT) $(TESTDIR)/$(AES).c -o $(RELDIR)/$(AES).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
-$(BINDIR)/$(LARGE).out: $(OBJECTS) $(TESTDIR)/$(LARGE).c
-	$(CC) $(OBJECTFULL) $(TESTDIR)/$(LARGE).c -o $(BINDIR)/$(LARGE).out $(LIBS) $(CFLAGS) 
+$(RELDIR)/$(LARGE).out: $(RELOBJECT) $(TESTDIR)/$(LARGE).c
+	$(CC) $(RELOBJECT) $(TESTDIR)/$(LARGE).c -o $(RELDIR)/$(LARGE).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
-$(BINDIR)/$(FILE).out: $(OBJECTS) $(TESTDIR)/$(FILE).c
-	$(CC) $(OBJECTFULL) $(TESTDIR)/$(FILE).c -o $(BINDIR)/$(FILE).out $(LIBS) $(CFLAGS) 
+$(RELDIR)/$(FILE).out: $(RELOBJECT) $(TESTDIR)/$(FILE).c
+	$(CC) $(RELOBJECT) $(TESTDIR)/$(FILE).c -o $(RELDIR)/$(FILE).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
 
-$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
-	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) 
+$(DEBDIR)/$(AES).out: $(DEBOBJECT) $(TESTDIR)/$(AES).c
+	$(CC) $(DEBOBJECT) $(TESTDIR)/$(AES).c -o $(DEBDIR)/$(AES).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+
+$(DEBDIR)/$(LARGE).out: $(DEBOBJECT) $(TESTDIR)/$(LARGE).c
+	$(CC) $(DEBOBJECT) $(TESTDIR)/$(LARGE).c -o $(DEBDIR)/$(LARGE).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+
+$(DEBDIR)/$(FILE).out: $(DEBOBJECT) $(TESTDIR)/$(FILE).c
+	$(CC) $(DEBOBJECT) $(TESTDIR)/$(FILE).c -o $(DEBDIR)/$(FILE).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+
+
+
+$(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.c
+	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
+
+$(DEBOBJECT): $(DEBOBJDIR)/%.o : $(SRCDIR)/%.c
+	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+
+
+
+prep:
+	@mkdir -p $(RELDIR) $(DEBDIR) 
+	@mkdir -p $(RELDIR)/$(OBJDIR) 
+	@mkdir -p $(DEBDIR)/$(OBJDIR) 
 
 clean:
-	@$(rm) $(OBJECTS)
-	@$(rm) $(BINDIR)/$(AES)
-	@$(rm) $(BINDIR)/$(LARGE)
-	@$(rm) $(BINDIR)/$(FILE)
+	@$(rm) $(RELOBJECT)
+	@$(rm) $(RELDIR)/$(AES).out
+	@$(rm) $(RELDIR)/$(LARGE).out
+	@$(rm) $(RELDIR)/$(FILE).out
+	@$(rm) $(DEBOBJECT)
+	@$(rm) $(DEBDIR)/$(AES).out
+	@$(rm) $(DEBDIR)/$(LARGE).out
+	@$(rm) $(DEBDIR)/$(FILE).out
 
