@@ -120,7 +120,7 @@ void inline TRUNC_COPY(char *X, char *Y);
 #define FAILURE -1
 
 
-//#define ROW_REDUCTION
+#define ROW_REDUCTION
 #define FREE_XOR
 #define DKC2
 //#define TRUNCATED
