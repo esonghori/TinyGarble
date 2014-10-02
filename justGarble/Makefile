@@ -30,6 +30,9 @@ rm = rm --f
 
 all: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out 
 
+MAKE_DIR:
+	mkdir -p $(OBJDIR)
+	mkdir -p $(BINDIR)
 
 debug: check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out 
 
