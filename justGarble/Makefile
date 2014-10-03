@@ -24,14 +24,15 @@ DEBOBJECT := $(SOURCES:$(SRCDIR)/%.c=$(DEBOBJDIR)/%.o)
 AES = AESFullTest
 LARGE = LargeCircuitTest
 FILE = CircuitFileTest
+JUSTAND = JustAnd
 rm = rm --f
 
 .PHONY: all release debug check_msgpack prep clean
 
 all: release debug
 
-release: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out
-debug:   check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out 
+release: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out $(RELDIR)/$(JUSTAND).out
+debug:   check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out $(DEBDIR)/$(JUSTAND).out 
 
 
 #check MSGPACK library
@@ -40,6 +41,7 @@ ifeq ($(MSGPACK),)
 	$(error MSGPACK is not set.)
 endif
 
+##release
 $(RELDIR)/$(AES).out: $(RELOBJECT) $(TESTDIR)/$(AES).c
 	$(CC) $(RELOBJECT) $(TESTDIR)/$(AES).c -o $(RELDIR)/$(AES).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
@@ -49,7 +51,13 @@ $(RELDIR)/$(LARGE).out: $(RELOBJECT) $(TESTDIR)/$(LARGE).c
 $(RELDIR)/$(FILE).out: $(RELOBJECT) $(TESTDIR)/$(FILE).c
 	$(CC) $(RELOBJECT) $(TESTDIR)/$(FILE).c -o $(RELDIR)/$(FILE).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
+$(RELDIR)/$(JUSTAND).out: $(RELOBJECT) $(TESTDIR)/$(JUSTAND).c
+	$(CC) $(RELOBJECT) $(TESTDIR)/$(JUSTAND).c -o $(RELDIR)/$(JUSTAND).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
+$(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.c
+	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
+
+##debug
 $(DEBDIR)/$(AES).out: $(DEBOBJECT) $(TESTDIR)/$(AES).c
 	$(CC) $(DEBOBJECT) $(TESTDIR)/$(AES).c -o $(DEBDIR)/$(AES).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
@@ -59,10 +67,9 @@ $(DEBDIR)/$(LARGE).out: $(DEBOBJECT) $(TESTDIR)/$(LARGE).c
 $(DEBDIR)/$(FILE).out: $(DEBOBJECT) $(TESTDIR)/$(FILE).c
 	$(CC) $(DEBOBJECT) $(TESTDIR)/$(FILE).c -o $(DEBDIR)/$(FILE).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
+$(DEBDIR)/$(JUSTAND).out: $(DEBOBJECT) $(TESTDIR)/$(JUSTAND).c
+	$(CC) $(DEBOBJECT) $(TESTDIR)/$(JUSTAND).c -o $(DEBDIR)/$(JUSTAND).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
-
-$(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.c
-	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
 $(DEBOBJECT): $(DEBOBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)
@@ -79,8 +86,10 @@ clean:
 	@$(rm) $(RELDIR)/$(AES).out
 	@$(rm) $(RELDIR)/$(LARGE).out
 	@$(rm) $(RELDIR)/$(FILE).out
+	@$(rm) $(RELDIR)/$(JUSTAND).out
 	@$(rm) $(DEBOBJECT)
 	@$(rm) $(DEBDIR)/$(AES).out
 	@$(rm) $(DEBDIR)/$(LARGE).out
 	@$(rm) $(DEBDIR)/$(FILE).out
+	@$(rm) $(DEBDIR)/$(JUSTAND).out
 

@@ -10,6 +10,8 @@ alib-52/
 .nfs*
 justGarble/bin
 justGarble/debug
+justGarble/aesCircuit
+justGarble/justAnd
 .cproject
 .project
 .metadata
