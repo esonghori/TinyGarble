@@ -41,6 +41,11 @@ int main(int argc, char **argv) {
 	srand(time(NULL));
 	GarbledCircuit garbledCircuit;
 	GarblingContext garblingContext;
+	if (argc != 2)
+	{
+		printf("Usage: <prog_name> number_of_gates (in thousands)");
+        return -1;
+	}
 	int n = atoi(argv[1]) * 1024;
 	int m = 1;
 	int q = n;

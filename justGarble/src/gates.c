@@ -30,7 +30,7 @@ int ANDGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
 
 #ifdef FREE_XOR
 
-int XORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output) {
+int XORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output) { //TODO: what was wrong with the genericGate that they use this?!
 	if(garbledCircuit->wires[input0].id == 0) {
 		printf("ERROR: Uninitialized input at wire 0 %d, gate %ld\n", input0, garblingContext->gateIndex);
 	}
@@ -66,6 +66,8 @@ int XORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
 			vals, XORGATE);
 }
 #endif
+
+//TODO: Add NORGATE NANDGATE
 
 int ORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
 		int input0, int input1, int output) {
