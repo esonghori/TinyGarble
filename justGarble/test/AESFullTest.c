@@ -37,7 +37,7 @@ void buildAESCircuit() {
 	int n = 128 * (roundLimit + 1);
 	int m = 128;
 	int q = 50000; //Just an upper bound
-	int r = 50000;
+	int r = 50000; //wire + FIXED0 + FIXED1 = n+q+2
 	int inp[n];
 	countToN(inp, n);
 	int addKeyInputs[n * (roundLimit + 1)];

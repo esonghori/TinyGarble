@@ -41,15 +41,17 @@ int main(int argc, char **argv) {
 	srand(time(NULL));
 	GarbledCircuit garbledCircuit;
 	GarblingContext garblingContext;
-        if (argc != 2) {
-            printf("Usage: <prog_name> number_of_gates (in thousands)");
-        }
+	if (argc != 2)
+	{
+		printf("Usage: <prog_name> number_of_gates (in thousands)");
+        return -1;
+	}
 
 	//Set up circuit parameters
 	int n = atoi(argv[1]) * 1024;
 	int m = 1;
 	int q = n;
-	int r = 5 * n;
+	int r = 5 * n; //wire + FIXED0 + FIXED1 = n+q+2
 
 	//Set up input and output tokens/labels.
 	block *labels = (block*) malloc(sizeof(block) * 2 * n);
