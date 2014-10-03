@@ -125,7 +125,7 @@ int startBuilding(GarbledCircuit *garbledCircuit,
 		GarblingContext *garblingContext) {
 	garblingContext->gateIndex = 0;
 	garblingContext->tableIndex = 0;
-	garblingContext->wireIndex = garbledCircuit->n + 1;
+	garblingContext->wireIndex = garbledCircuit->n + 1; //TODO: Why it is n+1? 1 is kept for NOT gates?
 	block key = randomBlock();
 	garblingContext->R =
 			xorBlocks(garbledCircuit->wires[0].label0, garbledCircuit->wires[0].label1);
@@ -616,7 +616,8 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 #else
 #ifdef ROW_REDUCTION
 
-long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap) {
+long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap)
+{
 
 	GarblingContext garblingContext;
 	GarbledGate *garbledGate;
@@ -661,7 +662,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 		output = garbledGate->output;
 
 #ifdef FREE_XOR
-		if (garbledGate->type == XORGATE) {
+		if (garbledGate->type == XORGATE) { //TODO:WTF? NOT is a XOR
 			garbledCircuit->wires[output].label0 = xorBlocks(garbledCircuit->wires[input0].label0, garbledCircuit->wires[input1].label0);
 			garbledCircuit->wires[output].label1 = xorBlocks(garbledCircuit->wires[input0].label1, garbledCircuit->wires[input1].label0);
 			continue;
@@ -672,6 +673,11 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 		lsb0 = getLSB(garbledCircuit->wires[input0].label0);
 		lsb1 = getLSB(garbledCircuit->wires[input1].label0);
 
+
+		//A2,D7
+		// p(K) ^ K ^ X, K = A ^ B ^T
+		// p(.) = AES_c(.)
+		// DOUBLE is _mm_slli_epi64 64-bit right shift
 		block A0, A1, B0, B1;
 		A0 = DOUBLE(garbledCircuit->wires[input0].label0);
 		A1 = DOUBLE(garbledCircuit->wires[input0].label1);
@@ -756,53 +762,46 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 		block *label0 = &garbledCircuit->wires[garbledGate->output].label0;
 		block *label1 = &garbledCircuit->wires[garbledGate->output].label1;
 
-		if (garbledGate->type == ANDGATE) {
-
+		if (garbledGate->type == ANDGATE)
+		{
 			blocks[0] = *label0;
 			blocks[1] = *label0;
 			blocks[2] = *label0;
 			blocks[3] = *label1;
-			goto write;
 		}
-
-		if (garbledGate->type == ORGATE) {
-
+		else if (garbledGate->type == ORGATE)
+		{
 			blocks[0] = *label0;
 			blocks[1] = *label1;
 			blocks[2] = *label1;
 			blocks[3] = *label1;
-			goto write;
-
 		}
-
-		if (garbledGate->type == XORGATE) {
-
+		else if (garbledGate->type == XORGATE)
+		{
 			blocks[0] = *label0;
 			blocks[1] = *label1;
 			blocks[2] = *label1;
 			blocks[3] = *label0;
-			goto write;
 
 		}
-
-		if (garbledGate->type == NOTGATE) {
+		else if (garbledGate->type == NOTGATE)
+		{
 
 			blocks[0] = *label1;
 			blocks[1] = *label0;
 			blocks[2] = *label1;
 			blocks[3] = *label0;
-			goto write;
-
 		}
-		write:
+
+
 		if (2*lsb0 + lsb1 !=0)
-		garbledTable[tableIndex].table[2*lsb0 + lsb1 -1] = xorBlocks(blocks[0], mask[0]);
+			garbledTable[tableIndex].table[2*lsb0 + lsb1 -1] = xorBlocks(blocks[0], mask[0]);
 		if (2*lsb0 + 1-lsb1 !=0)
-		garbledTable[tableIndex].table[2*lsb0 + 1-lsb1-1] = xorBlocks(blocks[1], mask[1]);
+			garbledTable[tableIndex].table[2*lsb0 + 1-lsb1-1] = xorBlocks(blocks[1], mask[1]);
 		if (2*(1-lsb0) + lsb1 !=0)
-		garbledTable[tableIndex].table[2*(1-lsb0) + lsb1-1] = xorBlocks(blocks[2], mask[2]);
+			garbledTable[tableIndex].table[2*(1-lsb0) + lsb1-1] = xorBlocks(blocks[2], mask[2]);
 		if (2*(1-lsb0) + (1-lsb1) !=0)
-		garbledTable[tableIndex].table[2*(1-lsb0) + (1-lsb1)-1] = xorBlocks(blocks[3], mask[3]);
+			garbledTable[tableIndex].table[2*(1-lsb0) + (1-lsb1)-1] = xorBlocks(blocks[3], mask[3]);
 
 		tableIndex++;
 
@@ -866,7 +865,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels,
 		output = garbledGate->output;
 
 #ifdef FREE_XOR
-		if (garbledGate->type == XORGATE) {
+		if (garbledGate->type == XORGATE) { //TODO:WTF? NOT is a XOR
 			garbledCircuit->wires[output].label0 =
 					xorBlocks(garbledCircuit->wires[input0].label0, garbledCircuit->wires[input1].label0);
 			garbledCircuit->wires[output].label1 =
