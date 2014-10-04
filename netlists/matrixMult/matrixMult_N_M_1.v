@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-
+// synopsys template
 module matrixMult_N1
 #(
 	parameter N=3,
@@ -14,15 +14,16 @@ module matrixMult_N1
 );
 	input clk,rst;
 	input[N*M-1:0] x;
-	input[NN*M-1:0] y;
-	output reg[N*M-1:0] o;
+	input[N*N*M-1:0] y;
+	output[N*M-1:0] o;
 
 	wire [M-1:0] xi[N-1:0];
 	wire [M-1:0] yij[N-1:0][N-1:0];
-	wire [M-1:0] oi[N-1:0];
+	reg [M-1:0] oi[N-1:0];
 
 
 	genvar i;
+	genvar j;
 	integer k;
 
 	generate
@@ -48,9 +49,9 @@ module matrixMult_N1
 			end
 			else
 			begin
-				for(int k=0;k<N;k=k+1)
+				for(k=0;k<N;k=k+1)
 				begin
-					oi <= oi[i] + xi[k] * yij[k][i];
+					oi[i] <= oi[i] + xi[k] * yij[k][i];
 				end
 			end
 		end

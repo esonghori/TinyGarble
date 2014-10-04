@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-
-module matrixMult_N2
+// synopsys template
+module matrixMult_N_M_2
 #(
 	parameter N=3,
 	parameter M=32
@@ -41,7 +41,7 @@ module matrixMult_N2
 		end
 		else
 		begin
-			for(int k=0;k<N;k=k+1)
+			for(k=0;k<N;k=k+1)
 			begin
 				o <= o + xi[k] * yi[k];
 			end

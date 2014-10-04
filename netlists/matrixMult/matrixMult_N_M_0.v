@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-
-module matrixMult_N0
+// synopsys template
+module matrixMult_N_M_0
 #(
 	parameter N=3,
 	parameter M=32
