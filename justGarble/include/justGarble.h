@@ -17,10 +17,16 @@
 */
 
 
-#ifndef justGarble
-#define justGarble 1
+#ifndef JUSTGARBLE_H_
+#define JUSTGARBLE_H_
+
+
 #include "dkcipher.h"
 #include "common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
 	long value, id;
@@ -113,13 +119,13 @@ int createEmptyCircuit(Circuit *circuit, int n, int m, int q, int r);
 // here means that there is no need to create and initialize a new 
 // data-structure just before calling garbleCircuit.
 int startBuilding(GarbledCircuit *gc, GarblingContext *ctx);
-int finishBuilding(GarbledCircuit *garbledCircuit,
+long finishBuilding(GarbledCircuit *garbledCircuit,
 		GarblingContext *garbledContext, OutputMap outputMap, int *outputs);
 
 
 
 // Create memory for an empty circuit of the specified size.
-int createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
+long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
 		int q, int r, InputLabels inputLabels);
 
 //Create memory for 2*n input labels.
@@ -162,8 +168,12 @@ int mapOutputs(OutputMap outputMap, OutputMap extractedMap, int *outputVals,
 		int m);
 
 
-int writeCircuitToFile(GarbledCircuit *garbledCircuit, char *fileName);
-int readCircuitFromFile(GarbledCircuit *garbledCircuit, char *fileName);
+int writeCircuitToFile(GarbledCircuit *garbledCircuit, const char *fileName);
+int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #include "garble.h"

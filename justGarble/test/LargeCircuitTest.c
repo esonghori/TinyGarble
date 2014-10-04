@@ -21,7 +21,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include "../include/justGarble.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int checkfn(int *a, int *outputs, int n) {
 	outputs[0] = a[0];
@@ -37,7 +42,8 @@ int checkfn(int *a, int *outputs, int n) {
 	return outputs[0];
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	srand(time(NULL));
 	GarbledCircuit garbledCircuit;
 	GarblingContext garblingContext;
@@ -68,10 +74,10 @@ int main(int argc, char **argv) {
 	//Actually build a circuit. Alternatively, this circuit could be read
 	//from a file.
 	createInputLabels(labels, n);
-	createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
 	startBuilding(&garbledCircuit, &garblingContext);
 	MIXEDCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
-	finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
 
 	//Garble the built circuit.
 	garbleCircuit(&garbledCircuit, inputLabels, outputMap);
@@ -84,3 +90,6 @@ int main(int argc, char **argv) {
 
 }
 
+#ifdef __cplusplus
+}
+#endif

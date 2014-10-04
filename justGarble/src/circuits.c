@@ -24,6 +24,9 @@
 #include "../include/util.h"
 #include "../include/justGarble.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int A2X1[8] = { 0x98, 0xF3, 0xF2, 0x48, 0x09, 0x81, 0xA9, 0xFF }, X2A1[8] = {
 		0x64, 0x78, 0x6E, 0x8C, 0x68, 0x29, 0xDE, 0x60 }, X2S1[8] = { 0x58,
@@ -751,3 +754,8 @@ int GF8MULCircuit(GarbledCircuit *garbledCircuit,
 
 	return 0;
 }
+
+
+#ifdef __cplusplus
+}
+#endif

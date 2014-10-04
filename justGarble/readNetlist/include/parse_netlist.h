@@ -13,18 +13,18 @@ using namespace std;
 
 enum gate_type {XOR, IV, NOR};
 
-typedef struct{
+typedef struct net{
 	bool is_port;
 	int index;
 } net;
 
-typedef struct {
+typedef struct GarbledGateS{
 	net input[2]; 
 	net output;
 	int id, type;
-} GarbledGate;
+} GarbledGateS;
 
-typedef struct {
+typedef struct GarbledGateString{
 	string input[2]; 
 	string output;
 	int id, type;

@@ -1,21 +1,10 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <cstdlib>
-#include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
-#include "parse_netlist.h"
-#include "scheduling.h"
-#include "file_io.h"
+#include "include/read_netlist.h"
 
-using namespace std;
-using namespace boost; 
 
 void parse_netlist(string filename){
 
 	fstream fin;
-	string vfilename("dat/"+filename+".v");
+	string vfilename(filename);
 	fin.open(vfilename.c_str());
 	if (!fin.good()){ 
 		cout << "Specified v file not found" << endl;
@@ -145,8 +134,8 @@ void parse_netlist(string filename){
 	cout << endl;
 #endif	
 	
-	GarbledGate *gate_list;
-	gate_list = new GarbledGate[no_of_gates];
+	GarbledGateS *gate_list;
+	gate_list = new GarbledGateS[no_of_gates];
 	int index, total_weight = 0;
 	
 	for (i = 0; i < no_of_gates; i++){

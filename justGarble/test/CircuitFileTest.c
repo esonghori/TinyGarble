@@ -21,7 +21,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include "../include/justGarble.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int checkfn(int *a, int *outputs, int n) {
 	outputs[0] = a[0];
@@ -66,13 +71,13 @@ int main(int argc, char **argv) {
 
 	//Create a circuit.
 	createInputLabels(labels, n);
-	createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
 	startBuilding(&garbledCircuit, &garblingContext);
 	MIXEDCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
-	finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
 
 	//Write the created circuit to a file
-	writeCircuitToFile(&garbledCircuit, "tst.scd");
+	writeCircuitToFile(&garbledCircuit, "test/netlists/test.scd");
 
 	//Create an empty garbled circuit data structure
 	GarbledCircuit garbledCircuit2;
@@ -80,7 +85,7 @@ int main(int argc, char **argv) {
 	//Read a circuit from a file and initialize the garbled circuit data
 	//structure with it. Note that this step does not perform actual
 	//garbling. It just creates empty garbled tables and space for wires and gates.
-	readCircuitFromFile(&garbledCircuit2, "tst.scd");
+	readCircuitFromFile(&garbledCircuit2, "test/netlists/test.scd");
 
 	//Actually garble the circuit created from the file.
 	garbleCircuit(&garbledCircuit2, inputLabels, outputMap);
@@ -93,3 +98,6 @@ int main(int argc, char **argv) {
 
 }
 
+#ifdef __cplusplus
+}
+#endif
