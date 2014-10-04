@@ -1,41 +1,27 @@
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <cstdlib>
-#include <unistd.h>
-#include "parse_netlist.h"
-#include "scheduling.h"
-#include "file_io.h" 
-#include "create_circuit.h"
+#include "include/read_netlist.h"
 
-#define MAIN 0
 
-#if !MAIN
+
+extern "C" {
 #include "../include/garble.h"
 #include "../include/common.h"
 #include "../include/gates.h"
 #include "../include/justGarble.h"
-#endif
-
-using namespace std;
-
-#if MAIN
-int main(int argc, char** argv){
-	string filename(argv[1]);
-	create_circuit(filename, 1);
 }
-#endif
 
-void create_circuit(string filename, bool update){
+void read_netlist(string infilename, string outfilename, bool update)
+{
+	GarbledCircuit garbledCircuit;
+	GarblingContext garblingContext;
 
 	if (update){	
-		parse_netlist(filename); // without .v extension	
+		parse_netlist(infilename);
 		}
 		
-	GarbledGate *gate_list;
+	GarbledGateS *gate_list;
 	int circuit_size[3];	
 		
-	read_gate_list(gate_list, circuit_size, filename);
+	read_gate_list(gate_list, circuit_size, infilename);
 
 	int n = circuit_size[0]; //# of inputs
 	int m = circuit_size[1]; //# of outputs
@@ -44,9 +30,9 @@ void create_circuit(string filename, bool update){
 
 	int *ts;	
 	ts = new int[q];
-	read_task_schedule(ts, q, filename);
+	read_task_schedule(ts, q, infilename);
 
-#if !MAIN
+
 	//Set up input and output tokens/labels.
 	block *labels = (block*) malloc(sizeof(block) * 2 * n);
 	block *exlabels = (block*) malloc(sizeof(block) * n);
@@ -54,64 +40,83 @@ void create_circuit(string filename, bool update){
 	block *outputbs = (block*) malloc(sizeof(block) * m);
 	int *inp = (int *) malloc(sizeof(int) * n);
 	countToN(inp, n);
-#endif
+
+
 	int outputs[m];
-#if !MAIN
+
 	OutputMap outputMap = outputbs;
 	InputLabels inputLabels = labels;
 
 	//Actually build a circuit. Alternatively, this circuit could be read
 	//from a file.
 	createInputLabels(labels, n);
-	createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
 	startBuilding(&garbledCircuit, &garblingContext);
-#endif
+
 
 	int i, j = 0;
 	
 	int input[2], output;
 
 	for(i = 0; i < q; i++)
-	{ 			
-		if (gate_list[i].input[0].is_port) input[0] = gate_list[i].input[0].index;
-		else input[0] = ts[gate_list[i].input[0].index] + n;
+	{
+		int gindex = ts[i];
+
+
+		if (gate_list[gindex].input[0].is_port)
+			input[0] = gate_list[gindex].input[0].index;
+		else 
+			input[0] = ts[gate_list[gindex].input[0].index] + n;
 		
-		if (gate_list[i].input[1].is_port) input[1] = gate_list[i].input[1].index;
-		else input[1] = ts[gate_list[i].input[1].index] + n;
+		if (gate_list[gindex ].input[1].is_port)
+			input[1] = gate_list[gindex].input[1].index;
+		else 
+			input[1] = ts[gate_list[gindex].input[1].index] + n;
 		
-		output = ts[gate_list[i].id] + n;
+		output = i + n;
 		
-		if (gate_list[i].type == NOR)
-#if !MAIN	
+
+		if (gate_list[gindex ].type == NOR)
+		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-#else
 			cout << "NOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
-#endif
-		else if (gate_list[i].type == XOR)
-#if !MAIN
+		}
+		else if (gate_list[gindex ].type == XOR)
+		{
 			XORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-#else
 			cout << "XOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
-#endif
-		else if (gate_list[i].type == IV)
-#if !MAIN
+		}
+		else if (gate_list[gindex ].type == IV)
+		{
 			NOTGate(&garbledCircuit, &garblingContext, input[0],  output);
-#else
-			cout << "IV\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
-#endif
-			
-		if(gate_list[i].output.is_port) {
-			outputs[j] = gate_list[i].id + n;
+			cout << "IV\t" << input[0] << "\t" << -1 << "\t" << output << endl;
+		}
+
+		if(gate_list[gindex ].output.is_port)
+		{
+			outputs[j] = gate_list[gindex].id + n;
 			j++;
 		}
 	}
-#if MAIN
+
 	cout << "outputs ";
 	for(i = 0; i < j; i++)
 		cout << outputs[i] << " ";
 	cout << endl;
-#endif	
-#if !MAIN	
-	finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
-#endif
+
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
+	writeCircuitToFile(&garbledCircuit, outfilename.c_str());
+}
+
+
+int main(int argc, char** argv)
+{
+	if(argc < 3)
+	{
+		cout << "Enter infilename outfilename" << endl;
+		return -1;
+	}
+	string infilename(argv[1]);
+	string outfilename(argv[2]);
+	read_netlist(infilename, outfilename, 1);
 }

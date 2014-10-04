@@ -16,10 +16,14 @@
 
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <wmmintrin.h>
 #include "../include/aes.h"
-
+/*
 inline void AES_128_Key_Expansion(const unsigned char *userkey, void *key) {
 	__m128i x0, x1, x2;
 	__m128i *kp = (__m128i *) key;
@@ -193,5 +197,9 @@ inline void AES_ecb_decrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
 			blks[i] = _mm_aesdec_si128(blks[i], sched[j]);
 	for (i = 0; i < nblks; ++i)
 		blks[i] = _mm_aesdeclast_si128(blks[i], sched[j]);
-}
+}*/
 
+
+#ifdef __cplusplus
+}
+#endif

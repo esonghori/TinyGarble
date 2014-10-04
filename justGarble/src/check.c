@@ -23,9 +23,12 @@
 #include "../include/util.h"
 #include "../include/justGarble.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels,
-		OutputMap outputMap, int check(int *a, int *out, int s)) {
+int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap, int (*check)(int *, int *, int ))
+{
 
 	int i, j;
 	int n = garbledCircuit->n;
@@ -73,4 +76,8 @@ unsigned long timedEval(GarbledCircuit *garbledCircuit, InputLabels inputLabels)
 	return sum;
 
 }
+
+#ifdef __cplusplus
+}
+#endif
 

@@ -20,6 +20,10 @@
 #include "../include/common.h"
 #include "../include/justGarble.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void DKCipher1Init(block *key, DKCipherContext *c) {
 	AES_set_encrypt_key((unsigned char *) key, 128, &c->K);
 }
@@ -63,3 +67,6 @@ void DKCipherKSSDecrypt(block *ctext, block *ptext, block tweak,
 	*ptext = xorBlocks(*ctext ,temp);
 }
 
+#ifdef __cplusplus
+}
+#endif

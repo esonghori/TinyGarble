@@ -22,6 +22,10 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static __m128i cur_seed;
 
 int countToN(int *a, int n) {
@@ -98,3 +102,6 @@ block randomBlock() {
 
 }
 
+#ifdef __cplusplus
+}
+#endif
