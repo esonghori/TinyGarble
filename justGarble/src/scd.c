@@ -28,6 +28,10 @@
 #include <malloc.h>
 #include <sys/stat.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 long fsize(const char *filename) {
 	struct stat st;
 
@@ -37,7 +41,7 @@ long fsize(const char *filename) {
 	return -1;
 }
 
-int writeCircuitToFile(GarbledCircuit *garbledCircuit, char *fileName) {
+int writeCircuitToFile(GarbledCircuit *garbledCircuit, const char *fileName) {
 	FILE *f = fopen(fileName, "wb");
 	if (f == NULL) {
 		printf("Write: Error in opening file.\n");
@@ -76,7 +80,7 @@ int writeCircuitToFile(GarbledCircuit *garbledCircuit, char *fileName) {
 	return SUCCESS;
 }
 
-int readCircuitFromFile(GarbledCircuit *garbledCircuit, char *fileName) {
+int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName) {
 	int fs = fsize(fileName);
 	FILE *f = fopen(fileName, "rb");
 	if (f == NULL) {
@@ -87,7 +91,7 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, char *fileName) {
 	void *storage = malloc(fs);
 	fread(storage, fs, 1, f);
 	fclose(f);
-	buffer->data = storage;
+	buffer->data = (char *)storage;
 	buffer->size = fs;
 	msgpack_unpacked msg;
 	msgpack_unpacked_init(&msg);
@@ -143,3 +147,6 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, char *fileName) {
 	return SUCCESS;
 }
 
+#ifdef __cplusplus
+}
+#endif

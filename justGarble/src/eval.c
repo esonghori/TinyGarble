@@ -28,6 +28,10 @@
 #include <malloc.h>
 #include <wmmintrin.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef TRUNCATED
 int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 		OutputMap outputMap) {
@@ -213,5 +217,10 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 	}
 	return 0;
 
+}
+#endif
+
+
+#ifdef __cplusplus
 }
 #endif

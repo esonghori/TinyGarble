@@ -6,8 +6,8 @@
 
 using namespace std;
 
-void write_gate_list(GarbledGate* , int *, string );
-void read_gate_list(GarbledGate*& , int *, string );
+void write_gate_list(GarbledGateS* , int *, string );
+void read_gate_list(GarbledGateS*& , int *, string );
 void write_task_schedule(int *, int , string );
 void read_task_schedule(int *, int , string );
 

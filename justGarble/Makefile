@@ -11,28 +11,27 @@ DEBOBJDIR = $(DEBDIR)/$(OBJDIR)
 TESTDIR   = test
 IDIR =include
 
-CC=gcc 
-CFLAGS= -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result -march=native -I$(IDIR) -I$(MSGPACK) -L$(MSGPACK)/.libs
+CC=g++ 
+CFLAGS= -std=c++11 -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result -march=native -I$(IDIR) -I$(MSGPACK) -L$(MSGPACK)/.libs
 DBGCFLAGS = -g -O0 -DDEBUG
 RELCFLAGS = -O3 -DNDEBUG
 
-SOURCES  := $(wildcard $(SRCDIR)/*.c)
+SOURCES  := $(wildcard $(SRCDIR)/*.c) 
 RELOBJECT := $(SOURCES:$(SRCDIR)/%.c=$(RELOBJDIR)/%.o)
 DEBOBJECT := $(SOURCES:$(SRCDIR)/%.c=$(DEBOBJDIR)/%.o)
-
 
 AES = AESFullTest
 LARGE = LargeCircuitTest
 FILE = CircuitFileTest
-JUSTAND = JustAnd
+GARBLEFILE = GarbleFile
 rm = rm --f
 
-.PHONY: all release debug check_msgpack prep clean
+.PHONY: all release debug readnetlist check_msgpack prep clean
 
-all: release debug
+all: release debug 
 
-release: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out $(RELDIR)/$(JUSTAND).out
-debug:   check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out $(DEBDIR)/$(JUSTAND).out 
+release: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out $(RELDIR)/$(GARBLEFILE).out  readnetlistrel
+debug:   check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out $(DEBDIR)/$(GARBLEFILE).out  readnetlistdeb
 
 
 #check MSGPACK library
@@ -51,8 +50,8 @@ $(RELDIR)/$(LARGE).out: $(RELOBJECT) $(TESTDIR)/$(LARGE).c
 $(RELDIR)/$(FILE).out: $(RELOBJECT) $(TESTDIR)/$(FILE).c
 	$(CC) $(RELOBJECT) $(TESTDIR)/$(FILE).c -o $(RELDIR)/$(FILE).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
-$(RELDIR)/$(JUSTAND).out: $(RELOBJECT) $(TESTDIR)/$(JUSTAND).c
-	$(CC) $(RELOBJECT) $(TESTDIR)/$(JUSTAND).c -o $(RELDIR)/$(JUSTAND).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
+$(RELDIR)/$(GARBLEFILE).out: $(RELOBJECT) $(TESTDIR)/$(GARBLEFILE).c
+	$(CC) $(RELOBJECT) $(TESTDIR)/$(GARBLEFILE).c -o $(RELDIR)/$(GARBLEFILE).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
 $(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
@@ -67,17 +66,23 @@ $(DEBDIR)/$(LARGE).out: $(DEBOBJECT) $(TESTDIR)/$(LARGE).c
 $(DEBDIR)/$(FILE).out: $(DEBOBJECT) $(TESTDIR)/$(FILE).c
 	$(CC) $(DEBOBJECT) $(TESTDIR)/$(FILE).c -o $(DEBDIR)/$(FILE).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
-$(DEBDIR)/$(JUSTAND).out: $(DEBOBJECT) $(TESTDIR)/$(JUSTAND).c
-	$(CC) $(DEBOBJECT) $(TESTDIR)/$(JUSTAND).c -o $(DEBDIR)/$(JUSTAND).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+$(DEBDIR)/$(GARBLEFILE).out: $(DEBOBJECT)  $(TESTDIR)/$(GARBLEFILE).c
+	$(CC) $(DEBOBJECT) $(TESTDIR)/$(GARBLEFILE).c -o $(DEBDIR)/$(GARBLEFILE).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
 
 $(DEBOBJECT): $(DEBOBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
 
+readnetlistrel:
+	cd readNetlist && $(MAKE) release
+
+readnetlistdeb:
+	cd readNetlist && $(MAKE) debug	
 
 prep:
-	@mkdir -p $(RELDIR) $(DEBDIR) 
+	@mkdir -p $(RELDIR) 
+	@mkdir -p $(DEBDIR) 
 	@mkdir -p $(RELDIR)/$(OBJDIR) 
 	@mkdir -p $(DEBDIR)/$(OBJDIR) 
 
@@ -86,10 +91,10 @@ clean:
 	@$(rm) $(RELDIR)/$(AES).out
 	@$(rm) $(RELDIR)/$(LARGE).out
 	@$(rm) $(RELDIR)/$(FILE).out
-	@$(rm) $(RELDIR)/$(JUSTAND).out
+	@$(rm) $(RELDIR)/$(GARBLEFILE).out
 	@$(rm) $(DEBOBJECT)
 	@$(rm) $(DEBDIR)/$(AES).out
 	@$(rm) $(DEBDIR)/$(LARGE).out
 	@$(rm) $(DEBDIR)/$(FILE).out
-	@$(rm) $(DEBDIR)/$(JUSTAND).out
-
+	@$(rm) $(DEBDIR)/$(GARBLEFILE).out
+	cd readNetlist && $(MAKE) clean
