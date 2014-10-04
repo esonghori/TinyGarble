@@ -8,16 +8,20 @@
 #include "file_io.h" 
 #include "create_circuit.h"
 
+#define MAIN 0
+
+#if !MAIN
 #include "../include/garble.h"
 #include "../include/common.h"
 #include "../include/gates.h"
 #include "../include/justGarble.h"
+#endif
 
 using namespace std;
 
-#if 0
+#if MAIN
 int main(int argc, char** argv){
-	string filename("sum_synth_128");
+	string filename(argv[1]);
 	create_circuit(filename, 1);
 }
 #endif
@@ -38,10 +42,11 @@ void create_circuit(string filename, bool update){
 	int q = circuit_size[2]; //# of gates
 	int r = n + q + 2;
 
-	int *task_schedule;	
-	task_schedule = new int[q];
-	read_task_schedule(task_schedule, q, filename);
+	int *ts;	
+	ts = new int[q];
+	read_task_schedule(ts, q, filename);
 
+#if !MAIN
 	//Set up input and output tokens/labels.
 	block *labels = (block*) malloc(sizeof(block) * 2 * n);
 	block *exlabels = (block*) malloc(sizeof(block) * n);
@@ -49,8 +54,9 @@ void create_circuit(string filename, bool update){
 	block *outputbs = (block*) malloc(sizeof(block) * m);
 	int *inp = (int *) malloc(sizeof(int) * n);
 	countToN(inp, n);
+#endif
 	int outputs[m];
-
+#if !MAIN
 	OutputMap outputMap = outputbs;
 	InputLabels inputLabels = labels;
 
@@ -59,29 +65,53 @@ void create_circuit(string filename, bool update){
 	createInputLabels(labels, n);
 	createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
 	startBuilding(&garbledCircuit, &garblingContext);
+#endif
 
-	int i, k, j = 0;
+	int i, j = 0;
+	
+	int input[2], output;
 
-	for(k = 0; k < q; k++)
-	{ 	
-		i = task_schedule[k];
+	for(i = 0; i < q; i++)
+	{ 			
+		if (gate_list[i].input[0].is_port) input[0] = gate_list[i].input[0].index;
+		else input[0] = ts[gate_list[i].input[0].index] + n;
+		
+		if (gate_list[i].input[1].is_port) input[1] = gate_list[i].input[1].index;
+		else input[1] = ts[gate_list[i].input[1].index] + n;
+		
+		output = ts[gate_list[i].id] + n;
 		
 		if (gate_list[i].type == NOR)
-			NORGate(&garbledCircuit, &garblingContext, gate_list[i].input[0].index, gate_list[i].input[1].index, gate_list[i].output.index);
-			//cout << "NOR" << endl;
+#if !MAIN	
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+#else
+			cout << "NOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+#endif
 		else if (gate_list[i].type == XOR)
-			NORGate(&garbledCircuit, &garblingContext, gate_list[i].input[0].index, gate_list[i].input[1].index, gate_list[i].output.index);
-			//cout << "XOR" << endl;
+#if !MAIN
+			XORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+#else
+			cout << "XOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+#endif
 		else if (gate_list[i].type == IV)
-			NOTGate(&garbledCircuit, &garblingContext, gate_list[i].input[0].index,  gate_list[i].output.index);
-			//cout << "IV" << endl;
+#if !MAIN
+			NOTGate(&garbledCircuit, &garblingContext, input[0],  output);
+#else
+			cout << "IV\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+#endif
 			
 		if(gate_list[i].output.is_port) {
-			outputs[j] = gate_list[i].id;
+			outputs[j] = gate_list[i].id + n;
 			j++;
 		}
 	}
-	
+#if MAIN
+	cout << "outputs ";
+	for(i = 0; i < j; i++)
+		cout << outputs[i] << " ";
+	cout << endl;
+#endif	
+#if !MAIN	
 	finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
-
+#endif
 }
