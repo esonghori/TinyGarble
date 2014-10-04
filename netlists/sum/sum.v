@@ -18,7 +18,7 @@ module sum
 	output [N/CC-1:0] c;
 	
 	reg [N/CC-1:0] rc;
-	reg [1:0] carry_on; 
+	reg carry_on; 
 
 	assign c = rc;
 
