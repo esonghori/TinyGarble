@@ -1,3 +1,3 @@
 #!/bin/bash
 
-design_vision -f ../script/sum.dcsh
+design_vision -no_gui -f sum.dcsh
