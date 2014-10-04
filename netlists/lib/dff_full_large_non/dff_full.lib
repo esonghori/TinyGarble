@@ -1,4 +1,4 @@
-library(dff_nor_xor){
+library(dff_full){
 
 	/* unit attributes */
 	time_unit : "1ns";
@@ -20,7 +20,7 @@ library(dff_nor_xor){
 		}
 		pin(Z){
 			direction : output;
-			function : "AB";
+			function : "A B";
 			timing(){
 				related_pin : "A";
 			}
@@ -42,7 +42,7 @@ library(dff_nor_xor){
 		}
 		pin(Z){
 			direction : output;
-			function : "A'B";
+			function : "A' B";
 			timing(){
 				related_pin : "A";
 			}
@@ -64,7 +64,7 @@ library(dff_nor_xor){
 		}
 		pin(Z){
 			direction : output;
-			function : "(AB)'";
+			function : "(A B)'";
 			timing(){
 				related_pin : "A";
 			}
@@ -86,7 +86,7 @@ library(dff_nor_xor){
 		}
 		pin(Z){
 			direction : output;
-			function : "(A'B)'";
+			function : "(A' B)'";
 			timing(){
 				related_pin : "A";
 			}

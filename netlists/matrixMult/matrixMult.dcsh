@@ -8,9 +8,9 @@ analyze -format verilog matrixMult_N_M_$cc.v
 # m =32
 foreach n {3 5 8 16} {
 foreach cc {0 1 2 3} {
-elaborate matrixMult_N_M_$cc -architecture verilog -library DEFAULT -update -parameters $n 32
+elaborate matrixMult_N_M_$cc -architecture verilog -library DEFAULT -update -parameters $n,32
 set_max_area 0
 compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output matrixMult_syn_$n_32_$cc.v
+write -hierarchy -format verilog -output matrixMult_syn_$n\_32_$cc.v
 }
 }
