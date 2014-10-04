@@ -1,14 +1,7 @@
-#include <iostream>
-#include <string.h>
-#include <cstdlib>
-#include <sys/time.h>
-#include "scheduling.h"
-#include "parse_netlist.h"
-#include "file_io.h"
+#include "include/read_netlist.h"
 
-using namespace std;
 
-void top_sort(GarbledGate *G, int no_task, int  *index){
+void top_sort(GarbledGateS *G, int no_task, int  *index){
 
 	int i, j, k, max;
 	int *sl;
@@ -39,7 +32,7 @@ void schedule(int no_core, int  **core, string filename){
 
 	int i, j, max;
 	
-	GarbledGate *G; 
+	GarbledGateS *G; 
 	int circuit_size[3];
 	int no_task;	
 	read_gate_list(G, circuit_size, filename);
@@ -83,7 +76,7 @@ void schedule(int no_core, int  **core, string filename){
 	delete [] index, p0, p1, core_index, core_busy;
 }
 
-void arrange_in_time(GarbledGate *G, int no_task, int no_core, int  **core, int  **core_x, int* end_time){
+void arrange_in_time(GarbledGateS *G, int no_task, int no_core, int  **core, int  **core_x, int* end_time){
 	int i, j, k;
 	
 	int *cti, *cur_task_done, *core_end_time, *core_completed;

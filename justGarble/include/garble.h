@@ -17,21 +17,27 @@
 */
 
 
-#ifndef garble
-#define garble 0
+#ifndef GARBLE_H_
+#define GARBLE_H_
 
 #include "common.h"
 #include "justGarble.h"
 #include "dkcipher.h"
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define FIXED_ZERO_GATE 0
 #define FIXED_ONE_GATE 15
+
 #define ANDGATE 8
 #define ORGATE 14
+#define NORGATE 1
 #define XORGATE 6
 #define NOTGATE 5
+
+
 
 #define TABLE_ID -1
 #define XOR_ID -2
@@ -42,6 +48,10 @@ int createNewWire(Wire *in, GarblingContext *garblingContext, int id);
 int getNextWire(GarblingContext *garblingContext);
 void removeGarbledCircuit(GarbledCircuit *garbledCircuit);
 
-unsigned long startTime, endTime;
+//unsigned long startTime, endTime;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

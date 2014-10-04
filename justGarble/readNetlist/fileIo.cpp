@@ -1,13 +1,7 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include "parse_netlist.h"
-#include "file_io.h"
+#include "include/read_netlist.h"
 
-using namespace std;
-
-void write_gate_list(GarbledGate* gate_list, int *circuit_size, string filename){
-	string dfilename("dat/"+filename+"_gate_list.dat");
+void write_gate_list(GarbledGateS* gate_list, int *circuit_size, string filename){
+	string dfilename(filename+"_gate_list.dat");
 	fstream gate_file(dfilename.c_str(),ios::out|ios::binary|ios::trunc);
 	if (!gate_file.good()){ 
 		cout << "Error creating dat file" << endl;
@@ -35,8 +29,8 @@ void write_gate_list(GarbledGate* gate_list, int *circuit_size, string filename)
 	return;	
 }
 
-void read_gate_list(GarbledGate *&gate_list, int *circuit_size, string filename){
-	string dfilename("dat/"+filename+"_gate_list.dat");
+void read_gate_list(GarbledGateS *&gate_list, int *circuit_size, string filename){
+	string dfilename(filename+"_gate_list.dat");
 	fstream gate_file(dfilename.c_str(),ios::in|ios::binary);
 	if (!gate_file.good()){ 
 		cout << "Specified dat file not found" << endl;
@@ -49,7 +43,7 @@ void read_gate_list(GarbledGate *&gate_list, int *circuit_size, string filename)
 	}
 	
 	int no_of_gates = circuit_size[2];
-	gate_list = new GarbledGate[no_of_gates];
+	gate_list = new GarbledGateS[no_of_gates];
 	
 	for (int i = 0; i < no_of_gates; i++){
 		gate_file >> gate_list[i].input[0].is_port;
@@ -67,7 +61,7 @@ void read_gate_list(GarbledGate *&gate_list, int *circuit_size, string filename)
 }
 
 void write_task_schedule(int *task_schedule, int no_task, string filename){
-	string dfilename("dat/"+filename+"_task_list.dat");
+	string dfilename(filename+"_task_list.dat");
 	fstream task_file(dfilename.c_str(),ios::out|ios::binary|ios::trunc);
 	if (!task_file.good()){ 
 		cout << "Error creating dat file" << endl;
@@ -80,7 +74,7 @@ void write_task_schedule(int *task_schedule, int no_task, string filename){
 }
 
 void read_task_schedule(int *task_schedule, int no_task, string filename){
-	string dfilename("dat/"+filename+"_task_list.dat");
+	string dfilename(filename+"_task_list.dat");
 	fstream task_file(dfilename.c_str(),ios::in|ios::binary);
 	if (!task_file.good()){ 
 		cout << "Specified dat file not found" << endl;
