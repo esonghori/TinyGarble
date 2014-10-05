@@ -28,7 +28,7 @@ void top_sort(GarbledGateS *G, int no_task, int  *index){
 	delete [] sl;
 }
 
-void schedule(int no_core, int  **core, string filename){
+void schedule(int no_core, int  **core, const string &filename){
 
 	int i, j, max;
 	

@@ -32,10 +32,16 @@ extern "C" {
 #define FIXED_ONE_GATE 15
 
 #define ANDGATE 8
+#define ANDNGATE 4
+#define NANDGATE 7
+#define NANDNGATE 11
 #define ORGATE 14
+#define ORNGATE 13
 #define NORGATE 1
+#define NORNGATE 2
 #define XORGATE 6
-#define NOTGATE 5
+#define XNORGATE 9
+#define NOTGATE 12
 
 
 
@@ -48,6 +54,7 @@ int createNewWire(Wire *in, GarblingContext *garblingContext, int id);
 int getNextWire(GarblingContext *garblingContext);
 void removeGarbledCircuit(GarbledCircuit *garbledCircuit);
 
+int blockEqual(block a, block b);
 //unsigned long startTime, endTime;
 
 #ifdef __cplusplus

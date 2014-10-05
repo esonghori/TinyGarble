@@ -65,11 +65,18 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 		garbledGate = &(garbledCircuit->garbledGates[i]);
 
 #ifdef FREE_XOR
-		if (garbledGate->type == XORGATE) {
+		if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE)
+		{
 			garbledCircuit->wires[garbledGate->output].label =
 			xorBlocks(garbledCircuit->wires[garbledGate->input0].label,
 					garbledCircuit->wires[garbledGate->input1].label);
-		} else {
+		}
+		else if (garbledGate->type == NOTGATE)
+		{
+			garbledCircuit->wires[garbledGate->output].label = garbledCircuit->wires[garbledGate->input0].label;
+		}
+		else
+		{
 #endif
 
 			A = DOUBLE(garbledCircuit->wires[garbledGate->input0].label);
@@ -170,11 +177,18 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 	for (i = 0; i < garbledCircuit->q; i++) {
 		garbledGate = &(garbledCircuit->garbledGates[i]);
 #ifdef FREE_XOR
-		if (garbledGate->type == XORGATE) {
+		if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE)
+		{
 			garbledCircuit->wires[garbledGate->output].label =
 			xorBlocks(garbledCircuit->wires[garbledGate->input0].label,
 					garbledCircuit->wires[garbledGate->input1].label);
-		} else {
+		}
+		else if (garbledGate->type == NOTGATE)
+		{
+			garbledCircuit->wires[garbledGate->output].label = garbledCircuit->wires[garbledGate->input0].label;
+		}
+		else
+		{
 #endif
 		A = DOUBLE(garbledCircuit->wires[garbledGate->input0].label);
 		B = DOUBLE(DOUBLE(garbledCircuit->wires[garbledGate->input1].label));
