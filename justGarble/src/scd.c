@@ -126,7 +126,7 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName) {
 	}
 	for (i = 0; i < q; i++) {
 		garbledCircuit->garbledGates[i].id = 0;
-		garbledCircuit->garbledGates[i].output = n+i+1;
+		garbledCircuit->garbledGates[i].output = n+i;//TODO:was n+1
        }
 	for (i = 0; i < q; i++) {
 		++p;
