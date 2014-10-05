@@ -1,22 +1,19 @@
 #include "include/read_netlist.h"
 
-
-
-extern "C" {
 #include "../include/garble.h"
 #include "../include/common.h"
 #include "../include/gates.h"
 #include "../include/justGarble.h"
-}
 
-void read_netlist(string infilename, string outfilename, bool update)
+void read_netlist(const string &infilename, const string &outfilename, bool update)
 {
 	GarbledCircuit garbledCircuit;
 	GarblingContext garblingContext;
 
-	if (update){	
+	if (update)
+	{
 		parse_netlist(infilename);
-		}
+	}
 		
 	GarbledGateS *gate_list;
 	int circuit_size[3];	
@@ -28,10 +25,16 @@ void read_netlist(string infilename, string outfilename, bool update)
 	int q = circuit_size[2]; //# of gates
 	int r = n + q + 2;
 
-	int *ts;	
+	int *ts;
+	int *ts_1;
 	ts = new int[q];
+	ts_1 = new int[q];
 	read_task_schedule(ts, q, infilename);
 
+	for(int i=0;i<q;i++)
+	{
+		ts_1[ts[i]] = i;
+	}
 
 	//Set up input and output tokens/labels.
 	block *labels = (block*) malloc(sizeof(block) * 2 * n);
@@ -54,53 +57,97 @@ void read_netlist(string infilename, string outfilename, bool update)
 	startBuilding(&garbledCircuit, &garblingContext);
 
 
-	int i, j = 0;
-	
+	int i;
+	int outputNum = 0;
 	int input[2], output;
 
 	for(i = 0; i < q; i++)
 	{
 		int gindex = ts[i];
 
+		GarbledGateS & g = gate_list[gindex];
 
-		if (gate_list[gindex].input[0].is_port)
-			input[0] = gate_list[gindex].input[0].index;
+		if (g.input[0].is_port)
+			input[0] = g.input[0].index;
 		else 
-			input[0] = ts[gate_list[gindex].input[0].index] + n;
+			input[0] = ts_1[g.input[0].index] + n;
 		
-		if (gate_list[gindex ].input[1].is_port)
-			input[1] = gate_list[gindex].input[1].index;
+		if (g.input[1].is_port || g.input[1].index < 0)
+			input[1] = g.input[1].index;
 		else 
-			input[1] = ts[gate_list[gindex].input[1].index] + n;
-		
+			input[1] = ts_1[g.input[1].index] + n;
+
 		output = i + n;
 		
+		assert(input[0] < output);
+		assert(input[1] < output || g.type == NOTGATE);
 
-		if (gate_list[gindex ].type == NOR)
+
+		if (g.type == ANDGATE)
+		{
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "AND\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == ANDNGATE)
+		{
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "ANDN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == NANDGATE)
+		{
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "NAND\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == NANDNGATE)
+		{
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "NANDN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == ORGATE)
+		{
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "OR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == ORNGATE)
+		{
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "ORN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == NORGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 			cout << "NOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
-		else if (gate_list[gindex ].type == XOR)
+		else if (g.type == NORNGATE)
+		{
+			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "NORN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == XORGATE)
 		{
 			XORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 			cout << "XOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
-		else if (gate_list[gindex ].type == IV)
+		else if (g.type == XNORGATE)
+		{
+			XORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			cout << "XNOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+		}
+		else if (g.type == NOTGATE)
 		{
 			NOTGate(&garbledCircuit, &garblingContext, input[0],  output);
-			cout << "IV\t" << input[0] << "\t" << -1 << "\t" << output << endl;
+			cout << "IV\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 
-		if(gate_list[gindex ].output.is_port)
+		if(g.output.is_port)
 		{
-			outputs[j] = gate_list[gindex].id + n;
-			j++;
+			outputs[outputNum++] = g.id + n;
 		}
 	}
 
+	assert(outputNum==m);
 	cout << "outputs ";
-	for(i = 0; i < j; i++)
+	for(i = 0; i < outputNum; i++)
 		cout << outputs[i] << " ";
 	cout << endl;
 

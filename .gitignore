@@ -5,13 +5,15 @@ alib-52/
 *.syn
 *.pvl
 *.svf
+*.out
+*.o
 *~
 .~*#
 .nfs*
 justGarble/bin
 justGarble/debug
-justGarble/aesCircuit
-justGarble/justAnd
+justGarble/readNetlist/bin
+justGarble/readNetlist/debug
 .cproject
 .project
 .metadata
