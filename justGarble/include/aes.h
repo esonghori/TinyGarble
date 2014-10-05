@@ -49,8 +49,8 @@
  *
  */
 
-#ifndef _AES_
-#define _AES_
+#ifndef _AES_H_
+#define _AES_H_
 
 #include <xmmintrin.h>              /* SSE instructions and _mm_malloc */
 #include <emmintrin.h>              /* SSE2 instructions               */
@@ -90,7 +90,8 @@ typedef struct { __m128i rd_key[15]; int rounds; } AES_KEY;
     kp[idx+2] = x0; tmp = x3
 
 
-inline void AES_128_Key_Expansion(const unsigned char *userkey, void *key) {
+inline void AES_128_Key_Expansion(const unsigned char *userkey, void *key)
+{
 	__m128i x0, x1, x2;
 	__m128i *kp = (__m128i *) key;
 	kp[0] = x0 = _mm_loadu_si128((__m128i *) userkey);
@@ -117,7 +118,8 @@ inline void AES_128_Key_Expansion(const unsigned char *userkey, void *key) {
 	kp[10] = x0;
 }
 
-inline void AES_192_Key_Expansion(const unsigned char *userkey, void *key) {
+inline void AES_192_Key_Expansion(const unsigned char *userkey, void *key)
+{
 	__m128i x0, x1, x2, x3, tmp, *kp = (__m128i *) key;
 	kp[0] = x0 = _mm_loadu_si128((__m128i *) userkey);
 	tmp = x3 = _mm_loadu_si128((__m128i *) (userkey + 16));
@@ -128,7 +130,8 @@ inline void AES_192_Key_Expansion(const unsigned char *userkey, void *key) {
 	EXPAND192_STEP(10, 64);
 }
 
-inline void AES_256_Key_Expansion(const unsigned char *userkey, void *key) {
+inline void AES_256_Key_Expansion(const unsigned char *userkey, void *key)
+{
 	__m128i x0, x1, x2, x3, *kp = (__m128i *) key;
 	kp[0] = x0 = _mm_loadu_si128((__m128i *) userkey);
 	kp[1] = x3 = _mm_loadu_si128((__m128i *) (userkey + 16));
@@ -162,7 +165,8 @@ inline void AES_256_Key_Expansion(const unsigned char *userkey, void *key) {
 }
 
 inline int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
-		AES_KEY *key) {
+		AES_KEY *key)
+{
 	if (bits == 128) {
 		AES_128_Key_Expansion(userKey, key);
 	} else if (bits == 192) {
@@ -175,7 +179,10 @@ inline int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
 #endif
 	return 0;
 }
-inline void AES_set_decrypt_key_fast(AES_KEY *dkey, const AES_KEY *ekey) {
+
+
+inline void AES_set_decrypt_key_fast(AES_KEY *dkey, const AES_KEY *ekey)
+{
 	int j = 0;
 	int i = ROUNDS(ekey);
 #if (OCB_KEY_LEN == 0)
@@ -186,16 +193,20 @@ inline void AES_set_decrypt_key_fast(AES_KEY *dkey, const AES_KEY *ekey) {
 		dkey->rd_key[i--] = _mm_aesimc_si128(ekey->rd_key[j++]);
 	dkey->rd_key[i] = ekey->rd_key[j];
 }
+
 inline int AES_set_decrypt_key(const unsigned char *userKey, const int bits,
-		AES_KEY *key) {
+		AES_KEY *key)
+{
 	AES_KEY temp_key;
 	AES_set_encrypt_key(userKey, bits, &temp_key);
 	AES_set_decrypt_key_fast(key, &temp_key);
 	return 0;
 }
 
+
 inline void AES_encrypt(const unsigned char *in, unsigned char *out,
-		const AES_KEY *key) {
+		const AES_KEY *key)
+{
 	int j, rnds = ROUNDS(key);
 	const __m128i *sched = ((__m128i *) (key->rd_key));
 	__m128i tmp = _mm_load_si128((__m128i *) in);
@@ -205,8 +216,10 @@ inline void AES_encrypt(const unsigned char *in, unsigned char *out,
 	tmp = _mm_aesenclast_si128(tmp, sched[j]);
 	_mm_store_si128((__m128i *) out, tmp);
 }
+
 inline void AES_decrypt(const unsigned char *in, unsigned char *out,
-		const AES_KEY *key) {
+		const AES_KEY *key)
+{
 	int j, rnds = ROUNDS(key);
 	const __m128i *sched = ((__m128i *) (key->rd_key));
 	__m128i tmp = _mm_load_si128((__m128i *) in);
@@ -216,7 +229,9 @@ inline void AES_decrypt(const unsigned char *in, unsigned char *out,
 	tmp = _mm_aesdeclast_si128(tmp, sched[j]);
 	_mm_store_si128((__m128i *) out, tmp);
 }
-inline void AES_ecb_encrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
+
+inline void AES_ecb_encrypt_blks(block *blks, unsigned nblks, AES_KEY *key)
+{
 	unsigned i, j, rnds = ROUNDS(key);
 	const __m128i *sched = ((__m128i *) (key->rd_key));
 	for (i = 0; i < nblks; ++i)
@@ -227,7 +242,9 @@ inline void AES_ecb_encrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
 	for (i = 0; i < nblks; ++i)
 		blks[i] = _mm_aesenclast_si128(blks[i], sched[j]);
 }
-inline void AES_ecb_decrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
+
+inline void AES_ecb_decrypt_blks(block *blks, unsigned nblks, AES_KEY *key)
+{
 	unsigned i, j, rnds = ROUNDS(key);
 	const __m128i *sched = ((__m128i *) (key->rd_key));
 	for (i = 0; i < nblks; ++i)

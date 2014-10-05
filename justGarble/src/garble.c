@@ -129,7 +129,7 @@ int startBuilding(GarbledCircuit *garbledCircuit,
 		GarblingContext *garblingContext) {
 	garblingContext->gateIndex = 0;
 	garblingContext->tableIndex = 0;
-	garblingContext->wireIndex = garbledCircuit->n + 1; //TODO: Why it is n+1? 1 is kept for NOT gates?
+	garblingContext->wireIndex = garbledCircuit->n; //TODO: it was n + 1
 	block key = randomBlock();
 	garblingContext->R =
 			xorBlocks(garbledCircuit->wires[0].label0, garbledCircuit->wires[0].label1);
@@ -656,13 +656,13 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 	garbledCircuit->id = getFreshId();
 
 	for(i=0;i<2*garbledCircuit->n;i+=2) {
-		garbledCircuit->wires[i/2].id = i+1;
+		garbledCircuit->wires[i/2].id = i; // TODO: was n+1
 		garbledCircuit->wires[i/2].label0 = inputLabels[i];
 		garbledCircuit->wires[i/2].label1 = inputLabels[i+1];
 	}
 	garbledTable = garbledCircuit->garbledTable;
 	garblingContext.gateIndex = 0;
-	garblingContext.wireIndex = garbledCircuit->n + 1;
+	garblingContext.wireIndex = garbledCircuit->n; // TODO: was n+1
 	block key = randomBlock();
 	garblingContext.R = xorBlocks(garbledCircuit->wires[0].label0, garbledCircuit->wires[0].label1);
 	garbledCircuit->globalKey = key;

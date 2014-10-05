@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <assert.h>
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
@@ -24,7 +26,7 @@ using namespace boost;
 #define DEBUG_SCHEDULER 0
 
 
-enum gate_type {XOR, IV, NOR};
+
 
 typedef struct net{
 	bool is_port;
@@ -34,26 +36,28 @@ typedef struct net{
 typedef struct GarbledGateS{
 	net input[2]; 
 	net output;
-	int id, type;
+	int id;
+	short type;
 } GarbledGateS;
 
 typedef struct GarbledGateString{
 	string input[2];
 	string output;
-	int id, type;
+	int id;
+	short type;
 } GarbledGateString;
 
 
-void write_gate_list(GarbledGateS* , int *, string );
-void read_gate_list(GarbledGateS*& , int *, string );
-void write_task_schedule(int *, int , string );
-void read_task_schedule(int *, int , string );
-void read_netlist(string infilename, string outfilename, bool update);
-void parse_netlist(string);
-int search (string , string *, int, int);
+void write_gate_list(GarbledGateS* , int *, const string &);
+void read_gate_list(GarbledGateS*& , int *, const string &);
+void write_task_schedule(int *, int , const string &);
+void read_task_schedule(int *, int , const string &);
+void read_netlist(const string &infilename, const string &outfilename, bool update);
+void parse_netlist(const string&);
+int search (const string &target, const vector<string> & pool, int guess, int size);
 int get_weight(int );
 void top_sort(GarbledGateS *, int, int  *);
-void schedule(int, int **, string);
+void schedule(int, int **, const string&);
 void arrange_in_time(GarbledGateS *, int, int, int  **, int  **, int *);
 void quickSort(int *, int *, int, int);
 int get_min_index(int *, int);

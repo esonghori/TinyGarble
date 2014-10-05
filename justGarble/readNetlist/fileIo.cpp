@@ -1,6 +1,6 @@
 #include "include/read_netlist.h"
 
-void write_gate_list(GarbledGateS* gate_list, int *circuit_size, string filename){
+void write_gate_list(GarbledGateS* gate_list, int *circuit_size, const string &filename){
 	string dfilename(filename+"_gate_list.dat");
 	fstream gate_file(dfilename.c_str(),ios::out|ios::binary|ios::trunc);
 	if (!gate_file.good()){ 
@@ -29,7 +29,7 @@ void write_gate_list(GarbledGateS* gate_list, int *circuit_size, string filename
 	return;	
 }
 
-void read_gate_list(GarbledGateS *&gate_list, int *circuit_size, string filename){
+void read_gate_list(GarbledGateS *&gate_list, int *circuit_size, const string &filename){
 	string dfilename(filename+"_gate_list.dat");
 	fstream gate_file(dfilename.c_str(),ios::in|ios::binary);
 	if (!gate_file.good()){ 
@@ -60,7 +60,7 @@ void read_gate_list(GarbledGateS *&gate_list, int *circuit_size, string filename
 	return;	
 }
 
-void write_task_schedule(int *task_schedule, int no_task, string filename){
+void write_task_schedule(int *task_schedule, int no_task, const string &filename){
 	string dfilename(filename+"_task_list.dat");
 	fstream task_file(dfilename.c_str(),ios::out|ios::binary|ios::trunc);
 	if (!task_file.good()){ 
@@ -73,7 +73,7 @@ void write_task_schedule(int *task_schedule, int no_task, string filename){
 
 }
 
-void read_task_schedule(int *task_schedule, int no_task, string filename){
+void read_task_schedule(int *task_schedule, int no_task, const string &filename){
 	string dfilename(filename+"_task_list.dat");
 	fstream task_file(dfilename.c_str(),ios::in|ios::binary);
 	if (!task_file.good()){ 

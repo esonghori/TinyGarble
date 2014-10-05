@@ -1,7 +1,8 @@
 #include "include/read_netlist.h"
 
+#include "../include/garble.h"
 
-void parse_netlist(string filename){
+void parse_netlist(const string &filename){
 
 	fstream fin;
 	string vfilename(filename);
@@ -13,31 +14,34 @@ void parse_netlist(string filename){
 	
 	int i;
 	
- 	string inport_list[MAX_NO_OF_INPUTS];
+ 	vector<string> inport_list;
 	int inport_index = 0, no_of_bits = 0, no_of_inports;
 	bool is_inport = 0;
 	
- 	string outport_list[MAX_NO_OF_OUTPUTS];
+ 	vector<string> outport_list;
 	int outport_index = 0,  no_of_outports;
 	bool is_outport = 0;
 	
-	GarbledGateString gate_list_string[MAX_NO_OF_GATES];
+	vector<GarbledGateString> gate_list_string;
 	int gate_index = 0, no_of_gates;
 	bool store_input0, store_input1, store_output;
 	
-	string net_list[MAX_NO_OF_GATES];
+	vector<string> net_list;
 	
 	string buf("_");
 	
-	while (buf.compare("endmodule")){
+	while (buf.compare("endmodule"))
+	{
 		getline(fin, buf);		
 		char_separator<char> sep(" ,;.()");		
 		tokenizer<char_separator<char> > tok(buf, sep);
 		
-		BOOST_FOREACH(string str, tok){
-	
-			if(is_inport){
-				if (str.at(0) =='['){
+		BOOST_FOREACH(string str, tok)
+		{
+			if(is_inport)
+			{
+				if (str.at(0) =='[')
+				{
 					tokenizer<> bits(str);
 					tokenizer<>::iterator beg = bits.begin(); 
 					string bits_str(*beg);
@@ -46,16 +50,29 @@ void parse_netlist(string filename){
 				}
 				
 				if (no_of_bits)
+				{
 					for(i = 0; i < no_of_bits; i++)
-						inport_list[inport_index++] = str + "[" + to_string(i) + "]";
-				else inport_list[inport_index++] = str;
+					{
+						inport_list.push_back(str + "[" + to_string(i) + "]");
+						inport_index++;
+					}
+				}
+				else
+				{
+					inport_list.push_back(str);
+					inport_index++;
+				}
 				no_of_bits = 0;
 				is_inport = 0;
 			}
-			else if(!str.compare("input")) is_inport = 1;
-			
-			else if(is_outport){
-				if (str.at(0) =='['){
+			else if(!str.compare("input"))
+			{
+				is_inport = 1;
+			}
+			else if(is_outport)
+			{
+				if (str.at(0) =='[')
+				{
 					tokenizer<> bits(str);
 					tokenizer<>::iterator beg = bits.begin(); 
 					string bits_str(*beg);
@@ -64,49 +81,132 @@ void parse_netlist(string filename){
 				}
 				
 				if (no_of_bits)
+				{
 					for(i = 0; i < no_of_bits; i++)
-						outport_list[outport_index++] = str + "[" + to_string(i) + "]";
-				else outport_list[outport_index++] = str;
+					{
+						outport_list.push_back(str + "[" + to_string(i) + "]");
+						outport_index++;
+					}
+				}
+				else
+				{
+					outport_list.push_back(str);
+					outport_index++;
+				}
 				no_of_bits = 0;
 				is_outport = 0;
 			}
-			else if(!str.compare("output")) is_outport = 1;
-				
-			else if(!str.compare("XOR")){
-				gate_list_string[gate_index].type = XOR;
-				gate_list_string[gate_index].id = gate_index;
+			else if(!str.compare("output"))
+			{
+				is_outport = 1;
 			}
-			
-			else if(!str.compare("IV")){
-				gate_list_string[gate_index].type = IV;
-				gate_list_string[gate_index].id = gate_index;
-				gate_list_string[gate_index].input[1] = "-1";
+			else if(!str.compare("AND"))
+			{
+				GarbledGateString g;
+				g.type = ANDGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
 			}
-			
-			else if(!str.compare("NOR")){
-				gate_list_string[gate_index].type = NOR;
-				gate_list_string[gate_index].id = gate_index;
+			else if(!str.compare("ANDN"))
+			{
+				GarbledGateString g;
+				g.type = ANDNGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
 			}
-			
-			else if(store_input0){
-				gate_list_string[gate_index].input[0] = str;
+			else if(!str.compare("NAND"))
+			{
+				GarbledGateString g;
+				g.type = NANDGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("NANDN"))
+			{
+				GarbledGateString g;
+				g.type = NANDNGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("OR"))
+			{
+				GarbledGateString g;
+				g.type = ORGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("ORN"))
+			{
+				GarbledGateString g;
+				g.type = ORNGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("NOR"))
+			{
+				GarbledGateString g;
+				g.type = NORGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("NORN"))
+			{
+				GarbledGateString g;
+				g.type = NORNGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("XOR"))
+			{
+				GarbledGateString g;
+				g.type = XORGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("XNOR"))
+			{
+				GarbledGateString g;
+				g.type = XNORGATE;
+				g.id = gate_index;
+				gate_list_string.push_back(g);
+			}
+			else if(!str.compare("IV"))
+			{
+				GarbledGateString g;
+				g.type = NOTGATE;
+				g.id = gate_index;
+				g.input[1] = "-1";
+				gate_list_string.push_back(g);
+			}
+			else if(store_input0)
+			{
+				gate_list_string.back().input[0] = str;
 				store_input0 = 0;
 			}
-			else if (!str.compare("A")) store_input0 = 1;
-			
-			else if(store_input1){
-				gate_list_string[gate_index].input[1] = str;
+			else if (!str.compare("A"))
+			{
+				store_input0 = 1;
+			}
+			else if(store_input1)
+			{
+				gate_list_string.back().input[1] = str;
 				store_input1 = 0;
 			}
-			else if (!str.compare("B")) store_input1 = 1;
-			
-			else if(store_output){
-				gate_list_string[gate_index].output = str;
-				net_list[gate_index] = str;
+			else if (!str.compare("B"))
+			{
+				store_input1 = 1;
+			}
+			else if(store_output)
+			{
+				gate_list_string.back().output = str;
+				net_list.push_back(str);
 				gate_index++;
 				store_output = 0;
 			}
-			else if (!str.compare("Z") || !str.compare("Y")) store_output = 1;
+			else if (!str.compare("Z") || !str.compare("Y"))
+			{
+				store_output = 1;
+			}
 			
 		}
 	}
@@ -193,7 +293,8 @@ void parse_netlist(string filename){
 	
 }
 
-int search (string target, string *pool, int guess, int size){
+int search (const string &target, const vector<string> & pool, int guess, int size)
+{
 	int i, k, index = -1;
 	
 	if(guess < size) k = guess;
@@ -212,7 +313,9 @@ int search (string target, string *pool, int guess, int size){
 
 int get_weight(int type){
 	int weight;
-	if ((type == XOR) || (type == IV)) weight = 1;
-	else if ((type == NOR)) weight = 5;
+	if ((type == XORGATE) || (type == NOTGATE))
+		weight = 1;
+	else if ((type == NORGATE))
+		weight = 5;
 	return weight;
 }

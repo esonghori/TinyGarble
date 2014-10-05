@@ -23,10 +23,17 @@
 #include <stdio.h>
 #include <time.h>
 #include "../include/justGarble.h"
-
+#include "../include/garble.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+int checkfn(int *input, int *outputs, int n) {
+	outputs[0] = (input[0])?input[2]:input[1];
+	return outputs[0];
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -49,22 +56,54 @@ int main(int argc, char* argv[])
 	block *outputMap = (block *)malloc(sizeof(block *)*m);
 
 
+	garbleCircuit(&gc, inputLabels, outputMap);
+	checkCircuit(&gc, inputLabels, outputMap, &(checkfn));
+
+	for(int k=0;k<gc.r; k++)
+	{
+		if(blockEqual(gc.wires[k].label, gc.wires[k].label0))
+		{
+			printf("Wire%d: 0\n", k);
+		}
+		else if(blockEqual(gc.wires[k].label, gc.wires[k].label1))
+		{
+			printf("Wire%d: 1\n", k);
+		}
+		else
+		{
+			printf("Wire%d: undefined\n", k);
+		}
+	}
+
+
 	int timeGarble[TIMES];
 	int timeEval[TIMES];
 	double timeGarbleMedians[TIMES];
 	double timeEvalMedians[TIMES];
+	double totalTimeGarbleMedians[TIMES];
+	double totalTimeEvalMedians[TIMES];
 
-	for (j = 0; j < TIMES; j++) {
-		for (i = 0; i < TIMES; i++) {
+	for (j = 0; j < TIMES; j++)
+	{
+		for (i = 0; i < TIMES; i++)
+		{
 			timeGarble[i] = garbleCircuit(&gc, inputLabels, outputMap);
 			timeEval[i] = timedEval(&gc, inputLabels);
 		}
-		timeGarbleMedians[j] = ((double) median(timeGarble, TIMES))/ gc.q;
-		timeEvalMedians[j] = ((double) median(timeEval, TIMES)) / gc.q;
+		totalTimeGarbleMedians[j] = ((double) median(timeGarble, TIMES));
+		timeGarbleMedians[j] = totalTimeGarbleMedians[j] / gc.q;
+
+		totalTimeEvalMedians[j] =  ((double) median(timeEval, TIMES));
+		timeEvalMedians[j] =  totalTimeEvalMedians[j] / gc.q;
 	}
+	double totalGarblingTime = doubleMean(totalTimeGarbleMedians, TIMES);
 	double garblingTime = doubleMean(timeGarbleMedians, TIMES);
+	double totalEvalTime = doubleMean(totalTimeEvalMedians, TIMES);
 	double evalTime = doubleMean(timeEvalMedians, TIMES);
-	printf("%lf %lf\n", garblingTime, evalTime);
+
+
+	printf("total(g,e): %lf %lf\n", garblingTime, evalTime);
+	printf("pg(g,e): %lf %lf\n", totalGarblingTime, totalEvalTime);
 	return 0;
 }
 
