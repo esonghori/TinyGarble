@@ -30,7 +30,7 @@ extern "C" {
 
 int *final;
 
-#define AES_CIRCUIT_FILE_NAME ".test/netlists/aesCircuit"
+#define AES_CIRCUIT_FILE_NAME "./readNetlist/netlists/aesCircuit.scd"
 
 void buildAESCircuit() {
 	srand(time(NULL));
