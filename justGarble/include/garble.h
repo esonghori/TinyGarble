@@ -42,6 +42,7 @@ extern "C" {
 #define XORGATE 6
 #define XNORGATE 9
 #define NOTGATE 12
+#define DFFGATE -1
 
 
 

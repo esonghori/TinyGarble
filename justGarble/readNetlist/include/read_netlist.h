@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <unistd.h>
+#include <assert.h>
 #include <sys/time.h>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
@@ -26,7 +27,7 @@ using namespace boost;
 #define DEBUG_SCHEDULER 0
 
 
-
+#define VERBOSE
 
 typedef struct net{
 	bool is_port;
@@ -48,8 +49,8 @@ typedef struct GarbledGateString{
 } GarbledGateString;
 
 
-void write_gate_list(GarbledGateS* , int *, const string &);
-void read_gate_list(GarbledGateS*& , int *, const string &);
+void write_circuit_list(GarbledGateS*, GarbledGateS*, int *, const string &);
+void read_circuit_list(GarbledGateS*&, GarbledGateS*&, int *, const string &);
 void write_task_schedule(int *, int , const string &);
 void read_task_schedule(int *, int , const string &);
 void read_netlist(const string &infilename, const string &outfilename, bool update);
@@ -62,5 +63,6 @@ void arrange_in_time(GarbledGateS *, int, int, int  **, int  **, int *);
 void quickSort(int *, int *, int, int);
 int get_min_index(int *, int);
 int get_max(int *, int);
+string typetoStrGate(short itype);
 
 #endif

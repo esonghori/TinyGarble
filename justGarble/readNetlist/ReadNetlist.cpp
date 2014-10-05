@@ -16,9 +16,10 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 	}
 		
 	GarbledGateS *gate_list;
-	int circuit_size[3];	
+	GarbledGateS *dff_list;
+	int circuit_size[4];
 		
-	read_gate_list(gate_list, circuit_size, infilename);
+	read_circuit_list(gate_list, dff_list, circuit_size, infilename);
 
 	int n = circuit_size[0]; //# of inputs
 	int m = circuit_size[1]; //# of outputs
@@ -80,76 +81,71 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 		output = i + n;
 		
 		assert(input[0] < output);
-		assert(input[1] < output || g.type == NOTGATE);
-
+		assert(input[1] < output || (g.type == NOTGATE || g.type == DFFGATE));
 
 		if (g.type == ANDGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "AND\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == ANDNGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "ANDN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == NANDGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "NAND\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == NANDNGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "NANDN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == ORGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "OR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == ORNGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "ORN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == NORGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "NOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == NORNGATE)
 		{
 			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "NORN\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == XORGATE)
 		{
 			XORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "XOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == XNORGATE)
 		{
 			XORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
-			cout << "XNOR\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 		else if (g.type == NOTGATE)
 		{
 			NOTGate(&garbledCircuit, &garblingContext, input[0],  output);
-			cout << "IV\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
 		}
 
+#ifdef VERBOSE
+		cout << typetoStrGate(g.type) << "\t" << input[0] << "\t" << input[1] << "\t" << output << endl;
+#endif
 		if(g.output.is_port)
 		{
 			outputs[outputNum++] = g.id + n;
 		}
 	}
 
-	assert(outputNum==m);
+#ifdef VERBOSE
 	cout << "outputs ";
 	for(i = 0; i < outputNum; i++)
 		cout << outputs[i] << " ";
 	cout << endl;
+#endif
+
+	assert(outputNum==m);
+
 
 	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
 	writeCircuitToFile(&garbledCircuit, outfilename.c_str());
