@@ -1,8 +1,8 @@
 #include "include/read_netlist.h"
 
 
-void top_sort(GarbledGateS *G, int no_task, int  *index){
-
+void top_sort(GarbledGateS *G, int no_task, int  *index)
+{
 	int i, j, k, max;
 	int *sl;
 	
@@ -12,9 +12,11 @@ void top_sort(GarbledGateS *G, int no_task, int  *index){
 	for (i = 0; i < no_task; i++)
 		index[i] = i;
 	
-	for (i = no_task-1; i >= 0; i--){
+	for (i = no_task-1; i >= 0; i--)
+	{
 		max = 0;
-		for (j = i+1; j < no_task; j++){
+		for (j = i+1; j < no_task; j++)
+		{
 			if (G[j].input[0].index == i)
 				if (sl[j] > max) max = sl[j];
 			if (G[j].input[1].index == i)
@@ -32,12 +34,15 @@ void schedule(int no_core, int  **core, const string &filename){
 
 	int i, j, max;
 	
-	GarbledGateS *G; 
-	int circuit_size[3];
+	GarbledGateS *G;
+	GarbledGateS *D;
+	int circuit_size[4];
 	int no_task;	
-	read_gate_list(G, circuit_size, filename);
+	read_circuit_list(G, D, circuit_size, filename);
+
 	no_task = circuit_size[2];
 	
+
 	int *index;	
 	index = new int[no_task];
 	top_sort(G, no_task, index);

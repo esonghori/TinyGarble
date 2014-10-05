@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
 
 	//Write the created circuit to a file
-	writeCircuitToFile(&garbledCircuit, "test/netlists/test.scd");
+	writeCircuitToFile(&garbledCircuit, "./readNetlist/netlists/test.scd");
 
 	//Create an empty garbled circuit data structure
 	GarbledCircuit garbledCircuit2;
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
 	//Read a circuit from a file and initialize the garbled circuit data
 	//structure with it. Note that this step does not perform actual
 	//garbling. It just creates empty garbled tables and space for wires and gates.
-	readCircuitFromFile(&garbledCircuit2, "test/netlists/test.scd");
+	readCircuitFromFile(&garbledCircuit2, "./readNetlist/netlists/test.scd");
 
 	//Actually garble the circuit created from the file.
 	garbleCircuit(&garbledCircuit2, inputLabels, outputMap);

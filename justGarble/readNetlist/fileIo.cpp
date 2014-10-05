@@ -1,61 +1,94 @@
 #include "include/read_netlist.h"
 
-void write_gate_list(GarbledGateS* gate_list, int *circuit_size, const string &filename){
-	string dfilename(filename+"_gate_list.dat");
-	fstream gate_file(dfilename.c_str(),ios::out|ios::binary|ios::trunc);
-	if (!gate_file.good()){ 
-		cout << "Error creating dat file" << endl;
+void write_circuit_list(GarbledGateS* gate_list, GarbledGateS* dff_list, int *circuit_size, const string &filename)
+{
+	string dfilename(filename+".cl");
+	fstream circuit_file(dfilename.c_str(),ios::out|ios::binary|ios::trunc);
+	if (!circuit_file.good())
+	{
+		cout << "Error creating circuit list (.cl) file" << endl;
 		exit(1); 
 	}
 	
-	for (int i = 0; i < 3; i++){
-		gate_file << circuit_size[i] << "\n";
+	for (int i = 0; i < 4; i++)
+	{
+		circuit_file << circuit_size[i] << "\n";
 	}
 	
 	int no_of_gates = circuit_size[2];
+	int no_of_dffs = circuit_size[3];
 	
-	for (int i = 0; i < no_of_gates; i++){
-		gate_file << gate_list[i].input[0].is_port << "\n";
-		gate_file << gate_list[i].input[0].index << "\n";
-		gate_file << gate_list[i].input[1].is_port << "\n";
-		gate_file << gate_list[i].input[1].index << "\n";
-		gate_file << gate_list[i].output.is_port << "\n";
-		gate_file << gate_list[i].output.index << "\n";
-		gate_file << gate_list[i].id << "\n";		
-		gate_file << gate_list[i].type << "\n";
+	for (int i = 0; i < no_of_gates; i++)
+	{
+		circuit_file << gate_list[i].input[0].is_port << "\n";
+		circuit_file << gate_list[i].input[0].index << "\n";
+		circuit_file << gate_list[i].input[1].is_port << "\n";
+		circuit_file << gate_list[i].input[1].index << "\n";
+		circuit_file << gate_list[i].output.is_port << "\n";
+		circuit_file << gate_list[i].output.index << "\n";
+		circuit_file << gate_list[i].id << "\n";
+		circuit_file << gate_list[i].type << "\n";
 	}
-	gate_file.close();
+	for (int i = 0; i < no_of_dffs; i++)
+	{
+		circuit_file << dff_list[i].input[0].is_port << "\n";
+		circuit_file << dff_list[i].input[0].index << "\n";
+		circuit_file << dff_list[i].output.is_port << "\n";
+		circuit_file << dff_list[i].output.index << "\n";
+		circuit_file << dff_list[i].id << "\n";
+		circuit_file << dff_list[i].type << "\n";
+	}
+	circuit_file.close();
 	
 	return;	
 }
 
-void read_gate_list(GarbledGateS *&gate_list, int *circuit_size, const string &filename){
-	string dfilename(filename+"_gate_list.dat");
-	fstream gate_file(dfilename.c_str(),ios::in|ios::binary);
-	if (!gate_file.good()){ 
-		cout << "Specified dat file not found" << endl;
+void read_circuit_list(GarbledGateS *&gate_list, GarbledGateS *&dff_list, int *circuit_size, const string &filename)
+{
+
+	string dfilename(filename+".cl");
+	fstream circuit_file(dfilename.c_str(),ios::in|ios::binary);
+	if (!circuit_file.good()){
+		cout << "circuit list (.cl) file not found" << endl;
 		exit(1); 
 	}
-	gate_file.seekg (0, ios::beg);
+	circuit_file.seekg (0, ios::beg);
 	
-	for (int i = 0; i < 3; i++){
-		gate_file >> circuit_size[i];
+	for (int i = 0; i < 4; i++)
+	{
+		circuit_file >> circuit_size[i];
 	}
 	
 	int no_of_gates = circuit_size[2];
+	int no_of_dffs = circuit_size[3];
 	gate_list = new GarbledGateS[no_of_gates];
-	
-	for (int i = 0; i < no_of_gates; i++){
-		gate_file >> gate_list[i].input[0].is_port;
-		gate_file >> gate_list[i].input[0].index;
-		gate_file >> gate_list[i].input[1].is_port;
-		gate_file >> gate_list[i].input[1].index;
-		gate_file >> gate_list[i].output.is_port;
-		gate_file >> gate_list[i].output.index;
-		gate_file >> gate_list[i].id;		
-		gate_file >> gate_list[i].type;
+	dff_list = new GarbledGateS[no_of_dffs];
+
+	for (int i = 0; i < no_of_gates; i++)
+	{
+		circuit_file >> gate_list[i].input[0].is_port;
+		circuit_file >> gate_list[i].input[0].index;
+		circuit_file >> gate_list[i].input[1].is_port;
+		circuit_file >> gate_list[i].input[1].index;
+		circuit_file >> gate_list[i].output.is_port;
+		circuit_file >> gate_list[i].output.index;
+		circuit_file >> gate_list[i].id;
+		circuit_file >> gate_list[i].type;
 	}
-	gate_file.close();
+
+	
+	for (int i = 0; i < no_of_dffs; i++)
+	{
+		circuit_file >> dff_list[i].input[0].is_port;
+		circuit_file >> dff_list[i].input[0].index;
+		circuit_file >> dff_list[i].output.is_port;
+		circuit_file >> dff_list[i].output.index;
+		circuit_file >> dff_list[i].id;
+		circuit_file >> dff_list[i].type;
+	}
+
+
+	circuit_file.close();
 	
 	return;	
 }

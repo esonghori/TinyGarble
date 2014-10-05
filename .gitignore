@@ -7,6 +7,8 @@ alib-52/
 *.svf
 *.out
 *.o
+*.cl
+*.dat
 *~
 .~*#
 .nfs*
@@ -16,4 +18,5 @@ justGarble/readNetlist/bin
 justGarble/readNetlist/debug
 .cproject
 .project
+.settings
 .metadata
