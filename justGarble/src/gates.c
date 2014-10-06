@@ -21,12 +21,37 @@
 #include "../include/gates.h"
 #include "../include/justGarble.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int ANDGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
 		int input0, int input1, int output) {
 	int vals[] = { 0, 0, 0, 1 };
 	return genericGate(garbledCircuit, garblingContext, input0, input1, output,
 			vals, ANDGATE);
 }
+
+int ORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
+		int input0, int input1, int output) {
+	int vals[] = { 0, 1, 1, 1 };
+	return genericGate(garbledCircuit, garblingContext, input0, input1, output,
+			vals, ORGATE);
+}
+
+int NORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output) {
+	int vals[] = { 1, 0, 0, 0 };
+	return genericGate(garbledCircuit, garblingContext, input0, input1, output,
+			vals, NORGATE);
+}
+
+int NOTGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
+		int input0, int output) {
+	int vals[] = { 1, 0, 1, 0 };
+	return genericGate(garbledCircuit, garblingContext, input0, 0, output, vals,
+			NOTGATE);
+}
+
 
 #ifdef FREE_XOR
 
@@ -67,14 +92,7 @@ int XORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
 }
 #endif
 
-//TODO: Add NORGATE NANDGATE
 
-int ORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
-		int input0, int input1, int output) {
-	int vals[] = { 0, 1, 1, 1 };
-	return genericGate(garbledCircuit, garblingContext, input0, input1, output,
-			vals, ORGATE);
-}
 
 int fixedZeroWire(GarbledCircuit *garbledCircuit,
 		GarblingContext *garblingContext) {
@@ -100,12 +118,7 @@ int fixedOneWire(GarbledCircuit *garbledCircuit,
 	return ind;
 }
 
-int NOTGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
-		int input0, int output) {
-	int vals[] = { 1, 0, 1, 0 };
-	return genericGate(garbledCircuit, garblingContext, 0, input0, output, vals,
-			NOTGATE);
-}
+
 
 #ifdef ROW_REDUCTION
 
@@ -154,4 +167,9 @@ int genericGate(GarbledCircuit *garbledCircuit,
 	return garbledGate->id;
 }
 
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
