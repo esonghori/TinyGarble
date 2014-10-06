@@ -1,3 +1,3 @@
 #!/bin/bash
 
-design_vision -f ../script/mult.dcsh
+design_vision -no_gui -f mult.dcsh
