@@ -2,18 +2,20 @@
 echo "$1"
 
 
-grep -c 'AND' $1
-grep -c 'ANDN' $1
-grep -c 'NAND' $1
-grep -c 'NANDN' $1
+grep -w -c 'AND' $1
+grep -w -c 'ANDN' $1
+grep -w -c 'NAND' $1
+grep -w -c 'NANDN' $1
 
-grep -c 'OR' $1
-grep -c 'ORN' $1
-grep -c 'NOR' $1
-grep -c 'NORN' $1
+grep -w -c 'OR' $1
+grep -w -c 'ORN' $1
+grep -w -c 'NOR' $1
+grep -w -c 'NORN' $1
 
-grep -c 'XOR' $1
-grep -c 'XNOR' $1
+grep -w -c 'XOR' $1
+grep -w -c 'XNOR' $1
 
-grep -c 'IV' $1 
+grep -w -c 'IV' $1
+
+grep -w -c 'DFF' $1
 
