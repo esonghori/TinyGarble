@@ -1,0 +1,53 @@
+
+module hamming_N16000_CC16000 ( clk, rst, x, y, o );
+  input [0:0] x;
+  input [0:0] y;
+  output [13:0] o;
+  input clk, rst;
+  wire   n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15;
+  wire   [13:0] oglobal;
+
+  DFF \oglobal_reg[13]  ( .D(o[13]), .CLK(clk), .RST(rst), .Q(oglobal[13]) );
+  DFF \oglobal_reg[12]  ( .D(o[12]), .CLK(clk), .RST(rst), .Q(oglobal[12]) );
+  DFF \oglobal_reg[11]  ( .D(o[11]), .CLK(clk), .RST(rst), .Q(oglobal[11]) );
+  DFF \oglobal_reg[10]  ( .D(o[10]), .CLK(clk), .RST(rst), .Q(oglobal[10]) );
+  DFF \oglobal_reg[9]  ( .D(o[9]), .CLK(clk), .RST(rst), .Q(oglobal[9]) );
+  DFF \oglobal_reg[8]  ( .D(o[8]), .CLK(clk), .RST(rst), .Q(oglobal[8]) );
+  DFF \oglobal_reg[7]  ( .D(o[7]), .CLK(clk), .RST(rst), .Q(oglobal[7]) );
+  DFF \oglobal_reg[6]  ( .D(o[6]), .CLK(clk), .RST(rst), .Q(oglobal[6]) );
+  DFF \oglobal_reg[5]  ( .D(o[5]), .CLK(clk), .RST(rst), .Q(oglobal[5]) );
+  DFF \oglobal_reg[4]  ( .D(o[4]), .CLK(clk), .RST(rst), .Q(oglobal[4]) );
+  DFF \oglobal_reg[3]  ( .D(o[3]), .CLK(clk), .RST(rst), .Q(oglobal[3]) );
+  DFF \oglobal_reg[2]  ( .D(o[2]), .CLK(clk), .RST(rst), .Q(oglobal[2]) );
+  DFF \oglobal_reg[1]  ( .D(o[1]), .CLK(clk), .RST(rst), .Q(oglobal[1]) );
+  DFF \oglobal_reg[0]  ( .D(o[0]), .CLK(clk), .RST(rst), .Q(oglobal[0]) );
+  NANDN U5 ( .A(n6), .B(oglobal[12]), .Z(n2) );
+  XNOR U6 ( .A(oglobal[13]), .B(n2), .Z(o[13]) );
+  XOR U7 ( .A(x[0]), .B(y[0]), .Z(n3) );
+  XOR U8 ( .A(n3), .B(oglobal[0]), .Z(o[0]) );
+  AND U9 ( .A(n3), .B(oglobal[0]), .Z(n7) );
+  AND U10 ( .A(n7), .B(oglobal[1]), .Z(n8) );
+  AND U11 ( .A(n8), .B(oglobal[2]), .Z(n9) );
+  AND U12 ( .A(n9), .B(oglobal[3]), .Z(n10) );
+  AND U13 ( .A(n10), .B(oglobal[4]), .Z(n11) );
+  AND U14 ( .A(n11), .B(oglobal[5]), .Z(n12) );
+  AND U15 ( .A(n12), .B(oglobal[6]), .Z(n13) );
+  AND U16 ( .A(n13), .B(oglobal[7]), .Z(n14) );
+  AND U17 ( .A(n14), .B(oglobal[8]), .Z(n15) );
+  AND U18 ( .A(n15), .B(oglobal[9]), .Z(n4) );
+  XOR U19 ( .A(n4), .B(oglobal[10]), .Z(o[10]) );
+  AND U20 ( .A(n4), .B(oglobal[10]), .Z(n5) );
+  XOR U21 ( .A(n5), .B(oglobal[11]), .Z(o[11]) );
+  NAND U22 ( .A(n5), .B(oglobal[11]), .Z(n6) );
+  XNOR U23 ( .A(oglobal[12]), .B(n6), .Z(o[12]) );
+  XOR U24 ( .A(n7), .B(oglobal[1]), .Z(o[1]) );
+  XOR U25 ( .A(n8), .B(oglobal[2]), .Z(o[2]) );
+  XOR U26 ( .A(n9), .B(oglobal[3]), .Z(o[3]) );
+  XOR U27 ( .A(n10), .B(oglobal[4]), .Z(o[4]) );
+  XOR U28 ( .A(n11), .B(oglobal[5]), .Z(o[5]) );
+  XOR U29 ( .A(n12), .B(oglobal[6]), .Z(o[6]) );
+  XOR U30 ( .A(n13), .B(oglobal[7]), .Z(o[7]) );
+  XOR U31 ( .A(n14), .B(oglobal[8]), .Z(o[8]) );
+  XOR U32 ( .A(n15), .B(oglobal[9]), .Z(o[9]) );
+endmodule
+

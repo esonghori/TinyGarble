@@ -2,17 +2,23 @@
 
 module hamming
 #(
-	parameter N=1600
+	parameter N=1600,
+	parameter CC=1
 )
 (
+	clk,
+	rst,
 	x,
 	y,
 	o
 );
-	input[N-1:0] x;
-	input[N-1:0] y;
-	output reg[log2(N)-1:0] o;
+	parameter M = N/CC; 
 
+	input clk;
+	input rst;
+	input[M-1:0] x;
+	input[M-1:0] y;
+	output[log2(N)-1:0] o;
 
 	function integer log2;
 		input [31:0] value;
@@ -21,43 +27,73 @@ module hamming
 	endfunction
 
 
-	wire[N-1:0] xy;
+	reg[log2(N)-1:0] oglobal;
+	reg[log2(M)-1:0] olocal;
+	wire[M-1:0] xy;
 	integer i, j;
 	
 
 	assign xy = x^y;
 
 
-	generate if (N <= 1024) 
+
+	generate
+	if (M <= 1024) 
 		always@(*)
 		begin
-			for(i=0;i<N;i=i+1)
+			olocal = 'b0;
+			for(i=0;i<M;i=i+1)
 			begin
-		 		o = o + xy[i];
+		 		olocal = olocal + xy[i];
 			end
 		end
-	else if(N%1024 == 0)
+	else if(M%1024 == 0)
 		always@(*)
 		begin
-			for(i=0;i<N/1024;i=i+1)
+			olocal = 'b0;
+			for(i=0;i<M/1024;i=i+1)
 				for(j=0;j<1024;j = j + 1)
 				begin
-			 		o = o + xy[1024*i+j];
+			 		olocal = olocal + xy[1024*i+j];
 				end
 		end
 	else
 		always@(*)
 		begin
-			for(i=0;i<N/1024;i=i+1)
+			olocal = 'b0;
+			for(i=0;i<M/1024;i=i+1)
 				for(j=0;j<1024;j = j + 1)
 				begin
-			 		o = o + xy[1024*i+j];
+			 		olocal = olocal + xy[1024*i+j];
 				end
-			for(i=N-N%1024;i<N;i = i + 1)
+			for(i=M-M%1024;i<M;i = i + 1)
 			begin
-			 		o = o + xy[i];
+			 		olocal = olocal + xy[i];
 			end
 		end
 	endgenerate
+
+
+	generate
+	if(CC>1)
+		always@(posedge clk or posedge rst)
+		begin
+			if(rst)
+			begin
+				oglobal <= 0;
+			end
+			else
+			begin
+				oglobal <= o;
+			end
+		end
+	else
+		always@(*)
+		begin
+			oglobal <= 'b0;
+		end
+	endgenerate
+
+	assign o = oglobal + olocal;
 
 endmodule
