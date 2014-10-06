@@ -16,15 +16,22 @@
 
 */
 
+#ifndef CHECK_H_
+#define CHECK_H_
 
 #include "garble.h"
 
-#ifndef CHECK_H_
-#define CHECK_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap,
-		int check(int *a, int *output, int s));
+		int (*check)(int *a, int *output, int s));
 unsigned long timedEval(GarbledCircuit *garbledCircuit, InputLabels inputLabels);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CHECK_H_ */
 

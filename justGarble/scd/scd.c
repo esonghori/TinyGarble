@@ -16,6 +16,9 @@
 
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -166,3 +169,7 @@ int main(){
     printf("Original and recovered circuits are different!\n");
    
 }
+
+#ifdef __cplusplus
+}
+#endif

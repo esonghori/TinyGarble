@@ -19,12 +19,21 @@
 #ifndef GATES_H_
 #define GATES_H_
 
-inline int ANDGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output);
-inline int ORGate(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
-inline int XORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int ANDGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output);
+int ORGate(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int NORGate(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int XORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output);
 int genericGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,  int input0, int input1, int output, int *vals, int type);
 int fixedZeroWire(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext);
 int fixedOneWire(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext);
 int NOTGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,  int input0, int output);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GATES_H_ */

@@ -17,14 +17,22 @@
 */
 
 
-#ifndef common
-#define common 1
+#ifndef COMMON_H_
+#define COMMON_H_
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <smmintrin.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 typedef __m128i block;
 #define xorBlocks(x,y) _mm_xor_si128(x,y)
 #define zero_block() _mm_setzero_si128()
@@ -104,12 +112,14 @@ static inline block RIGHTSHIFT(block bl) {
                          "emr" (in2.lo64), "emr"(in2.hi64),     \
                          "0" (in1.lo64), "1" (in1.hi64));
 
+/*
 char *__ct;
 short *__msks;
 int *__mski;
 int __itc;
 char *__itc_src;
 char *__itc_dst;
+*/
 
 void inline TRUNCATE(char *X);
 
@@ -130,5 +140,8 @@ void inline TRUNC_COPY(char *X, char *Y);
 #define RUNNING_TIME_ITER 100
 block randomBlock();
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
