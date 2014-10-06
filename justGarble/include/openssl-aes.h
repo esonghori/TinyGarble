@@ -48,8 +48,8 @@
  * ====================================================================
  *
  */
-#ifndef HEADER_AES_H
-#define HEADER_AES_H
+#ifndef OPENSSL_AES_H_
+#define OPENSSL_AES_H_
 
 #include <openssl/opensslconf.h>
 

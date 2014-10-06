@@ -48,6 +48,10 @@
 #include "common.h"
 #include "emmintrin.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int countToN(int *a, int N);
 int dbgBlock(block a);
 #define RDTSC ({unsigned long long res;  unsigned hi, lo;   __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi)); res =  ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );res;})
@@ -57,5 +61,9 @@ block randomBlock();
 int median(int A[], int n);
 double doubleMean(double A[], int n);
 void srand_sse(unsigned int seed);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* UTIL_H_ */

@@ -24,9 +24,13 @@
 #include <time.h>
 #include "../include/justGarble.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int *final;
 
-#define AES_CIRCUIT_FILE_NAME "./aesCircuit"
+#define AES_CIRCUIT_FILE_NAME "./readNetlist/netlists/aesCircuit.scd"
 
 void buildAESCircuit() {
 	srand(time(NULL));
@@ -53,7 +57,7 @@ void buildAESCircuit() {
 	int i;
 
 	createInputLabels(labels, n);
-	createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
 	startBuilding(&garbledCircuit, &garblingContext);
 
 	countToN(addKeyInputs, 256);
@@ -83,7 +87,7 @@ void buildAESCircuit() {
 	}
 
 	final = mixColumnOutputs;
-	finishBuilding(&garbledCircuit, &garblingContext, outputMap, final);
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, final);
 	writeCircuitToFile(&garbledCircuit, AES_CIRCUIT_FILE_NAME);
 }
 
@@ -119,3 +123,6 @@ int main() {
 	return 0;
 }
 
+#ifdef __cplusplus
+}
+#endif
