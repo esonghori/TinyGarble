@@ -19,6 +19,10 @@
 #ifndef CIRCUITS_H_
 #define CIRCUITS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int SHLCircuit(GarbledCircuit *gc, GarblingContext *garblingContext, int n, int* inputs, int* outputs);
 int SHRCircuit(GarbledCircuit *gc, GarblingContext *garblingContext, int n, int* inputs, int* outputs);
 int MULCircuit(GarbledCircuit *gc, GarblingContext *garblingContext, int n, int* inputs, int* outputs);
@@ -63,9 +67,15 @@ int GF4MULCircuit(GarbledCircuit *gc, GarblingContext *garblingContext,  int* in
 int GF4SQCircuit(GarbledCircuit *gc, GarblingContext *garblingContext,  int* inputs, int* outputs);
 int GF4SCLNCircuit(GarbledCircuit *gc, GarblingContext *garblingContext,  int* inputs, int* outputs);
 int GF4SCLN2Circuit(GarbledCircuit *gc, GarblingContext *garblingContext,  int* inputs, int* outputs);
+int NewSBOXCircuit(GarbledCircuit *gc, GarblingContext *garblingContext, int* inputs, int* outputs);
+int GF16INVCircuit(GarbledCircuit *gc, GarblingContext *garblingContext, int* inputs, int* outputs);
+int GF256InvCircuit(GarbledCircuit *gc, GarblingContext *garblingContext, int* inputs, int* outputs);
 
 int RANDCircuit(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int n, int* inputs, int* outputs, int q, int qf);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CIRCUITS_H_ */
 

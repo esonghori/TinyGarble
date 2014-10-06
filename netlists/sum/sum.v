@@ -17,25 +17,33 @@ module sum
 	input  [N/CC-1:0] b;
 	output [N/CC-1:0] c;
 	
-	reg [N/CC-1:0] rc;
-	reg carry_on; 
 
-	assign c = rc;
+	reg carry_on; 
+	wire carry_on_d;
+
 
 	generate
 	if(CC>1)
+	begin
 		always@(posedge clk or posedge rst)
 		begin
 			if(rst)
 				carry_on <= 0;
 			else
-			begin
-				{carry_on, rc} <= a + b + carry_on;
-			end
+				carry_on <= carry_on_d;
 		end
+	end
+	endgenerate
+
+	generate
+	if(CC>1)
+	begin
+		assign {carry_on_d, c} = a + b + carry_on;
+	end
 	else
-		always@(*)
-			rc <= a + b;
+	begin
+		assign c = a + b;
+	end
 	endgenerate
 endmodule
 

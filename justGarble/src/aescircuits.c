@@ -18,6 +18,7 @@
 */
 
 
+
 #include "../include/garble.h"
 #include "../include/common.h"
 #include "../include/gates.h"
@@ -30,6 +31,9 @@
  * Huang, Evans, Katz and Malka, available at mightbeevil.org
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int AESSBOXTABLE[] = { 0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30,
 		0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa,
@@ -763,3 +767,6 @@ int SBOXNOTABLE(GarbledCircuit *garbledCircuit,
 
 }
 
+#ifdef __cplusplus
+}
+#endif

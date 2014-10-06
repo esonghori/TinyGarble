@@ -27,8 +27,8 @@ module matrixMult_N_M_2
 	generate
 	for (i=0;i<N;i=i+1)
 	begin:ASS_ROW
-		assign xi[i] = x[M*(i)-1:M*(i)];
-		assign yi[i] = y[M*(i)-1:M*(i)];
+		assign xi[i] = x[M*(i+1)-1:M*(i)];
+		assign yi[i] = y[M*(i+1)-1:M*(i)];
 	end
 	endgenerate
 

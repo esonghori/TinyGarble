@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 // synopsys template
-module matrixMult_N1
+module matrixMult_N_M_1
 #(
 	parameter N=3,
 	parameter M=32
@@ -29,8 +29,8 @@ module matrixMult_N1
 	generate
 	for (i=0;i<N;i=i+1)
 	begin:ASS_ROW
-		assign xi[i] = x[M*(i)-1:M*(i)];
-		assign o[M*(i)-1:M*(i)] = oi[i];
+		assign xi[i] = x[M*(i+1)-1:M*(i)];
+		assign o[M*(i+1)-1:M*(i)] = oi[i];
 		for (j=0;j<N;j=j+1)
 		begin:ASS_COL
 			assign yij[i][j] = y[M*(N*i+j+1)-1:M*(N*i+j)];

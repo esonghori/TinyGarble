@@ -17,27 +17,33 @@
 */
 
 
-#ifndef justGarble
-#define justGarble 1
+#ifndef JUSTGARBLE_H_
+#define JUSTGARBLE_H_
+
+
 #include "dkcipher.h"
 #include "common.h"
 
-typedef struct {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct Wire{
 	long value, id;
 	block label, label0, label1;
 } Wire;
 
-typedef struct {
+typedef struct GarbledWire{
 	block label; long id;
 } GarbledWire;
 
 
-typedef struct {
+typedef struct Gate{
 	long type, id; 
 	Wire *input0, *input1, *output;
 } Gate;
 
-typedef struct {
+typedef struct GarbledGate{
 	long input0, input1, output; int id, type;
 } GarbledGate;
 
@@ -45,24 +51,24 @@ typedef struct {
 typedef char shortBlock[10];
 
 #ifdef TRUNCATED
-typedef struct {
+typedef struct GarbledTable{
 	char table[4][10];
 
 } GarbledTable;
 #else
-typedef struct {
+typedef struct GarbledTable{
 	block table[4];
 } GarbledTable;
 #endif
 
-typedef struct {
+/*typedef struct Circuit{
 	int n,m,q,r;
 	Gate* gates;
 	Wire* wires;
 	long id;
-} Circuit;
+} Circuit;*/
 
-typedef struct {
+typedef struct GarbledCircuit{
 	int n, m, q, r;
 	block* inputLabels, outputLabels;
 	GarbledGate* garbledGates;
@@ -73,13 +79,13 @@ typedef struct {
 	block globalKey;
 } GarbledCircuit;
 
-typedef struct {
+typedef struct GarbledOutput{
 	int m;
 	block *outputLabels;
 	long id;
 } GarbledOutput;
 
-typedef struct {
+typedef struct GarblingContext{
 	long wireIndex, gateIndex, tableIndex;
 	DKCipherContext dkCipherContext;
 	int* fixedWires;
@@ -102,7 +108,7 @@ typedef block* OutputMap;
 
 //1. Basic circuit building
 // Create memory for an empty circuit of the specified size.
-int createEmptyCircuit(Circuit *circuit, int n, int m, int q, int r);
+//int createEmptyCircuit(Circuit *circuit, int n, int m, int q, int r);
 
 // Start and finish building a circuit. In between these two steps, gates
 // and sub-circuits can be added in. See AESFullTest and LargeCircuitTest
@@ -113,13 +119,13 @@ int createEmptyCircuit(Circuit *circuit, int n, int m, int q, int r);
 // here means that there is no need to create and initialize a new 
 // data-structure just before calling garbleCircuit.
 int startBuilding(GarbledCircuit *gc, GarblingContext *ctx);
-int finishBuilding(GarbledCircuit *garbledCircuit,
+long finishBuilding(GarbledCircuit *garbledCircuit,
 		GarblingContext *garbledContext, OutputMap outputMap, int *outputs);
 
 
 
 // Create memory for an empty circuit of the specified size.
-int createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
+long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
 		int q, int r, InputLabels inputLabels);
 
 //Create memory for 2*n input labels.
@@ -162,8 +168,12 @@ int mapOutputs(OutputMap outputMap, OutputMap extractedMap, int *outputVals,
 		int m);
 
 
-int writeCircuitToFile(GarbledCircuit *garbledCircuit, char *fileName);
-int readCircuitFromFile(GarbledCircuit *garbledCircuit, char *fileName);
+int writeCircuitToFile(GarbledCircuit *garbledCircuit, const char *fileName);
+int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #include "garble.h"
