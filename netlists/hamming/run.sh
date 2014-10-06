@@ -1,3 +1,3 @@
 #!/bin/bash
 
-design_vision -f ../script/hamming.dcsh
+design_vision -no_gui -f hamming.dcsh
