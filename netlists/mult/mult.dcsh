@@ -1,9 +1,35 @@
-set search_path [concat . ../lib/nor_xor_large_nor/]
-set target_library ../lib/nor_xor_large_nor/nor_xor.db
-set link_library ../lib/nor_xor_large_nor/nor_xor.db
+set search_path [concat . ../lib/dff_full_large_non/]
+set target_library ../lib/dff_full_large_non/dff_full.db
+set link_library ../lib/dff_full_large_non/dff_full.db
 set symbol_library ../lib/generic.sdb
 analyze -format verilog mult.v
-elaborate mult -architecture verilog -library DEFAULT -update
+
+
+#n = 64
+foreach cc {64 32 16 8 4 2 1} {
+elaborate mult -architecture verilog -library DEFAULT -update -parameters 64,$cc
 set_max_area 0
 compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output mult_nor_xor_large_nor_syn.v
+write -hierarchy -format verilog -output mult_syn_64_$cc.v
+}
+#n = 128
+foreach cc {128 64 32 16 8 4 2 1} {
+elaborate mult -architecture verilog -library DEFAULT -update -parameters 128,$cc
+set_max_area 0
+compile_ultra -exact_map -no_design_rule -area_high_effort_script
+write -hierarchy -format verilog -output mult_syn_128_$cc.v
+}
+#n = 256
+foreach cc {256 128 64 32 16 8 4 2 1} {
+elaborate mult -architecture verilog -library DEFAULT -update -parameters 256,$cc
+set_max_area 0
+compile_ultra -exact_map -no_design_rule -area_high_effort_script
+write -hierarchy -format verilog -output mult_syn_256_$cc.v
+}
+#n = 1024
+foreach cc {1024 512 256 128 64 32 16 8 4 2 1} {
+elaborate mult -architecture verilog -library DEFAULT -update -parameters 1024,$cc
+set_max_area 0
+compile_ultra -exact_map -no_design_rule -area_high_effort_script
+write -hierarchy -format verilog -output mult_syn_1024_$cc.v
+}
