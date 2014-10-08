@@ -5,7 +5,7 @@
 #include "../include/gates.h"
 #include "../include/justGarble.h"
 
-void read_netlist(const string &infilename, const string &outfilename, bool update)
+void read_netlist(const string &infilename, const string &outfilename, int c, bool update)
 {
 	GarbledCircuit garbledCircuit;
 	GarblingContext garblingContext;
@@ -25,6 +25,7 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 	int m = circuit_size[1]; //# of outputs
 	int q = circuit_size[2]; //# of gates
 	int r = n + q + 2;
+	int p = circuit_size[3]; // # of gates
 
 	int *ts;
 	int *ts_1;
@@ -37,75 +38,73 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 		ts_1[ts[i]] = i;
 	}
 
-	//Set up input and output tokens/labels.
-	block *labels = (block*) malloc(sizeof(block) * 2 * n);
-	block *exlabels = (block*) malloc(sizeof(block) * n);
-	block *outputbs2 = (block*) malloc(sizeof(block) * m);
-	block *outputbs = (block*) malloc(sizeof(block) * m);
-	int *inp = (int *) malloc(sizeof(int) * n);
-	countToN(inp, n);
+	for(int i=0;i<q;i++)
+	{
+		if(!gate_list[i].input[0].is_port)
+		{
+			gate_list[i].input[0].index = ts_1[gate_list[i].input[0].index - n] + n;
+		}
+		if(!gate_list[i].input[1].is_port && gate_list[i].input[1].index > 0)
+		{
+			gate_list[i].input[1].index = ts_1[gate_list[i].input[1].index - n] + n;
+		}
+		gate_list[i].output.index = ts_1[i] + n;
+	}
+	for(int i=0;i<p;i++)
+	{
+		dff_list[i].input[0].index =  ts_1[dff_list[i].input[0].index - n] + n;
+	}
 
 
-	int outputs[m];
 
-	OutputMap outputMap = outputbs;
-	InputLabels inputLabels = labels;
+	int *outputs = new int[m];
+	int *S = new int[n];
 
-	//Actually build a circuit. Alternatively, this circuit could be read
-	//from a file.
-	createInputLabels(labels, n);
-	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	//Actually build a circuit.
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, p, c);
 	startBuilding(&garbledCircuit, &garblingContext);
 
 
-	int i;
+
 	int outputNum = 0;
 	int input[2], output;
 
-	for(i = 0; i < q; i++)
+	for(int i = 0; i < q; i++)
 	{
 		int gindex = ts[i];
 
 		GarbledGateS & g = gate_list[gindex];
 
-		if (g.input[0].is_port)
-			input[0] = g.input[0].index;
-		else 
-			input[0] = ts_1[g.input[0].index] + n;
-		
-		if (g.input[1].is_port || g.input[1].index < 0)
-			input[1] = g.input[1].index;
-		else 
-			input[1] = ts_1[g.input[1].index] + n;
-
-		output = i + n;
+		input[0] = g.input[0].index;
+		input[1] = g.input[1].index;
+		output = g.output.index;
 		
 		assert(input[0] < output);
 		assert(input[1] < output || (g.type == NOTGATE || g.type == DFFGATE));
 
 		if (g.type == ANDGATE)
 		{
-			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			ANDGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == ANDNGATE)
 		{
-			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			ANDNGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == NANDGATE)
 		{
-			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			NANDGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == NANDNGATE)
 		{
-			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			NANDNGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == ORGATE)
 		{
-			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			ORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == ORNGATE)
 		{
-			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			ORNGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == NORGATE)
 		{
@@ -113,7 +112,7 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 		}
 		else if (g.type == NORNGATE)
 		{
-			NORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			NORNGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == XORGATE)
 		{
@@ -121,7 +120,7 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 		}
 		else if (g.type == XNORGATE)
 		{
-			XORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
+			XNORGate(&garbledCircuit, &garblingContext, input[0], input[1], output);
 		}
 		else if (g.type == NOTGATE)
 		{
@@ -133,33 +132,59 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 #endif
 		if(g.output.is_port)
 		{
-			outputs[outputNum++] = g.id + n;
+			outputs[outputNum++] = output;
 		}
 	}
 
+	for(int i=0; i<n; i++)
+	{
+		S[i] = -1;
+		for(int j=0;j<p;j++)
+		{
+			if(dff_list[j].output.index == i)
+			{
+				S[i] = dff_list[j].input[0].index;
+				break;
+			}
+		}
+	}
+
+
 #ifdef VERBOSE
-	cout << "outputs ";
-	for(i = 0; i < outputNum; i++)
-		cout << outputs[i] << " ";
+	cout << endl << "outputs" << endl;
+	for(int i = 0; i < outputNum; i++)
+	{
+		cout << outputs[i] <<endl;
+	}
+	cout << endl;
+
+	cout << endl << "S" << endl;
+	for(int i = 0; i < n; i++)
+	{
+		cout << S[i] <<endl;
+	}
 	cout << endl;
 #endif
 
 	assert(outputNum==m);
 
 
-	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
+
+
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputs,  S);
 	writeCircuitToFile(&garbledCircuit, outfilename.c_str());
 }
 
 
 int main(int argc, char** argv)
 {
-	if(argc < 3)
+	if(argc < 4)
 	{
-		cout << "Enter infilename outfilename" << endl;
+		cout << "Enter infilename outfilename c" << endl;
 		return -1;
 	}
 	string infilename(argv[1]);
 	string outfilename(argv[2]);
-	read_netlist(infilename, outfilename, 1);
+	int c = atoi(argv[3]);
+	read_netlist(infilename, outfilename, c, 1);
 }
