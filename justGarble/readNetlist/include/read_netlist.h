@@ -57,12 +57,13 @@ void read_netlist(const string &infilename, const string &outfilename, bool upda
 void parse_netlist(const string&);
 int search (const string &target, const vector<string> & pool, int guess, int size);
 int get_weight(int );
-void top_sort(GarbledGateS *, int, int  *);
+void top_sort(GarbledGateS *G, int n, int no_task, int  *index);
 void schedule(int, int **, const string&);
 void arrange_in_time(GarbledGateS *, int, int, int  **, int  **, int *);
 void quickSort(int *, int *, int, int);
 int get_min_index(int *, int);
 int get_max(int *, int);
 string typetoStrGate(short itype);
+int findOutputGateID(const string &target, const vector<GarbledGateString> &gate_list_string);
 
 #endif
