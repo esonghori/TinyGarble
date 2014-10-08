@@ -28,7 +28,6 @@
 extern "C" {
 #endif
 
-int *final;
 
 #define AES_CIRCUIT_FILE_NAME "./readNetlist/netlists/aesCircuit.scd"
 
@@ -50,14 +49,14 @@ void buildAESCircuit() {
 	int shiftRowsOutputs[n];
 	int mixColumnOutputs[n];
 	int round;
-	block labels[2 * n];
+	//block labels[2 * n];
 	block outputbs[m];
 	OutputMap outputMap = outputbs;
-	InputLabels inputLabels = labels;
+	//InputLabels inputLabels = labels;
 	int i;
 
-	createInputLabels(labels, n);
-	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	//createInputLabels(labels, n);
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, 0, 1);
 	startBuilding(&garbledCircuit, &garblingContext);
 
 	countToN(addKeyInputs, 256);
@@ -85,9 +84,8 @@ void buildAESCircuit() {
 			addKeyInputs[i + 128] = (round + 2) * 128 + i;
 		}
 	}
-
-	final = mixColumnOutputs;
-	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, final);
+	int * final = mixColumnOutputs;
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, final, NULL);
 	writeCircuitToFile(&garbledCircuit, AES_CIRCUIT_FILE_NAME);
 }
 

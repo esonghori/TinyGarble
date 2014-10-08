@@ -44,7 +44,8 @@ typedef struct Gate{
 } Gate;
 
 typedef struct GarbledGate{
-	long input0, input1, output; int id, type;
+	long input0, input1, output;
+	int id, type;
 } GarbledGate;
 
 
@@ -69,12 +70,14 @@ typedef struct GarbledTable{
 } Circuit;*/
 
 typedef struct GarbledCircuit{
-	int n, m, q, r;
-	block* inputLabels, outputLabels;
+	int n, m, p, q, r, c;
+	block* inputLabels;
+	block* outputLabels;
 	GarbledGate* garbledGates;
 	GarbledTable* garbledTable;
 	Wire* wires;
 	int *outputs;
+	int *S;
 	long id;
 	block globalKey;
 } GarbledCircuit;
@@ -120,13 +123,12 @@ typedef block* OutputMap;
 // data-structure just before calling garbleCircuit.
 int startBuilding(GarbledCircuit *gc, GarblingContext *ctx);
 long finishBuilding(GarbledCircuit *garbledCircuit,
-		GarblingContext *garbledContext, OutputMap outputMap, int *outputs);
-
+		GarblingContext *garbledContext, int *outputs,  int *S);
 
 
 // Create memory for an empty circuit of the specified size.
 long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
-		int q, int r, InputLabels inputLabels);
+		int q, int r, int p, int c);
 
 //Create memory for 2*n input labels.
 int createInputLabels(InputLabels inputLabels, int n);
