@@ -71,10 +71,10 @@ int main(int argc, char **argv) {
 
 	//Create a circuit.
 	createInputLabels(labels, n);
-	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, 0, 1);
 	startBuilding(&garbledCircuit, &garblingContext);
 	MIXEDCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
-	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputs,  NULL);
 
 	//Write the created circuit to a file
 	writeCircuitToFile(&garbledCircuit, "./readNetlist/netlists/test.scd");
