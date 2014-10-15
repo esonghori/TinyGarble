@@ -1,7 +1,7 @@
 #include "include/read_netlist.h"
 
 
-void top_sort(GarbledGateS *G, int no_task, int  *index)
+void top_sort(GarbledGateS *G, int n, int no_task, int  *index)
 {
 	int i, j, k, max;
 	int *sl;
@@ -17,9 +17,9 @@ void top_sort(GarbledGateS *G, int no_task, int  *index)
 		max = 0;
 		for (j = i+1; j < no_task; j++)
 		{
-			if (G[j].input[0].index == i)
+			if (G[j].input[0].index == i + n)
 				if (sl[j] > max) max = sl[j];
-			if (G[j].input[1].index == i)
+			if (G[j].input[1].index == i + n)
 				if (sl[j] > max) max = sl[j];
 		}
 		sl[i] = get_weight(G[i].type)/*G[i].w*/+ max;
@@ -40,12 +40,13 @@ void schedule(int no_core, int  **core, const string &filename){
 	int no_task;	
 	read_circuit_list(G, D, circuit_size, filename);
 
+	int n = circuit_size[0];
 	no_task = circuit_size[2];
 	
 
 	int *index;	
 	index = new int[no_task];
-	top_sort(G, no_task, index);
+	top_sort(G, n , no_task, index);
 		
 	// start of scheduling
 	int *p0, *p1, *core_busy, *core_index;
@@ -64,7 +65,9 @@ void schedule(int no_core, int  **core, const string &filename){
 	while (scheduled < no_task){
 		for (i = 0; i < no_task; i ++){
 			if (p0[index[i]] == -1) // not assigned yet
-				if(((G[index[i]].input[0].is_port == 1)||(p0[G[index[i]].input[0].index] > -1)) && ((G[index[i]].input[1].is_port == 1)||(G[index[i]].input[1].index == -1)||(p0[G[index[i]].input[1].index] > -1))){ //ready
+				if(
+							((G[index[i]].input[0].is_port == 1)||(p0[G[index[i]].input[0].index - n] > -1))
+						&& 	((G[index[i]].input[1].is_port == 1)||(G[index[i]].input[1].index == -1)||(p0[G[index[i]].input[1].index - n] > -1))){ //ready
 					p1[index[i]] = get_min_index(core_busy, no_core);
 					core[p1[index[i]]][core_index[p1[index[i]]]] = index[i];
 					core_index[p1[index[i]]]++;

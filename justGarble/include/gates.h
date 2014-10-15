@@ -23,14 +23,21 @@
 extern "C" {
 #endif
 
-int ANDGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output);
-int ORGate(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
-int NORGate(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
-int XORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext, int input0, int input1, int output);
-int genericGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,  int input0, int input1, int output, int *vals, int type);
-int fixedZeroWire(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext);
-int fixedOneWire(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext);
-int NOTGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,  int input0, int output);
+int ANDGate		(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int ANDNGate	(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int NANDGate	(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int NANDNGate	(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int ORGate		(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int ORNGate		(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int NORGate		(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int NORNGate	(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int XORGate		(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int XNORGate	(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output);
+int NOTGate		(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int output);
+int genericGate	(GarbledCircuit *gc, GarblingContext *garblingContext, int input0, int input1, int output, int *vals, int type);
+int fixedZeroWire(GarbledCircuit *gc, GarblingContext *garblingContext);
+int fixedOneWire(GarbledCircuit *gc, GarblingContext *garblingContext);
+
 
 #ifdef __cplusplus
 }

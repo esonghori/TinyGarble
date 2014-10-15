@@ -29,9 +29,24 @@ extern "C" {
 #endif
 
 
-int checkfn(int *input, int *outputs, int n) {
-	outputs[0] = (input[0])?input[2]:input[1];
-	return outputs[0];
+int check_test_seq(int *input, int *outputs, int nc)
+{
+	int n = 3;
+	int m = 2;
+	int w[3];
+	w[1] = 0; // DFF reset
+	for(int cc=0;cc<3;cc++)
+	{
+		int x = input[cc*n+0];
+		int y = input[cc*n+1];
+		w[0] = x & y;
+		w[1] = w[1] ^ w[0];
+		outputs[cc*m + 0] = w[1];
+		outputs[cc*m + 1] = w[1] & x;
+	}
+
+
+	return 0;
 }
 
 
@@ -52,58 +67,14 @@ int main(int argc, char* argv[])
 
 	int n = gc.n;
 	int m = gc.m;
-	block *inputLabels = (block *)malloc(sizeof(block *)*2*n);
-	block *outputMap = (block *)malloc(sizeof(block *)*m);
+	int c = gc.c;
+	block *inputLabels = (block *)malloc(sizeof(block)*2*n*c);
+	block *outputMap = (block *)malloc(sizeof(block)*2*m*c);
 
 
 	garbleCircuit(&gc, inputLabels, outputMap);
-	checkCircuit(&gc, inputLabels, outputMap, &(checkfn));
+	checkCircuit(&gc, inputLabels, outputMap, &(check_test_seq));
 
-	for(int k=0;k<gc.r; k++)
-	{
-		if(blockEqual(gc.wires[k].label, gc.wires[k].label0))
-		{
-			printf("Wire%d: 0\n", k);
-		}
-		else if(blockEqual(gc.wires[k].label, gc.wires[k].label1))
-		{
-			printf("Wire%d: 1\n", k);
-		}
-		else
-		{
-			printf("Wire%d: undefined\n", k);
-		}
-	}
-
-
-	int timeGarble[TIMES];
-	int timeEval[TIMES];
-	double timeGarbleMedians[TIMES];
-	double timeEvalMedians[TIMES];
-	double totalTimeGarbleMedians[TIMES];
-	double totalTimeEvalMedians[TIMES];
-
-	for (j = 0; j < TIMES; j++)
-	{
-		for (i = 0; i < TIMES; i++)
-		{
-			timeGarble[i] = garbleCircuit(&gc, inputLabels, outputMap);
-			timeEval[i] = timedEval(&gc, inputLabels);
-		}
-		totalTimeGarbleMedians[j] = ((double) median(timeGarble, TIMES));
-		timeGarbleMedians[j] = totalTimeGarbleMedians[j] / gc.q;
-
-		totalTimeEvalMedians[j] =  ((double) median(timeEval, TIMES));
-		timeEvalMedians[j] =  totalTimeEvalMedians[j] / gc.q;
-	}
-	double totalGarblingTime = doubleMean(totalTimeGarbleMedians, TIMES);
-	double garblingTime = doubleMean(timeGarbleMedians, TIMES);
-	double totalEvalTime = doubleMean(totalTimeEvalMedians, TIMES);
-	double evalTime = doubleMean(timeEvalMedians, TIMES);
-
-
-	printf("total(g,e): %lf %lf\n", garblingTime, evalTime);
-	printf("pg(g,e): %lf %lf\n", totalGarblingTime, totalEvalTime);
 	return 0;
 }
 
