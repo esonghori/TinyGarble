@@ -135,6 +135,8 @@ void inline TRUNC_COPY(char *X, char *Y);
 #define DKC2
 //#define TRUNCATED
 
+//#define WRITECIRCUIT
+
 
 #define TIMES 10
 #define RUNNING_TIME_ITER 100
