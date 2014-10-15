@@ -133,6 +133,8 @@ int XNORGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext,
 
 int fixedZeroWire(GarbledCircuit *garbledCircuit,
 		GarblingContext *garblingContext) {
+
+
 	int ind = getNextWire(garblingContext);
 	garblingContext->fixedWires[ind] = FIXED_ZERO_GATE;
 	Wire *wire = &garbledCircuit->wires[ind];
@@ -141,6 +143,10 @@ int fixedZeroWire(GarbledCircuit *garbledCircuit,
 	wire->id = ind;
 	wire->label0 = randomBlock();
 	wire->label1 = xorBlocks(garblingContext->R, wire->label0);
+
+#ifdef WRITECIRCUIT
+	printf("\twire w%d;\n\tassign w%d = 1'b0;\n", ind, ind);
+#endif
 	return ind;
 
 }
@@ -152,6 +158,11 @@ int fixedOneWire(GarbledCircuit *garbledCircuit,
 	wire->id = ind;
 	wire->label0 = randomBlock();
 	wire->label1 = xorBlocks(garblingContext->R, wire->label0);
+
+#ifdef WRITECIRCUIT
+	printf("\twire w%d;\n\tassign w%d = 1'b1;\n", ind, ind);
+#endif
+	
 	return ind;
 }
 
