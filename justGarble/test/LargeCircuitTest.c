@@ -74,10 +74,10 @@ int main(int argc, char **argv)
 	//Actually build a circuit. Alternatively, this circuit could be read
 	//from a file.
 	createInputLabels(labels, n);
-	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, inputLabels);
+	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, 0, 1);
 	startBuilding(&garbledCircuit, &garblingContext);
 	MIXEDCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
-	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputMap, outputs);
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputs,  NULL);
 
 	//Garble the built circuit.
 	garbleCircuit(&garbledCircuit, inputLabels, outputMap);

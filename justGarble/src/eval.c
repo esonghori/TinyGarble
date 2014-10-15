@@ -168,66 +168,86 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 	block tweak;
 	GarbledTable *garbledTable = garbledCircuit->garbledTable;
 	int tableIndex = 0;
-	long a, b, i, j, rnds = 10;
+	long a, b, i, j, cid, rnds = 10;
 
-	for (i = 0; i < garbledCircuit->n; i++) {
-		garbledCircuit->wires[i].label = extractedLabels[i];
-	}
 
-	for (i = 0; i < garbledCircuit->q; i++) {
-		garbledGate = &(garbledCircuit->garbledGates[i]);
+	for(cid=0;cid<garbledCircuit->c;cid++)
+	{
+
+		for(i=0;i<garbledCircuit->n;i++)
+		{
+			garbledCircuit->wires[i].label = extractedLabels[cid*garbledCircuit->n + i];
+		}
+
+		if(cid>0) //copy latched the labels
+		{
+			for(i=0;i<garbledCircuit->n;i++)
+			{
+				int output_index = garbledCircuit->S[i];
+				if(output_index >= 0)
+				{
+					garbledCircuit->wires[i].label = garbledCircuit->wires[output_index].label;
+				}
+			}
+		}
+
+		for (i = 0; i < garbledCircuit->q; i++)
+		{
+			garbledGate = &(garbledCircuit->garbledGates[i]);
 #ifdef FREE_XOR
-		if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE)
-		{
-			garbledCircuit->wires[garbledGate->output].label =
-			xorBlocks(garbledCircuit->wires[garbledGate->input0].label,
-					garbledCircuit->wires[garbledGate->input1].label);
-		}
-		else if (garbledGate->type == NOTGATE)
-		{
-			garbledCircuit->wires[garbledGate->output].label = garbledCircuit->wires[garbledGate->input0].label;
-		}
-		else
-		{
+			if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE)
+			{
+				garbledCircuit->wires[garbledGate->output].label =
+				xorBlocks(garbledCircuit->wires[garbledGate->input0].label,
+						garbledCircuit->wires[garbledGate->input1].label);
+			}
+			else if (garbledGate->type == NOTGATE)
+			{
+				garbledCircuit->wires[garbledGate->output].label = garbledCircuit->wires[garbledGate->input0].label;
+			}
+			else
+			{
 #endif
-		A = DOUBLE(garbledCircuit->wires[garbledGate->input0].label);
-		B = DOUBLE(DOUBLE(garbledCircuit->wires[garbledGate->input1].label));
+				A = DOUBLE(garbledCircuit->wires[garbledGate->input0].label);
+				B = DOUBLE(DOUBLE(garbledCircuit->wires[garbledGate->input1].label));
 
-		plainText = &garbledCircuit->wires[garbledGate->output].label;
+				plainText = &garbledCircuit->wires[garbledGate->output].label;
 
-		a = getLSB(garbledCircuit->wires[garbledGate->input0].label);
-		b = getLSB(garbledCircuit->wires[garbledGate->input1].label);
-		block temp;
+				a = getLSB(garbledCircuit->wires[garbledGate->input0].label);
+				b = getLSB(garbledCircuit->wires[garbledGate->input1].label);
+				block temp;
 
-		val = xorBlocks(A, B);
-		tweak = makeBlock(i, (long) 0);
-		val = xorBlocks(val, tweak);
+				val = xorBlocks(A, B);
+				tweak = makeBlock(cid, i);
+				val = xorBlocks(val, tweak);
 #ifdef ROW_REDUCTION
-		if (a+b==0)
-		cipherText = &zer;
-		else
-		cipherText = &garbledTable[tableIndex].table[2*a+b-1];
+				if (a+b==0)
+					cipherText = &zer;
+				else
+					cipherText = &garbledTable[tableIndex].table[2*a+b-1];
 #else
-		cipherText = &garbledTable[tableIndex].table[2 * a + b];
+				cipherText = &garbledTable[tableIndex].table[2 * a + b];
 #endif
 
-		temp = xorBlocks(val, *cipherText);
+				temp = xorBlocks(val, *cipherText);
 
-		val = _mm_xor_si128(val, sched[0]);
-		for (j = 1; j < rnds; j++)
-			val = _mm_aesenc_si128(val, sched[j]);
-		val = _mm_aesenclast_si128(val, sched[j]);
+				val = _mm_xor_si128(val, sched[0]);
+				for (j = 1; j < rnds; j++)
+					val = _mm_aesenc_si128(val, sched[j]);
+				val = _mm_aesenclast_si128(val, sched[j]);
 
-		*plainText = xorBlocks(val, temp);
-		tableIndex++;
+				*plainText = xorBlocks(val, temp);
+				tableIndex++;
 #ifdef FREE_XOR
-	}
+			}
 #endif
 
-	}
+		}
 
-	for (i = 0; i < garbledCircuit->m; i++) {
-		outputMap[i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label;
+		for (i = 0; i < garbledCircuit->m; i++)
+		{
+			outputMap[cid*garbledCircuit->m + i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label;
+		}
 	}
 	return 0;
 

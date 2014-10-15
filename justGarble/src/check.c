@@ -30,45 +30,68 @@ extern "C" {
 int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap, int (*check)(int *, int *, int ))
 {
 
-	int i, j;
+	int i, j, cc;
 	int n = garbledCircuit->n;
 	int m = garbledCircuit->m;
-	block extractedLabels[n];
-	block computedOutputMap[m];
-	int outputVals[m];
-	int outputReal[m];
-	int inputs[n];
+	int p = garbledCircuit->p;
+	int c = garbledCircuit->c;
+	block extractedLabels[n*c];
+	block computedOutputMap[m*c];
+	int outputVals[m*c];
+	int outputReal[m*c];
+	int inputs[n*c];
 
-	for (i = 0; i < TIMES; i++) {
-		for (j = 0; j < n; j++) {
-			inputs[j] = rand() % 2;
+	for (i = 0; i < TIMES; i++)
+	{
+		for(cc=0;cc<c;cc++)
+		{
+			for (j = 0; j < n-p; j++)
+			{
+				inputs[cc*n + j] = rand() % 2;
+			}
+			for(;j<n;j++)
+			{
+				inputs[cc*n + j] = 0; //reset the DFF to 0 at clock 0, the rest will be ignored
+			}
 		}
-		extractLabels(extractedLabels, inputLabels, inputs, n);
+		extractLabels(extractedLabels, inputLabels, inputs, n*c);
 		evaluate(garbledCircuit, extractedLabels, computedOutputMap);
-		mapOutputs(outputMap, computedOutputMap, outputVals, m);
-		check(inputs, outputReal, n);
-		for (j = 0; j < m; j++)
-			if (outputVals[j] != outputReal[j]) {
-				fprintf(stderr, "Check failed %u \n", j);
+		mapOutputs(outputMap, computedOutputMap, outputVals, m*c);
+		check(inputs, outputReal, n*c);
+		for (j = 0; j < m*c; j++)
+			if (outputVals[j] != outputReal[j])
+			{
+				fprintf(stderr, "Check failed %u: %d != %d \n", j, outputVals[j],  outputReal[j]);
 			}
 	}
 	return 0;
 }
 
-unsigned long timedEval(GarbledCircuit *garbledCircuit, InputLabels inputLabels) {
+unsigned long timedEval(GarbledCircuit *garbledCircuit, InputLabels inputLabels)
+{
 
 	int n = garbledCircuit->n;
 	int m = garbledCircuit->m;
-	block extractedLabels[n];
-	block outputs[m];
-	int j;
-	int inputs[n];
+	int p = garbledCircuit->p;
+	int c = garbledCircuit->c;
+	block extractedLabels[n*c];
+	block outputs[m*c];
+	int j, cc;
+	int inputs[n*c];
 	unsigned long startTime, endTime;
 	unsigned long sum = 0;
-	for (j = 0; j < n; j++) {
-		inputs[j] = rand() % 2;
+	for(cc=0;cc<c;cc++)
+	{
+		for (j = 0; j < n-p; j++)
+		{
+			inputs[cc*n + j] = rand() % 2;
+		}
+		for(;j<n;j++)
+		{
+			inputs[cc*n + j] = 0; //reset the DFF to 0 at clock 0, the rest will be ignored
+		}
 	}
-	extractLabels(extractedLabels, inputLabels, inputs, n);
+	extractLabels(extractedLabels, inputLabels, inputs, n*c);
 	startTime = RDTSC;
 	evaluate(garbledCircuit, extractedLabels, outputs);
 	endTime = RDTSC;
