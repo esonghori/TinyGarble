@@ -94,15 +94,13 @@ void parse_netlist(const string &filename){
 	int no_of_dffs = 0;
 	bool store_d = 0;
 	bool store_q = 0;
-
-	vector<string> net_list;
 	
 	string buf("_");
 	
 	while (buf.compare("endmodule"))
 	{
 		getline(fin, buf);		
-		char_separator<char> sep(" ,;.()");		
+		char_separator<char> sep(" ,;.()\t");
 		tokenizer<char_separator<char> > tok(buf, sep);
 		
 		BOOST_FOREACH(string str, tok)
@@ -272,7 +270,6 @@ void parse_netlist(const string &filename){
 			else if(store_d)
 			{
 				dff_list_string.back().input[0] = str;
-				outport_list.push_back(str);
 				store_d = 0;
 			}
 			else if (!str.compare("B"))
@@ -291,7 +288,6 @@ void parse_netlist(const string &filename){
 			else if(store_output)
 			{
 				gate_list_string.back().output = str;
-				net_list.push_back(str);
 				store_output = 0;
 			}
 			else if (!str.compare("Q"))
@@ -301,13 +297,24 @@ void parse_netlist(const string &filename){
 			else if(store_q)
 			{
 				dff_list_string.back().output = str;
-				//net_list.push_back(str);
-				inport_list.push_back(str);
 				store_q = 0;
 			}
 		}
 	}
 	
+
+	// add Q and D to inputs and outputs
+	for(int i=0;i < dff_list_string.size(); i++)
+	{
+		inport_list.push_back(dff_list_string[i].output);
+		if(find(outport_list.begin(), outport_list.end(), dff_list_string[i].input[0]) == outport_list.end()) // D is not output itself
+		{
+			outport_list.push_back(dff_list_string[i].input[0]);
+		}
+	}
+
+
+
 	no_of_inports = inport_list.size();
 	no_of_outports = outport_list.size();
 	no_of_gates = gate_list_string.size();
@@ -319,39 +326,7 @@ void parse_netlist(const string &filename){
 	circuit_size[2] = no_of_gates;
 	circuit_size[3] = no_of_dffs;
 	
-#ifdef VERBOSE
-	cout << "inputs:" << endl;
-	for (i = 0; i < no_of_inports; i++)
-	{
-		cout << inport_list[i] << endl;
-	}
-	cout << endl;
-	
-	cout << "outputs:" << endl;
-	for (i = 0; i < no_of_outports; i++)
-	{
-		cout << outport_list[i] << endl;
-	}
-	cout << endl;
-	
-	cout << "gates:" << endl;
-	for (i = 0; i < no_of_gates; i++)
-	{
-		cout << gate_list_string[i].id << "\t" << typetoStrGate(gate_list_string[i].type) << "\t"
-			<< gate_list_string[i].input[0] << "\t" << gate_list_string[i].input[1]
-			<< "\t"<< gate_list_string[i].output << "\t"   << endl;
-	}
-	cout << endl;
 
-	cout << "dffs:" << endl;
-	for (i = 0; i < no_of_dffs; i++)
-	{
-		cout << dff_list_string[i].id << "\t" << typetoStrGate(dff_list_string[i].type) << "\t"
-			<< dff_list_string[i].input[0] << "\t" << dff_list_string[i].output << "\t"   << endl;
-	}
-	cout << endl;
-#endif	
-	
 	GarbledGateS *gate_list = new GarbledGateS[no_of_gates];
 	int index, total_weight = 0;
 	
@@ -360,11 +335,11 @@ void parse_netlist(const string &filename){
 		gate_list[i].id = gate_list_string[i].id;
 		gate_list[i].type = gate_list_string[i].type;
 		
-		index = search(gate_list_string[i].input[0], net_list, i, no_of_gates);
+		index = findOutputGateID(gate_list_string[i].input[0], gate_list_string);
 		if (index > -1)
 		{
 			gate_list[i].input[0].is_port = 0;
-			gate_list[i].input[0].index = index;			
+			gate_list[i].input[0].index = index + no_of_inports;
 		}
 		else
 		{
@@ -379,11 +354,11 @@ void parse_netlist(const string &filename){
 		}
 		else
 		{
-			index = search(gate_list_string[i].input[1], net_list, i, no_of_gates);
+			index = findOutputGateID(gate_list_string[i].input[1], gate_list_string);
 			if (index > -1)
 			{
 				gate_list[i].input[1].is_port = 0;
-				gate_list[i].input[1].index = index;			
+				gate_list[i].input[1].index = index + no_of_inports;
 			}
 			else
 			{
@@ -396,19 +371,16 @@ void parse_netlist(const string &filename){
 		if (index > -1)
 		{
 			gate_list[i].output.is_port = 1;
-			gate_list[i].output.index = index;			
 		}
 		else
 		{
 			gate_list[i].output.is_port = 0;
-			gate_list[i].output.index = search(gate_list_string[i].output, net_list, i, no_of_gates);
 		}
+		gate_list[i].output.index = i+ no_of_inports;
 		
 		total_weight = total_weight + get_weight(gate_list[i].type);
 	}
 	
-
-
 	GarbledGateS *dff_list = new GarbledGateS[no_of_dffs];
 
 	for (i = 0; i < no_of_dffs; i++)
@@ -416,19 +388,58 @@ void parse_netlist(const string &filename){
 		dff_list[i].id = dff_list_string[i].id;
 		dff_list[i].type = dff_list_string[i].type;
 
-		index = search(dff_list_string[i].input[0], outport_list, i, no_of_outports);
-		assert(index > -1);
+		index = findOutputGateID(dff_list_string[i].input[0], gate_list_string);
+		if(index < 0) //might be an input, although it is odd
+		{
+			index = search(dff_list_string[i].input[0], inport_list, 0, no_of_inports);
+			assert(index > -1);
+		}
+		else
+		{
+			index += no_of_inports;
+		}
 		dff_list[i].input[0].is_port = 0;
 		dff_list[i].input[0].index = index;
 
-		index = search(dff_list_string[i].output, inport_list, i, no_of_inports);
+		index = search(dff_list_string[i].output, inport_list, 0, no_of_inports);
 		assert(index > -1);
 		dff_list[i].output.is_port = 1;
 		dff_list[i].output.index = index;
 
 	}
 
+#ifdef VERBOSE
+	cout << "inputs:" << endl;
+	for (i = 0; i < no_of_inports; i++)
+	{
+		cout << inport_list[i] << " " << i << endl;
+	}
+	cout << endl;
 
+	cout << "outputs:" << endl;
+	for (i = 0; i < no_of_outports; i++)
+	{
+		cout << outport_list[i] << " " << i << endl;
+	}
+	cout << endl;
+
+	cout << "gates:" << endl;
+	for (i = 0; i < no_of_gates; i++)
+	{
+		cout << gate_list_string[i].id << "\t" << typetoStrGate(gate_list_string[i].type) << "\t"
+			<< gate_list_string[i].input[0] << "\t" << gate_list_string[i].input[1]
+			<< "\t"<< gate_list_string[i].output << endl;
+	}
+	cout << endl;
+
+	cout << "dffs:" << endl;
+	for (i = 0; i < no_of_dffs; i++)
+	{
+		cout << dff_list_string[i].id << "\t" << typetoStrGate(dff_list_string[i].type) << "\t"
+			<< dff_list_string[i].input[0]  << "\t" << dff_list_string[i].output << endl;
+	}
+	cout << endl;
+#endif
 
 	write_circuit_list(gate_list, dff_list, circuit_size, filename);
 	
@@ -459,6 +470,19 @@ int search (const string &target, const vector<string> & pool, int guess, int si
 	}
 	return index;
 }
+
+int findOutputGateID(const string &target, const vector<GarbledGateString> &gate_list_string)
+{
+	for(int i=0;i<gate_list_string.size();i++)
+	{
+		if(!target.compare(gate_list_string[i].output))
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 
 int get_weight(int type){
 	int weight;
