@@ -6,73 +6,44 @@ analyze -format verilog modexp_1_N.v
 analyze -format verilog modexp_2N_NN.v
 analyze -format verilog modmult.v
 
-# N = 4
-foreach cc {32 16 8} {
-elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 4,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_syn_4_$cc.v
-}
-foreach cc {4 2 1} {
-elaborate modexp_1_N -architecture verilog -library DEFAULT -update -parameters 4,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_syn_4_$cc.v
-}
-
-# N = 16
-foreach cc {512 128 32} {
-elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 16,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_16_$cc_syn.v
-}
-foreach cc {16 4 1} {
-elaborate modexp_1_N -architecture verilog -library DEFAULT -update -parameters 16,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_16_$cc_syn.v
-}
-
-# N = 64
-foreach cc {2048 512 128} {
-elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 64,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_64_$cc_syn.v
-}
-foreach cc {64 8 1} {
-elaborate modexp_1_N -architecture verilog -library DEFAULT -update -parameters 64,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_64_$cc_syn.v
-}
+##N = 4
+#foreach cc {32 16 8} {
+#elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 4,$cc
+#set_max_area 0
+#compile
+#write -hierarchy -format verilog -output modexp_syn_4_$cc.v
+#}
+#foreach cc {4 2 1} {
+#elaborate modexp_1_N -architecture verilog -library DEFAULT -update -parameters 4,$cc
+#set_max_area 0
+#compile
+#write -hierarchy -format verilog -output modexp_syn_4_$cc.v
+#}
 
 
-# N = 256
-foreach cc {131072 8192 512} {
+#N = 256
+foreach cc {65536 32768} {
 elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 256,$cc
 set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_256_$cc_syn.v
-}
-foreach cc {256 16 1} {
-elaborate modexp_1_N -architecture verilog -library DEFAULT -update -parameters 256,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_256_$cc_syn.v
+compile
+write -hierarchy -format verilog -output modexp_syn_256_$cc.v
 }
 
-# N = 1024
-foreach cc {2097152 65536 2048} {
+
+#N = 512
+foreach cc {262144 131072} {
+elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 256,$cc
+set_max_area 0
+compile
+write -hierarchy -format verilog -output modexp_syn_256_$cc.v
+}
+
+
+#N = 1024
+foreach cc {1048576 524288} {
 elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 1024,$cc
 set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_1024_$cc_syn.v
+compile
+write -hierarchy -format verilog -output modexp_syn_1024_$cc.v
 }
-foreach cc {1024 32 1} {
-elaborate modexp_1_N -architecture verilog -library DEFAULT -update -parameters 1024,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output modexp_1024_$cc_syn.v
-}
+

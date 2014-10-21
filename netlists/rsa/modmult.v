@@ -1,7 +1,7 @@
 module modmult
 #(
 	parameter N 	= 8, //number of bits
-	parameter CC	= N/2  //number of clock cycle 
+	parameter CC	= N  //number of clock cycle 
 )
 (
 	clk,
