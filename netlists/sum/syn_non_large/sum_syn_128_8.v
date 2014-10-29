@@ -1,0 +1,95 @@
+
+module sum_N128_CC8 ( clk, rst, a, b, c );
+  input [15:0] a;
+  input [15:0] b;
+  output [15:0] c;
+  input clk, rst;
+  wire   carry_on, carry_on_d, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11,
+         n12, n13, n14, n15, n16, n17, n18, n19, n20, n21, n22, n23, n24, n25,
+         n26, n27, n28, n29, n30, n31, n32, n33, n34, n35, n36, n37, n38, n39,
+         n40, n41, n42, n43, n44, n45, n46, n47, n48, n49, n50, n51, n52, n53,
+         n54, n55, n56, n57, n58, n59, n60, n61, n62, n63;
+
+  DFF carry_on_reg ( .D(carry_on_d), .CLK(clk), .RST(rst), .Q(carry_on) );
+  XOR U3 ( .A(a[0]), .B(b[0]), .Z(n1) );
+  XOR U4 ( .A(n1), .B(carry_on), .Z(c[0]) );
+  XOR U5 ( .A(a[1]), .B(b[1]), .Z(n4) );
+  NAND U6 ( .A(b[0]), .B(a[0]), .Z(n3) );
+  NAND U7 ( .A(carry_on), .B(n1), .Z(n2) );
+  AND U8 ( .A(n3), .B(n2), .Z(n5) );
+  XNOR U9 ( .A(n4), .B(n5), .Z(c[1]) );
+  XOR U10 ( .A(a[2]), .B(b[2]), .Z(n8) );
+  NAND U11 ( .A(b[1]), .B(a[1]), .Z(n7) );
+  NANDN U12 ( .A(n5), .B(n4), .Z(n6) );
+  AND U13 ( .A(n7), .B(n6), .Z(n9) );
+  XNOR U14 ( .A(n8), .B(n9), .Z(c[2]) );
+  XOR U15 ( .A(a[3]), .B(b[3]), .Z(n12) );
+  NAND U16 ( .A(b[2]), .B(a[2]), .Z(n11) );
+  NANDN U17 ( .A(n9), .B(n8), .Z(n10) );
+  AND U18 ( .A(n11), .B(n10), .Z(n13) );
+  XNOR U19 ( .A(n12), .B(n13), .Z(c[3]) );
+  XOR U20 ( .A(a[4]), .B(b[4]), .Z(n16) );
+  NAND U21 ( .A(b[3]), .B(a[3]), .Z(n15) );
+  NANDN U22 ( .A(n13), .B(n12), .Z(n14) );
+  AND U23 ( .A(n15), .B(n14), .Z(n17) );
+  XNOR U24 ( .A(n16), .B(n17), .Z(c[4]) );
+  XOR U25 ( .A(a[5]), .B(b[5]), .Z(n20) );
+  NAND U26 ( .A(b[4]), .B(a[4]), .Z(n19) );
+  NANDN U27 ( .A(n17), .B(n16), .Z(n18) );
+  AND U28 ( .A(n19), .B(n18), .Z(n21) );
+  XNOR U29 ( .A(n20), .B(n21), .Z(c[5]) );
+  XOR U30 ( .A(a[6]), .B(b[6]), .Z(n24) );
+  NAND U31 ( .A(b[5]), .B(a[5]), .Z(n23) );
+  NANDN U32 ( .A(n21), .B(n20), .Z(n22) );
+  AND U33 ( .A(n23), .B(n22), .Z(n25) );
+  XNOR U34 ( .A(n24), .B(n25), .Z(c[6]) );
+  XOR U35 ( .A(a[7]), .B(b[7]), .Z(n28) );
+  NAND U36 ( .A(b[6]), .B(a[6]), .Z(n27) );
+  NANDN U37 ( .A(n25), .B(n24), .Z(n26) );
+  AND U38 ( .A(n27), .B(n26), .Z(n29) );
+  XNOR U39 ( .A(n28), .B(n29), .Z(c[7]) );
+  XOR U40 ( .A(a[8]), .B(b[8]), .Z(n32) );
+  NAND U41 ( .A(b[7]), .B(a[7]), .Z(n31) );
+  NANDN U42 ( .A(n29), .B(n28), .Z(n30) );
+  AND U43 ( .A(n31), .B(n30), .Z(n33) );
+  XNOR U44 ( .A(n32), .B(n33), .Z(c[8]) );
+  XOR U45 ( .A(a[9]), .B(b[9]), .Z(n36) );
+  NAND U46 ( .A(b[8]), .B(a[8]), .Z(n35) );
+  NANDN U47 ( .A(n33), .B(n32), .Z(n34) );
+  AND U48 ( .A(n35), .B(n34), .Z(n37) );
+  XNOR U49 ( .A(n36), .B(n37), .Z(c[9]) );
+  XOR U50 ( .A(a[10]), .B(b[10]), .Z(n40) );
+  NAND U51 ( .A(b[9]), .B(a[9]), .Z(n39) );
+  NANDN U52 ( .A(n37), .B(n36), .Z(n38) );
+  AND U53 ( .A(n39), .B(n38), .Z(n41) );
+  XNOR U54 ( .A(n40), .B(n41), .Z(c[10]) );
+  XOR U55 ( .A(a[11]), .B(b[11]), .Z(n44) );
+  NAND U56 ( .A(b[10]), .B(a[10]), .Z(n43) );
+  NANDN U57 ( .A(n41), .B(n40), .Z(n42) );
+  AND U58 ( .A(n43), .B(n42), .Z(n45) );
+  XNOR U59 ( .A(n44), .B(n45), .Z(c[11]) );
+  XOR U60 ( .A(a[12]), .B(b[12]), .Z(n48) );
+  NAND U61 ( .A(b[11]), .B(a[11]), .Z(n47) );
+  NANDN U62 ( .A(n45), .B(n44), .Z(n46) );
+  AND U63 ( .A(n47), .B(n46), .Z(n49) );
+  XNOR U64 ( .A(n48), .B(n49), .Z(c[12]) );
+  XOR U65 ( .A(a[13]), .B(b[13]), .Z(n52) );
+  NAND U66 ( .A(b[12]), .B(a[12]), .Z(n51) );
+  NANDN U67 ( .A(n49), .B(n48), .Z(n50) );
+  AND U68 ( .A(n51), .B(n50), .Z(n53) );
+  XNOR U69 ( .A(n52), .B(n53), .Z(c[13]) );
+  XOR U70 ( .A(a[14]), .B(b[14]), .Z(n56) );
+  NAND U71 ( .A(b[13]), .B(a[13]), .Z(n55) );
+  NANDN U72 ( .A(n53), .B(n52), .Z(n54) );
+  AND U73 ( .A(n55), .B(n54), .Z(n57) );
+  XNOR U74 ( .A(n56), .B(n57), .Z(c[14]) );
+  NAND U75 ( .A(b[14]), .B(a[14]), .Z(n59) );
+  NANDN U76 ( .A(n57), .B(n56), .Z(n58) );
+  NAND U77 ( .A(n59), .B(n58), .Z(n60) );
+  XOR U78 ( .A(a[15]), .B(b[15]), .Z(n61) );
+  XOR U79 ( .A(n60), .B(n61), .Z(c[15]) );
+  NAND U80 ( .A(b[15]), .B(a[15]), .Z(n63) );
+  NAND U81 ( .A(n61), .B(n60), .Z(n62) );
+  NAND U82 ( .A(n63), .B(n62), .Z(carry_on_d) );
+endmodule
+
