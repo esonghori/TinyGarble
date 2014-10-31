@@ -4,92 +4,179 @@ module sum_N256_CC16 ( clk, rst, a, b, c );
   input [15:0] b;
   output [15:0] c;
   input clk, rst;
-  wire   carry_on, carry_on_d, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11,
-         n12, n13, n14, n15, n16, n17, n18, n19, n20, n21, n22, n23, n24, n25,
-         n26, n27, n28, n29, n30, n31, n32, n33, n34, n35, n36, n37, n38, n39,
-         n40, n41, n42, n43, n44, n45, n46, n47, n48, n49, n50, n51, n52, n53,
-         n54, n55, n56, n57, n58, n59, n60, n61, n62, n63;
+  wire   carry_on, carry_on_d, \ADD_/c[15] , \ADD_/c[14] , \ADD_/c[13] ,
+         \ADD_/c[12] , \ADD_/c[11] , \ADD_/c[10] , \ADD_/c[9] , \ADD_/c[8] ,
+         \ADD_/c[7] , \ADD_/c[6] , \ADD_/c[5] , \ADD_/c[4] , \ADD_/c[3] ,
+         \ADD_/c[2] , \ADD_/c[1] , \ADD_/FAINST[0].FA_/n3 ,
+         \ADD_/FAINST[0].FA_/n2 , \ADD_/FAINST[0].FA_/n1 ,
+         \ADD_/FAINST[15].FA_/n3 , \ADD_/FAINST[15].FA_/n2 ,
+         \ADD_/FAINST[15].FA_/n1 , \ADD_/FAINST[14].FA_/n3 ,
+         \ADD_/FAINST[14].FA_/n2 , \ADD_/FAINST[14].FA_/n1 ,
+         \ADD_/FAINST[13].FA_/n3 , \ADD_/FAINST[13].FA_/n2 ,
+         \ADD_/FAINST[13].FA_/n1 , \ADD_/FAINST[12].FA_/n3 ,
+         \ADD_/FAINST[12].FA_/n2 , \ADD_/FAINST[12].FA_/n1 ,
+         \ADD_/FAINST[11].FA_/n3 , \ADD_/FAINST[11].FA_/n2 ,
+         \ADD_/FAINST[11].FA_/n1 , \ADD_/FAINST[10].FA_/n3 ,
+         \ADD_/FAINST[10].FA_/n2 , \ADD_/FAINST[10].FA_/n1 ,
+         \ADD_/FAINST[9].FA_/n3 , \ADD_/FAINST[9].FA_/n2 ,
+         \ADD_/FAINST[9].FA_/n1 , \ADD_/FAINST[8].FA_/n3 ,
+         \ADD_/FAINST[8].FA_/n2 , \ADD_/FAINST[8].FA_/n1 ,
+         \ADD_/FAINST[7].FA_/n3 , \ADD_/FAINST[7].FA_/n2 ,
+         \ADD_/FAINST[7].FA_/n1 , \ADD_/FAINST[6].FA_/n3 ,
+         \ADD_/FAINST[6].FA_/n2 , \ADD_/FAINST[6].FA_/n1 ,
+         \ADD_/FAINST[5].FA_/n3 , \ADD_/FAINST[5].FA_/n2 ,
+         \ADD_/FAINST[5].FA_/n1 , \ADD_/FAINST[4].FA_/n3 ,
+         \ADD_/FAINST[4].FA_/n2 , \ADD_/FAINST[4].FA_/n1 ,
+         \ADD_/FAINST[3].FA_/n3 , \ADD_/FAINST[3].FA_/n2 ,
+         \ADD_/FAINST[3].FA_/n1 , \ADD_/FAINST[2].FA_/n3 ,
+         \ADD_/FAINST[2].FA_/n2 , \ADD_/FAINST[2].FA_/n1 ,
+         \ADD_/FAINST[1].FA_/n3 , \ADD_/FAINST[1].FA_/n2 ,
+         \ADD_/FAINST[1].FA_/n1 ;
 
   DFF carry_on_reg ( .D(carry_on_d), .CLK(clk), .RST(rst), .Q(carry_on) );
-  XOR U3 ( .A(a[0]), .B(b[0]), .Z(n1) );
-  XOR U4 ( .A(n1), .B(carry_on), .Z(c[0]) );
-  XOR U5 ( .A(a[1]), .B(b[1]), .Z(n5) );
-  NAND U6 ( .A(a[0]), .B(b[0]), .Z(n3) );
-  NAND U7 ( .A(n1), .B(carry_on), .Z(n2) );
-  NAND U8 ( .A(n3), .B(n2), .Z(n4) );
-  XOR U9 ( .A(n5), .B(n4), .Z(c[1]) );
-  XOR U10 ( .A(a[2]), .B(b[2]), .Z(n9) );
-  NAND U11 ( .A(a[1]), .B(b[1]), .Z(n7) );
-  NAND U12 ( .A(n5), .B(n4), .Z(n6) );
-  NAND U13 ( .A(n7), .B(n6), .Z(n8) );
-  XOR U14 ( .A(n9), .B(n8), .Z(c[2]) );
-  XOR U15 ( .A(a[3]), .B(b[3]), .Z(n13) );
-  NAND U16 ( .A(a[2]), .B(b[2]), .Z(n11) );
-  NAND U17 ( .A(n9), .B(n8), .Z(n10) );
-  NAND U18 ( .A(n11), .B(n10), .Z(n12) );
-  XOR U19 ( .A(n13), .B(n12), .Z(c[3]) );
-  XOR U20 ( .A(a[4]), .B(b[4]), .Z(n17) );
-  NAND U21 ( .A(a[3]), .B(b[3]), .Z(n15) );
-  NAND U22 ( .A(n13), .B(n12), .Z(n14) );
-  NAND U23 ( .A(n15), .B(n14), .Z(n16) );
-  XOR U24 ( .A(n17), .B(n16), .Z(c[4]) );
-  XOR U25 ( .A(a[5]), .B(b[5]), .Z(n21) );
-  NAND U26 ( .A(a[4]), .B(b[4]), .Z(n19) );
-  NAND U27 ( .A(n17), .B(n16), .Z(n18) );
-  NAND U28 ( .A(n19), .B(n18), .Z(n20) );
-  XOR U29 ( .A(n21), .B(n20), .Z(c[5]) );
-  XOR U30 ( .A(a[6]), .B(b[6]), .Z(n25) );
-  NAND U31 ( .A(a[5]), .B(b[5]), .Z(n23) );
-  NAND U32 ( .A(n21), .B(n20), .Z(n22) );
-  NAND U33 ( .A(n23), .B(n22), .Z(n24) );
-  XOR U34 ( .A(n25), .B(n24), .Z(c[6]) );
-  XOR U35 ( .A(a[7]), .B(b[7]), .Z(n29) );
-  NAND U36 ( .A(a[6]), .B(b[6]), .Z(n27) );
-  NAND U37 ( .A(n25), .B(n24), .Z(n26) );
-  NAND U38 ( .A(n27), .B(n26), .Z(n28) );
-  XOR U39 ( .A(n29), .B(n28), .Z(c[7]) );
-  XOR U40 ( .A(a[8]), .B(b[8]), .Z(n33) );
-  NAND U41 ( .A(a[7]), .B(b[7]), .Z(n31) );
-  NAND U42 ( .A(n29), .B(n28), .Z(n30) );
-  NAND U43 ( .A(n31), .B(n30), .Z(n32) );
-  XOR U44 ( .A(n33), .B(n32), .Z(c[8]) );
-  XOR U45 ( .A(a[9]), .B(b[9]), .Z(n37) );
-  NAND U46 ( .A(a[8]), .B(b[8]), .Z(n35) );
-  NAND U47 ( .A(n33), .B(n32), .Z(n34) );
-  NAND U48 ( .A(n35), .B(n34), .Z(n36) );
-  XOR U49 ( .A(n37), .B(n36), .Z(c[9]) );
-  XOR U50 ( .A(a[10]), .B(b[10]), .Z(n41) );
-  NAND U51 ( .A(a[9]), .B(b[9]), .Z(n39) );
-  NAND U52 ( .A(n37), .B(n36), .Z(n38) );
-  NAND U53 ( .A(n39), .B(n38), .Z(n40) );
-  XOR U54 ( .A(n41), .B(n40), .Z(c[10]) );
-  XOR U55 ( .A(a[11]), .B(b[11]), .Z(n45) );
-  NAND U56 ( .A(a[10]), .B(b[10]), .Z(n43) );
-  NAND U57 ( .A(n41), .B(n40), .Z(n42) );
-  NAND U58 ( .A(n43), .B(n42), .Z(n44) );
-  XOR U59 ( .A(n45), .B(n44), .Z(c[11]) );
-  XOR U60 ( .A(a[12]), .B(b[12]), .Z(n49) );
-  NAND U61 ( .A(a[11]), .B(b[11]), .Z(n47) );
-  NAND U62 ( .A(n45), .B(n44), .Z(n46) );
-  NAND U63 ( .A(n47), .B(n46), .Z(n48) );
-  XOR U64 ( .A(n49), .B(n48), .Z(c[12]) );
-  XOR U65 ( .A(a[13]), .B(b[13]), .Z(n53) );
-  NAND U66 ( .A(a[12]), .B(b[12]), .Z(n51) );
-  NAND U67 ( .A(n49), .B(n48), .Z(n50) );
-  NAND U68 ( .A(n51), .B(n50), .Z(n52) );
-  XOR U69 ( .A(n53), .B(n52), .Z(c[13]) );
-  XOR U70 ( .A(a[14]), .B(b[14]), .Z(n57) );
-  NAND U71 ( .A(a[13]), .B(b[13]), .Z(n55) );
-  NAND U72 ( .A(n53), .B(n52), .Z(n54) );
-  NAND U73 ( .A(n55), .B(n54), .Z(n56) );
-  XOR U74 ( .A(n57), .B(n56), .Z(c[14]) );
-  NAND U75 ( .A(a[14]), .B(b[14]), .Z(n59) );
-  NAND U76 ( .A(n57), .B(n56), .Z(n58) );
-  AND U77 ( .A(n59), .B(n58), .Z(n61) );
-  XOR U78 ( .A(a[15]), .B(b[15]), .Z(n60) );
-  XNOR U79 ( .A(n61), .B(n60), .Z(c[15]) );
-  NAND U80 ( .A(a[15]), .B(b[15]), .Z(n63) );
-  NANDN U81 ( .A(n61), .B(n60), .Z(n62) );
-  NAND U82 ( .A(n63), .B(n62), .Z(carry_on_d) );
+  XOR \ADD_/FAINST[0].FA_/U5  ( .A(\ADD_/FAINST[0].FA_/n3 ), .B(carry_on), .Z(
+        \ADD_/c[1] ) );
+  XOR \ADD_/FAINST[0].FA_/U4  ( .A(\ADD_/FAINST[0].FA_/n1 ), .B(b[0]), .Z(c[0]) );
+  AND \ADD_/FAINST[0].FA_/U3  ( .A(\ADD_/FAINST[0].FA_/n1 ), .B(
+        \ADD_/FAINST[0].FA_/n2 ), .Z(\ADD_/FAINST[0].FA_/n3 ) );
+  XOR \ADD_/FAINST[0].FA_/U2  ( .A(b[0]), .B(carry_on), .Z(
+        \ADD_/FAINST[0].FA_/n2 ) );
+  XOR \ADD_/FAINST[0].FA_/U1  ( .A(a[0]), .B(carry_on), .Z(
+        \ADD_/FAINST[0].FA_/n1 ) );
+  XOR \ADD_/FAINST[15].FA_/U5  ( .A(\ADD_/FAINST[15].FA_/n3 ), .B(\ADD_/c[15] ), .Z(carry_on_d) );
+  XOR \ADD_/FAINST[15].FA_/U4  ( .A(\ADD_/FAINST[15].FA_/n1 ), .B(b[15]), .Z(
+        c[15]) );
+  AND \ADD_/FAINST[15].FA_/U3  ( .A(\ADD_/FAINST[15].FA_/n1 ), .B(
+        \ADD_/FAINST[15].FA_/n2 ), .Z(\ADD_/FAINST[15].FA_/n3 ) );
+  XOR \ADD_/FAINST[15].FA_/U2  ( .A(b[15]), .B(\ADD_/c[15] ), .Z(
+        \ADD_/FAINST[15].FA_/n2 ) );
+  XOR \ADD_/FAINST[15].FA_/U1  ( .A(a[15]), .B(\ADD_/c[15] ), .Z(
+        \ADD_/FAINST[15].FA_/n1 ) );
+  XOR \ADD_/FAINST[14].FA_/U5  ( .A(\ADD_/FAINST[14].FA_/n3 ), .B(\ADD_/c[14] ), .Z(\ADD_/c[15] ) );
+  XOR \ADD_/FAINST[14].FA_/U4  ( .A(\ADD_/FAINST[14].FA_/n1 ), .B(b[14]), .Z(
+        c[14]) );
+  AND \ADD_/FAINST[14].FA_/U3  ( .A(\ADD_/FAINST[14].FA_/n1 ), .B(
+        \ADD_/FAINST[14].FA_/n2 ), .Z(\ADD_/FAINST[14].FA_/n3 ) );
+  XOR \ADD_/FAINST[14].FA_/U2  ( .A(b[14]), .B(\ADD_/c[14] ), .Z(
+        \ADD_/FAINST[14].FA_/n2 ) );
+  XOR \ADD_/FAINST[14].FA_/U1  ( .A(a[14]), .B(\ADD_/c[14] ), .Z(
+        \ADD_/FAINST[14].FA_/n1 ) );
+  XOR \ADD_/FAINST[13].FA_/U5  ( .A(\ADD_/FAINST[13].FA_/n3 ), .B(\ADD_/c[13] ), .Z(\ADD_/c[14] ) );
+  XOR \ADD_/FAINST[13].FA_/U4  ( .A(\ADD_/FAINST[13].FA_/n1 ), .B(b[13]), .Z(
+        c[13]) );
+  AND \ADD_/FAINST[13].FA_/U3  ( .A(\ADD_/FAINST[13].FA_/n1 ), .B(
+        \ADD_/FAINST[13].FA_/n2 ), .Z(\ADD_/FAINST[13].FA_/n3 ) );
+  XOR \ADD_/FAINST[13].FA_/U2  ( .A(b[13]), .B(\ADD_/c[13] ), .Z(
+        \ADD_/FAINST[13].FA_/n2 ) );
+  XOR \ADD_/FAINST[13].FA_/U1  ( .A(a[13]), .B(\ADD_/c[13] ), .Z(
+        \ADD_/FAINST[13].FA_/n1 ) );
+  XOR \ADD_/FAINST[12].FA_/U5  ( .A(\ADD_/FAINST[12].FA_/n3 ), .B(\ADD_/c[12] ), .Z(\ADD_/c[13] ) );
+  XOR \ADD_/FAINST[12].FA_/U4  ( .A(\ADD_/FAINST[12].FA_/n1 ), .B(b[12]), .Z(
+        c[12]) );
+  AND \ADD_/FAINST[12].FA_/U3  ( .A(\ADD_/FAINST[12].FA_/n1 ), .B(
+        \ADD_/FAINST[12].FA_/n2 ), .Z(\ADD_/FAINST[12].FA_/n3 ) );
+  XOR \ADD_/FAINST[12].FA_/U2  ( .A(b[12]), .B(\ADD_/c[12] ), .Z(
+        \ADD_/FAINST[12].FA_/n2 ) );
+  XOR \ADD_/FAINST[12].FA_/U1  ( .A(a[12]), .B(\ADD_/c[12] ), .Z(
+        \ADD_/FAINST[12].FA_/n1 ) );
+  XOR \ADD_/FAINST[11].FA_/U5  ( .A(\ADD_/FAINST[11].FA_/n3 ), .B(\ADD_/c[11] ), .Z(\ADD_/c[12] ) );
+  XOR \ADD_/FAINST[11].FA_/U4  ( .A(\ADD_/FAINST[11].FA_/n1 ), .B(b[11]), .Z(
+        c[11]) );
+  AND \ADD_/FAINST[11].FA_/U3  ( .A(\ADD_/FAINST[11].FA_/n1 ), .B(
+        \ADD_/FAINST[11].FA_/n2 ), .Z(\ADD_/FAINST[11].FA_/n3 ) );
+  XOR \ADD_/FAINST[11].FA_/U2  ( .A(b[11]), .B(\ADD_/c[11] ), .Z(
+        \ADD_/FAINST[11].FA_/n2 ) );
+  XOR \ADD_/FAINST[11].FA_/U1  ( .A(a[11]), .B(\ADD_/c[11] ), .Z(
+        \ADD_/FAINST[11].FA_/n1 ) );
+  XOR \ADD_/FAINST[10].FA_/U5  ( .A(\ADD_/FAINST[10].FA_/n3 ), .B(\ADD_/c[10] ), .Z(\ADD_/c[11] ) );
+  XOR \ADD_/FAINST[10].FA_/U4  ( .A(\ADD_/FAINST[10].FA_/n1 ), .B(b[10]), .Z(
+        c[10]) );
+  AND \ADD_/FAINST[10].FA_/U3  ( .A(\ADD_/FAINST[10].FA_/n1 ), .B(
+        \ADD_/FAINST[10].FA_/n2 ), .Z(\ADD_/FAINST[10].FA_/n3 ) );
+  XOR \ADD_/FAINST[10].FA_/U2  ( .A(b[10]), .B(\ADD_/c[10] ), .Z(
+        \ADD_/FAINST[10].FA_/n2 ) );
+  XOR \ADD_/FAINST[10].FA_/U1  ( .A(a[10]), .B(\ADD_/c[10] ), .Z(
+        \ADD_/FAINST[10].FA_/n1 ) );
+  XOR \ADD_/FAINST[9].FA_/U5  ( .A(\ADD_/FAINST[9].FA_/n3 ), .B(\ADD_/c[9] ), 
+        .Z(\ADD_/c[10] ) );
+  XOR \ADD_/FAINST[9].FA_/U4  ( .A(\ADD_/FAINST[9].FA_/n1 ), .B(b[9]), .Z(c[9]) );
+  AND \ADD_/FAINST[9].FA_/U3  ( .A(\ADD_/FAINST[9].FA_/n1 ), .B(
+        \ADD_/FAINST[9].FA_/n2 ), .Z(\ADD_/FAINST[9].FA_/n3 ) );
+  XOR \ADD_/FAINST[9].FA_/U2  ( .A(b[9]), .B(\ADD_/c[9] ), .Z(
+        \ADD_/FAINST[9].FA_/n2 ) );
+  XOR \ADD_/FAINST[9].FA_/U1  ( .A(a[9]), .B(\ADD_/c[9] ), .Z(
+        \ADD_/FAINST[9].FA_/n1 ) );
+  XOR \ADD_/FAINST[8].FA_/U5  ( .A(\ADD_/FAINST[8].FA_/n3 ), .B(\ADD_/c[8] ), 
+        .Z(\ADD_/c[9] ) );
+  XOR \ADD_/FAINST[8].FA_/U4  ( .A(\ADD_/FAINST[8].FA_/n1 ), .B(b[8]), .Z(c[8]) );
+  AND \ADD_/FAINST[8].FA_/U3  ( .A(\ADD_/FAINST[8].FA_/n1 ), .B(
+        \ADD_/FAINST[8].FA_/n2 ), .Z(\ADD_/FAINST[8].FA_/n3 ) );
+  XOR \ADD_/FAINST[8].FA_/U2  ( .A(b[8]), .B(\ADD_/c[8] ), .Z(
+        \ADD_/FAINST[8].FA_/n2 ) );
+  XOR \ADD_/FAINST[8].FA_/U1  ( .A(a[8]), .B(\ADD_/c[8] ), .Z(
+        \ADD_/FAINST[8].FA_/n1 ) );
+  XOR \ADD_/FAINST[7].FA_/U5  ( .A(\ADD_/FAINST[7].FA_/n3 ), .B(\ADD_/c[7] ), 
+        .Z(\ADD_/c[8] ) );
+  XOR \ADD_/FAINST[7].FA_/U4  ( .A(\ADD_/FAINST[7].FA_/n1 ), .B(b[7]), .Z(c[7]) );
+  AND \ADD_/FAINST[7].FA_/U3  ( .A(\ADD_/FAINST[7].FA_/n1 ), .B(
+        \ADD_/FAINST[7].FA_/n2 ), .Z(\ADD_/FAINST[7].FA_/n3 ) );
+  XOR \ADD_/FAINST[7].FA_/U2  ( .A(b[7]), .B(\ADD_/c[7] ), .Z(
+        \ADD_/FAINST[7].FA_/n2 ) );
+  XOR \ADD_/FAINST[7].FA_/U1  ( .A(a[7]), .B(\ADD_/c[7] ), .Z(
+        \ADD_/FAINST[7].FA_/n1 ) );
+  XOR \ADD_/FAINST[6].FA_/U5  ( .A(\ADD_/FAINST[6].FA_/n3 ), .B(\ADD_/c[6] ), 
+        .Z(\ADD_/c[7] ) );
+  XOR \ADD_/FAINST[6].FA_/U4  ( .A(\ADD_/FAINST[6].FA_/n1 ), .B(b[6]), .Z(c[6]) );
+  AND \ADD_/FAINST[6].FA_/U3  ( .A(\ADD_/FAINST[6].FA_/n1 ), .B(
+        \ADD_/FAINST[6].FA_/n2 ), .Z(\ADD_/FAINST[6].FA_/n3 ) );
+  XOR \ADD_/FAINST[6].FA_/U2  ( .A(b[6]), .B(\ADD_/c[6] ), .Z(
+        \ADD_/FAINST[6].FA_/n2 ) );
+  XOR \ADD_/FAINST[6].FA_/U1  ( .A(a[6]), .B(\ADD_/c[6] ), .Z(
+        \ADD_/FAINST[6].FA_/n1 ) );
+  XOR \ADD_/FAINST[5].FA_/U5  ( .A(\ADD_/FAINST[5].FA_/n3 ), .B(\ADD_/c[5] ), 
+        .Z(\ADD_/c[6] ) );
+  XOR \ADD_/FAINST[5].FA_/U4  ( .A(\ADD_/FAINST[5].FA_/n1 ), .B(b[5]), .Z(c[5]) );
+  AND \ADD_/FAINST[5].FA_/U3  ( .A(\ADD_/FAINST[5].FA_/n1 ), .B(
+        \ADD_/FAINST[5].FA_/n2 ), .Z(\ADD_/FAINST[5].FA_/n3 ) );
+  XOR \ADD_/FAINST[5].FA_/U2  ( .A(b[5]), .B(\ADD_/c[5] ), .Z(
+        \ADD_/FAINST[5].FA_/n2 ) );
+  XOR \ADD_/FAINST[5].FA_/U1  ( .A(a[5]), .B(\ADD_/c[5] ), .Z(
+        \ADD_/FAINST[5].FA_/n1 ) );
+  XOR \ADD_/FAINST[4].FA_/U5  ( .A(\ADD_/FAINST[4].FA_/n3 ), .B(\ADD_/c[4] ), 
+        .Z(\ADD_/c[5] ) );
+  XOR \ADD_/FAINST[4].FA_/U4  ( .A(\ADD_/FAINST[4].FA_/n1 ), .B(b[4]), .Z(c[4]) );
+  AND \ADD_/FAINST[4].FA_/U3  ( .A(\ADD_/FAINST[4].FA_/n1 ), .B(
+        \ADD_/FAINST[4].FA_/n2 ), .Z(\ADD_/FAINST[4].FA_/n3 ) );
+  XOR \ADD_/FAINST[4].FA_/U2  ( .A(b[4]), .B(\ADD_/c[4] ), .Z(
+        \ADD_/FAINST[4].FA_/n2 ) );
+  XOR \ADD_/FAINST[4].FA_/U1  ( .A(a[4]), .B(\ADD_/c[4] ), .Z(
+        \ADD_/FAINST[4].FA_/n1 ) );
+  XOR \ADD_/FAINST[3].FA_/U5  ( .A(\ADD_/FAINST[3].FA_/n3 ), .B(\ADD_/c[3] ), 
+        .Z(\ADD_/c[4] ) );
+  XOR \ADD_/FAINST[3].FA_/U4  ( .A(\ADD_/FAINST[3].FA_/n1 ), .B(b[3]), .Z(c[3]) );
+  AND \ADD_/FAINST[3].FA_/U3  ( .A(\ADD_/FAINST[3].FA_/n1 ), .B(
+        \ADD_/FAINST[3].FA_/n2 ), .Z(\ADD_/FAINST[3].FA_/n3 ) );
+  XOR \ADD_/FAINST[3].FA_/U2  ( .A(b[3]), .B(\ADD_/c[3] ), .Z(
+        \ADD_/FAINST[3].FA_/n2 ) );
+  XOR \ADD_/FAINST[3].FA_/U1  ( .A(a[3]), .B(\ADD_/c[3] ), .Z(
+        \ADD_/FAINST[3].FA_/n1 ) );
+  XOR \ADD_/FAINST[2].FA_/U5  ( .A(\ADD_/FAINST[2].FA_/n3 ), .B(\ADD_/c[2] ), 
+        .Z(\ADD_/c[3] ) );
+  XOR \ADD_/FAINST[2].FA_/U4  ( .A(\ADD_/FAINST[2].FA_/n1 ), .B(b[2]), .Z(c[2]) );
+  AND \ADD_/FAINST[2].FA_/U3  ( .A(\ADD_/FAINST[2].FA_/n1 ), .B(
+        \ADD_/FAINST[2].FA_/n2 ), .Z(\ADD_/FAINST[2].FA_/n3 ) );
+  XOR \ADD_/FAINST[2].FA_/U2  ( .A(b[2]), .B(\ADD_/c[2] ), .Z(
+        \ADD_/FAINST[2].FA_/n2 ) );
+  XOR \ADD_/FAINST[2].FA_/U1  ( .A(a[2]), .B(\ADD_/c[2] ), .Z(
+        \ADD_/FAINST[2].FA_/n1 ) );
+  XOR \ADD_/FAINST[1].FA_/U5  ( .A(\ADD_/FAINST[1].FA_/n3 ), .B(\ADD_/c[1] ), 
+        .Z(\ADD_/c[2] ) );
+  XOR \ADD_/FAINST[1].FA_/U4  ( .A(\ADD_/FAINST[1].FA_/n1 ), .B(b[1]), .Z(c[1]) );
+  AND \ADD_/FAINST[1].FA_/U3  ( .A(\ADD_/FAINST[1].FA_/n1 ), .B(
+        \ADD_/FAINST[1].FA_/n2 ), .Z(\ADD_/FAINST[1].FA_/n3 ) );
+  XOR \ADD_/FAINST[1].FA_/U2  ( .A(b[1]), .B(\ADD_/c[1] ), .Z(
+        \ADD_/FAINST[1].FA_/n2 ) );
+  XOR \ADD_/FAINST[1].FA_/U1  ( .A(a[1]), .B(\ADD_/c[1] ), .Z(
+        \ADD_/FAINST[1].FA_/n1 ) );
 endmodule
 

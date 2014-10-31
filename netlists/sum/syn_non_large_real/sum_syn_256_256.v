@@ -4,13 +4,18 @@ module sum_N256_CC256 ( clk, rst, a, b, c );
   input [0:0] b;
   output [0:0] c;
   input clk, rst;
-  wire   carry_on, carry_on_d, n4, n5, n6;
+  wire   carry_on, carry_on_d, \ADD_/FAINST[0].FA_/n3 ,
+         \ADD_/FAINST[0].FA_/n2 , \ADD_/FAINST[0].FA_/n1 ;
 
   DFF carry_on_reg ( .D(carry_on_d), .CLK(clk), .RST(rst), .Q(carry_on) );
-  NAND U8 ( .A(a[0]), .B(b[0]), .Z(n4) );
-  NANDN U9 ( .A(n6), .B(carry_on), .Z(n5) );
-  NAND U10 ( .A(n4), .B(n5), .Z(carry_on_d) );
-  XNOR U11 ( .A(a[0]), .B(b[0]), .Z(n6) );
-  XNOR U12 ( .A(carry_on), .B(n6), .Z(c[0]) );
+  XOR \ADD_/FAINST[0].FA_/U5  ( .A(\ADD_/FAINST[0].FA_/n3 ), .B(carry_on), .Z(
+        carry_on_d) );
+  XOR \ADD_/FAINST[0].FA_/U4  ( .A(\ADD_/FAINST[0].FA_/n1 ), .B(b[0]), .Z(c[0]) );
+  AND \ADD_/FAINST[0].FA_/U3  ( .A(\ADD_/FAINST[0].FA_/n1 ), .B(
+        \ADD_/FAINST[0].FA_/n2 ), .Z(\ADD_/FAINST[0].FA_/n3 ) );
+  XOR \ADD_/FAINST[0].FA_/U2  ( .A(b[0]), .B(carry_on), .Z(
+        \ADD_/FAINST[0].FA_/n2 ) );
+  XOR \ADD_/FAINST[0].FA_/U1  ( .A(a[0]), .B(carry_on), .Z(
+        \ADD_/FAINST[0].FA_/n1 ) );
 endmodule
 
