@@ -45,8 +45,8 @@ Here is how to compile a verilog file named "hamming.v" using the custom library
 	$ ./yosys
 	yosys> read_verilog Synthesis_yosys-abc/hamming.v
 	yosys> hierarchy -check -top hamming
-	yosys> proc; opt; memory; opt; techmap; opt; 
-	yosys> abc -liberty Synthesis_yosys-abc/asic_cell.lib
+	yosys> proc; opt; memory; opt; fsm; opt; techmap; opt; 
+	yosys> abc -liberty Synthesis_yosys-abc/asic_cell_extended.lib
 	yosys> opt
 	yosys> write_verilog Synthesis_yosys-abc/hamming_synth.v
 	yosys> exit
