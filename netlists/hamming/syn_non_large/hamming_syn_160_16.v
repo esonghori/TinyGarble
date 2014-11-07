@@ -1,0 +1,88 @@
+
+module hamming_N160_CC16 ( clk, rst, x, y, o );
+  input [9:0] x;
+  input [9:0] y;
+  output [7:0] o;
+  input clk, rst;
+  wire   n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16,
+         n17, n18, n19, n20, n21, n22, n23, n24, n25, n26, n27, n28, n29, n30,
+         n31, n32, n33, n34, n35, n36, n37, n38, n39, n40, n41, n42, n43, n44,
+         n45, n46, n47, n48, n49, n50, n51, n52, n53, n54, n55, n56, n57, n58;
+  wire   [7:0] oglobal;
+
+  DFF \oglobal_reg[7]  ( .D(o[7]), .CLK(clk), .RST(rst), .Q(oglobal[7]) );
+  DFF \oglobal_reg[6]  ( .D(o[6]), .CLK(clk), .RST(rst), .Q(oglobal[6]) );
+  DFF \oglobal_reg[5]  ( .D(o[5]), .CLK(clk), .RST(rst), .Q(oglobal[5]) );
+  DFF \oglobal_reg[4]  ( .D(o[4]), .CLK(clk), .RST(rst), .Q(oglobal[4]) );
+  DFF \oglobal_reg[3]  ( .D(o[3]), .CLK(clk), .RST(rst), .Q(oglobal[3]) );
+  DFF \oglobal_reg[2]  ( .D(o[2]), .CLK(clk), .RST(rst), .Q(oglobal[2]) );
+  DFF \oglobal_reg[1]  ( .D(o[1]), .CLK(clk), .RST(rst), .Q(oglobal[1]) );
+  DFF \oglobal_reg[0]  ( .D(o[0]), .CLK(clk), .RST(rst), .Q(oglobal[0]) );
+  OR U13 ( .A(n14), .B(n13), .Z(n1) );
+  NANDN U14 ( .A(n16), .B(n15), .Z(n2) );
+  NAND U15 ( .A(n1), .B(n2), .Z(n30) );
+  OR U16 ( .A(n27), .B(n26), .Z(n3) );
+  NANDN U17 ( .A(n29), .B(n28), .Z(n4) );
+  AND U18 ( .A(n3), .B(n4), .Z(n32) );
+  OR U19 ( .A(n23), .B(n22), .Z(n5) );
+  NANDN U20 ( .A(n24), .B(n25), .Z(n6) );
+  NAND U21 ( .A(n5), .B(n6), .Z(n31) );
+  XNOR U22 ( .A(x[4]), .B(y[4]), .Z(n16) );
+  XNOR U23 ( .A(x[8]), .B(y[8]), .Z(n14) );
+  XNOR U24 ( .A(x[6]), .B(y[6]), .Z(n13) );
+  XOR U25 ( .A(n14), .B(n13), .Z(n15) );
+  XOR U26 ( .A(n16), .B(n15), .Z(n24) );
+  XNOR U27 ( .A(x[9]), .B(y[9]), .Z(n23) );
+  XNOR U28 ( .A(x[7]), .B(y[7]), .Z(n22) );
+  XOR U29 ( .A(n23), .B(n22), .Z(n25) );
+  XNOR U30 ( .A(n24), .B(n25), .Z(n7) );
+  XNOR U31 ( .A(x[0]), .B(y[0]), .Z(n19) );
+  XOR U32 ( .A(x[2]), .B(y[2]), .Z(n17) );
+  XNOR U33 ( .A(oglobal[0]), .B(n17), .Z(n18) );
+  XOR U34 ( .A(n19), .B(n18), .Z(n8) );
+  XOR U35 ( .A(n7), .B(n8), .Z(n9) );
+  XNOR U36 ( .A(x[5]), .B(y[5]), .Z(n29) );
+  XNOR U37 ( .A(x[3]), .B(y[3]), .Z(n27) );
+  XNOR U38 ( .A(x[1]), .B(y[1]), .Z(n26) );
+  XOR U39 ( .A(n27), .B(n26), .Z(n28) );
+  XOR U40 ( .A(n29), .B(n28), .Z(n10) );
+  XNOR U41 ( .A(n9), .B(n10), .Z(o[0]) );
+  NAND U42 ( .A(n8), .B(n7), .Z(n12) );
+  NANDN U43 ( .A(n10), .B(n9), .Z(n11) );
+  NAND U44 ( .A(n12), .B(n11), .Z(n37) );
+  XNOR U45 ( .A(n30), .B(oglobal[1]), .Z(n38) );
+  XNOR U46 ( .A(n37), .B(n38), .Z(n39) );
+  NAND U47 ( .A(n17), .B(oglobal[0]), .Z(n21) );
+  OR U48 ( .A(n19), .B(n18), .Z(n20) );
+  NAND U49 ( .A(n21), .B(n20), .Z(n34) );
+  XNOR U50 ( .A(n31), .B(n32), .Z(n33) );
+  XNOR U51 ( .A(n34), .B(n33), .Z(n40) );
+  XNOR U52 ( .A(n39), .B(n40), .Z(o[1]) );
+  NAND U53 ( .A(n30), .B(oglobal[1]), .Z(n43) );
+  XOR U54 ( .A(oglobal[2]), .B(n43), .Z(n45) );
+  NANDN U55 ( .A(n32), .B(n31), .Z(n36) );
+  NAND U56 ( .A(n34), .B(n33), .Z(n35) );
+  NAND U57 ( .A(n36), .B(n35), .Z(n44) );
+  XNOR U58 ( .A(n45), .B(n44), .Z(n46) );
+  NANDN U59 ( .A(n38), .B(n37), .Z(n42) );
+  NANDN U60 ( .A(n40), .B(n39), .Z(n41) );
+  AND U61 ( .A(n42), .B(n41), .Z(n47) );
+  XNOR U62 ( .A(n46), .B(n47), .Z(o[2]) );
+  NANDN U63 ( .A(n43), .B(oglobal[2]), .Z(n50) );
+  XOR U64 ( .A(oglobal[3]), .B(n50), .Z(n52) );
+  NANDN U65 ( .A(n45), .B(n44), .Z(n49) );
+  NANDN U66 ( .A(n47), .B(n46), .Z(n48) );
+  AND U67 ( .A(n49), .B(n48), .Z(n51) );
+  XOR U68 ( .A(n52), .B(n51), .Z(o[3]) );
+  NANDN U69 ( .A(n50), .B(oglobal[3]), .Z(n54) );
+  OR U70 ( .A(n52), .B(n51), .Z(n53) );
+  AND U71 ( .A(n54), .B(n53), .Z(n55) );
+  XNOR U72 ( .A(oglobal[4]), .B(n55), .Z(o[4]) );
+  NANDN U73 ( .A(n55), .B(oglobal[4]), .Z(n56) );
+  XNOR U74 ( .A(n56), .B(oglobal[5]), .Z(o[5]) );
+  NANDN U75 ( .A(n56), .B(oglobal[5]), .Z(n57) );
+  XNOR U76 ( .A(oglobal[6]), .B(n57), .Z(o[6]) );
+  NANDN U77 ( .A(n57), .B(oglobal[6]), .Z(n58) );
+  XNOR U78 ( .A(oglobal[7]), .B(n58), .Z(o[7]) );
+endmodule
+

@@ -1,0 +1,4 @@
+set search_path .
+read_lib dff_full.lib
+write_lib dff_full -format db
+exit

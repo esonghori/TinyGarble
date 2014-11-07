@@ -1,0 +1,19 @@
+library(demo) {
+	cell(IV) {
+		area: 1;
+		pin(A) { direction: input; }
+		pin(Y) { direction: output; function: "A'"; }
+	}
+	cell(XOR) {
+		area: 1;
+		pin(A) { direction: input; }
+		pin(B) { direction: input; }
+		pin(Y) { direction: output; function: "(A^B)"; }
+	}	
+	cell(NOR) {
+		area: 5;
+		pin(A) { direction: input; }
+		pin(B) { direction: input; }
+		pin(Y) { direction: output; function: "(A+B)'"; }
+	}
+}

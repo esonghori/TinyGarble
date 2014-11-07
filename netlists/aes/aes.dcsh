@@ -1,0 +1,22 @@
+set search_path [concat . ../lib/dff_full_large_non/]
+set target_library ../lib/dff_full_large_non/dff_full.db
+set link_library ../lib/dff_full_large_non/dff_full.db
+set symbol_library ../lib/generic.sdb
+analyze -format verilog aes_seq.v
+analyze -format verilog aes_comb.v
+analyze -format verilog AddRoundKey.v
+analyze -format verilog SubBytes.v 
+analyze -format verilog ShiftRows.v 
+analyze -format verilog MixColumns.v 
+
+foreach cc {10 5 2} {
+elaborate aes_seq -architecture verilog -library DEFAULT -update -parameters $cc
+set_max_area 0
+compile_ultra -exact_map -no_design_rule -area_high_effort_script
+write -hierarchy -format verilog -output aes_$cc\_syn.v
+}
+
+elaborate aes_comb -architecture verilog -library DEFAULT -update
+set_max_area 0
+compile_ultra -exact_map -no_design_rule -area_high_effort_script
+write -hierarchy -format verilog -output aes_1_syn.v

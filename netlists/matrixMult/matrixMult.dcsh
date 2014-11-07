@@ -1,0 +1,16 @@
+set search_path [concat . ../lib/dff_full_large_non/]
+set target_library ../lib/dff_full_large_non/dff_full.db
+set link_library ../lib/dff_full_large_non/dff_full.db
+set symbol_library ../lib/generic.sdb
+foreach cc {0 1 2 3} {
+analyze -format verilog matrixMult_N_M_$cc.v
+}
+# m =32
+foreach n {8 16} {
+foreach cc {0} {
+elaborate matrixMult_N_M_$cc -architecture verilog -library DEFAULT -update -parameters $n,32
+set_max_area 0
+compile
+write -hierarchy -format verilog -output matrixMult_syn_$n\_32_$cc.v
+}
+}
