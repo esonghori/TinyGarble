@@ -13,7 +13,7 @@ foreach cc {10 5 2} {
 elaborate aes_seq -architecture verilog -library DEFAULT -update -parameters $cc
 set_max_area 0
 compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output aes_$cc_syn.v
+write -hierarchy -format verilog -output aes_$cc\_syn.v
 }
 
 elaborate aes_comb -architecture verilog -library DEFAULT -update
