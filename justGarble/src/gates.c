@@ -144,9 +144,8 @@ int fixedZeroWire(GarbledCircuit *garbledCircuit,
 	wire->label0 = randomBlock();
 	wire->label1 = xorBlocks(garblingContext->R, wire->label0);
 
-#ifdef WRITECIRCUIT
 	printf("\twire w%d;\n\tassign w%d = 1'b0;\n", ind, ind);
-#endif
+
 	return ind;
 
 }
@@ -159,10 +158,8 @@ int fixedOneWire(GarbledCircuit *garbledCircuit,
 	wire->label0 = randomBlock();
 	wire->label1 = xorBlocks(garblingContext->R, wire->label0);
 
-#ifdef WRITECIRCUIT
 	printf("\twire w%d;\n\tassign w%d = 1'b1;\n", ind, ind);
-#endif
-	
+
 	return ind;
 }
 

@@ -78,6 +78,7 @@ typedef struct GarbledCircuit{
 	Wire* wires;
 	int *outputs;
 	int *S;
+	int *I;
 	long id;
 	block globalKey;
 } GarbledCircuit;
@@ -123,7 +124,7 @@ typedef block* OutputMap;
 // data-structure just before calling garbleCircuit.
 int startBuilding(GarbledCircuit *gc, GarblingContext *ctx);
 long finishBuilding(GarbledCircuit *garbledCircuit,
-		GarblingContext *garbledContext, int *outputs,  int *S);
+		GarblingContext *garbledContext, int *outputs,  int *S, int *I);
 
 
 // Create memory for an empty circuit of the specified size.

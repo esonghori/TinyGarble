@@ -26,8 +26,12 @@ using namespace boost;
 #define DEBUG_PARSER 0
 #define DEBUG_SCHEDULER 0
 
+#define CONST_ZERO -2
+#define CONST_ONE  -3
 
-#define VERBOSE
+#ifdef DEBUG
+	#define VERBOSE
+#endif
 
 typedef struct net{
 	bool is_port;
