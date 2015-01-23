@@ -61,14 +61,46 @@ int MIXEDCircuit(GarbledCircuit *garbledCircuit,
 
 	for (i = 0; i < n - 1; i++) {
 		newInternalWire = getNextWire(garblingContext);
-		if (i % 3 == 2)
+		/*if (i % 3 == 2)
 			ORGate(garbledCircuit, garblingContext, inputs[i + 1],
 					oldInternalWire, newInternalWire);
 		if (i % 3 == 1)
 			ANDGate(garbledCircuit, garblingContext, inputs[i + 1],
 					oldInternalWire, newInternalWire);
 		if (i % 3 == 0)
-			XORGate(garbledCircuit, garblingContext, inputs[i + 1],
+		*/	XORGate(garbledCircuit, garblingContext, inputs[i + 1],
+					oldInternalWire, newInternalWire);
+		oldInternalWire = newInternalWire;
+	}
+	outputs[0] = oldInternalWire;
+	return 0;
+}
+
+int MIXEDXORCircuit(GarbledCircuit *garbledCircuit,
+		GarblingContext *garblingContext, int n, int* inputs, int* outputs) {
+	int i;
+	int oldInternalWire = inputs[0];
+	int newInternalWire;
+
+	for (i = 0; i < n - 1; i++) {
+		newInternalWire = getNextWire(garblingContext);
+		XORGate(garbledCircuit, garblingContext, inputs[i + 1],
+					oldInternalWire, newInternalWire);
+		oldInternalWire = newInternalWire;
+	}
+	outputs[0] = oldInternalWire;
+	return 0;
+}
+
+int MIXEDANDCircuit(GarbledCircuit *garbledCircuit,
+		GarblingContext *garblingContext, int n, int* inputs, int* outputs) {
+	int i;
+	int oldInternalWire = inputs[0];
+	int newInternalWire;
+
+	for (i = 0; i < n - 1; i++) {
+		newInternalWire = getNextWire(garblingContext);
+		ANDGate(garbledCircuit, garblingContext, inputs[i + 1],
 					oldInternalWire, newInternalWire);
 		oldInternalWire = newInternalWire;
 	}

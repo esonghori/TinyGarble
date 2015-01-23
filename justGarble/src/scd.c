@@ -53,35 +53,70 @@ int writeCircuitToFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	msgpack_sbuffer* buffer = msgpack_sbuffer_new();
 	msgpack_packer* pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
 	msgpack_sbuffer_clear(buffer);
-	int n = garbledCircuit->n;
-	int m = garbledCircuit->m;
-	int q = garbledCircuit->q;
-	int p = garbledCircuit->p;
-	int c = garbledCircuit->c;
+	int n = garbledCircuit->n; // # of inputs
+	int m = garbledCircuit->m; // # of outputs
+	int q = garbledCircuit->q; // # of gates
+	int p = garbledCircuit->p; // # of DFF
+	int c = garbledCircuit->c; // # of sequential cycle
 	GarbledGate *garbledGate;
-	msgpack_pack_array(pk, 5 + 3 * q + m + n);
+	msgpack_pack_array(pk, 5 + 3 * q + m + n + p);
 	msgpack_pack_int(pk, n);
 	msgpack_pack_int(pk, m);
 	msgpack_pack_int(pk, q);
 	msgpack_pack_int(pk, p);
 	msgpack_pack_int(pk, c);
-	for (i = 0; i < q; i++) {
+
+	/*
+	 * 1st input of each gate
+	 */
+	for (i = 0; i < q; i++)
+	{
 		garbledGate = &(garbledCircuit->garbledGates[i]);
 		msgpack_pack_int(pk, garbledGate->input0);
 	}
-	for (i = 0; i < q; i++) {
+	/*
+	 * 2nd input of each gate
+	 */
+	for (i = 0; i < q; i++)
+	{
 		garbledGate = &(garbledCircuit->garbledGates[i]);
 		msgpack_pack_int(pk, garbledGate->input1);
 	}
-	for (i = 0; i < q; i++) {
+	/*
+	 *type of each gate
+	 */
+	for (i = 0; i < q; i++)
+	{
 		garbledGate = &(garbledCircuit->garbledGates[i]);
 		msgpack_pack_int(pk, garbledGate->type);
 	}
-	for (i = 0; i < m; i++) {
+	/*
+	 * outputs : output wire index
+	 */
+	for (i = 0; i < m; i++)
+	{
 		msgpack_pack_int(pk, garbledCircuit->outputs[i]);
 	}
-	for (i = 0; i < n; i++) {
+	/*
+	 * S : latch index
+	 * it stores a wire index for each input:
+	 * S[i] == -1 : it means the input is actual circuit input. Garbler should generate random tokens for it each cycle. Evaluator should received the tokens from the Garbler (using OT or directly).
+	 * S[i] != -1 : it means the input is from DFF (Q). Garbler should use the S[i] wire's tokens instead of random generation. Evaluator should use S[i] wire's token instead of receiving it.
+	 */
+	for (i = 0; i < n; i++)
+	{
 		msgpack_pack_int(pk, garbledCircuit->S[i]);
+	}
+	/*
+	 * I : initial value index
+	 * it store the input index or constant value for each DFF.
+	 * I[i] == CONST_ZERO (== -2) : it means the initial value of the DFF is zero. At the first cycle, Garbler should send token[0] to Evaluator.
+	 * I[i] == CONST_ONE (== -3) : it means the initial value of the DFF is one. At the first cycle, Garbler should send token[1] to Evaluator.
+	 * I[i] > 0 : it means the initial value of the DFF is value of actual circuit input (wire I[i]). At the first cycle, Evaluator should received the tokens from the Garbler (using OT or directly).
+	 */
+	for (i = 0; i < p; i++)
+	{
+		msgpack_pack_int(pk, garbledCircuit->I[i]);
 	}
 
 	msgpack_unpacked msg;
@@ -139,6 +174,7 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 			sizeof(GarbledTable) * q * c);
 	garbledCircuit->wires = (Wire *) malloc(sizeof(Wire) * garbledCircuit->r);
 	garbledCircuit->S = (int *) malloc(sizeof(int) * garbledCircuit->n);
+	garbledCircuit->I = (int *) malloc(sizeof(int) * garbledCircuit->p);
 
 	if (garbledCircuit->garbledGates == NULL
 			|| garbledCircuit->garbledGates == NULL
@@ -148,32 +184,44 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 		return FAILURE;
 	}
 	int i;
-	for (i = 0; i < garbledCircuit->r; i++) {
+	for (i = 0; i < garbledCircuit->r; i++)
+	{
 		garbledCircuit->wires[i].id = 0;
 	}
-	for (i = 0; i < q; i++) {
+	for (i = 0; i < q; i++)
+	{
 		garbledCircuit->garbledGates[i].id = 0;
 		garbledCircuit->garbledGates[i].output = n+i;//TODO:was n+1
        }
-	for (i = 0; i < q; i++) {
+	for (i = 0; i < q; i++)
+	{
 		++p;
 		garbledCircuit->garbledGates[i].input0 = (*p).via.i64;
 	}
-	for (i = 0; i < q; i++) {
+	for (i = 0; i < q; i++)
+	{
 		++p;
 		garbledCircuit->garbledGates[i].input1 = (*p).via.i64;
 	}
-	for (i = 0; i < q; i++) {
+	for (i = 0; i < q; i++)
+	{
 		++p;
 		garbledCircuit->garbledGates[i].type = (*p).via.i64;
 	}
-	for (i = 0; i < m; i++) {
+	for (i = 0; i < m; i++)
+	{
 		++p;
 		garbledCircuit->outputs[i] = (*p).via.i64;
 	}
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < n; i++)
+	{
 		++p;
 		garbledCircuit->S[i] = (*p).via.i64;
+	}
+	for (i = 0; i < pp; i++)
+	{
+		++p;
+		garbledCircuit->I[i] = (*p).via.i64;
 	}
 	return SUCCESS;
 }
