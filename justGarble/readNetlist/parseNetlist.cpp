@@ -93,19 +93,25 @@ void parse_netlist(const string &filename){
 	vector<GarbledGateString> dff_list_string;
 	int no_of_dffs = 0;
 	bool store_d = 0;
+	bool store_i = 0;
 	bool store_q = 0;
 	
 	string buf("_");
-	
-	while (buf.compare("endmodule"))
+	bool endoffile = false;
+	while (!endoffile)
 	{
 		getline(fin, buf);		
-		char_separator<char> sep(" ,;.()\t");
+		char_separator<char> sep(" ,;.()\t\r");
 		tokenizer<char_separator<char> > tok(buf, sep);
 		
 		BOOST_FOREACH(string str, tok)
 		{
-			if(is_inport)
+			if(!str.compare("endmodule"))
+			{
+				endoffile = true;
+				break;
+			}
+			else if(is_inport)
 			{
 				if (str.at(0) =='[')
 				{
@@ -272,6 +278,15 @@ void parse_netlist(const string &filename){
 				dff_list_string.back().input[0] = str;
 				store_d = 0;
 			}
+			else if(!str.compare("I"))
+			{
+				store_i = 1;
+			}
+			else if(store_i)
+			{
+				dff_list_string.back().input[1] = str;
+				store_i = 0;
+			}
 			else if (!str.compare("B"))
 			{
 				store_input1 = 1;
@@ -388,19 +403,57 @@ void parse_netlist(const string &filename){
 		dff_list[i].id = dff_list_string[i].id;
 		dff_list[i].type = dff_list_string[i].type;
 
-		index = findOutputGateID(dff_list_string[i].input[0], gate_list_string);
-		if(index < 0) //might be an input, although it is odd
+		//find D
+		if(!dff_list_string[i].input[0].compare("1'b0"))
 		{
-			index = search(dff_list_string[i].input[0], inport_list, 0, no_of_inports);
-			assert(index > -1);
+			index = CONST_ZERO;
+			dff_list[i].input[0].is_port = 1;
+		}
+		else if(!dff_list_string[i].input[0].compare("1'b1"))
+		{
+			index = CONST_ONE;
+			dff_list[i].input[0].is_port = 1;
 		}
 		else
 		{
-			index += no_of_inports;
+			index = findOutputGateID(dff_list_string[i].input[0], gate_list_string);
+			dff_list[i].input[0].is_port = 0;
+			if(index < 0) //might be an input
+			{
+				index = search(dff_list_string[i].input[0], inport_list, 0, no_of_inports);
+				dff_list[i].input[0].is_port = 1;
+			}
+			else
+			{
+				index += no_of_inports;
+			}
 		}
-		dff_list[i].input[0].is_port = 0;
 		dff_list[i].input[0].index = index;
 
+
+
+
+
+		//find I
+		if(!dff_list_string[i].input[1].compare("1'b0"))
+		{
+			index = CONST_ZERO;
+		}
+		else if(!dff_list_string[i].input[1].compare("1'b1"))
+		{
+			index = CONST_ONE;
+		}
+		else
+		{
+			index = search(dff_list_string[i].input[1], inport_list, 0, no_of_inports);
+			assert(index > -1);
+		}
+		dff_list[i].input[1].is_port = 1;
+		dff_list[i].input[1].index = index;
+
+
+
+		///
 		index = search(dff_list_string[i].output, inport_list, 0, no_of_inports);
 		assert(index > -1);
 		dff_list[i].output.is_port = 1;
@@ -436,7 +489,7 @@ void parse_netlist(const string &filename){
 	for (i = 0; i < no_of_dffs; i++)
 	{
 		cout << dff_list_string[i].id << "\t" << typetoStrGate(dff_list_string[i].type) << "\t"
-			<< dff_list_string[i].input[0]  << "\t" << dff_list_string[i].output << endl;
+			<< dff_list_string[i].input[0] << "\t" << dff_list_string[i].input[1]  << "\t" << dff_list_string[i].output << endl;
 	}
 	cout << endl;
 #endif

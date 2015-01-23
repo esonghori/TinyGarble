@@ -1,0 +1,111 @@
+
+module sum_N16384_CC1024 ( clk, rst, a, b, c );
+  input [15:0] a;
+  input [15:0] b;
+  output [15:0] c;
+  input clk, rst;
+  wire   carry_on, carry_on_d, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12,
+         n13, n14, n15, n16, n17, n18, n19, n20, n21, n22, n23, n24, n25, n26,
+         n27, n28, n29, n30, n31, n32, n33, n34, n35, n36, n37, n38, n39, n40,
+         n41, n42, n43, n44, n45, n46, n47, n48, n49, n50, n51, n52, n53, n54,
+         n55, n56, n57, n58, n59, n60, n61, n62, n63, n64, n65, n66, n67, n68,
+         n69, n70, n71, n72, n73, n74, n75, n76, n77, n78;
+
+  DFF carry_on_reg ( .D(carry_on_d), .CLK(clk), .RST(rst), .I(1'b0), .Q(
+        carry_on) );
+  XOR U4 ( .A(n2), .B(n3), .Z(carry_on_d) );
+  ANDN U5 ( .B(n4), .A(n5), .Z(n2) );
+  XOR U6 ( .A(b[15]), .B(n3), .Z(n4) );
+  XNOR U7 ( .A(b[9]), .B(n6), .Z(c[9]) );
+  XNOR U8 ( .A(b[8]), .B(n7), .Z(c[8]) );
+  XNOR U9 ( .A(b[7]), .B(n8), .Z(c[7]) );
+  XNOR U10 ( .A(b[6]), .B(n9), .Z(c[6]) );
+  XNOR U11 ( .A(b[5]), .B(n10), .Z(c[5]) );
+  XNOR U12 ( .A(b[4]), .B(n11), .Z(c[4]) );
+  XNOR U13 ( .A(b[3]), .B(n12), .Z(c[3]) );
+  XNOR U14 ( .A(b[2]), .B(n13), .Z(c[2]) );
+  XNOR U15 ( .A(b[1]), .B(n14), .Z(c[1]) );
+  XNOR U16 ( .A(b[15]), .B(n5), .Z(c[15]) );
+  XNOR U17 ( .A(a[15]), .B(n3), .Z(n5) );
+  XNOR U18 ( .A(n15), .B(n16), .Z(n3) );
+  ANDN U19 ( .B(n17), .A(n18), .Z(n15) );
+  XNOR U20 ( .A(b[14]), .B(n16), .Z(n17) );
+  XNOR U21 ( .A(b[14]), .B(n18), .Z(c[14]) );
+  XNOR U22 ( .A(a[14]), .B(n19), .Z(n18) );
+  IV U23 ( .A(n16), .Z(n19) );
+  XOR U24 ( .A(n20), .B(n21), .Z(n16) );
+  ANDN U25 ( .B(n22), .A(n23), .Z(n20) );
+  XNOR U26 ( .A(b[13]), .B(n21), .Z(n22) );
+  XNOR U27 ( .A(b[13]), .B(n23), .Z(c[13]) );
+  XNOR U28 ( .A(a[13]), .B(n24), .Z(n23) );
+  IV U29 ( .A(n21), .Z(n24) );
+  XOR U30 ( .A(n25), .B(n26), .Z(n21) );
+  ANDN U31 ( .B(n27), .A(n28), .Z(n25) );
+  XNOR U32 ( .A(b[12]), .B(n26), .Z(n27) );
+  XNOR U33 ( .A(b[12]), .B(n28), .Z(c[12]) );
+  XNOR U34 ( .A(a[12]), .B(n29), .Z(n28) );
+  IV U35 ( .A(n26), .Z(n29) );
+  XOR U36 ( .A(n30), .B(n31), .Z(n26) );
+  ANDN U37 ( .B(n32), .A(n33), .Z(n30) );
+  XNOR U38 ( .A(b[11]), .B(n31), .Z(n32) );
+  XNOR U39 ( .A(b[11]), .B(n33), .Z(c[11]) );
+  XNOR U40 ( .A(a[11]), .B(n34), .Z(n33) );
+  IV U41 ( .A(n31), .Z(n34) );
+  XOR U42 ( .A(n35), .B(n36), .Z(n31) );
+  ANDN U43 ( .B(n37), .A(n38), .Z(n35) );
+  XNOR U44 ( .A(b[10]), .B(n36), .Z(n37) );
+  XNOR U45 ( .A(b[10]), .B(n38), .Z(c[10]) );
+  XNOR U46 ( .A(a[10]), .B(n39), .Z(n38) );
+  IV U47 ( .A(n36), .Z(n39) );
+  XOR U48 ( .A(n40), .B(n41), .Z(n36) );
+  ANDN U49 ( .B(n42), .A(n6), .Z(n40) );
+  XNOR U50 ( .A(a[9]), .B(n43), .Z(n6) );
+  IV U51 ( .A(n41), .Z(n43) );
+  XNOR U52 ( .A(b[9]), .B(n41), .Z(n42) );
+  XOR U53 ( .A(n44), .B(n45), .Z(n41) );
+  ANDN U54 ( .B(n46), .A(n7), .Z(n44) );
+  XNOR U55 ( .A(a[8]), .B(n47), .Z(n7) );
+  IV U56 ( .A(n45), .Z(n47) );
+  XNOR U57 ( .A(b[8]), .B(n45), .Z(n46) );
+  XOR U58 ( .A(n48), .B(n49), .Z(n45) );
+  ANDN U59 ( .B(n50), .A(n8), .Z(n48) );
+  XNOR U60 ( .A(a[7]), .B(n51), .Z(n8) );
+  IV U61 ( .A(n49), .Z(n51) );
+  XNOR U62 ( .A(b[7]), .B(n49), .Z(n50) );
+  XOR U63 ( .A(n52), .B(n53), .Z(n49) );
+  ANDN U64 ( .B(n54), .A(n9), .Z(n52) );
+  XNOR U65 ( .A(a[6]), .B(n55), .Z(n9) );
+  IV U66 ( .A(n53), .Z(n55) );
+  XNOR U67 ( .A(b[6]), .B(n53), .Z(n54) );
+  XOR U68 ( .A(n56), .B(n57), .Z(n53) );
+  ANDN U69 ( .B(n58), .A(n10), .Z(n56) );
+  XNOR U70 ( .A(a[5]), .B(n59), .Z(n10) );
+  IV U71 ( .A(n57), .Z(n59) );
+  XNOR U72 ( .A(b[5]), .B(n57), .Z(n58) );
+  XOR U73 ( .A(n60), .B(n61), .Z(n57) );
+  ANDN U74 ( .B(n62), .A(n11), .Z(n60) );
+  XNOR U75 ( .A(a[4]), .B(n63), .Z(n11) );
+  IV U76 ( .A(n61), .Z(n63) );
+  XNOR U77 ( .A(b[4]), .B(n61), .Z(n62) );
+  XOR U78 ( .A(n64), .B(n65), .Z(n61) );
+  ANDN U79 ( .B(n66), .A(n12), .Z(n64) );
+  XNOR U80 ( .A(a[3]), .B(n67), .Z(n12) );
+  IV U81 ( .A(n65), .Z(n67) );
+  XNOR U82 ( .A(b[3]), .B(n65), .Z(n66) );
+  XOR U83 ( .A(n68), .B(n69), .Z(n65) );
+  ANDN U84 ( .B(n70), .A(n13), .Z(n68) );
+  XNOR U85 ( .A(a[2]), .B(n71), .Z(n13) );
+  IV U86 ( .A(n69), .Z(n71) );
+  XNOR U87 ( .A(b[2]), .B(n69), .Z(n70) );
+  XOR U88 ( .A(n72), .B(n73), .Z(n69) );
+  ANDN U89 ( .B(n74), .A(n14), .Z(n72) );
+  XNOR U90 ( .A(a[1]), .B(n75), .Z(n14) );
+  IV U91 ( .A(n73), .Z(n75) );
+  XNOR U92 ( .A(b[1]), .B(n73), .Z(n74) );
+  XOR U93 ( .A(carry_on), .B(n76), .Z(n73) );
+  NANDN U94 ( .A(n77), .B(n78), .Z(n76) );
+  XOR U95 ( .A(carry_on), .B(b[0]), .Z(n78) );
+  XNOR U96 ( .A(b[0]), .B(n77), .Z(c[0]) );
+  XNOR U97 ( .A(a[0]), .B(carry_on), .Z(n77) );
+endmodule
+
