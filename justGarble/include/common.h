@@ -138,7 +138,7 @@ void inline TRUNC_COPY(char *X, char *Y);
 //#define WRITECIRCUIT
 
 
-#define TIMES 10
+#define TIMES 100
 #define RUNNING_TIME_ITER 100
 block randomBlock();
 

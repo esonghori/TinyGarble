@@ -47,14 +47,17 @@ int main(int argc, char **argv)
 	srand(time(NULL));
 	GarbledCircuit garbledCircuit;
 	GarblingContext garblingContext;
-	if (argc != 2)
+	if (argc != 3)
 	{
-		printf("Usage: <prog_name> number_of_gates (in thousands)");
+		printf("Usage: <prog_name> number_of_gates [2|1|0] (2 for mixed 1 for xor 0 for and gates)\n");
         return -1;
 	}
+	int i,j;
+
+	int mode = atoi(argv[2]);
 
 	//Set up circuit parameters
-	int n = atoi(argv[1]) * 1024;
+	int n = atoi(argv[1]);
 	int m = 1;
 	int q = n;
 	int r = 5 * n; //wire + FIXED0 + FIXED1 = n+q+2
@@ -76,15 +79,55 @@ int main(int argc, char **argv)
 	createInputLabels(labels, n);
 	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, 0, 1);
 	startBuilding(&garbledCircuit, &garblingContext);
-	MIXEDCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
-	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputs,  NULL);
+	if(mode==2)
+	{
+		printf("MIXED\n");
+		MIXEDCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
+	}
+	else if(mode==1)
+	{
+		printf("XOR\n");
+		MIXEDXORCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
+	}
+	else if(mode==0)
+	{
+		printf("AND\n");
+		MIXEDANDCircuit(&garbledCircuit, &garblingContext, n, inp, outputs);
+	}
+	else
+	{
+		printf("invalid mode use [2|1|0] (2 for mixed 1 for xor 0 for and gates)\n");
+		return -1;
+	}
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputs,  NULL, NULL);
+
+
+	double timeGarble[TIMES];
+	double timeEval[TIMES];
+	double timeGarbleMedians[TIMES];
+	double timeEvalMedians[TIMES];
+
+	for (j = 0; j < TIMES; j++) {
+		for (i = 0; i < TIMES; i++) {
+			timeGarble[i] = (double) garbleCircuit(&garbledCircuit, inputLabels, outputMap);
+			timeEval[i] = (double) timedEval(&garbledCircuit, inputLabels);
+		}
+		timeGarbleMedians[j] = doubleMean(timeGarble, TIMES)/ garbledCircuit.q;
+		timeEvalMedians[j] = doubleMean(timeEval, TIMES) / garbledCircuit.q;
+	}
+	double garblingTime = doubleMean(timeGarbleMedians, TIMES);
+	double evalTime = doubleMean(timeEvalMedians, TIMES);
+
+	printf("%lf\n%lf\n", garblingTime, evalTime);
+
+
 
 	//Garble the built circuit.
-	garbleCircuit(&garbledCircuit, inputLabels, outputMap);
+	//garbleCircuit(&garbledCircuit, inputLabels, outputMap);
 
 	//Evaluate the circuit with random values and check the computed
 	//values match the outputs of the desired function.
-	checkCircuit(&garbledCircuit, inputLabels, outputMap, &(checkfn));
+	//checkCircuit(&garbledCircuit, inputLabels, outputMap, &(checkfn));
 
 	return 0;
 

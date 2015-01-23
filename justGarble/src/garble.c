@@ -90,6 +90,7 @@ long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
 	long startTime = RDTSC;
 	garbledCircuit->id = getNextId();
 	garbledCircuit->S = (int *) memalign(128, sizeof(int) * n);//TODO: can be avoided when c==1
+	garbledCircuit->I = (int *) memalign(128, sizeof(int) * p);//TODO: can be avoided when c==1
 	garbledCircuit->garbledGates = (GarbledGate *) memalign(128,
 			sizeof(GarbledGate) * q);
 	garbledCircuit->garbledTable = (GarbledTable *) memalign(128,
@@ -133,6 +134,9 @@ void removeGarbledCircuit(GarbledCircuit *garbledCircuit) {
 	garbledCircuit->id = getNextId();
 	free(garbledCircuit->garbledGates);
 	free(garbledCircuit->wires);
+	free(garbledCircuit->outputs);
+	free(garbledCircuit->I);
+	free(garbledCircuit->S);
 }
 
 int startBuilding(GarbledCircuit *garbledCircuit,
@@ -155,7 +159,7 @@ int startBuilding(GarbledCircuit *garbledCircuit,
 
 
 long finishBuilding(GarbledCircuit *garbledCircuit,
-		GarblingContext *garbledContext, int *outputs, int *S) {
+		GarblingContext *garbledContext, int *outputs, int *S, int *I) {
 	int i;
 
 	for (i = 0; i < garbledCircuit->m; i++) {
@@ -163,7 +167,7 @@ long finishBuilding(GarbledCircuit *garbledCircuit,
 		//outputMap[2 * i + 1] = garbledCircuit->wires[outputs[i]].label1;
 		garbledCircuit->outputs[i] = outputs[i];
 	}
-	for (i = 0; i < garbledCircuit->r; i++) {
+	for (i = 0; i < garbledCircuit->r; i++) { //TODO: what is it?!
 		if (garbledContext->fixedWires[i] == FIXED_ZERO_GATE) {
 			garbledCircuit->wires[i].label = garbledCircuit->wires[i].label0;
 		}
@@ -178,6 +182,10 @@ long finishBuilding(GarbledCircuit *garbledCircuit,
 		for(int i=0;i<garbledCircuit->n;i++)
 		{
 			garbledCircuit->S[i] = S[i];
+		}
+		for(int i=0;i<garbledCircuit->p;i++)
+		{
+			garbledCircuit->I[i] = I[i];
 		}
 	}
 

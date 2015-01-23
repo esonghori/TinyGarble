@@ -72,8 +72,28 @@ int main(int argc, char* argv[])
 	block *outputMap = (block *)malloc(sizeof(block)*2*m*c);
 
 
-	garbleCircuit(&gc, inputLabels, outputMap);
-	checkCircuit(&gc, inputLabels, outputMap, &(check_test_seq));
+	//garbleCircuit(&gc, inputLabels, outputMap);
+	//checkCircuit(&gc, inputLabels, outputMap, &(check_test_seq));
+
+
+	double timeGarble[TIMES];
+	double timeEval[TIMES];
+	double timeGarbleMedians[TIMES];
+	double timeEvalMedians[TIMES];
+
+	for (j = 0; j < TIMES; j++) {
+		for (i = 0; i < TIMES; i++) {
+			timeGarble[i] = (double)garbleCircuit(&gc, inputLabels, outputMap);
+			timeEval[i] = (double)timedEval(&gc, inputLabels);
+		}
+		timeGarbleMedians[j] = doubleMean(timeGarble, TIMES);// / (gc.q * gc.c);
+		timeEvalMedians[j] = doubleMean(timeEval, TIMES);// / (gc.q * gc.c);
+	}
+	double garblingTime = doubleMean(timeGarbleMedians, TIMES);
+	double evalTime = doubleMean(timeEvalMedians, TIMES);
+	printf("%lf %lf\n", garblingTime, evalTime);
+
+
 
 	return 0;
 }

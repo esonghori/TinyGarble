@@ -107,7 +107,7 @@ void buildAESCircuit() {
 		}
 	}
 	int * final = mixColumnOutputs;
-	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, final, NULL);
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, final, NULL, NULL);
 	writeCircuitToFile(&garbledCircuit, AES_CIRCUIT_FILE_NAME);
 
 
@@ -152,7 +152,7 @@ void makeAddRoundKey()
 
 	AddRoundKey(&garbledCircuit, &garblingContext, inp,	outp);
 
-	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL);
+	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL, NULL);
 
 	fprintf(f, "module AddRoundKey(\n");
 	fprintf(f, "x,\n");
@@ -263,7 +263,7 @@ void makeSubBytes()
 	}
 
 
-	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL);
+	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL, NULL);
 
 
 	fprintf(f, "module SubBytes(\n");
@@ -362,7 +362,7 @@ void makeShiftRows()
 
 	ShiftRows(&garbledCircuit, &garblingContext, inp, outp);
 
-	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL);
+	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL, NULL);
 
 
 	fprintf(f, "module ShiftRows(\n");
@@ -443,7 +443,7 @@ void makeMixColumns()
 	}
 
 
-	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL);
+	finishBuilding(&garbledCircuit, &garblingContext, outp, NULL, NULL);
 
 
 	fprintf(f, "module MixColumns(\n");

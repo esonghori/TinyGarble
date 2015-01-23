@@ -33,6 +33,8 @@ void write_circuit_list(GarbledGateS* gate_list, GarbledGateS* dff_list, int *ci
 	{
 		circuit_file << dff_list[i].input[0].is_port << "\n";
 		circuit_file << dff_list[i].input[0].index << "\n";
+		circuit_file << dff_list[i].input[1].is_port << "\n";
+		circuit_file << dff_list[i].input[1].index << "\n";
 		circuit_file << dff_list[i].output.is_port << "\n";
 		circuit_file << dff_list[i].output.index << "\n";
 		circuit_file << dff_list[i].id << "\n";
@@ -81,6 +83,8 @@ void read_circuit_list(GarbledGateS *&gate_list, GarbledGateS *&dff_list, int *c
 	{
 		circuit_file >> dff_list[i].input[0].is_port;
 		circuit_file >> dff_list[i].input[0].index;
+		circuit_file >> dff_list[i].input[1].is_port;
+		circuit_file >> dff_list[i].input[1].index;
 		circuit_file >> dff_list[i].output.is_port;
 		circuit_file >> dff_list[i].output.index;
 		circuit_file >> dff_list[i].id;

@@ -52,13 +52,19 @@ void read_netlist(const string &infilename, const string &outfilename, int c, bo
 	}
 	for(int i=0;i<p;i++)
 	{
-		dff_list[i].input[0].index =  ts_1[dff_list[i].input[0].index - n] + n;
+		if(!dff_list[i].input[0].is_port) //if it is not directly connected to input
+		{
+			dff_list[i].input[0].index =  ts_1[dff_list[i].input[0].index - n] + n;
+		}
+
+		//no need to change dff_list[i].input[1].index since it is always input
 	}
 
 
 
 	int *outputs = new int[m];
 	int *S = new int[n];
+	int *I = new int[p];
 
 	//Actually build a circuit.
 	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, p, c);
@@ -149,6 +155,16 @@ void read_netlist(const string &infilename, const string &outfilename, int c, bo
 		}
 	}
 
+	for(int i=0;i<p;i++)
+	{
+		I[i] = dff_list[i].input[1].index; //initial value index
+
+		if(dff_list[i].input[0].is_port && dff_list[i].input[0].is_port > 0) // if the D is directly connected to an other Q.
+		{
+			outputs[outputNum++] = dff_list[i].input[0].index;
+		}
+	}
+
 
 #ifdef VERBOSE
 	cout << endl << "outputs" << endl;
@@ -164,14 +180,18 @@ void read_netlist(const string &infilename, const string &outfilename, int c, bo
 		cout << S[i] <<endl;
 	}
 	cout << endl;
+
+	cout << endl << "I" << endl;
+	for(int i = 0; i < p; i++)
+	{
+		cout << I[i] <<endl;
+	}
+	cout << endl;
 #endif
 
 	assert(outputNum==m);
 
-
-
-
-	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputs,  S);
+	long endBuldingTime = finishBuilding(&garbledCircuit, &garblingContext, outputs,  S, I);
 	writeCircuitToFile(&garbledCircuit, outfilename.c_str());
 }
 
