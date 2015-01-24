@@ -9,7 +9,7 @@ library(dff_full){
 	capacitive_load_unit (1,pf);
   
 	cell(AND){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -31,7 +31,7 @@ library(dff_full){
 	}
 
 	cell(ANDN){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -53,7 +53,7 @@ library(dff_full){
 	}
 
 	cell(NAND){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -75,7 +75,7 @@ library(dff_full){
 	}
 
 	cell(NANDN){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -97,7 +97,7 @@ library(dff_full){
 	}
 
 	cell(OR){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -119,7 +119,7 @@ library(dff_full){
 	}
 
 	cell(ORN){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -141,7 +141,7 @@ library(dff_full){
 	}
 
 	cell(NOR){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -163,7 +163,7 @@ library(dff_full){
 	}
 
 	cell(NORN){
-		area : 5;
+		area : 4;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -185,7 +185,7 @@ library(dff_full){
 	}
 
 	cell(IV){
-		area : 1;
+		area : 0;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -200,7 +200,7 @@ library(dff_full){
 	}
 
 	cell(XOR){
-		area : 1;
+		area : 0;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -222,7 +222,7 @@ library(dff_full){
 	}
 
 	cell(XNOR){
-		area : 1;
+		area : 0;
 		pin(A){
 			direction : input;
 			capacitance : 1;
@@ -248,7 +248,9 @@ library(dff_full){
 		ff(IQ,IQN){
 			next_state : "D";
 			clocked_on : "CLK";
-			clear : "RST";
+			clear  : "I' RST";
+			preset : "I RST";
+			clear_preset_var1 : L;
 		}
 		pin(D){
 			direction : input;
@@ -261,6 +263,10 @@ library(dff_full){
 			direction : input;
 			capacitance : 1;
 			clock : true;
+		}
+		pin(I){
+			direction : input;
+			capacitance : 1;
 		}
 		pin(RST){
 			direction : input;
@@ -276,6 +282,21 @@ library(dff_full){
 			timing() {
 				related_pin : "RST";
 				timing_type : clear;
+				timing_sense : positive_unate;
+			}
+			timing() {
+				related_pin : "I";
+				timing_type : clear;
+				timing_sense : negative_unate;
+			}
+			timing() {
+				related_pin : "RST";
+				timing_type : preset;
+				timing_sense : positive_unate;
+			}
+			timing() {
+				related_pin : "I";
+				timing_type : preset;
 				timing_sense : positive_unate;
 			}
 		}
