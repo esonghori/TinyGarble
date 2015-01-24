@@ -257,7 +257,7 @@ void parse_netlist(const string &filename){
 				GarbledGateString g;
 				g.type = DFFGATE;
 				g.id = dff_list_string.size();
-				g.input[1] = "-1";
+				g.input[1] = "";
 				dff_list_string.push_back(g);
 			}
 			else if (!str.compare("A"))
@@ -435,7 +435,7 @@ void parse_netlist(const string &filename){
 
 
 		//find I
-		if(!dff_list_string[i].input[1].compare("1'b0"))
+		if(!dff_list_string[i].input[1].compare("1'b0") || !dff_list_string[i].input[1].compare(""))
 		{
 			index = CONST_ZERO;
 		}
