@@ -18,7 +18,7 @@ module modexp_2N_NN
 	input 	[N-1:0]	e;
 	input 	[N-1:0]	n;
 
-	output 	[N-1:0]	c;
+	output [N-1:0]	c;
 
 
 	reg 	first_one;
@@ -46,7 +46,7 @@ module modexp_2N_NN
 	//assign c = (ein[N-1])?o:creg;
 
 
-	assign c = creg;
+	assign c = creg_next;
 	
 	assign start_in = start_reg;
 	assign ein = ereg;
