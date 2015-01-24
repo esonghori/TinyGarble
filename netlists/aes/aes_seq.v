@@ -29,17 +29,14 @@ module aes_seq
    	begin
    		if(rst)
    		begin
-   			init <= 0;
-   			state <=0;
+   			state <= msg;
    		end
    		else
    		begin
-   			init <= 1;
-			state <= w0[NR/CC-1]; 
-
+			state <= w0[NR/CC-1];
    		end
    	end
-
+	assign w0[0] = state;
     
 
     genvar i;
@@ -51,7 +48,7 @@ module aes_seq
 	end
 	endgenerate
 
-	assign w0[0] = (init)?state:msg;
+
 
     generate 
 	for(i=0;i<NR/CC;i=i+1)

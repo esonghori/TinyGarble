@@ -17,6 +17,35 @@ module matrixMult_N_M_3
 	input[M-1:0] y;
 	output reg[M-1:0] o;
 
+	wire [M-1:0] xy;
+	wire [M-1:0] oi;
+	
+	//assign xy = x*y;
+	MULT 
+	#(
+		.N(M)
+	) 
+	MULT_ 
+	(
+		.A(x), 
+		.B(y), 
+		.O(xy)
+	);
+	
+	
+	ADD 
+	#(
+		.N(M)
+	) 
+	ADD_ 
+	(
+		.A(xy), 
+		.B(o), 
+		.CI(1'b0), 
+		.S(oi), 
+		.CO()
+	);
+
 	always@(posedge clk or posedge rst)
 	begin
 		if(rst)
@@ -25,7 +54,7 @@ module matrixMult_N_M_3
 		end
 		else
 		begin
-			o <= o + x*y;
+			o <= oi;
 		end
 	end
 endmodule

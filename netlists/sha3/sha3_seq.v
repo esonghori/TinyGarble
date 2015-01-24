@@ -32,7 +32,7 @@ module sha3_seq
     output  [1599:0]	out;
 
 
-    reg 					init;
+	reg 					init;
     reg		[CC-1:0]		rc_i; /* select round constant */
 	reg		[24-1:0]		rc_j[24/CC-1:0]; /* select round constant */
 	wire	[63:0]			rc[24/CC-1:0]; /* round constant */
@@ -44,13 +44,13 @@ module sha3_seq
     
 
     
-	always @ (posedge clk)
+	always @ (posedge clk or posedge rst)
 	begin
 		if (rst) 	
 		begin
 			init <= 0;
 			rc_i <= 0;
-			round_reg <= 0;
+			round_reg <= in;
 		end
 		else     
 		begin
@@ -62,7 +62,7 @@ module sha3_seq
 
 
 	
-    assign round_in[0] = (init) ? round_reg : in;
+    assign round_in[0] = round_reg;
 	assign out = round_out[24/CC-1];
 
     integer k,t;

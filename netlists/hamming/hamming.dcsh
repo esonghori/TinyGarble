@@ -1,29 +1,47 @@
-set search_path [concat . ../lib/dff_full_large_non/]
-set target_library ../lib/dff_full_large_non/dff_full.db
-set link_library ../lib/dff_full_large_non/dff_full.db
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
 set symbol_library ../lib/generic.sdb
+set hdlin_while_loop_iterations 1600
+
+analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v}
+
 analyze -format verilog hamming.v
 
-#n = 160
-foreach cc {1 2 4 8 16 32 160} {
-elaborate hamming -architecture verilog -library DEFAULT -update -parameters 160,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output hamming_syn_160_$cc.v
-}
+##n = 160
+#foreach cc {1 2 4 8 16 32 160} {
+#elaborate hamming -architecture verilog -library DEFAULT -update -parameters 160,$cc
+#set_max_area -ignore_tns 0 
+#set_flatten false -design *
+#set_structure -design * false
+#set_resource_allocation area_only
+#report_compile_options
+#compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+#write -hierarchy -format verilog -output syn_non_large/hamming_syn_160_$cc.v
+#}
 
-# n = 256
-foreach cc {1 2 4 8 16 32 64 320 1600} {
-elaborate hamming -architecture verilog -library DEFAULT -update -parameters 1600,$cc
-set_max_area 0
-compile_ultra -exact_map -no_design_rule -area_high_effort_script
-write -hierarchy -format verilog -output hamming_syn_1600_$cc.v
-}
+## n = 1600
+#foreach cc {1600 320 64 32 16 8 4 2 1} {
+#elaborate hamming -architecture verilog -library DEFAULT -update -parameters 1600,$cc
+#set_max_area -ignore_tns 0 
+#set_flatten false -design *
+#set_structure -design * false
+#set_resource_allocation area_only
+#report_compile_options
+#compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+#write -hierarchy -format verilog -output syn_non_large/hamming_syn_1600_$cc.v
+#}
 
 # n = 16000
-foreach cc {1 2 4 8 16 32 64 128 640 3200 16000} {
+foreach cc {16000 3200 640 128 64 32 16 8 4 2 1} {
 elaborate hamming -architecture verilog -library DEFAULT -update -parameters 16000,$cc
-set_max_area 0
-compile -area_effort low -power_effort none
-write -hierarchy -format verilog -output hamming_syn_16000_$cc.v
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn_non_large/hamming_syn_16000_$cc.v
 }
+
+exit

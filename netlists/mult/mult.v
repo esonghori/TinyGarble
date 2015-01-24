@@ -16,20 +16,59 @@ module mult
 	input  rst;
 	input  [N-1:0] a;
 	input  [N/CC-1:0] b;
-	output [2*N-1:0] c;
+	output [N-1:0] c;
 	
 	reg [2*N-1:0] sreg;
-	wire [2*N-1:0] swire;
+	wire [N-1:0] swire;
+	wire [N-1:0] clocal;
 
-	wire [N+N/CC-1:0] clocal;
 
-	assign clocal = a*b;
-
+	wire  [N-1:0] bexp;
 
 
 	generate
 	if(CC>1)
-		assign swire  = sreg + {clocal,{(N-N/CC){1'b0}}};
+	begin
+		assign c = {swire[N/CC-1:0], sreg[N-1:N/CC]};
+		assign bexp = {{(N-N/CC){1'b0}},b};
+		//assign swire  = sreg + {clocal,{(N-N/CC){1'b0}}};
+	end
+	else
+	begin
+		assign c = clocal;
+		assign bexp = b;
+	end		
+	endgenerate
+
+
+	assign clocal = a*bexp;
+	/*MULT 
+	#(
+		.N(N)
+	)
+	MULT_
+	(
+		.A(a),
+		.B(bexp),
+		.O(clocal)
+	);*/	
+	
+	generate
+	if(CC>1)
+	begin
+		ADD 
+		#(
+			.N(N)
+		)
+		ADD_
+		(
+			.A(sreg[2*N-1:N]),
+			.B(clocal),
+			.CI(1'b0),
+			.S(swire),
+			.CO()
+		);	
+	end
 	endgenerate
 
 	generate
@@ -42,15 +81,11 @@ module mult
 			end
 			else
 			begin
-				sreg <= {{N/CC{1'b0}},swire[2*N-1:N/CC]};     
+				sreg <= {{(N/CC){1'b0}}, swire[N-1:0], sreg[N-1:N/CC]};     
 			end
 		end
 	endgenerate
 
-	generate 
-	if(CC>1)
-		assign c = swire;
-	else
-		assign c = clocal;
-	endgenerate
+
 endmodule
+

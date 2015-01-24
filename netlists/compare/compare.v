@@ -10,50 +10,53 @@ module compare
 	rst,
 	x,
 	y,
-	g,
-	e
+	g
 );
-	parameter M = N/CC; 
+	localparam M = N/CC; 
 
 	input clk;
 	input rst;
 	input[M-1:0] x;
 	input[M-1:0] y;
 	output g;
-	output e;
 
+	reg ci;
+	wire co;
+	
+	ADD 
+	#(
+		.N(M)
+	) 
+	UCOMP 
+	(
+		.A(x), 
+		.B(~y), 
+		.CI(ci),
+		.S(),
+		.CO(co)
+	);
 
-	reg greg;
-	reg ebreg;
-
-
-	assign g= greg;
-	assign e= ~ebreg;
-
+	assign g = co;
+	
 	generate
 	if(CC>1)
 		always@(posedge clk or posedge rst)
 		begin
 			if(rst)
 			begin
-				greg <= 0;
-				ebreg <= 0;
+				ci <= 1'b1;
 			end
 			else
 			begin
-				if(!ebreg && x!=y)
-				begin
-					ebreg <= 1;
-					greg <= (x>y)?1'b1:1'b0;
-				end
+				ci <= co;	
 			end
 		end
 	else
 		always@(*)
 		begin
-			greg  <= (x>y) ?1'b1:1'b0;
-			ebreg <= (x==y)?1'b0:1'b1;
+			ci <= 1'b1;
 		end
 	endgenerate
 
 endmodule
+

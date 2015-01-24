@@ -21,10 +21,13 @@ module matrixMult_N_M_1
 	wire [M-1:0] yij[N-1:0][N-1:0];
 	reg [M-1:0] oi[N-1:0];
 
+	wire [M-1:0] xyij[N-1:0][N-1:0];
+
+	wire [M-1:0] oij[N-1:0][N:0];
 
 	genvar i;
 	genvar j;
-	integer k;
+	genvar k;
 
 	generate
 	for (i=0;i<N;i=i+1)
@@ -38,9 +41,61 @@ module matrixMult_N_M_1
 	end
 	endgenerate
 
+
+
 	generate
 	for (i=0;i<N;i=i+1)
 	begin:MUL_ROW
+		for (k=0;k<N;k=k+1)
+		begin:MULT_O
+			//assign xyij[i][k] = xi[k]*yij[k][i];
+			MULT 
+			#(
+				.N(M)
+			)
+			MULT_
+			(
+				.A(xi[k]),
+				.B(yij[k][i]),
+				.O(xyij[i][k])
+			);	
+		end
+	end
+	endgenerate 
+
+	generate
+	for (i=0;i<N;i=i+1)
+	begin:ASS_O
+		assign oij[i][0] = oi[i];
+	end
+	endgenerate 
+
+	generate
+	for (i=0;i<N;i=i+1)
+	begin:ADD_ROW
+		for (k=0;k<N;k=k+1)
+		begin:ADD_O
+			ADD 
+			#(
+				.N(M)
+			)
+			ADD_
+			(
+				.A(xyij[i][k]),
+				.B(oij[i][k]),
+				.CI(1'b0),
+				.S(oij[i][k+1]),
+				.CO()
+			);	
+		end
+	end
+	endgenerate 
+
+
+
+	generate
+	for (i=0;i<N;i=i+1)
+	begin:REG_ROW
 		always@(posedge clk or posedge rst)
 		begin
 			if(rst)
@@ -49,10 +104,7 @@ module matrixMult_N_M_1
 			end
 			else
 			begin
-				for(k=0;k<N;k=k+1)
-				begin
-					oi[i] <= oi[i] + xi[k] * yij[k][i];
-				end
+				oi[i] <= oij[i][N];
 			end
 		end
 	end

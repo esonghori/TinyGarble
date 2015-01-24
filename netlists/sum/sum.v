@@ -2,7 +2,7 @@
 // synopsys template
 module sum
 #(
-	parameter N=1024,
+	parameter N=8,
 	parameter CC=1
 )
 ( 
@@ -38,11 +38,35 @@ module sum
 	generate
 	if(CC>1)
 	begin
-		assign {carry_on_d, c} = a + b + carry_on;
+		//assign {carry_on_d, c} = a + b + carry_on;
+		ADD 
+		#(
+			.N(N/CC)
+		)
+		ADD_
+		(
+			.A(a),
+			.B(b),
+			.CI(carry_on),
+			.S(c),
+			.CO(carry_on_d)
+		);
 	end
 	else
 	begin
-		assign c = a + b;
+		//assign c = a + b;
+		ADD 
+		#(
+			.N(N/CC)
+		)
+		ADD_
+		(
+			.A(a),
+			.B(b),
+			.CI(1'b0),
+			.S(c),
+			.CO()
+		);
 	end
 	endgenerate
 endmodule
