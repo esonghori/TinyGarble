@@ -17,7 +17,7 @@ analyze -format verilog mult.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/mult_syn_64_$cc.v
+#write -hierarchy -format verilog -output syn/mult_syn_64_$cc.v
 #}
 #
 ##n = 128
@@ -29,7 +29,7 @@ analyze -format verilog mult.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/mult_syn_128_$cc.v
+#write -hierarchy -format verilog -output syn/mult_syn_128_$cc.v
 #}
 
 #n = 256
@@ -42,7 +42,7 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn_non_large/mult_syn_256_$cc.v
+write -hierarchy -format verilog -output syn/mult_syn_256_$cc.v
 }
 
 #n = 1024
@@ -54,7 +54,7 @@ write -hierarchy -format verilog -output syn_non_large/mult_syn_256_$cc.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -boundary_optimization -map_effort low -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/mult_syn_1024_$cc.v
+#write -hierarchy -format verilog -output syn/mult_syn_1024_$cc.v
 #}
 
 exit

@@ -1,6 +1,6 @@
-set search_path [concat . ../lib/dff_full_real/]
-set target_library ../lib/dff_full_real/dff_full.db
-set link_library ../lib/dff_full_real/dff_full.db
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
 set symbol_library ../lib/generic.sdb
 analyze -format verilog stackMachine.v
 set hdlin_while_loop_iterations 16384
@@ -18,5 +18,5 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn_non_large_real/stackMachine_syn_$N.v
+write -hierarchy -format verilog -output syn/stackMachine_syn_$N.v
 }

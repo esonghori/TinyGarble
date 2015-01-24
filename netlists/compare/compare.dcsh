@@ -19,5 +19,5 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn_non_large/compare_syn_16384_$cc.v
+write -hierarchy -format verilog -output syn/compare_syn_16384_$cc.v
 }

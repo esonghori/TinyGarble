@@ -16,7 +16,7 @@ module stackMachine
 	input						rst;
 	input signed		[N-1:0]	x;
 	input				[2:0] 	opcode;
-	output signed		[N-1:0]	o;
+	output reg signed	[N-1:0]	o;
 
 	reg signed			[N-1:0]	alu;
 	reg signed			[N-1:0]	stack[S-1:0];
@@ -26,8 +26,6 @@ module stackMachine
 	
 	integer j;
 	
-	assign o = stack[0];
-
 	always@(*)
 	begin
 		push <= 0;
@@ -81,6 +79,18 @@ module stackMachine
 		endcase
 	end
 
+
+	always @(*) 
+	begin
+		if(push)
+		begin
+			o <= x; 
+		end
+		else
+		begin
+			o <= alu; 
+		end
+	end
 
 	always@(posedge clk or posedge rst)
 	begin

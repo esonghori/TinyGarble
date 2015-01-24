@@ -17,7 +17,7 @@ analyze -format verilog hamming.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/hamming_syn_160_$cc.v
+#write -hierarchy -format verilog -output syn/hamming_syn_160_$cc.v
 #}
 
 ## n = 1600
@@ -29,7 +29,7 @@ analyze -format verilog hamming.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/hamming_syn_1600_$cc.v
+#write -hierarchy -format verilog -output syn/hamming_syn_1600_$cc.v
 #}
 
 # n = 16000
@@ -41,7 +41,7 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn_non_large/hamming_syn_16000_$cc.v
+write -hierarchy -format verilog -output syn/hamming_syn_16000_$cc.v
 }
 
 exit
