@@ -21,7 +21,7 @@ analyze -format verilog modmult.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/modexp_syn_256_$cc.v
+#write -hierarchy -format verilog -output syn/modexp_syn_256_$cc.v
 #}
 #
 ##N = 512
@@ -33,20 +33,21 @@ analyze -format verilog modmult.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/modexp_syn_512_$cc.v
+#write -hierarchy -format verilog -output syn/modexp_syn_512_$cc.v
 #}
 #
-##N = 1024
+#N = 1024
 #foreach cc {2097152 1048576} {
-#elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 1024,$cc
-#set_max_area -ignore_tns 0 
-#set_flatten false -design *
-#set_structure -design * false
-#set_resource_allocation area_only
-#report_compile_options
-#compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/modexp_syn_1024_$cc.v
-#}
+foreach cc {2097152} {
+elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 1024,$cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort low -area_effort low -no_design_rule
+write -hierarchy -format verilog -output syn/modexp_syn_1024_$cc.v
+}
 #
 ##N = 2048
 #foreach cc {4194304 8388608} {
@@ -57,7 +58,7 @@ analyze -format verilog modmult.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/modexp_syn_2048_$cc.v
+#write -hierarchy -format verilog -output syn/modexp_syn_2048_$cc.v
 #}
 #
 #
@@ -70,18 +71,18 @@ analyze -format verilog modmult.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large/modexp_syn_4096_$cc.v
+#write -hierarchy -format verilog -output syn/modexp_syn_4096_$cc.v
 #}
 
 #N = 8192
-foreach cc {134217728 67108864} {
-elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 8192,$cc
-set_max_area -ignore_tns 0 
-set_flatten false -design *
-set_structure -design * false
-set_resource_allocation area_only
-report_compile_options
-compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn_non_large/modexp_syn_8192_$cc.v
-}
+#foreach cc {134217728 67108864} {
+#elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 8192,$cc
+#set_max_area -ignore_tns 0 
+#set_flatten false -design *
+#set_structure -design * false
+#set_resource_allocation area_only
+#report_compile_options
+#compile -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+#write -hierarchy -format verilog -output syn/modexp_syn_8192_$cc.v
+#}
 
