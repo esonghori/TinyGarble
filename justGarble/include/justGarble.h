@@ -70,7 +70,12 @@ typedef struct GarbledTable{
 } Circuit;*/
 
 typedef struct GarbledCircuit{
-	int n, m, p, q, r, c;
+	int n;
+	int m;
+	int p;
+	int q;
+	int r;
+	int c;
 	block* inputLabels;
 	block* outputLabels;
 	GarbledGate* garbledGates;
