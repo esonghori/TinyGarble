@@ -12,6 +12,7 @@ alib-52/
 *~
 .~*#
 .nfs*
+clog*
 justGarble/bin
 justGarble/debug
 justGarble/readNetlist/bin
