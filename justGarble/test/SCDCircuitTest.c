@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
 		O[i] = 0;
 	}
 
-
+	printf("start execution \n");
 	for(cid = 0; cid <garbledCircuit.c; cid++) //for each clock cycle
 	{
 		/*
@@ -231,6 +231,10 @@ int main(int argc, char *argv[])
 		{
 			if(garbledCircuit.S[i] < 0) // it is actual input
 			{
+
+				/*
+				 * SUM EXAMPLE
+				 */
 				if(i==0)
 				{
 					wires_val[i] = ((A[cid/32] & 1<<(cid%32))!=0);
@@ -241,6 +245,7 @@ int main(int argc, char *argv[])
 					wires_val[i] = ((B[cid/32] & 1<<(cid%32))!=0);
 					//printf("B[%d] = %d\n", cid, wires_val[i]);
 				}
+
 			}
 		}
 
@@ -302,6 +307,9 @@ int main(int argc, char *argv[])
 		{
 			int output_index = outputs_without_dff[i];
 
+			/*
+			 * SUM EXAMPLE
+			 */
 			if(wires_val[output_index])
 				O[cid/32] |= (1<<cid%32);
 
@@ -310,6 +318,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/*
+	 * SUM EXAMPLE
+	 */
+	printf("inputs:\n");
 	printf("A: \n");
 	for(i=0;i<32;i++)
 	{
@@ -324,6 +336,7 @@ int main(int argc, char *argv[])
 	}
 	printf("\n");
 
+	printf("outputs:\n");
 	printf("O: \n");
 	for(i=0;i<32;i++)
 	{
