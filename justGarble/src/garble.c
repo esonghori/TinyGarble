@@ -90,7 +90,7 @@ long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
 	long startTime = RDTSC;
 	garbledCircuit->id = getNextId();
 	garbledCircuit->S = (int *) memalign(128, sizeof(int) * n);//TODO: can be avoided when c==1
-	garbledCircuit->I = (int *) memalign(128, sizeof(int) * p);//TODO: can be avoided when c==1
+	garbledCircuit->I = (int *) memalign(128, sizeof(int) * n);//TODO: can be avoided when c==1
 	garbledCircuit->garbledGates = (GarbledGate *) memalign(128,
 			sizeof(GarbledGate) * q);
 	//garbledCircuit->garbledTable = (GarbledTable *) memalign(128, //TODO: it is commented for making scd file. check it for actual garbling/evaluation
@@ -185,7 +185,7 @@ long finishBuilding(GarbledCircuit *garbledCircuit,
 		{
 			garbledCircuit->S[i] = S[i];
 		}
-		for(int i=0;i<garbledCircuit->p;i++)
+		for(int i=0;i<garbledCircuit->n;i++)
 		{
 			garbledCircuit->I[i] = I[i];
 		}
