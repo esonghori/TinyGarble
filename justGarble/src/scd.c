@@ -59,7 +59,7 @@ int writeCircuitToFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	int p = garbledCircuit->p; // # of DFF
 	int c = garbledCircuit->c; // # of sequential cycle
 	GarbledGate *garbledGate;
-	msgpack_pack_array(pk, 5 + 3 * q + m + n + p);
+	msgpack_pack_array(pk, 5 + 3 * q + m + n + n);
 	msgpack_pack_int(pk, n);
 	msgpack_pack_int(pk, m);
 	msgpack_pack_int(pk, q);
@@ -110,11 +110,12 @@ int writeCircuitToFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	/*
 	 * I : initial value index
 	 * it store the input index or constant value for each DFF.
+	 * I[i] == -1 : it means the input is actual circuit input. Garbler should generate random tokens for it each cycle. Evaluator should received the tokens from the Garbler (using OT or directly).
 	 * I[i] == CONST_ZERO (== -2) : it means the initial value of the DFF is zero. At the first cycle, Garbler should send token[0] to Evaluator.
 	 * I[i] == CONST_ONE (== -3) : it means the initial value of the DFF is one. At the first cycle, Garbler should send token[1] to Evaluator.
 	 * I[i] > 0 : it means the initial value of the DFF is value of actual circuit input (wire I[i]). At the first cycle, Evaluator should received the tokens from the Garbler (using OT or directly).
 	 */
-	for (i = 0; i < p; i++)
+	for (i = 0; i < n; i++)
 	{
 		msgpack_pack_int(pk, garbledCircuit->I[i]);
 	}
@@ -174,7 +175,7 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 			sizeof(GarbledTable) * q * c);
 	garbledCircuit->wires = (Wire *) malloc(sizeof(Wire) * garbledCircuit->r);
 	garbledCircuit->S = (int *) malloc(sizeof(int) * garbledCircuit->n);
-	garbledCircuit->I = (int *) malloc(sizeof(int) * garbledCircuit->p);
+	garbledCircuit->I = (int *) malloc(sizeof(int) * garbledCircuit->n);
 
 	if (garbledCircuit->garbledGates == NULL
 			|| garbledCircuit->garbledGates == NULL
@@ -218,7 +219,7 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 		++p;
 		garbledCircuit->S[i] = (*p).via.i64;
 	}
-	for (i = 0; i < pp; i++)
+	for (i = 0; i < n; i++)
 	{
 		++p;
 		garbledCircuit->I[i] = (*p).via.i64;

@@ -64,7 +64,7 @@ void read_netlist(const string &infilename, const string &outfilename, int c, bo
 
 	int *outputs = new int[m];
 	int *S = new int[n];
-	int *I = new int[p];
+	int *I = new int[n];
 
 	//Actually build a circuit.
 	long startBuldingTime = createEmptyGarbledCircuit(&garbledCircuit, n, m, q, r, p, c);
@@ -145,26 +145,23 @@ void read_netlist(const string &infilename, const string &outfilename, int c, bo
 	for(int i=0; i<n; i++)
 	{
 		S[i] = -1;
+		I[i] = -1;
 		for(int j=0;j<p;j++)
 		{
 			if(dff_list[j].output.index == i)
 			{
-				S[i] = dff_list[j].input[0].index;
+				S[i] = dff_list[j].input[0].index; // latch connection
+
+				I[i] = dff_list[j].input[1].index; //initial value index
+
+				if(dff_list[j].input[0].is_port && dff_list[j].input[0].is_port > 0) // if the D is directly connected to an other Q.
+				{
+					outputs[outputNum++] = dff_list[j].input[0].index;
+				}
 				break;
 			}
 		}
 	}
-
-	for(int i=0;i<p;i++)
-	{
-		I[i] = dff_list[i].input[1].index; //initial value index
-
-		if(dff_list[i].input[0].is_port && dff_list[i].input[0].is_port > 0) // if the D is directly connected to an other Q.
-		{
-			outputs[outputNum++] = dff_list[i].input[0].index;
-		}
-	}
-
 
 #ifdef VERBOSE
 	cout << endl << "outputs" << endl;
@@ -182,7 +179,7 @@ void read_netlist(const string &infilename, const string &outfilename, int c, bo
 	cout << endl;
 
 	cout << endl << "I" << endl;
-	for(int i = 0; i < p; i++)
+	for(int i = 0; i < n; i++)
 	{
 		cout << I[i] <<endl;
 	}
