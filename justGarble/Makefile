@@ -24,14 +24,15 @@ AES = AESFullTest
 LARGE = LargeCircuitTest
 FILE = CircuitFileTest
 GARBLEFILE = GarbleFile
+SCDTEST = SCDCircuitTest
 rm = rm --f
 
 .PHONY: all release debug readnetlist check_msgpack prep clean
 
 all: release debug 
 
-release: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out $(RELDIR)/$(GARBLEFILE).out  readnetlistrel
-debug:   check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out $(DEBDIR)/$(GARBLEFILE).out  readnetlistdeb
+release: check_msgpack prep $(RELDIR)/$(AES).out $(RELDIR)/$(LARGE).out $(RELDIR)/$(FILE).out $(RELDIR)/$(GARBLEFILE).out $(RELDIR)/$(SCDTEST).out readnetlistrel
+debug:   check_msgpack prep $(DEBDIR)/$(AES).out $(DEBDIR)/$(LARGE).out $(DEBDIR)/$(FILE).out $(DEBDIR)/$(GARBLEFILE).out $(RELDIR)/$(SCDTEST).out readnetlistdeb
 
 
 #check MSGPACK library
@@ -53,6 +54,10 @@ $(RELDIR)/$(FILE).out: $(RELOBJECT) $(TESTDIR)/$(FILE).c
 $(RELDIR)/$(GARBLEFILE).out: $(RELOBJECT) $(TESTDIR)/$(GARBLEFILE).c
 	$(CC) $(RELOBJECT) $(TESTDIR)/$(GARBLEFILE).c -o $(RELDIR)/$(GARBLEFILE).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
+$(RELDIR)/$(SCDTEST).out: $(RELOBJECT) $(TESTDIR)/$(SCDTEST).c
+	$(CC) $(RELOBJECT) $(TESTDIR)/$(SCDTEST).c -o $(RELDIR)/$(SCDTEST).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
+
+
 $(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
@@ -69,6 +74,8 @@ $(DEBDIR)/$(FILE).out: $(DEBOBJECT) $(TESTDIR)/$(FILE).c
 $(DEBDIR)/$(GARBLEFILE).out: $(DEBOBJECT)  $(TESTDIR)/$(GARBLEFILE).c
 	$(CC) $(DEBOBJECT) $(TESTDIR)/$(GARBLEFILE).c -o $(DEBDIR)/$(GARBLEFILE).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
+$(DEBDIR)/$(SCDTEST).out: $(DEBOBJECT)  $(TESTDIR)/$(SCDTEST).c
+	$(CC) $(DEBOBJECT) $(TESTDIR)/$(SCDTEST).c -o $(DEBDIR)/$(SCDTEST).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
 $(DEBOBJECT): $(DEBOBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)
@@ -92,9 +99,11 @@ clean:
 	@$(rm) $(RELDIR)/$(LARGE).out
 	@$(rm) $(RELDIR)/$(FILE).out
 	@$(rm) $(RELDIR)/$(GARBLEFILE).out
+	@$(rm) $(RELDIR)/$(SCDTEST).out
 	@$(rm) $(DEBOBJECT)
 	@$(rm) $(DEBDIR)/$(AES).out
 	@$(rm) $(DEBDIR)/$(LARGE).out
 	@$(rm) $(DEBDIR)/$(FILE).out
 	@$(rm) $(DEBDIR)/$(GARBLEFILE).out
+	@$(rm) $(DEBDIR)/$(SCDTEST).out
 	cd readNetlist && $(MAKE) clean
