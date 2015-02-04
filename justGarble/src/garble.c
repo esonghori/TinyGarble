@@ -90,18 +90,20 @@ long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
 	long startTime = RDTSC;
 	garbledCircuit->id = getNextId();
 	garbledCircuit->S = (int *) memalign(128, sizeof(int) * n);//TODO: can be avoided when c==1
-	garbledCircuit->I = (int *) memalign(128, sizeof(int) * p);//TODO: can be avoided when c==1
+	garbledCircuit->I = (int *) memalign(128, sizeof(int) * n);//TODO: can be avoided when c==1
 	garbledCircuit->garbledGates = (GarbledGate *) memalign(128,
 			sizeof(GarbledGate) * q);
-	garbledCircuit->garbledTable = (GarbledTable *) memalign(128,
-			sizeof(GarbledTable) * q * c);
+	//garbledCircuit->garbledTable = (GarbledTable *) memalign(128, //TODO: it is commented for making scd file. check it for actual garbling/evaluation
+	//		sizeof(GarbledTable) * q * c);
 	garbledCircuit->wires = (Wire *) memalign(128, sizeof(Wire) * r);
 	garbledCircuit->outputs = (int *) memalign(128, sizeof(int) * m);
-	if (garbledCircuit->garbledGates == NULL
-			|| garbledCircuit->garbledTable == NULL
+
+	if (	garbledCircuit->garbledGates == NULL
 			|| garbledCircuit->wires == NULL
 			|| garbledCircuit->outputs == NULL
-			|| garbledCircuit->S == NULL) {
+			|| garbledCircuit->S == NULL
+			|| garbledCircuit->I == NULL) //|| garbledCircuit->garbledTable == NULL
+	{
 		dbgs("Linux is a cheap miser that refuses to give us memory");
 		exit(1);
 	}
@@ -183,7 +185,7 @@ long finishBuilding(GarbledCircuit *garbledCircuit,
 		{
 			garbledCircuit->S[i] = S[i];
 		}
-		for(int i=0;i<garbledCircuit->p;i++)
+		for(int i=0;i<garbledCircuit->n;i++)
 		{
 			garbledCircuit->I[i] = I[i];
 		}
