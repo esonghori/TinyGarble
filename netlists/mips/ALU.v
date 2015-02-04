@@ -28,7 +28,7 @@ module ALU
 
 input	[W-1:0]	data1_in;
 input	[W-1:0]	data2_in;
-input	[2:0]	ALUCtrl;
+input	[3:0]	ALUCtrl;
 output	[W-1:0]	data;
 output			Zero;
 
@@ -58,8 +58,8 @@ ADD_1
 assign Zero = (data==0); //Zero is true if data is 0
 always @(*) 
 begin
-	data <= 32'b0;
 	add_sub_sel	<= 1'b0;
+	data <= 32'b0;
 	 case (ALUCtrl)
         4'b0000://and
         begin
@@ -81,97 +81,23 @@ begin
        	end
         4'b0111://slt 
         begin
-        	 data <= (adder_data < 0) ? 1 : 0;
+        	add_sub_sel <= 1;
+        	data <= adder_data[W-1];
        	end
         4'b1100://nor
         begin
-        	 data <= ~(data1_in | data2_in); // result is nor
+        	data <= ~(data1_in | data2_in); // result is nor
        	end
         4'b1101:// xor
         begin
-        	 data <= data1_in ^ data2_in;				 	
+        	data <= data1_in ^ data2_in;				 	
         end
         default: 
         begin
-        	data <= 32'b0;
         	add_sub_sel <= 1'b0;
+        	data <= 32'b0;
        	end
     endcase
-
-	/*
-	// ALUCtrl = 010 (add, lw, sw)
-	if (~ALUCtrl[2] & ALUCtrl[1] & ~ALUCtrl[0]) 
-	begin
-		add_sub_sel = 0;
-		data = adder_data;//data1_in + data2_in;
-		if (data == 32'b0) 
-		begin
-			Zero = 1'b1;
-		end
-		else 
-		begin
-			Zero = 1'b0;
-		end
-	end
-	
-	// ALUCtrl = 110 (sub, beq)
-	if (ALUCtrl[2] & ALUCtrl[1] & ~ALUCtrl[0]) 
-	begin
-		add_sub_sel = 1;
-		data = adder_data;//data = data1_in - data2_in;
-		if (data == 32'b0) 
-		begin
-			Zero = 1'b1;
-		end
-		else 
-		begin
-			Zero = 1'b0;
-		end
-	end
-	
-	// ALUCtrl = 000 (and)
-	if (~ALUCtrl[2] & ~ALUCtrl[1] & ~ALUCtrl[0]) 
-	begin
-		data = data1_in & data2_in;
-		if (data == 32'b0) 
-		begin
-			Zero = 1'b1;
-		end
-		else 
-		begin
-			Zero = 1'b0;
-		end
-	end
-	
-	// ALUCtrl = 001 (or)
-	if (~ALUCtrl[2] & ~ALUCtrl[1] & ALUCtrl[0]) 
-	begin
-		data = data1_in | data2_in;
-		if (data == 32'b0) 
-		begin
-			Zero = 1'b1;
-		end
-		else 
-		begin
-			Zero = 1'b0;
-		end
-	end
-	
-	// ALUCtrl = 111 (slt)
-	// We do not need to set/reset Zero
-	if (ALUCtrl[2] & ALUCtrl[1] & ALUCtrl[0]) 
-	begin
-		add_sub_sel	= 1;
-		if ((adder_data) < 0) 
-		begin
-			data = 32'b1;
-		end
-		else 
-		begin
-			data = 32'b0;
-		end
-	end
-	*/
 end
 
 endmodule

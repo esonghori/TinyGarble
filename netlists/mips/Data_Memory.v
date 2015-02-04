@@ -14,8 +14,8 @@ module Data_Memory
 (
     clk,
     rst,
-    mem_init,
-    mem_out,
+    data_mem_in_wire,
+    data_mem_out_wire,
     addr,
     data_in,
     MemRead,
@@ -29,8 +29,8 @@ localparam  N = 2**L;
 // Interface
 input               clk;
 input               rst;
-input   [W*N-1:0]   mem_init;
-output  [W*N-1:0]   mem_out;
+input   [W*N-1:0]   data_mem_in_wire;
+output  [W*N-1:0]   data_mem_out_wire;
 input   [L+1:0]     addr;
 input   [W-1:0]     data_in;
 input               MemRead;
@@ -43,11 +43,11 @@ reg     [W-1:0]     memory  [0:N-1];
 
 genvar g;
 // initialization
-wire    [W-1:0]     mem_init_wire  [0:N-1];
+wire    [W-1:0]     data_mem_in  [0:N-1];
 generate
 for (g = 0; g < N; g = g + 1)
-begin:MEM_INIT
-    assign mem_init_wire[g] = mem_init[(g+1)*W-1:g*W];
+begin:MEM_IN_WIRE
+    assign data_mem_in[g] = data_mem_in_wire[(g+1)*W-1:g*W];
 end
 endgenerate
 
@@ -55,8 +55,8 @@ endgenerate
 //mem output
 generate
 for (g = 0; g < N; g = g + 1)
-begin:MEM_OUT
-    assign mem_out[(g+1)*W-1:g*W] = memory[g];
+begin:MEM_OUT_WIRE
+    assign data_mem_out_wire[(g+1)*W-1:g*W] = memory[g];
 end
 endgenerate
 
@@ -70,7 +70,7 @@ begin
     begin
         for(i=0;i<N;i=i+1)
         begin
-            memory[i] <=  mem_init_wire[i]; //TODO: why doesn't it work!?          
+            memory[i] <=  data_mem_in[i]; //TODO: why doesn't it work!?          
         end
     end
     else if (MemWrite)

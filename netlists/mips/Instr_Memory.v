@@ -10,7 +10,7 @@ module Instr_Memory
     parameter   L = 6
 )
 (
-	instructions_init,
+	inst_mem_in_wire,
     addr,
     instr
 );
@@ -22,15 +22,15 @@ localparam  N = 2**L;
 input   [L+1:0]  addr;
 output  [W-1:0]  instr;
 
-input [N*W-1:0] instructions_init;
+input [N*W-1:0] inst_mem_in_wire;
 
 //initialization
-wire    [W-1:0]   instructions_init_wire  [0:N-1];
+wire    [W-1:0]   inst_mem_in  [0:N-1];
 genvar g;
 generate
 for (g=0;g<N;g=g+1)
 begin:MEM_INIT
-    assign instructions_init_wire[g] = instructions_init[(g+1)*W-1:g*W];
+    assign inst_mem_in[g] = inst_mem_in_wire[(g+1)*W-1:g*W];
 end
 endgenerate
 
@@ -39,6 +39,6 @@ endgenerate
 // Instruction memory with 256 32-bit words
 // Instruction address range: 0x0000 ~ 0x03FC
 
-assign  instr = instructions_init_wire[addr>>2];  
+assign  instr = inst_mem_in[addr>>2];  
 
 endmodule

@@ -30,9 +30,9 @@ module SingleCycle_CPU
 (
     clk,
     rst,
-    instructions_init,
-    mem_init,
-    mem_out
+    inst_mem_in_wire,
+    data_mem_in_wire,
+    data_mem_out_wire
 );
 
 
@@ -42,9 +42,9 @@ localparam N = 2**L;
 input               clk;
 input               rst;
 
-input   [W*N-1:0]   instructions_init;
-input   [W*N-1:0]   mem_init;
-output  [W*N-1:0]   mem_out;
+input   [W*N-1:0]   inst_mem_in_wire;
+input   [W*N-1:0]   data_mem_in_wire;
+output  [W*N-1:0]   data_mem_out_wire;
 
 // Wire/Reg declaration
 wire                RegDST, Branch, MemRead, MemtoReg, MemWrite, ALUSrc, RegWrite, Zero, Branch_Zero;
@@ -85,9 +85,9 @@ Instr_Memory
 )
 Instr_Memory
 (
-    .instructions_init (instructions_init),
-    .addr       (pc[L+1:0]), 
-    .instr      (Instr)
+    .inst_mem_in_wire   (inst_mem_in_wire),
+    .addr               (pc[L+1:0]), 
+    .instr              (Instr)
 );
 
 
@@ -196,15 +196,15 @@ Data_Memory
 )
 Data_Memory
 (
-    .clk        (clk),
-    .rst        (rst),
-    .mem_init   (mem_init),
-    .mem_out    (mem_out),
-    .addr       (ALUResult[L+1:0]),
-    .data_in    (Rt_Data),
-    .MemRead    (MemRead),
-    .MemWrite   (MemWrite),
-    .data_out   (MemData)
+    .clk                (clk),
+    .rst                (rst),
+    .data_mem_in_wire   (data_mem_in_wire),
+    .data_mem_out_wire  (data_mem_out_wire),
+    .addr               (ALUResult[L+1:0]),
+    .data_in            (Rt_Data),
+    .MemRead            (MemRead),
+    .MemWrite           (MemWrite),
+    .data_out           (MemData)
 );
 
 
