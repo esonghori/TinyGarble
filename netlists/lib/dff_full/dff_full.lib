@@ -1,303 +1,362 @@
 library(dff_full){
 
 	/* unit attributes */
-	time_unit : "1ns";
-	voltage_unit : "1V";
-	current_unit : "1uA";
-	pulling_resistance_unit : "1kohm";
-	leakage_power_unit : "1nW";
+	time_unit						: "1ns";
+	voltage_unit					: "1V";
+	current_unit					: "1uA";
+	pulling_resistance_unit			: "1kohm";
+	leakage_power_unit				: "1nW";
 	capacitive_load_unit (1,pf);
-  
-	cell(AND){
-		area : 4;
+
+	/* Default Attributes */
+  	default_intrinsic_fall			: 1;
+  	default_inout_pin_fall_res		: 1;
+	default_fanout_load				: 1;
+  	default_intrinsic_rise			: 1;
+	default_slope_rise				: 1;
+	default_output_pin_fall_res		: 1;
+	default_inout_pin_cap			: 1;
+	default_input_pin_cap			: 1;
+	default_slope_fall				: 1;
+	default_inout_pin_rise_res		: 1;
+	default_output_pin_cap			: 1;
+	default_output_pin_rise_res		: 1;
+
+
+	/* Threshold definitions */
+	slew_derate_from_library		: 0.5;
+	slew_lower_threshold_pct_fall	: 30.0;
+	slew_upper_threshold_pct_fall	: 70.0;
+	slew_lower_threshold_pct_rise	: 30.0;
+	slew_upper_threshold_pct_rise	: 70.0;
+
+	output_threshold_pct_fall		: 50.0;
+	input_threshold_pct_fall		: 50.0;
+	output_threshold_pct_rise		: 50.0;
+	input_threshold_pct_rise		: 50.0;
+
+
+
+	cell(MUX){
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(S){
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "A B";
+			direction	: output;
+			function	: "(S' A) + (S B)";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
+			}
+			timing(){
+				related_pin	: "S";
+			}
+		}
+	}
+
+
+	cell(AND){
+		area	: 1;
+		pin(A){
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(B){
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(Z){
+			direction	: output;
+			function	: "A B";
+			timing(){
+				related_pin	: "A";
+			}
+			timing(){
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(ANDN){
-		area : 4;
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "A' B";
+			direction	: output;
+			function	: "A' B";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(NAND){
-		area : 4;
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "(A B)'";
+			direction	: output;
+			function	: "(A B)'";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(NANDN){
-		area : 4;
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "(A' B)'";
+			direction	: output;
+			function	: "(A' B)'";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(OR){
-		area : 4;
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "(A+B)";
+			direction	: output;
+			function	: "(A+B)";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(ORN){
-		area : 4;
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "(A'+B)";
+			direction	: output;
+			function	: "(A'+B)";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(NOR){
-		area : 4;
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "(A+B)'";
+			direction	: output;
+			function	: "(A+B)'";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(NORN){
-		area : 4;
+		area	: 1;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "(A'+B)'";
+			direction	: output;
+			function	: "(A'+B)'";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(IV){
-		area : 0;
+		area	: 0;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "A'";
+			direction	: output;
+			function	: "A'";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 		}
 	}
 
 	cell(XOR){
-		area : 0;
+		area	: 0;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "A^B";
+			direction	: output;
+			function	: "A^B";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell(XNOR){
-		area : 0;
+		area	: 0;
 		pin(A){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(B){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Z){
-			direction : output;
-			function : "(A^B)'";
+			direction	: output;
+			function	: "(A^B)'";
 			timing(){
-				related_pin : "A";
+				related_pin	: "A";
 			}
 			timing(){
-				related_pin : "B";
+				related_pin	: "B";
 			}
 		}
 	}
 
 	cell (DFF){
-		area : 0;
+		area	: 0;
 		ff(IQ,IQN){
-			next_state : "D";
-			clocked_on : "CLK";
-			clear  : "I' RST";
-			preset : "I RST";
-			clear_preset_var1 : L;
+			next_state	: "D";
+			clocked_on	: "CLK";
+			clear 	: "I' RST";
+			preset	: "I RST";
+			clear_preset_var1	: L;
 		}
 		pin(D){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 			timing() {
-			  related_pin : "CLK";
+			  related_pin	: "CLK";
 			}
 		}
 		pin(CLK){
-			direction : input;
-			capacitance : 1;
-			clock : true;
+			direction	: input;
+			capacitance	: 0;
+			clock	: true;
 		}
 		pin(I){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(RST){
-			direction : input;
-			capacitance : 1;
+			direction	: input;
+			capacitance	: 0;
 		}
 		pin(Q){
-			direction : output;
-			function : "IQ";
+			direction	: output;
+			function	: "IQ";
 			timing() {
-			  related_pin : "CLK";
-			  timing_type : falling_edge;
+			  related_pin	: "CLK";
+			  timing_type	: falling_edge;
 			}
 			timing() {
-				related_pin : "RST";
-				timing_type : clear;
-				timing_sense : positive_unate;
+				related_pin	: "RST";
+				timing_type	: clear;
+				timing_sense	: positive_unate;
 			}
 			timing() {
-				related_pin : "I";
-				timing_type : clear;
-				timing_sense : negative_unate;
+				related_pin	: "I";
+				timing_type	: clear;
+				timing_sense	: negative_unate;
 			}
 			timing() {
-				related_pin : "RST";
-				timing_type : preset;
-				timing_sense : positive_unate;
+				related_pin	: "RST";
+				timing_type	: preset;
+				timing_sense	: positive_unate;
 			}
 			timing() {
-				related_pin : "I";
-				timing_type : preset;
-				timing_sense : positive_unate;
+				related_pin	: "I";
+				timing_type	: preset;
+				timing_sense	: positive_unate;
 			}
 		}
 	}
