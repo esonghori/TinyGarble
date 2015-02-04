@@ -21,3 +21,6 @@ justGarble/readNetlist/debug
 .project
 .settings
 .metadata
+work/
+transcript
+*.wlf
