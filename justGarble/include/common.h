@@ -130,6 +130,9 @@ void inline TRUNC_COPY(char *X, char *Y);
 #define FAILURE -1
 
 
+#define CONST_ZERO -2
+#define CONST_ONE  -3
+
 #define ROW_REDUCTION
 #define FREE_XOR
 #define DKC2
