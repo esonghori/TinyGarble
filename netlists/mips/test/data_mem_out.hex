@@ -1,8 +1,8 @@
 // memory data file (do not edit the following line - required for mem load use)
 // instance=/Test_Bench/data_mem_out
 // format=hex addressradix=h dataradix=h version=1.0 wordsperline=1 noaddress
-00000008
-00000002
+12345679
+00000000
 00000000
 00000001
 00000002

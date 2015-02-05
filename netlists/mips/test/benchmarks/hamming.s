@@ -18,7 +18,7 @@ hamming:
 	addi 	$2,	$0, 8 	#$2 := A 	
 	add 	$3,	$2,	$9  #$3 := B = A + num
 
-	addi 	$10, $0, 0	# answer
+#	addi 	$10, $0, 0	# answer, no need to reset
 	addi 	$9, $9, 8 	# num += 2 to compare with the end of A
 loop:
 	beq 	$2, $9, end # if A == end of A, we are done
