@@ -39,6 +39,8 @@ module Data_Mem
     output  [W-1:0]     data_out;
 
 
+    reg     [W-1:0]     data_out;
+
     reg     [W-1:0]     memory  [0:N-1];
 
 
@@ -71,16 +73,80 @@ module Data_Mem
         begin
             for(i=0;i<N;i=i+1)
             begin
-                memory[i] <=  data_mem_in[i]; //TODO: why doesn't it work!?          
+                memory[i] <=  data_mem_in[i];          
             end
         end
-        else if (mem_source == `MEM_WRITE32 || mem_source == `MEM_WRITE16 || mem_source == `MEM_WRITE8)
+        else if (mem_source == `MEM_WRITE32)
         begin
             memory[addr[L+1:2]] <= data_in;
-
+        end
+        else if (mem_source == `MEM_WRITE16)
+        begin
+            if(addr[1]==1'b0)
+                memory[addr[L+1:2]][15:0] <= data_in[15:0];
+            else if (addr[1]==1'b1)
+                memory[addr[L+1:2]][31:16] <= data_in[15:0];
+        end
+        else if (mem_source == `MEM_WRITE8)
+        begin
+            if(addr[1:0]==2'b00)
+                memory[addr[L+1:2]][7:0] <= data_in[7:0];
+            else if(addr[1:0]==2'b01)
+                memory[addr[L+1:2]][15:8] <= data_in[7:0];
+            else if(addr[1:0]==2'b10)
+                memory[addr[L+1:2]][23:16] <= data_in[7:0];
+            else if(addr[1:0]==2'b11)
+                memory[addr[L+1:2]][31:24] <= data_in[7:0];
         end
     end
 
-    assign  data_out = memory[addr[L+1:2]];//TODO check
+
+    always@(*)
+    begin
+        case(mem_source)
+        `MEM_READ32 :
+        begin
+            data_out <= memory[addr[L+1:2]];
+        end
+        `MEM_READ16 :
+        begin     
+            if(addr[1]==1'b0)
+                data_out <= {16'b0, memory[addr[L+1:2]][15:0]};
+            else if (addr[1]==1'b1)
+                data_out <= {16'b0, memory[addr[L+1:2]][31:16]};
+        end
+        `MEM_READ16S:
+        begin
+            if(addr[1]==1'b0)
+                data_out <= {{16{memory[addr[L+1:2]][15]}}, memory[addr[L+1:2]][15:0]};
+            else if (addr[1]==1'b1)
+                data_out <= {{16{memory[addr[L+1:2]][16]}}, memory[addr[L+1:2]][31:16]};
+        end
+        `MEM_READ8  :
+        begin
+            if(addr[1:0]==2'b00)
+                data_out <= {24'b0, memory[addr[L+1:2]][7:0]};
+            else if(addr[1:0]==2'b01)
+                data_out <= {24'b0, memory[addr[L+1:2]][15:8]};
+            else if(addr[1:0]==2'b10)
+                data_out <= {24'b0, memory[addr[L+1:2]][23:16]};
+            else if(addr[1:0]==2'b11)
+                data_out <= {24'b0, memory[addr[L+1:2]][31:24]};
+        end
+        `MEM_READ8S :
+        begin
+            if(addr[1:0]==2'b00)
+                data_out <= {{24{memory[addr[L+1:2]][7]}}, memory[addr[L+1:2]][7:0]};
+            else if(addr[1:0]==2'b01)
+                data_out <= {{24{memory[addr[L+1:2]][7]}}, memory[addr[L+1:2]][15:8]};
+            else if(addr[1:0]==2'b10)
+                data_out <= {{24{memory[addr[L+1:2]][7]}}, memory[addr[L+1:2]][23:16]};
+            else if(addr[1:0]==2'b11)
+                data_out <= {{24{memory[addr[L+1:2]][7]}}, memory[addr[L+1:2]][31:24]};
+        end
+        default:
+            data_out <= 32'b0;
+        endcase
+    end
 
 endmodule

@@ -4,7 +4,7 @@ module Lite_MIPS
 #
 (
     parameter   W = 32,
-    parameter   L = 6
+    parameter   L = 8
 )
 (	
 	clk, 

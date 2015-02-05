@@ -700,7 +700,7 @@ module Control
 				b_source_out<=`B_FROM_SIGNED_IMM;
 				alu_func<=`ALU_ADD;
 				c_source_out<=`C_FROM_MEMORY;
-				mem_source_out<=`MEM_READ32;
+				mem_source_out<=`MEM_READ32; //TODO: fix it
 			end
 			3'b011://LW
 			begin
@@ -733,7 +733,15 @@ module Control
 				mem_source_out<=`MEM_READ16;
 			end
 			3'b110://LWR
-				;
+			begin
+				$display("LWR");
+				rs_index<=r1;
+				rd_index<=r2;
+				b_source_out<=`B_FROM_SIGNED_IMM;
+				alu_func<=`ALU_ADD;
+				c_source_out<=`C_FROM_MEMORY;
+				mem_source_out<=`MEM_READ32; //TODO: fix it
+			end
 			3'b111://-
 				;
 			endcase
