@@ -7,7 +7,7 @@ set hdlin_while_loop_iterations 1024
 #analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../syn_lib/SUB.v ../syn_lib/COMP.v ../syn_lib/MUX.v}
 
 
-analyze -format verilog {Adder.v Control.v MUX_32bit.v Sign_Extend.v ALU_Control.v Data_Memory.v MUX_5bit.v SingleCycle_CPU.v ALU.v Instr_Memory.v PC.v Register_File.v}
+analyze -format verilog {ALU.v Control.v Inst_Mem.v Mult.v Shifter.v Bus_Mux.v Data_Mem.v Lite_MIPS.v  PC_Next.v Reg_Bank.v}
 
 
 elaborate ALU -architecture verilog -library DEFAULT -update

@@ -1,103 +1,50 @@
-/* =============================================================================
- *
- * Name           : ALU.v
- * Author         : Hakki Caner Kirmizi
- * Date           : 2010-5-1
- * Description    : A module which implements an ALU unit for the excution of
- *					instruction. Supported instructions: add, sub, and, or, slt, 
-					addi, andi, ori, lw, sw, beq
- * References	  : http://personal.denison.edu/~bressoud/cs281-s08/homework/MIPSALU.html
- * 
- * Note: 'addi, andi, ori' are already covered in their R-format counterparts. 
- * We assume that 6-bit function code which is input to the ALU control 
- * circuit will be correctly generated at the main control circuit.
- * =============================================================================
-*/
+`include "../defined.vh"
 
-module ALU
-#(
-	parameter W = 32
-)
-(
-	data1_in,
-	data2_in,
-	ALUCtrl,
-	data,
-	Zero
+module  ALU
+( 
+	a_in ,
+	b_in ,
+	alu_function ,
+	c_alu 
 );
+	input [31:0]a_in;
+	input [31:0]b_in;
+	input [3:0]alu_function;
+	output reg [31:0]c_alu;
+	
 
-input	[W-1:0]	data1_in;
-input	[W-1:0]	data2_in;
-input	[3:0]	ALUCtrl;
-output	[W-1:0]	data;
-output			Zero;
-
-reg		[W-1:0] data;
-
-
-reg 			add_sub_sel;
-
-wire	[W-1:0]	adder_data;
-wire 	[W-1:0]	data2_in_adder;
-
-assign data2_in_adder = (add_sub_sel)?(~data2_in):(data2_in);
-
-ADD
-#(
-	.N(W)
-)
-ADD_1
-(
-	.A(data1_in),
-	.B(data2_in_adder),
-	.CI(add_sub_sel),
-	.S(adder_data), 
-	.CO()
-);
-
-assign Zero = (data==0); //Zero is true if data is 0
-always @(*) 
-begin
-	add_sub_sel	<= 1'b0;
-	data <= 32'b0;
-	 case (ALUCtrl)
-        4'b0000://and
-        begin
-        	data <= data1_in & data2_in;
-        end
-        4'b0001://or
-        begin
-        	 data <= data1_in | data2_in;
-       	end
-        4'b0010://add 
-        begin
-        	add_sub_sel <= 0;
-        	data <= adder_data;//data1_in + data2_in;
-       	end
-        4'b0110://sub
-        begin
-        	add_sub_sel <= 1;
-        	data <= adder_data;//data1_in - data2_in;
-       	end
-        4'b0111://slt 
-        begin
-        	add_sub_sel <= 1;
-        	data <= adder_data[W-1];
-       	end
-        4'b1100://nor
-        begin
-        	data <= ~(data1_in | data2_in); // result is nor
-       	end
-        4'b1101:// xor
-        begin
-        	data <= data1_in ^ data2_in;				 	
-        end
-        default: 
-        begin
-        	add_sub_sel <= 1'b0;
-        	data <= 32'b0;
-       	end
-    endcase
-end
-
+	
+	wire signed [31:0]a_in_s, b_in_s;
+	
+	assign a_in_s=a_in;
+	assign b_in_s=b_in;
+	
+	always@(*)
+	begin
+		c_alu<=32'b0;
+		case(alu_function)
+		`ALU_NOTHING:
+			c_alu<=32'b0;
+		`ALU_ADD:
+			c_alu<=a_in+b_in;
+		`ALU_SUBTRACT:
+			c_alu<=a_in-b_in;
+		`ALU_LESS_THAN:
+			c_alu<=(a_in<b_in)?1:32'b0;
+		`ALU_LESS_THAN_SIGNED:
+			c_alu<=(a_in_s<b_in_s)?1:32'b0;
+		`ALU_OR:
+			c_alu<=a_in|b_in;
+		`ALU_AND:
+			c_alu<=a_in&b_in;
+		`ALU_XOR:      
+			c_alu<=a_in^b_in;
+		`ALU_NOR:
+			c_alu<=~(a_in|b_in);
+		default:
+			c_alu<=32'b0;
+		endcase
+	end
+   
+   
 endmodule

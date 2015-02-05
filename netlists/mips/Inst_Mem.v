@@ -3,7 +3,9 @@
 // Instruction memory (read-only)
 //=========================================================
 
-module Instr_Memory
+`include "../defined.vh"
+
+module Inst_Mem
 #
 (
     parameter   W = 32,
@@ -11,18 +13,18 @@ module Instr_Memory
 )
 (
 	inst_mem_in_wire,
-    addr,
-    instr
+    pc,
+    opcode
 );
 
 localparam  N = 2**L;
 
 
 // Interface
-input   [L+1:0]  addr;
-output  [W-1:0]  instr;
+input 	[31:2]		pc;
+output  [W-1:0]  	opcode;
 
-input [N*W-1:0] inst_mem_in_wire;
+input 	[N*W-1:0] 	inst_mem_in_wire;
 
 //initialization
 wire    [W-1:0]   inst_mem_in  [0:N-1];
@@ -34,11 +36,6 @@ begin:MEM_INIT
 end
 endgenerate
 
-
-// Instruction memory is byte-addressable, instructions are word-aligned
-// Instruction memory with 256 32-bit words
-// Instruction address range: 0x0000 ~ 0x03FC
-
-assign  instr = inst_mem_in[addr>>2];  
+assign  opcode = inst_mem_in[pc[L+3:2]];  //TODO check here!
 
 endmodule
