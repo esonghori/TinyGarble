@@ -66,6 +66,79 @@ library(dff_full){
 		}
 	}
 
+	cell(HA){
+		area	: 1;
+		pin(A){
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(B){
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(S){
+			direction	: output;
+			function	: "A^B";
+			timing(){
+				related_pin	: "A";
+			}
+			timing(){
+				related_pin	: "B";
+			}
+		}
+		pin(CO){
+			direction	: output;
+			function	: "(A B)";
+			timing(){
+				related_pin	: "A";
+			}
+			timing(){
+				related_pin	: "B";
+			}
+		}
+	}
+
+	cell(FA){
+		area	: 1;
+		pin(A){
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(B){
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(CI){
+			direction	: input;
+			capacitance	: 0;
+		}
+		pin(S){
+			direction	: output;
+			function	: "A^B^CI";
+			timing(){
+				related_pin	: "A";
+			}
+			timing(){
+				related_pin	: "B";
+			}
+			timing(){
+				related_pin	: "CI";
+			}
+		}
+		pin(CO){
+			direction	: output;
+			function	: "((A^B) CI) + (A B)";
+			timing(){
+				related_pin	: "A";
+			}
+			timing(){
+				related_pin	: "B";
+			}
+			timing(){
+				related_pin	: "CI";
+			}
+		}
+	}
 
 	cell(AND){
 		area	: 1;
