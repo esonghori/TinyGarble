@@ -194,8 +194,5 @@ module Lite_MIPS
 	assign mult_funcD = mult_func;
 	assign rd_indexD = rd_index;
 	assign reg_destD = reg_dest;
-	assign pause_pipeline = 1'b0;
-
-
 
 endmodule

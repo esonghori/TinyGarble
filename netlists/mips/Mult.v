@@ -25,7 +25,6 @@ module Mult
 	
 	assign a_s=a;
 	assign b_s=b;
-	assign pause_out=0;
 
 	
 	always@(*)
