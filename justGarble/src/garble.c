@@ -701,7 +701,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 	int tableIndex = 0;
 
 
-	for(cid = 0; cid <garbledCircuit->c; cid++) //foreach clock cycle
+	for(cid = 0; cid <garbledCircuit->c; cid++) //for each clock cycle
 	{
 		for(i=0;i<2*garbledCircuit->n;i+=2)
 		{
@@ -723,7 +723,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 			}
 		}
 
-		for(i=0; i< garbledCircuit->q;i++)
+		for(i=0; i< garbledCircuit->q;i++) //for each gates
 		{
 			garbledGate = &(garbledCircuit->garbledGates[i]);
 			input0 = garbledGate->input0; input1 = garbledGate->input1;
@@ -1029,6 +1029,10 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 				garbledTable[tableIndex].table[2*(1-lsb0) + lsb1-1] = xorBlocks(blocks[2], mask[2]);
 			if (2*(1-lsb0) + (1-lsb1) !=0)
 				garbledTable[tableIndex].table[2*(1-lsb0) + (1-lsb1)-1] = xorBlocks(blocks[3], mask[3]);
+
+
+			//TODO: Here, we should send the garbledTable[tableIndex][1..3].
+
 
 			tableIndex++;
 
