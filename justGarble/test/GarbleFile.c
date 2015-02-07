@@ -72,10 +72,6 @@ int main(int argc, char* argv[])
 	block *outputMap = (block *)malloc(sizeof(block)*2*m*c);
 
 
-	//garbleCircuit(&gc, inputLabels, outputMap);
-	//checkCircuit(&gc, inputLabels, outputMap, &(check_test_seq));
-
-
 	double timeGarble[TIMES];
 	double timeEval[TIMES];
 	double timeGarbleMedians[TIMES];

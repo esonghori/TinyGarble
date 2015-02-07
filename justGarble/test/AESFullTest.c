@@ -537,7 +537,9 @@ int main() {
 
 	for (j = 0; j < TIMES; j++) {
 		for (i = 0; i < TIMES; i++) {
+
 			timeGarble[i] = garbleCircuit(&aesCircuit, inputLabels, outputMap);
+
 			timeEval[i] = timedEval(&aesCircuit, inputLabels);
 		}
 		timeGarbleMedians[j] = ((double) median(timeGarble, TIMES))
