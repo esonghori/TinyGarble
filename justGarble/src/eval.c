@@ -171,7 +171,7 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 	long a, b, i, j, cid, rnds = 10;
 
 
-	for(cid=0;cid<garbledCircuit->c;cid++)
+	for(cid=0;cid<garbledCircuit->c;cid++) // for each clock cycle
 	{
 
 		for(i=0;i<garbledCircuit->n;i++)
@@ -191,7 +191,7 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 			}
 		}
 
-		for (i = 0; i < garbledCircuit->q; i++)
+		for (i = 0; i < garbledCircuit->q; i++) // for each gates
 		{
 			garbledGate = &(garbledCircuit->garbledGates[i]);
 #ifdef FREE_XOR
@@ -220,6 +220,9 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 				val = xorBlocks(A, B);
 				tweak = makeBlock(cid, i);
 				val = xorBlocks(val, tweak);
+
+				//TODO: Here, we should receive the garbledTable[tableIndex][1..3].
+
 #ifdef ROW_REDUCTION
 				if (a+b==0)
 					cipherText = &zer;
