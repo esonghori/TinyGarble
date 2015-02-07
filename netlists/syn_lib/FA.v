@@ -16,6 +16,8 @@ module FA
 	wire   n1, n2, n3;
 
 
+//	FADDER FADDER ( .CIN(CI), .IN0(A), .IN1(B), .COUT(CO), .SUM(S) );
+
 	assign n1 = A^CI;
 	assign n2 = B^CI;
 	assign n3 = n1&n2;
