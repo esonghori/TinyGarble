@@ -1,60 +1,80 @@
-garbled
+TinyGarble
 =======
 
-Test on garbled circuit
-
-Rice University
-
-
-##manual for design_vision
+For more detailed:
+Ebrahim M. Songhori , Siam U. Hussain, Ahmad-Reza Sadeghi, Thomas Schneider, Farinaz Koushanfar, TinyGarble: Highly Compressed and Scalable Sequential Garbled Circuits." will appear on Security and Privacy (SP), 2015 IEEE Symposium on. IEEE, 2015.
 
 
-1.Changing library format using synopsis lc_shell (.lib to .db) [already done, skip]
+##Manual for Synopsys Design Compiler
 
-Please create ~/our_lib/ directory and put our_lib.lib and generic.sdb inside it. Go inside the directory and call the bewlo commands. Note that commands starting with "lc_shell>" should be called inside lc_shell. Please ignore "lc_shell>" for them.
+1. Compile library [Already done, please skip.]
+
+Go to `netlists/lib/dff_full` and run:
+
+		$ ./compile
+
+_Advanced detailed_: Let's suppose that our_lib.lib is located in /path/to/our_lib.
+
+- Go inside /path/to/our_lib and run: 
 
 		$ lc_shell
-		lc_shell> set search_path [concat ~/ ~/our_lib/]
+		lc_shell> set search_path [concat /path/to/our_lib/]
 		lc_shell> read_lib our_lib.lib
 		lc_shell> write_lib our_lib -format db
 		lc_shell> exit
-2.Compile adder.v using synopsis design_vison:
 
-Here, we supposed that our_lib.lib is located in ~/our_lib directory and adder.v is located in ~/ directory. Note that commands starting with "design_vision>" should be called inside lc_shell. Please ignore "design_vision>" for them
+[Note: commands starting with "lc_shell>" should be called inside `lc_shell`. Please ignore "lc_shell>" for them].
+
+2. Compile a benchmark:
+
+Go inside `/netlist/benchmark`, where benchmark is the name of the function. and run:  
+
+		$ ./compile
+
+You can eddit `benchmark.dcsh` file to change the parameter of the function.
+
+_Advanced detailed_: Let's suppose that our_lib.db is compiled and located in /path/to/our_lib and benchmark.v is located in /path/to/benchmark/. 
+
+- Go to /path/to/benchmark/ and run: 
 
 		$ design_vision
-		design_vision> set search_path [concat ~/ ~/our_lib/]
-		design_vision> set target_library ~/our_lib/our_lib.db
-		design_vision> set link_library ~/our_lib/our_lib.db
-		design_vision> set symbol_library ~/our_lib/generic.sdb
-		design_vision> analyze -format verilog {~/adder.v}
-		design_vision> elaborate adder -architecture verilog -library DEFAULT -update
-		design_vision> set_max_area 0
-		design_vision> compile_ultra -exact_map -no_design_rule -area_high_effort_script
-		design_vision> report_area
-		design_vision> write -hierarchy -format verilog -output adder_syn.v
+		design_vision> elaborate benchmark -architecture verilog -library DEFAULT -update
+		design_vision> set_max_area -ignore_tns 0 
+		design_vision> set_flatten false -design *
+		design_vision> set_structure -design * false
+		design_vision> set_resource_allocation area_only
+		design_vision> report_compile_options
+		design_vision> compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+		design_vision> write -hierarchy -format verilog -output benchmark_syn.v
 		design_vision> exit
-3.Counting # of gates in adder_syn.v
 
+It creates benchmark_syn.v in the current directory. [Note: commands starting with "design_vision>" should be called inside design_vision. Please ignore "design_vision>" for them.]
 
-##manual for Yosys
+3.Counting number of gates
 
-Here is how to compile a verilog file named "hamming.v" using the custom library "asic_cell.lib". We assume that the files are inside a folder named "Synthesis_yosys-abc" inside the "yosys" directory. The final output will be written in "hamming_synth.v"
+You can use `netlists/script/count.sh` to count the number of gates in a verilog file. For /path/to/benchmark/benchmark_syn.v, simply run:
 
-	$ cd ~/yosys
-	$ ./yosys
-	yosys> read_verilog Synthesis_yosys-abc/hamming.v
-	yosys> hierarchy -check -top hamming
-	yosys> proc; opt; memory; opt; fsm; opt; techmap; opt; 
-	yosys> abc -liberty Synthesis_yosys-abc/asic_cell_extended.lib
-	yosys> opt
-	yosys> write_verilog Synthesis_yosys-abc/hamming_synth.v
-	yosys> exit
+		$ netlists/script/count.sh /path/to/benchmark/benchmark_syn.v
 	
-Note that commands starting with "yosys>" should be called inside yosys. Please ignore "yosys>" for them
+##Manual for Yosys
 
-##compile just garbled
+Here is how to compile a verilog file named "benchmark.v" using the custom library "asic_cell.lib". We assume that the files are inside a folder named "Synthesis_yosys-abc" inside the "yosys" directory. The final output will be written in "benchmark_syn.v"
 
+		$ cd ~/yosys
+		$ ./yosys
+		yosys> read_verilog Synthesis_yosys-abc/benchmark.v
+		yosys> hierarchy -check -top benchmark
+		yosys> proc; opt; memory; opt; fsm; opt; techmap; opt; 
+		yosys> abc -liberty Synthesis_yosys-abc/asic_cell_extended.lib
+		yosys> opt
+		yosys> write_verilog Synthesis_yosys-abc/benchmark_syn.v
+		yosys> exit
+	
+[Note: commands starting with "yosys>" should be called inside design_vision. Please ignore "yosys>" for them.]
+
+##Compile JustGarbled
+
+- Dependecies
 Download msgpack-c from msgpack.org. Compile it using:
 
 	$ ./bootstrap
@@ -71,7 +91,10 @@ Add these two ~/.profile:
 	fi
 	export MSGPACK=path/to/msgpack-c/src
 
-Remember change path/to/msgpack-c to msgpack path. This way, it doesn't need "sudo make install".
+[Remember change path/to/msgpack-c to msgpack path]. This way, it doesn't need "sudo make install".
+
+- Compile JustGarble
+
 Go to justGarble and make it:
 
 	$ make
@@ -80,3 +103,8 @@ And test it:
 
 	$ bin/AESFullTest.out
 
+##TODOs
+- Upgrade README.md.
+- Add synthesis library.
+- Add networking to JustGarble.
+- Add OT to JustGarble.
