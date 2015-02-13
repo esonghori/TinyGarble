@@ -9,6 +9,18 @@ analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../s
 
 analyze -format verilog sum.v
 
+foreach n {3} {
+foreach cc {1} {
+elaborate sum -architecture verilog -library DEFAULT -update -parameters $n,$cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure false -design *
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/sum_syn_$n\_$cc.v
+}
+}
 
 ## n = 128
 #foreach cc {128 64 32 16 8 4 2 1} {
@@ -49,16 +61,16 @@ analyze -format verilog sum.v
 
 # n = 16384
 #foreach cc {16384 8192 4096 2048 1024 512 256 128 64 32 16 8 4 2 1} {
-foreach cc {16384} {
-elaborate sum -architecture verilog -library DEFAULT -update -parameters 16384,$cc
-set_max_area -ignore_tns 0 
-set_flatten false -design *
-set_structure -design * false
-set_resource_allocation area_only
-report_compile_options
-compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
-write -hierarchy -format verilog -output syn/sum_syn_16384_$cc.v
-}
+#foreach cc {16384} {
+#elaborate sum -architecture verilog -library DEFAULT -update -parameters 16384,$cc
+#set_max_area -ignore_tns 0 
+#set_flatten false -design *
+#set_structure -design * false
+#set_resource_allocation area_only
+#report_compile_options
+#compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
+#write -hierarchy -format verilog -output syn/sum_syn_16384_$cc.v
+#}
 
 
 exit

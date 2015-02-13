@@ -33,7 +33,6 @@ module Data_Mem
 
 
     reg     [W-1:0]     data_out;
-
     reg     [W-1:0]     memory  [0:N-1];
 
 
@@ -66,7 +65,7 @@ module Data_Mem
         begin
             for(i=0;i<N;i=i+1)
             begin
-                memory[i] <=  data_mem_in[i];          
+                memory[i] <= data_mem_in[i];          
             end
         end
         else if (mem_source == `MEM_WRITE32)
@@ -96,6 +95,7 @@ module Data_Mem
 
     always@(*)
     begin
+        data_out <= 32'b0;
         case(mem_source)
         `MEM_READ32 :
         begin
