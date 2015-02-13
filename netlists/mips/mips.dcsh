@@ -7,8 +7,7 @@ set hdlin_while_loop_iterations 1024
 analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../syn_lib/SUB.v ../syn_lib/COMP.v ../syn_lib/MUX.v}
 
 
-analyze -format verilog {ALU.v Control.v Inst_Mem.v Shifter.v Bus_Mux.v Data_Mem.v Lite_MIPS.v  PC_Next.v Reg_Bank.v} 
-#Mult.v
+analyze -format verilog {ALU.v Control.v Inst_Mem.v Shifter.v Bus_Mux.v Data_Mem.v Lite_MIPS.v  PC_Next.v Reg_Bank.v Mult.v}
 
 
 elaborate Lite_MIPS -architecture verilog -library DEFAULT -update
