@@ -9,7 +9,7 @@ analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/COUNT.v}
 analyze -format verilog hamming.v
 
 #n = 160
-foreach cc {160 1} {
+foreach cc {160 32} {
 elaborate hamming -architecture verilog -library DEFAULT -update -parameters 160,$cc
 set_max_area -ignore_tns 0 
 set_flatten false -design *
@@ -21,7 +21,7 @@ write -hierarchy -format verilog -output syn/hamming_syn_160_$cc.v
 }
 
 ## n = 1600
-foreach cc {1600 1} {
+foreach cc {1600 320} {
 elaborate hamming -architecture verilog -library DEFAULT -update -parameters 1600,$cc
 set_max_area -ignore_tns 0 
 set_flatten false -design *
@@ -33,7 +33,7 @@ write -hierarchy -format verilog -output syn/hamming_syn_1600_$cc.v
 }
 
 # n = 16000
-foreach cc {16000 1} {
+foreach cc {16000 3200} {
 elaborate hamming -architecture verilog -library DEFAULT -update -parameters 16000,$cc
 set_max_area -ignore_tns 0 
 set_flatten false -design *
