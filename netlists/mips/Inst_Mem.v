@@ -31,6 +31,6 @@ begin:MEM_INIT
 end
 endgenerate
 
-assign  opcode = inst_mem_in[pc[L+3:2]];  //TODO check here!
+assign  opcode = inst_mem_in[pc[L+3:2]];  //TODO add DFF instead of MUX
 
 endmodule
