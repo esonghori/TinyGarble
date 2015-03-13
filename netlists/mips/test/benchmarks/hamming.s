@@ -1,25 +1,25 @@
 # memory configuration 
-# 0: num
+# 0: l
 # 1: answer
 # 2: A[0]
 # 3: A[1]
 # ...
-# num+1: A[num-1]
-# num+2: B[0]
-# num+3: B[1]
-# num+4: B[2]
+# l+1: A[l-1]
+# l+2: B[0]
+# l+3: B[1]
+# l+4: B[2]
 # ...
-# 2*num+1: B[num-1]
+# 2*l+1: B[l-1]
 
-#hamming distance between A and B with the length of num
+#hamming distance between A and B with the length of l
 hamming:
-	lw 		$9,	0($0) 	#load num into $9
-	sll		$9, $9, 2	
+	lw 		$9,	0($0) 	#load l into $9
+	sll		$9, $9, 2	#$9 = $9*4
 	addi 	$2,	$0, 8 	#$2 := A 	
-	add 	$3,	$2,	$9  #$3 := B = A + num
+	add 	$3,	$2,	$9  #$3 := B = A + l
 
 #	addi 	$10, $0, 0	# answer, no need to reset
-	addi 	$9, $9, 8 	# num += 2 to compare with the end of A
+	addi 	$9, $9, 8 	# l += 2 to compare with the end of A
 loop:
 	beq 	$2, $9, end # if A == end of A, we are done
 	
@@ -34,3 +34,5 @@ SAME:
 	j loop # jump back to the top
 end:
 	sw $10, 4($0) #store answer
+f:				
+	j f		#while(1)

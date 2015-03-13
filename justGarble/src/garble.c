@@ -147,13 +147,13 @@ int startBuilding(GarbledCircuit *garbledCircuit,
 	garblingContext->gateIndex = 0;
 	garblingContext->tableIndex = 0;
 	garblingContext->wireIndex = garbledCircuit->n; //TODO: it was n + 1
-	block key = randomBlock();
+
 	garblingContext->R =
 			xorBlocks(garbledCircuit->wires[0].label0, garbledCircuit->wires[0].label1);
 	garblingContext->fixedWires = (int *) malloc(
 			sizeof(int) * garbledCircuit->r);
+	block key = randomBlock();
 	garbledCircuit->globalKey = key;
-	//startTime = RDTSC;
 	DKCipherInit(&key, &(garblingContext->dkCipherContext));
 
 	return 0;
@@ -699,22 +699,25 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inpu
 		for (j = 0; j < 2*n0; j+=2){
 			if (!inputs[n0*cc+j/2]) send_block(connfd, inputLabels[2*n*cc+j]);
 			else send_block(connfd, inputLabels[2*n*cc+j+1]);	
-			printf("%d ", inputs[n0*cc+j/2]);
+			printf("i(%d, %d, %d)\n", cc, j/2, inputs[n0*cc+j/2]);
 			print__m128i(inputLabels[2*n*cc+j]);
 			print__m128i(inputLabels[2*n*cc+j+1]);
-			printf("\n");
 		}
 		for(; j < 2*n; j+=2){
 			int ev_input;
 			read(connfd, &ev_input, sizeof(int));
 			if (!ev_input) send_block(connfd, inputLabels[2*n*cc+j]);
 			else send_block(connfd, inputLabels[2*n*cc+j+1]);
+
+			printf("i(%d, %d, %d)\n", cc, j/2, ev_input);
 			print__m128i(inputLabels[2*n*cc+j]);
 			print__m128i(inputLabels[2*n*cc+j+1]);
-			printf("\n");
 		}
 	}
 	
+	printf("\n\n");
+
+
 	garbledCircuit->id = getFreshId();
 
 	garbledTable = garbledCircuit->garbledTable;
@@ -725,6 +728,9 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inpu
 	garbledCircuit->globalKey = key;
 	DKCipherInit(&key, &(garblingContext.dkCipherContext));
 	int tableIndex = 0;
+
+	send_block(connfd, key); // send DKC key
+
 
 
 	for(cid = 0; cid <garbledCircuit->c; cid++) //for each clock cycle
@@ -751,26 +757,52 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inpu
 
 		for(i=0; i< garbledCircuit->q;i++) //for each gates
 		{
+
+
+
+
 			garbledGate = &(garbledCircuit->garbledGates[i]);
 			input0 = garbledGate->input0; input1 = garbledGate->input1;
 			output = garbledGate->output;
+
+			printf("(%d, %d)\n", cid, i);
+			print__m128i(garbledCircuit->wires[input0].label0);
+			print__m128i(garbledCircuit->wires[input0].label1);
+
+			print__m128i(garbledCircuit->wires[input1].label0);
+			print__m128i(garbledCircuit->wires[input1].label1);
+
+
 
 #ifdef FREE_XOR
 			if (garbledGate->type == XORGATE)
 			{
 				garbledCircuit->wires[output].label0 = xorBlocks(garbledCircuit->wires[input0].label0, garbledCircuit->wires[input1].label0);
 				garbledCircuit->wires[output].label1 = xorBlocks(garbledCircuit->wires[input0].label1, garbledCircuit->wires[input1].label0);
+
+
+				print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+				print__m128i(garbledCircuit->wires[garbledGate->output].label1);
+
 				continue;
 			}
 			else if (garbledGate->type == XNORGATE)
 			{
 				garbledCircuit->wires[output].label0 = xorBlocks(garbledCircuit->wires[input0].label1, garbledCircuit->wires[input1].label0);
 				garbledCircuit->wires[output].label1 = xorBlocks(garbledCircuit->wires[input0].label0, garbledCircuit->wires[input1].label0);
+
+				print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+				print__m128i(garbledCircuit->wires[garbledGate->output].label1);
+
 				continue;
 			}
 			else if (garbledGate->type == NOTGATE){
 				garbledCircuit->wires[output].label0 = garbledCircuit->wires[input0].label1;
 				garbledCircuit->wires[output].label1 = garbledCircuit->wires[input0].label0;
+
+				print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+				print__m128i(garbledCircuit->wires[garbledGate->output].label1);
+
 				continue;
 			}
 
@@ -1060,10 +1092,19 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inpu
 			//TODO: Here, we should send the garbledTable[tableIndex][1..3]. or [0..2]?
 			
 			for (j = 0; j < 3; j++)
+			{
+				printf("t(%d)\t", j);
+				print__m128i(garbledTable[tableIndex].table[j]);
+
 				send_block(connfd, garbledTable[tableIndex].table[j]);
 				
+			}
 
 			tableIndex++;
+
+
+			print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+			print__m128i(garbledCircuit->wires[garbledGate->output].label1);
 
 		}
 		
@@ -1076,10 +1117,9 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inpu
 			outputMap[cid*2*garbledCircuit->m + 2*i] = o0;
 			outputMap[cid*2*garbledCircuit->m + 2*i+1] = o1;
 			
-			printf ("%d\t", i);
+			printf ("o(%d,%d)\n", cid, i);
 			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i]);
 			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i+1]);
-			printf ("\n");
 		}
 	}
 	return (RDTSC - startTime);

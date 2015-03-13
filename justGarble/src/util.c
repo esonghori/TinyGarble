@@ -106,7 +106,7 @@ block randomBlock() {
 void print__m128i(__m128i var)
 {
     uint16_t *val = (uint16_t*) &var;
-    printf("%i \t%i \t%i \t%i \t%i \t%i \t%i \t%i \t", val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
+    printf("%i \t%i \t%i \t%i \t%i \t%i \t%i \t%i \n", val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
 }
 
 #ifdef __cplusplus
