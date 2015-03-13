@@ -61,6 +61,7 @@ block randomBlock();
 int median(int A[], int n);
 double doubleMean(double A[], int n);
 void srand_sse(unsigned int seed);
+void print__m128i(__m128i);
 
 #ifdef __cplusplus
 }

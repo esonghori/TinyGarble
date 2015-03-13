@@ -24,6 +24,7 @@
 #include "../include/dkcipher.h"
 #include "../include/aes.h"
 #include "../include/justGarble.h"
+#include "../include/tcpip.h"
 
 #include <malloc.h>
 #include <wmmintrin.h>
@@ -35,6 +36,7 @@ extern "C" {
 #ifdef TRUNCATED
 int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 		OutputMap outputMap) {
+			
 	GarbledGate *garbledGate;
 	DKCipherContext dkCipherContext;
 	DKCipherInit(&(garbledCircuit->globalKey), &dkCipherContext);
@@ -154,8 +156,7 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 
 }
 #else
-int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
-		OutputMap outputMap) {
+int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels, OutputMap outputMap, int sockfd) {
 	GarbledGate *garbledGate;
 	DKCipherContext dkCipherContext;
 	DKCipherInit(&(garbledCircuit->globalKey), &dkCipherContext);
@@ -222,6 +223,9 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 				val = xorBlocks(val, tweak);
 
 				//TODO: Here, we should receive the garbledTable[tableIndex][1..3].
+				
+				for (j = 0; j < 3; j++)
+					recv_block(sockfd, &garbledTable[tableIndex].table[j]);
 
 #ifdef ROW_REDUCTION
 				if (a+b==0)
@@ -246,10 +250,16 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 #endif
 
 		}
+		
+		printf ("\n :OUTPUTMAP: \n");
 
 		for (i = 0; i < garbledCircuit->m; i++)
 		{
 			outputMap[cid*garbledCircuit->m + i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label;
+			
+			printf ("%d\t", i);
+			print__m128i(outputMap[cid*garbledCircuit->m + i]);
+			printf("\n");
 		}
 	}
 	return 0;
