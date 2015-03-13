@@ -24,6 +24,7 @@
 #include "../include/dkcipher.h"
 #include "../include/aes.h"
 #include "../include/justGarble.h"
+#include "../include/tcpip.h"
 #include <malloc.h>
 #include <wmmintrin.h>
 #include <time.h>
@@ -660,9 +661,14 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 #else
 #ifdef ROW_REDUCTION
 
-long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap)
+long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inputLabels, OutputMap outputMap, int connfd)
 {
-
+	int n0 = 4; // TODO: get it from SCD
+	int n = garbledCircuit->n;
+	int m = garbledCircuit->m;
+	int p = garbledCircuit->p;
+	int c = garbledCircuit->c;
+	
 	GarblingContext garblingContext;
 	GarbledGate *garbledGate;
 	GarbledTable *garbledTable;
@@ -672,7 +678,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 
 	block *A, *B, *plainText,*cipherText;
 	block tweak;
-	long a, b, i, j, cid ,rnds = 10;
+	long cc, a, b, i, j, cid ,rnds = 10;
 	block blocks[4];
 	block keys[4];
 	long lsb0,lsb1;
@@ -688,7 +694,27 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 	long startTime = RDTSC;
 
 	createInputLabels(inputLabels, garbledCircuit->n*garbledCircuit->c);
-
+	
+	for (cc = 0; cc < c; cc++){
+		for (j = 0; j < 2*n0; j+=2){
+			if (!inputs[n0*cc+j/2]) send_block(connfd, inputLabels[2*n*cc+j]);
+			else send_block(connfd, inputLabels[2*n*cc+j+1]);	
+			printf("%d ", inputs[n0*cc+j/2]);
+			print__m128i(inputLabels[2*n*cc+j]);
+			print__m128i(inputLabels[2*n*cc+j+1]);
+			printf("\n");
+		}
+		for(; j < 2*n; j+=2){
+			int ev_input;
+			read(connfd, &ev_input, sizeof(int));
+			if (!ev_input) send_block(connfd, inputLabels[2*n*cc+j]);
+			else send_block(connfd, inputLabels[2*n*cc+j+1]);
+			print__m128i(inputLabels[2*n*cc+j]);
+			print__m128i(inputLabels[2*n*cc+j+1]);
+			printf("\n");
+		}
+	}
+	
 	garbledCircuit->id = getFreshId();
 
 	garbledTable = garbledCircuit->garbledTable;
@@ -1031,18 +1057,29 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Outp
 				garbledTable[tableIndex].table[2*(1-lsb0) + (1-lsb1)-1] = xorBlocks(blocks[3], mask[3]);
 
 
-			//TODO: Here, we should send the garbledTable[tableIndex][1..3].
-
+			//TODO: Here, we should send the garbledTable[tableIndex][1..3]. or [0..2]?
+			
+			for (j = 0; j < 3; j++)
+				send_block(connfd, garbledTable[tableIndex].table[j]);
+				
 
 			tableIndex++;
 
 		}
+		
+		printf ("\n :OUTPUTMAP: \n");
+		
 		for(i=0;i<garbledCircuit->m;i++)
 		{
 			block o0 = garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
 			block o1 = garbledCircuit->wires[garbledCircuit->outputs[i]].label1;
 			outputMap[cid*2*garbledCircuit->m + 2*i] = o0;
 			outputMap[cid*2*garbledCircuit->m + 2*i+1] = o1;
+			
+			printf ("%d\t", i);
+			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i]);
+			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i+1]);
+			printf ("\n");
 		}
 	}
 	return (RDTSC - startTime);
@@ -1168,6 +1205,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels,
 		tableIndex++;
 
 	}
+	
 	for (i = 0; i < garbledCircuit->m; i++) {
 		outputMap[2 * i] =
 				garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
