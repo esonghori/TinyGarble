@@ -22,12 +22,13 @@
 #include "../include/check.h"
 #include "../include/util.h"
 #include "../include/justGarble.h"
+#include "../include/tcpip.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap, int (*check)(int *, int *, int ))
+int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap, int (*check)(int *, int *, int ), int sockfd) // TODO: never used, didn't fix
 {
 
 	int i, j, cc;
@@ -55,7 +56,7 @@ int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Output
 			}
 		}
 		extractLabels(extractedLabels, inputLabels, inputs, n*c);
-		evaluate(garbledCircuit, extractedLabels, computedOutputMap);
+		evaluate(garbledCircuit, extractedLabels, computedOutputMap, sockfd);
 		mapOutputs(outputMap, computedOutputMap, outputVals, m*c);
 		check(inputs, outputReal, n*c);
 		for (j = 0; j < m*c; j++)
@@ -67,33 +68,40 @@ int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, Output
 	return 0;
 }
 
-unsigned long timedEval(GarbledCircuit *garbledCircuit, InputLabels inputLabels)
+unsigned long timedEval(GarbledCircuit *garbledCircuit, int* inputs, InputLabels inputLabels, int sockfd)
 {
-
+	
+	int n0 = 4; // TODO: get it from SCD
 	int n = garbledCircuit->n;
 	int m = garbledCircuit->m;
 	int p = garbledCircuit->p;
 	int c = garbledCircuit->c;
-	block extractedLabels[n*c];
+	//block extractedLabels[n*c];
 	block outputs[m*c];
 	int j, cc;
-	int inputs[n*c];
 	unsigned long startTime, endTime;
 	unsigned long sum = 0;
-	for(cc=0;cc<c;cc++)
-	{
-		for (j = 0; j < n-p; j++)
-		{
-			inputs[cc*n + j] = rand() % 2;
+	
+	for (cc = 0; cc < c; cc++){
+		for (j = 0; j < n0; j++){
+			recv_block(sockfd, &inputLabels[n*cc+j]);
+			print__m128i(inputLabels[n*cc+j]);
+			printf("\n");
+			
 		}
-		for(;j<n;j++)
-		{
-			inputs[cc*n + j] = 0; //reset the DFF to 0 at clock 0, the rest will be ignored
-		}
+		for(; j < n; j++){
+			write(sockfd, &inputs[j-n0], sizeof(int));
+			recv_block(sockfd, &inputLabels[n*cc+j]);	
+			printf("%d ", inputs[j-n0]);		
+			print__m128i(inputLabels[n*cc+j]);
+			printf("\n");
+		}		
 	}
-	extractLabels(extractedLabels, inputLabels, inputs, n*c);
+	
+	
+	//extractLabels(extractedLabels, inputLabels, inputs, n*c);
 	startTime = RDTSC;
-	evaluate(garbledCircuit, extractedLabels, outputs);
+	evaluate(garbledCircuit, inputLabels, outputs, sockfd);
 	endTime = RDTSC;
 	sum = endTime - startTime;
 	return sum;
