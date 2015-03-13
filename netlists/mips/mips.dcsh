@@ -7,8 +7,7 @@ set hdlin_while_loop_iterations 1024
 analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../syn_lib/SUB.v ../syn_lib/COMP.v ../syn_lib/MUX.v}
 
 
-analyze -format verilog {ALU.v Control.v Inst_Mem.v Shifter.v Bus_Mux.v Data_Mem.v Lite_MIPS.v  PC_Next.v Reg_Bank.v} 
-#Mult.v
+analyze -format verilog {ALU.v Control.v Inst_Mem.v Shifter.v Bus_Mux.v Data_Mem.v PC_Next.v Reg_Bank.v Mult.v Lite_MIPS.v}
 
 
 elaborate Lite_MIPS -architecture verilog -library DEFAULT -update
@@ -18,7 +17,7 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
-write -hierarchy -format verilog -output syn/mips_syn.v
+write -hierarchy -format verilog -output syn/Lite_MIPS_syn.v
 
 
 

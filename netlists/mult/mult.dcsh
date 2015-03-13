@@ -9,32 +9,31 @@ analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v}
 analyze -format verilog mult.v
 
 ##n = 64
-#foreach cc {64 32 16 8 4 2 1} {
-#elaborate mult -architecture verilog -library DEFAULT -update -parameters 64,$cc
-#set_max_area -ignore_tns 0 
-#set_flatten false -design *
-#set_structure -design * false
-#set_resource_allocation area_only
-#report_compile_options
-#compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn/mult_syn_64_$cc.v
-#}
+foreach cc {16} {
+elaborate mult -architecture verilog -library DEFAULT -update -parameters 64,$cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/mult_syn_64_$cc.v
+}
 #
 ##n = 128
-#foreach cc {128 64 32 16 8 4 2 1} {
-#elaborate mult -architecture verilog -library DEFAULT -update -parameters 128,$cc
-#set_max_area -ignore_tns 0 
-#set_flatten false -design *
-#set_structure -design * false
-#set_resource_allocation area_only
-#report_compile_options
-#compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn/mult_syn_128_$cc.v
-#}
+foreach cc {32} {
+elaborate mult -architecture verilog -library DEFAULT -update -parameters 128,$cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/mult_syn_128_$cc.v
+}
 
 #n = 256
-#foreach cc {16 8 4 2 1} {
-foreach cc {1} {
+foreach cc {64} {
 elaborate mult -architecture verilog -library DEFAULT -update -parameters 256,$cc
 set_max_area -ignore_tns 0 
 set_flatten false -design *
@@ -46,7 +45,7 @@ write -hierarchy -format verilog -output syn/mult_syn_256_$cc.v
 }
 
 #n = 1024
-#foreach cc {1024 512 256 128 64 32 16 8 4 2 1} {
+#foreach cc {256} {
 #elaborate mult -architecture verilog -library DEFAULT -update -parameters 1024,$cc
 #set_max_area -ignore_tns 0 
 #set_flatten false -design *
