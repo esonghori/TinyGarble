@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
 int checkCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels, OutputMap outputMap,
-		int (*check)(int *a, int *output, int s));
-unsigned long timedEval(GarbledCircuit *garbledCircuit, InputLabels inputLabels);
+		int (*check)(int *a, int *output, int s), int sockfd);
+unsigned long timedEval(GarbledCircuit *garbledCircuit, int* inputs, InputLabels inputLabels, int sockfd);
 
 #ifdef __cplusplus
 }

@@ -21,6 +21,7 @@
 #include "../include/justGarble.h"
 #include <stdio.h>
 #include <ctype.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,6 +101,12 @@ block randomBlock() {
 
 	return cur_seed;
 
+}
+
+void print__m128i(__m128i var)
+{
+    uint16_t *val = (uint16_t*) &var;
+    printf("%i \t%i \t%i \t%i \t%i \t%i \t%i \t%i \t", val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
 }
 
 #ifdef __cplusplus

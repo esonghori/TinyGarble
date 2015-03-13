@@ -152,8 +152,8 @@ int createInputLabels(InputLabels inputLabels, int n);
 //The inputLabels field is expected to contain 2n fresh input labels, obtained
 //by calling createInputLabels. The outputMap is expected to be a 2m-block sized
 //empty array.
-long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels,
-		OutputMap outputMap);
+long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inputLabels,
+		OutputMap outputMap, int connfd);
 
 //Evaluate a garbled circuit, using n input labels in the Extracted Labels
 //to return m output labels. The garbled circuit might be generated either in 
@@ -161,7 +161,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, InputLabels inputLabels,
 // by building the circuit (startBuilding ... finishBuilding), and adding 
 // garbledTable from another source, say, a network transmission.
 int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
-		OutputMap outputMap);
+		OutputMap outputMap, int sockfd);
 
 // A simple function that selects n input labels from 2n labels, using the 
 // inputBits array where each element is a bit.
