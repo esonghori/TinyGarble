@@ -159,7 +159,7 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
 int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels, OutputMap outputMap, int sockfd) {
 	GarbledGate *garbledGate;
 	DKCipherContext dkCipherContext;
-	DKCipherInit(&(garbledCircuit->globalKey), &dkCipherContext);
+	block key;
 	const __m128i *sched = ((__m128i *) (dkCipherContext.K.rd_key));
 	block val;
 
@@ -171,6 +171,9 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels, Ou
 	int tableIndex = 0;
 	long a, b, i, j, cid, rnds = 10;
 
+
+	recv_block(sockfd, &key); //receive key
+	DKCipherInit(&key, &dkCipherContext);
 
 	for(cid=0;cid<garbledCircuit->c;cid++) // for each clock cycle
 	{
@@ -195,6 +198,11 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels, Ou
 		for (i = 0; i < garbledCircuit->q; i++) // for each gates
 		{
 			garbledGate = &(garbledCircuit->garbledGates[i]);
+
+			printf("(%d, %d)\n", cid, i);
+			print__m128i(garbledCircuit->wires[garbledGate->input0].label);
+			print__m128i(garbledCircuit->wires[garbledGate->input1].label);
+
 #ifdef FREE_XOR
 			if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE)
 			{
@@ -225,8 +233,12 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels, Ou
 				//TODO: Here, we should receive the garbledTable[tableIndex][1..3].
 				
 				for (j = 0; j < 3; j++)
+				{
 					recv_block(sockfd, &garbledTable[tableIndex].table[j]);
 
+					printf("t(%d)\t", j);
+					print__m128i(garbledTable[tableIndex].table[j]);
+				}
 #ifdef ROW_REDUCTION
 				if (a+b==0)
 					cipherText = &zer;
@@ -248,7 +260,7 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels, Ou
 #ifdef FREE_XOR
 			}
 #endif
-
+			print__m128i(garbledCircuit->wires[garbledGate->output].label);
 		}
 		
 		printf ("\n :OUTPUTMAP: \n");
@@ -257,9 +269,9 @@ int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels, Ou
 		{
 			outputMap[cid*garbledCircuit->m + i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label;
 			
-			printf ("%d\t", i);
+			printf ("(%d, %d)", cid, i);
 			print__m128i(outputMap[cid*garbledCircuit->m + i]);
-			printf("\n");
+
 		}
 	}
 	return 0;

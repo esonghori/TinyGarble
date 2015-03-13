@@ -16,8 +16,8 @@ DBGCFLAGS = -g -O0 -DDEBUG
 RELCFLAGS = -O3 -DNDEBUG
 
 
-RELDEP    = ../bin/obj/gates.o ../bin/obj/circuits.o ../bin/obj/util.o ../bin/obj/garble.o ../bin/obj/scd.o ../bin/obj/dkcipher.o 
-DEBDEP    = ../debug/obj/gates.o ../debug/obj/circuits.o ../debug/obj/util.o ../debug/obj/garble.o ../debug/obj/scd.o ../debug/obj/dkcipher.o 
+RELDEP    = ../bin/obj/gates.o ../bin/obj/circuits.o ../bin/obj/util.o ../bin/obj/garble.o ../bin/obj/scd.o ../bin/obj/dkcipher.o ../bin/obj/tcpip.o
+DEBDEP    = ../debug/obj/gates.o ../debug/obj/circuits.o ../debug/obj/util.o ../debug/obj/garble.o ../debug/obj/scd.o ../debug/obj/dkcipher.o  ../debug/obj/tcpip.o 
 
 SOURCES := $(wildcard *.cpp)
 RELOBJECT := $(SOURCES:$/%.cpp=$(RELOBJDIR)/%.o)

@@ -85,19 +85,19 @@ unsigned long timedEval(GarbledCircuit *garbledCircuit, int* inputs, InputLabels
 	for (cc = 0; cc < c; cc++){
 		for (j = 0; j < n0; j++){
 			recv_block(sockfd, &inputLabels[n*cc+j]);
+			printf("i(%d,%d,?)\n", cc, j);
 			print__m128i(inputLabels[n*cc+j]);
-			printf("\n");
 			
 		}
 		for(; j < n; j++){
 			write(sockfd, &inputs[j-n0], sizeof(int));
 			recv_block(sockfd, &inputLabels[n*cc+j]);	
-			printf("%d ", inputs[j-n0]);		
+			printf("i(%d,%d,%d)\n", cc, j, inputs[j-n0]);
 			print__m128i(inputLabels[n*cc+j]);
 			printf("\n");
 		}		
 	}
-	
+	printf("\n\n");
 	
 	//extractLabels(extractedLabels, inputLabels, inputs, n*c);
 	startTime = RDTSC;
