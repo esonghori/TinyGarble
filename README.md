@@ -1,8 +1,7 @@
-TinyGarble
+Garbled
 =======
 
-For more detailed:
-Ebrahim M. Songhori , Siam U. Hussain, Ahmad-Reza Sadeghi, Thomas Schneider, Farinaz Koushanfar, TinyGarble: Highly Compressed and Scalable Sequential Garbled Circuits." will appear on Security and Privacy (SP), 2015 IEEE Symposium on. IEEE, 2015.
+Caution: Under Construction!
 
 
 ##Manual for Synopsys Design Compiler

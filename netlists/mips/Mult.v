@@ -77,16 +77,16 @@ module Mult
 		begin
 			if(b!=32'b0)
 			begin
-				Lo<=a/b;
-				Hi<=a%b;
+				Lo<=32'b0;//FIXME: DIV is removed a/b;
+				Hi<=32'b0;//FIXME: DIV is removed a%b;
 			end
 		end
 		else if(comm==4)//div_signed
 		begin
 			if(b_s!=32'b0)
 			begin
-				Lo<=a_s/b_s;
-				Hi<=a_s%b_s;
+				Lo<=32'b0;//FIXME: DIV is removed a_s/b_s;
+				Hi<=32'b0;//FIXME: DIV is removed a_s%b_s;
 			end
 		end
 	end

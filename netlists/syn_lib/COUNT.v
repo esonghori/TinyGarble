@@ -21,58 +21,68 @@ module COUNT
 
 
 
-	localparam K = log2(N);
+	localparam K  = log2(N);
+	localparam K2 = log2(N - 2**(K-1));
 
-	input[N-1:0] A;
-	output[K-1:0] S;
+	input	[N-1:0] 	A;
+	output	[K-1:0] 	S;
 
-	wire [K-2:0] S1, S2;
+	wire 	[K-2:0] 	S1;
+	wire 	[K-2:0] 	S2pad;
+	wire 	[K2-1:0] 	S2;
+
+	generate
+		if(K2==0)
+		begin
+			assign S2pad = {(K-1){1'b0}};
+		end
+		else if (K-K2-1>0) 
+		begin
+			assign S2pad = {{(K-K2-1){1'b0}}, S2};
+		end
+		else 
+		begin
+			assign S2pad = S2;
+		end
+	endgenerate
+
 
     generate 
-    if(N==7)
+    if(N==1)
+    begin
+    	assign S=A[0];
+    end
+	else if(N==2)
+	begin
+		ADD
+		#(
+			.N(1)
+		)
+		ADD_3
+		(
+			.A(A[1]),
+			.B({1'b0}),
+			.CI(A[0]),
+			.S(S[0]),
+			.CO(S[1])
+		);
+	end
+    else if(N==3)
     begin
 		ADD
 		#(
 			.N(1)
 		)
-		ADD_1
-		(
-			.A(A[2]),
-			.B(A[3]),
-			.CI(A[1]),
-			.S(S1[0]),
-			.CO(S1[1])
-		);
-
-		ADD
-		#(
-			.N(1)
-		)
-		ADD_2
-		(
-			.A(A[5]),
-			.B(A[6]),
-			.CI(A[4]),
-			.S(S2[0]),
-			.CO(S2[1])
-		);
-
-		ADD
-		#(
-			.N(2)
-		)
 		ADD_3
 		(
-			.A(S1),
-			.B(S2),
+			.A(A[1]),
+			.B(A[2]),
 			.CI(A[0]),
 			.S(S[K-2:0]),
 			.CO(S[K-1])
 		);
-      
-      
     end
-    else
+    else if (N>3)
     begin
 	    COUNT
 		#(
@@ -80,19 +90,22 @@ module COUNT
 		)
 		COUNT_1
 		(
-			.A(A[(N-1)/2:1]),
+			.A(A[N-1:N-2**(K-1)+1]),
 			.S(S1)
 		);
 
-		COUNT
-		#(
-			.N(2**(K-1)-1)
-		)
-		COUNT_2
-		(
-			.A(A[N-1:(N-1)/2+1]),
-			.S(S2)
-		);
+		if(N-2**(K-1)>0)
+		begin
+			COUNT
+			#(
+				.N(N-2**(K-1))
+			)
+			COUNT_2
+			(
+				.A(A[N-2**(K-1):1]),
+				.S(S2)
+			);
+		end
 
 		ADD
 		#(
@@ -101,11 +114,10 @@ module COUNT
 		ADD_
 		(
 			.A(S1),
-			.B(S2),
+			.B(S2pad),
 			.CI(A[0]),
 			.S(S[K-2:0]),
 			.CO(S[K-1])
-		
 		);
     end
     endgenerate
