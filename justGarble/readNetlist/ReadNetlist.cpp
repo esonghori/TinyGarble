@@ -138,7 +138,7 @@ void read_netlist(const string &infilename, const string &outfilename, int c, bo
 #endif
 		if(g.output.is_port)
 		{
-			outputs[outputNum++] = output;
+			outputs[outputNum++] = output; //TODO: it should be changed based on outport_list in parse_netlist
 		}
 	}
 
