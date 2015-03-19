@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <assert.h>
 #include "../include/justGarble.h"
 #include "../include/garble.h"
 #include "../include/tcpip.h"
@@ -53,60 +54,107 @@ int check_test_seq(int *input, int *outputs, int nc)
 
 int main(int argc, char* argv[])
 {
-	if(argc < 4){
-				printf( "Usage: %s <scd file name> <ip of server> <port> \n", argv[0]);
-				return -1;
+#ifndef DEBUG
+	srand( time(NULL));
+	srand_sse( time(NULL));
+#else
+	srand(0);
+	srand_sse(1000);
+#endif
+
+	GarbledCircuit garbledCircuit;
+	long i, j, cid;
+
+
+	if(argc < 4)
+	{
+		printf( "Usage: %s <scd file name> <ip of server> <port> \n", argv[0]);
+		return -1;
 	}
 
 	int port = atoi(argv[3]);
 	int sockfd = client_init(argv[2], port);
-	if ( sockfd == -1)
-				return -1;
-
-	GarbledCircuit gc;
-
-	int i, j, cc;
-	readCircuitFromFile(&gc, argv[1]);
-	
-	int n0 = 4; //TODO: get it from SCD
-	int n = gc.n;
-	int m = gc.m;
-	int p = gc.p;
-	int c = gc.c;	
-	int *inputs = (int *)malloc(sizeof(int)*(n-n0)*c);
-	block *inputLabels = (block *)malloc(sizeof(block)*n*c);
-	block *outputMap = (block *)malloc(sizeof(block)*2*m*c);
-
-
-	double timeGarble[TIMES];
-	double timeEval[TIMES];
-	double timeGarbleMedians[TIMES];
-	double timeEvalMedians[TIMES];
-	
-	for(cc=0;cc<c;cc++)
+	if (sockfd == -1)
 	{
-		for (j = 0; j < (n-n0)-p; j++)
+		printf( "Something's wrong with the socket!");
+		return -1;
+	}
+
+	readCircuitFromFile(&garbledCircuit, argv[1]);
+	
+	int n = garbledCircuit.n;
+	int g = garbledCircuit.g;
+	int p = garbledCircuit.p;
+	int m = garbledCircuit.m;
+	int c = garbledCircuit.c;
+	int e = n - g;
+
+	int *evalator_inputs = (int *)malloc(sizeof(int)*(e)*c);
+	block *inputLabels = (block *)malloc(sizeof(block)*n*c);
+	block *initialDFFLable = (block *)malloc(sizeof(block)*p);
+	block *outputs = (block *)malloc(sizeof(block)*m*c);
+	
+	for(cid=0;cid<c;cid++)
+	{
+		for (j = 0; j < e; j++)
 		{
-			inputs[cc*(n-n0) + j] = rand() % 2;
-		}
-		for(;j<(n-n0);j++)
-		{
-			inputs[cc*(n-n0) + j] = 0; //reset the DFF to 0 at clock 0, the rest will be ignored
+			evalator_inputs[cid*e + j] = rand() % 2;
 		}
 	}
 
-	/*for (j = 0; j < TIMES; j++) {
-		for (i = 0; i < TIMES; i++) {
-			timeEval[i] = (double)timedEval(&gc, inputLabels);
-		}
-		timeGarbleMedians[j] = doubleMean(timeGarble, TIMES);// / (gc.q * gc.c);
-		timeEvalMedians[j] = doubleMean(timeEval, TIMES);// / (gc.q * gc.c);
-	}
-	double garblingTime = doubleMean(timeGarbleMedians, TIMES);
-	double evalTime = doubleMean(timeEvalMedians, TIMES);
-	printf("%lf %lf\n", garblingTime, evalTime);*/
 
-	timedEval(&gc, inputs, inputLabels, sockfd);
+	for (cid = 0; cid < c; cid++)
+	{
+		for (j = 0; j < g; j++)
+		{
+			recv_block(sockfd, &inputLabels[n*cid+j]);
+			printf("i(%ld,%ld,?)\n", cid, j);
+			print__m128i(inputLabels[n*cid+j]);
+		}
+
+		for(j = 0 ; j < e; j++)
+		{
+			write(sockfd, &evalator_inputs[cid*e + j], sizeof(int));
+			recv_block(sockfd, &inputLabels[cid * n + g + j]);
+
+			printf("i(%ld,%ld,%d)\n", cid, j + g, evalator_inputs[cid*e + j]);
+			print__m128i(inputLabels[cid * n + g + j]);
+		}
+	}
+	printf("\n\n");
+
+	for (j = 0; j < p; j++)
+	{
+		if(garbledCircuit.I[j] < g) // initial value is constant or belongs to Alice (garbler)
+		{
+			recv_block(sockfd, &initialDFFLable[j]);
+			if(garbledCircuit.I[j] == CONST_ZERO)
+				printf("dffi(%ld,%ld,0)\n", cid, j);
+			else if(garbledCircuit.I[j] == CONST_ONE)
+				printf("dffi(%ld,%ld,1)\n", cid, j);
+			else
+				printf("dffi(%ld,%ld,?)\n", cid, j);
+			print__m128i(initialDFFLable[j]);
+		}
+		else
+		{
+			assert((garbledCircuit.I[j] - g >0) && (garbledCircuit.I[j] - g < e));
+
+			write(sockfd, &evalator_inputs[garbledCircuit.I[j] - g], sizeof(int));
+			recv_block(sockfd, &initialDFFLable[j]);
+
+			printf("dffi(%ld,%ld,%d)\n", cid, j + g, evalator_inputs[garbledCircuit.I[j] - g]);
+			print__m128i(initialDFFLable[j]);
+			printf("\n");
+		}
+	}
+	printf("\n\n");
+
+
+	block DKCkey;
+	recv_block(sockfd, &DKCkey); //receive key
+
+	evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputs, DKCkey, sockfd);
 
 	return 0;
 }

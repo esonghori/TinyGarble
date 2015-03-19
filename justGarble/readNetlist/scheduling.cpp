@@ -1,7 +1,7 @@
 #include "include/read_netlist.h"
 
 
-void top_sort(GarbledGateS *G, int n, int no_task, int  *index)
+void top_sort(const vector<ReadGate>& G, int no_task, int  *index)
 {
 	int i, j, k, max;
 	int *sl;
@@ -17,12 +17,14 @@ void top_sort(GarbledGateS *G, int n, int no_task, int  *index)
 		max = 0;
 		for (j = i+1; j < no_task; j++)
 		{
-			if (G[j].input[0].index == i + n)
-				if (sl[j] > max) max = sl[j];
-			if (G[j].input[1].index == i + n)
-				if (sl[j] > max) max = sl[j];
+			if (G[j].input[0] == G[i].output)
+				if (sl[j] > max)
+					max = sl[j];
+			if (G[j].input[1] == G[i].output)
+				if (sl[j] > max)
+					max = sl[j];
 		}
-		sl[i] = get_weight(G[i].type)/*G[i].w*/+ max;
+		sl[i] = 1 + max;
 	}
 	
 	quickSort(sl, index, 0, no_task-1); // sort in descending order of static b-level
@@ -30,23 +32,22 @@ void top_sort(GarbledGateS *G, int n, int no_task, int  *index)
 	delete [] sl;
 }
 
-void schedule(int no_core, int  **core, const string &filename){
+void schedule(const ReadCircuit &readCircuit,  int no_core, int  **core)
+{
 
 	int i, j, max;
 	
-	GarbledGateS *G;
-	GarbledGateS *D;
-	int circuit_size[4];
+	const vector<ReadGate>& G = readCircuit.gate_list;
 	int no_task;	
-	read_circuit_list(G, D, circuit_size, filename);
 
-	int n = circuit_size[0];
-	no_task = circuit_size[2];
+
+	int no_of_input_dff = readCircuit.no_of_inports + readCircuit.no_of_dffs;
+	no_task = readCircuit.no_of_gates;
 	
 
 	int *index;	
 	index = new int[no_task];
-	top_sort(G, n , no_task, index);
+	top_sort(G, no_task, index);
 		
 	// start of scheduling
 	int *p0, *p1, *core_busy, *core_index;
@@ -62,81 +63,34 @@ void schedule(int no_core, int  **core, const string &filename){
 	memset (core_busy, 0, no_core*sizeof(int));
 
 	int scheduled = 0;
-	while (scheduled < no_task){
-		for (i = 0; i < no_task; i ++){
+	while (scheduled < no_task)
+	{
+		for (i = 0; i < no_task; i ++)
+		{
 			if (p0[index[i]] == -1) // not assigned yet
-				if(
-							((G[index[i]].input[0].is_port == 1)||(p0[G[index[i]].input[0].index - n] > -1))
-						&& 	((G[index[i]].input[1].is_port == 1)||(G[index[i]].input[1].index == -1)||(p0[G[index[i]].input[1].index - n] > -1))){ //ready
-					p1[index[i]] = get_min_index(core_busy, no_core);
-					core[p1[index[i]]][core_index[p1[index[i]]]] = index[i];
-					core_index[p1[index[i]]]++;
-					core_busy[p1[index[i]]] = core_busy[p1[index[i]]] + /*G[index[i]].w*/get_weight(G[index[i]].type);
-					scheduled ++;
-					//cout << "scheduled: " << scheduled << endl;
+			{
+				if(((G[index[i]].input[0] - no_of_input_dff < 0)||(p0[G[index[i]].input[0] - no_of_input_dff] > -1)))
+				{
+					if((G[index[i]].input[1] - no_of_input_dff < 0)||(p0[G[index[i]].input[1] - no_of_input_dff] > -1)) //ready
+					{
+						p1[index[i]] = get_min_index(core_busy, no_core);
+						core[p1[index[i]]][core_index[p1[index[i]]]] = index[i];
+						core_index[p1[index[i]]]++;
+						core_busy[p1[index[i]]] = core_busy[p1[index[i]]] + 1;
+						scheduled ++;
+					}
 				}
+			}
 		}
 		
 		for (i = 0; i < no_task; i++)
+		{
 			p0[i] = p1[i];
+		}
 	}	
 	
 	delete [] index, p0, p1, core_index, core_busy;
 }
-
-void arrange_in_time(GarbledGateS *G, int no_task, int no_core, int  **core, int  **core_x, int* end_time){
-	int i, j, k;
-	
-	int *cti, *cur_task_done, *core_end_time, *core_completed;
-	cti = new int[no_core];
-	memset (cti, 0, no_core*sizeof(int));
-	cur_task_done = new int[no_core];
-	memset (cur_task_done, 0, no_core*sizeof(int));
-	core_end_time = new int[no_core];
-	memset (core_end_time, 0, no_core*sizeof(int));
-	core_completed  = new int[no_core];
-	memset (core_completed, 0, no_core*sizeof(int));
-	int no_core_completed = 0;
-	
-	int *q0, *q1;
-	q0 = new int[no_task];
-	memset (q0, -1, no_task*sizeof(int));
-	q1 = new int[no_task];
-	memset (q1, -1, no_task*sizeof(int));
-	
-	
-	i = 0;
-	while (no_core_completed < no_core){
-		for (j = 0; j < no_core; j++){
-			if (core[j][cti[j]] > -1){
-				if ( ((G[core[j][cti[j]]].input[0].is_port == 1) || (q0[G[core[j][cti[j]]].input[0].index] > -1)) && ((G[core[j][cti[j]]].input[1].is_port == 1) || (G[core[j][cti[j]]].input[1].index == -1) || (q0[G[core[j][cti[j]]].input[1].index] > -1)) ) {
-					core_x[j][i] = core[j][cti[j]];
-					cur_task_done[j]++;
-					if (cur_task_done[j] == get_weight(G[core[j][cti[j]]].type)/*G[core[j][cti[j]]].w*/){
-						q1[core[j][cti[j]]] = 0;
-						cti[j]++;
-						cur_task_done[j] = 0;
-					}
-				}
-			core_end_time[j]++;
-			}
-			else{
-				if (!core_completed[j]) no_core_completed++;
-				core_completed[j] = 1;
-			}
-		}
-		
-		for (k = 0; k < no_task; k++)
-			q0[k] = q1[k];
-		
-		i++;
-	}
-			
-	*end_time = get_max(core_end_time, no_core);
-	
-	delete [] cti, cur_task_done, core_end_time, core_completed, q0, q1;
-}
-
 
 void quickSort(int *arr, int *index, int left, int right){
   int i = left, j = right;
@@ -144,12 +98,14 @@ void quickSort(int *arr, int *index, int left, int right){
   int pivot = arr[(left + right) / 2];
 
   /* partition */
-  while (i <= j) {
+  while (i <= j)
+  {
         while (arr[i] > pivot)
 			i++;
         while (arr[j] < pivot)
 			j--;
-        if (i <= j) {
+        if (i <= j)
+        {
 			tmp = arr[i];
 			arr[i] = arr[j];
 			arr[j] = tmp;
@@ -160,13 +116,13 @@ void quickSort(int *arr, int *index, int left, int right){
 			
 			i++;
 			j--;
-    }
-}
-/* recursion */
-if (left < j)
-	quickSort(arr, index, left, j);
-if (i < right)
-	quickSort(arr, index, i, right);
+		}
+	}
+	/* recursion */
+	if (left < j)
+		quickSort(arr, index, left, j);
+	if (i < right)
+		quickSort(arr, index, i, right);
 }
 
 int get_min_index(int *arr, int size){

@@ -15,16 +15,12 @@ CFLAGS= -std=c++11 -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result 
 DBGCFLAGS = -g -O0 -DDEBUG
 RELCFLAGS = -O3 -DNDEBUG
 
-
-RELDEP    = ../bin/obj/gates.o ../bin/obj/circuits.o ../bin/obj/util.o ../bin/obj/garble.o ../bin/obj/scd.o ../bin/obj/dkcipher.o ../bin/obj/tcpip.o
-DEBDEP    = ../debug/obj/gates.o ../debug/obj/circuits.o ../debug/obj/util.o ../debug/obj/garble.o ../debug/obj/scd.o ../debug/obj/dkcipher.o  ../debug/obj/tcpip.o 
-
 SOURCES := $(wildcard *.cpp)
 RELOBJECT := $(SOURCES:$/%.cpp=$(RELOBJDIR)/%.o)
 DEBOBJECT := $(SOURCES:$/%.cpp=$(DEBOBJDIR)/%.o) 
 
 
-READNETLIST = ReadNetlist
+READNETLIST = readNetlist
 rm = rm --f
 
 .PHONY: all release debug check_msgpack prep clean
@@ -42,14 +38,14 @@ endif
 
 ##release
 $(RELDIR)/$(READNETLIST).out: $(RELOBJECT)
-	$(CC) $(RELOBJECT) $(RELDEP) -o $(RELDIR)/$(READNETLIST).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
+	$(CC) $(RELOBJECT) -o $(RELDIR)/$(READNETLIST).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
 $(RELOBJECT): $(RELOBJDIR)/%.o : %.cpp
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
 ##debug
 $(DEBDIR)/$(READNETLIST).out: $(DEBOBJECT)
-	$(CC) $(DEBOBJECT) $(DEBDEP) -o $(DEBDIR)/$(READNETLIST).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+	$(CC) $(DEBOBJECT) -o $(DEBDIR)/$(READNETLIST).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
 $(DEBOBJECT): $(DEBOBJDIR)/%.o : %.cpp
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)

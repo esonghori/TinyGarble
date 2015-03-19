@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 typedef struct Wire{
-	long value, id;
+	long value, id; //TODO: remove id and label
 	block label, label0, label1;
 } Wire;
 
@@ -70,19 +70,20 @@ typedef struct GarbledTable{
 } Circuit;*/
 
 typedef struct GarbledCircuit{
-	int n;
-	int m;
-	int p;
-	int q;
-	int r;
-	int c;
+	int n; // # of inputs
+	int g; // # of g inputs
+	int p; // # of DFF
+	int m; // # of outputs
+	int q; // # of gates
+	int c; // # of sequential cycle
+	int r; // # of wires = n+p+q+2 for Zero and One
+
 	block* inputLabels;
 	block* outputLabels;
 	GarbledGate* garbledGates;
-	GarbledTable* garbledTable;
 	Wire* wires;
 	int *outputs;
-	int *S;
+	int *D;
 	int *I;
 	long id;
 	block globalKey;
@@ -137,7 +138,7 @@ long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
 		int q, int r, int p, int c);
 
 //Create memory for 2*n input labels.
-int createInputLabels(InputLabels inputLabels, int n);
+int createInputLabels(InputLabels inputLabels, block R, int n);
 
 //Garble the circuit described in garbledCircuit. For efficiency reasons,
 //we use the garbledCircuit data-structure for representing the input 
@@ -152,16 +153,16 @@ int createInputLabels(InputLabels inputLabels, int n);
 //The inputLabels field is expected to contain 2n fresh input labels, obtained
 //by calling createInputLabels. The outputMap is expected to be a 2m-block sized
 //empty array.
-long garbleCircuit(GarbledCircuit *garbledCircuit, int *inputs, InputLabels inputLabels,
-		OutputMap outputMap, int connfd);
+long garbleCircuit(GarbledCircuit *garbledCircuit, block* inputLabels,
+		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd);
 
 //Evaluate a garbled circuit, using n input labels in the Extracted Labels
 //to return m output labels. The garbled circuit might be generated either in 
 //one piece, as the result of running garbleCircuit, or may be pieced together,
 // by building the circuit (startBuilding ... finishBuilding), and adding 
 // garbledTable from another source, say, a network transmission.
-int evaluate(GarbledCircuit *garbledCircuit, ExtractedLabels extractedLabels,
-		OutputMap outputMap, int sockfd);
+long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
+		block* initialDFFLable, block *outputs, block DKCkey, int sockfd);
 
 // A simple function that selects n input labels from 2n labels, using the 
 // inputBits array where each element is a bit.
