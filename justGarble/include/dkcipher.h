@@ -32,35 +32,13 @@ extern "C" {
 
 typedef struct {
 	AES_KEY K;
-	block A;
-	block B;
+//	block A;
+//	block B;
 } DKCipherContext;
 
 void DKCipher1Init(block *key, DKCipherContext *c);
-#define DKCipher1SetFirstKey(key,c) (c)->A = (key)
-#define DKCipher1SetSecondKey(key, c) (c)->B = (key)
-void DKCipher1_encrypt(block *ptext, block *ctext, block tweak,
-		DKCipherContext *c);
-void DKCipher1_decrypt(block *ctext, block *ptext, block tweak,
-		DKCipherContext *c);
 
-void DKCipher2Init(block *key, DKCipherContext *c);
-#define DKCipher2SetFirstKey(key,c) (c)->A = (key)
-#define DKCipher2SetSecondKey(key, c) (c)->B = (key)
-void DKCipher2_encrypt(block *ptext, block *ctext, block tweak,
-		DKCipherContext *c);
-void DKCipher2_decrypt(block *ctext, block *ptext, block tweak,
-		DKCipherContext *c);
 
-void DKCipherKSSInit(block *key, DKCipherContext *c);
-#define DKCipherShelatSetFirstKey(key,c) (c)->A = (key)
-#define DKCipherShelatSetSecondKey(key, c) (c)->B = (key)
-void DKCipherKSSEncrypt(block *ptext, block *ctext, block tweak,
-		DKCipherContext *c);
-void DKCipherKSSDecrypt(block *ctext, block *ptext, block tweak,
-		DKCipherContext *c);
-void DKCipherKSSEncryptFull(block *key1, block *key2, block *ctext,
-		block *tweak, block *plaintext);
 #define DKCipherInit DKCipher1Init
 #define DKCipherSetFirstKey DKCipher1SetFirstKey
 #define DKCipherSetSecondKey DKCipher1SetSecondKey
