@@ -131,7 +131,7 @@ long fsize(const char *filename) {
 //	return SUCCESS;
 //}
 
-//TODO: make it compatible with readNetlist file
+
 int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 {
 	int fs = fsize(fileName);
@@ -202,11 +202,6 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	}
 
 	int i;
-	for (i = 0; i < garbledCircuit->r; i++)
-	{
-		garbledCircuit->wires[i].id = 0;
-	}
-
 	for (i = 0; i < q; i++)
 	{
 		garbledCircuit->garbledGates[i].id = 0;
@@ -216,14 +211,14 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	for (i = 0; i < q; i++)
 	{
 		garbledCircuit->garbledGates[i].input0 = (*p).via.i64;
-		printf("garbledCircuit->garbledGates[%d].input0 = %d\n", i, garbledCircuit->garbledGates[i].input0);
+		printf("garbledCircuit->garbledGates[%d].input0 = %ld\n", i, garbledCircuit->garbledGates[i].input0);
 		++p;
 	}
 
 	for (i = 0; i < q; i++)
 	{
 		garbledCircuit->garbledGates[i].input1 = (*p).via.i64;
-		printf("garbledCircuit->garbledGates[%d].input1 = %d\n", i, garbledCircuit->garbledGates[i].input1);
+		printf("garbledCircuit->garbledGates[%d].input1 = %ld\n", i, garbledCircuit->garbledGates[i].input1);
 		++p;
 	}
 	for (i = 0; i < q; i++)
