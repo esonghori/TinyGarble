@@ -3,13 +3,15 @@
 #include <errno.h>
 #include "../include/tcpip.h"
 
-int server_init(int port){ 
+int server_init(int port)
+{
 	int connfd, listenfd;
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
 	int n;
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (listenfd < 0){
+	if (listenfd < 0)
+	{
 		printf("%s \n", strerror(errno));
 		return -1;
 	}
@@ -43,7 +45,8 @@ int server_init(int port){
 	return connfd;
 }
 
-int client_init(char* ip, int port){
+int client_init(char* ip, int port)
+{
 	int sockfd;
 	struct hostent *server;
 	struct sockaddr_in serv_addr;
@@ -78,12 +81,14 @@ int client_init(char* ip, int port){
 	return sockfd;
 }
 
-void send_block(int sock, block var){
+void send_block(int sock, block var)
+{
 	uint8_t *val = (uint8_t*) &var;
 	write(sock, val, 16);
 }
 
-void recv_block(int sock, block* var){
+void recv_block(int sock, block* var)
+{
 	uint8_t *val = (uint8_t*) var;
 	read(sock, val, 16);	
 }

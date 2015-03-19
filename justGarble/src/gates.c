@@ -173,7 +173,6 @@ int genericGate(GarbledCircuit *garbledCircuit, GarblingContext *garblingContext
 	createNewWire(&(garbledCircuit->wires[output]), garblingContext, output);
 
 	GarbledGate *garbledGate = &(garbledCircuit->garbledGates[garblingContext->gateIndex]);
-	GarbledTable *garbledTable = &(garbledCircuit->garbledTable[garblingContext->tableIndex]);
 
 	garbledGate->id = garblingContext->gateIndex;
 	garbledGate->type = type;

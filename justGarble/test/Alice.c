@@ -53,7 +53,20 @@ int check_test_seq(int *input, int *outputs, int nc)
 
 int main(int argc, char* argv[])
 {
-	if(argc < 3){
+#ifndef DEBUG
+	srand( time(NULL));
+	srand_sse( time(NULL));
+#else
+	srand(0);
+	srand_sse(1000);
+#endif
+
+
+	GarbledCircuit garbledCircuit;
+	long i, j, cid;
+
+	if(argc < 3)
+	{
 			printf( "Usage: %s <scd file name> <port> \n", argv[0]);
 			return -1;
 	}
@@ -61,48 +74,130 @@ int main(int argc, char* argv[])
 	int port = atoi(argv[2]);
 	int connfd = server_init(port);
 	if (connfd == -1)
-		return -1;
-
-
-	GarbledCircuit gc;
-
-	int i, j, cc;
-	readCircuitFromFile(&gc, argv[1]);
-	
-	int n0 = 4; //TODO: get it from SCD
-	int n = gc.n;
-	int m = gc.m;
-	int c = gc.c;
-	int *inputs = (int *)malloc(sizeof(int)*n0*c);
-	block *inputLabels = (block *)malloc(sizeof(block)*2*n*c);
-	block *outputMap = (block *)malloc(sizeof(block)*2*m*c);
-
-
-	double timeGarble[TIMES];
-	double timeEval[TIMES];
-	double timeGarbleMedians[TIMES];
-	double timeEvalMedians[TIMES];
-
-	/*for (j = 0; j < TIMES; j++) {
-		for (i = 0; i < TIMES; i++) {
-			timeGarble[i] = (double)garbleCircuit(&gc, inputLabels, outputMap, connfd);
-		}
-		timeGarbleMedians[j] = doubleMean(timeGarble, TIMES);// / (gc.q * gc.c);
-		timeEvalMedians[j] = doubleMean(timeEval, TIMES);// / (gc.q * gc.c);
-	}
-	double garblingTime = doubleMean(timeGarbleMedians, TIMES);
-	double evalTime = doubleMean(timeEvalMedians, TIMES);
-	printf("%lf %lf\n", garblingTime, evalTime);*/
-	
-	for(cc=0;cc<c;cc++)
 	{
-		for (j = 0; j < n0; j++)
+		printf( "Something's wrong with the socket!");
+		return -1;
+	}
+
+	readCircuitFromFile(&garbledCircuit, argv[1]);
+	
+	int n = garbledCircuit.n;
+	int g = garbledCircuit.g;
+	int p = garbledCircuit.p;
+	int m = garbledCircuit.m;
+	int c = garbledCircuit.c;
+	int e = n - g;
+
+
+	int *garbler_inputs = (int *)malloc(sizeof(int)*(g)*c);
+	block *inputLabels = (block *)malloc(sizeof(block)*2*n*c);
+	block *initialDFFLable = (block *)malloc(sizeof(block)*2*p);
+	block *outputs = (block *)malloc(sizeof(block)*2*m*c);
+
+	
+	for(cid=0;cid<c;cid++)
+	{
+		for (j = 0; j < g; j++)
 		{
-			inputs[cc*n0 + j] = rand() % 2;
+			garbler_inputs[cid*g + j] = rand() % 2;
 		}
 	}
 
-	garbleCircuit(&gc, inputs, inputLabels, outputMap, connfd);
+#ifndef DEBUG
+	block R = randomBlock();
+	*((short *) (&R)) = 1;
+#else
+	block R = makeBlock((long)(-1),(long)(-1));
+#endif
+
+	createInputLabels(inputLabels, R, n*c);
+	createInputLabels(initialDFFLable, R, n*c);
+
+
+	for (cid = 0; cid < c; cid++)
+	{
+		for (j = 0; j < g; j++)
+		{
+			if (garbler_inputs[cid*g + j]==0)
+				send_block(connfd, inputLabels[2*(cid*n+j)]);
+			else
+				send_block(connfd, inputLabels[2*(cid*n+j)+1]);
+
+			printf("i(%ld, %ld, %d)\n", cid, j, garbler_inputs[cid*g + j]);
+			print__m128i(inputLabels[2*(cid*n+j)]);
+			print__m128i(inputLabels[2*(cid*n+j)+1]);
+		}
+
+		for(j = 0 ; j < e; j++)
+		{
+			int ev_input;
+			read(connfd, &ev_input, sizeof(int));
+			if (!ev_input)
+				send_block(connfd, inputLabels[2*(cid*n+g+j)]);
+			else
+				send_block(connfd, inputLabels[2*(cid*n+g+j) + 1]);
+
+			printf("i(%ld, %ld, %d)\n", cid, j, ev_input);
+			print__m128i(inputLabels[2*(cid*n+g+j)]);
+			print__m128i(inputLabels[2*(cid*n+g+j) + 1]);
+		}
+	}
+	printf("\n\n");
+
+	for (j = 0; j < p; j++)
+	{
+		if(garbledCircuit.I[j] == CONST_ZERO) // constant zero
+		{
+			send_block(connfd, initialDFFLable[2*j]);
+			printf("dffi(%ld, %ld, %d)\n", cid, j, 0);
+			print__m128i(initialDFFLable[2*j]);
+			print__m128i(initialDFFLable[2*j+1]);
+
+		}
+		else if(garbledCircuit.I[j] == CONST_ONE) // constant zero
+		{
+			send_block(connfd, initialDFFLable[2*j+1]);
+			printf("dffi(%ld, %ld, %d)\n", cid, j, 0);
+			print__m128i(inputLabels[2*j]);
+			print__m128i(inputLabels[2*j+1]);
+
+		}
+		else if(garbledCircuit.I[j] < g) //belongs to Alice (garbler)
+		{
+			int index = garbledCircuit.I[j];
+
+			if (garbler_inputs[index]==0)
+				send_block(connfd, initialDFFLable[2*j]);
+			else
+				send_block(connfd, initialDFFLable[2*j+1]);
+
+			printf("dffi(%ld, %ld, %d)\n", cid, j, garbler_inputs[index]);
+			print__m128i(initialDFFLable[2*j]);
+			print__m128i(initialDFFLable[2*j+1]);
+
+		}
+		else // belong to Bob
+		{
+			int ev_input;
+			read(connfd, &ev_input, sizeof(int));
+			if (!ev_input)
+				send_block(connfd, initialDFFLable[2*j]);
+			else
+				send_block(connfd, initialDFFLable[2*j+1]);
+
+			printf("dffi(%ld, %ld, %d)\n", cid, j, ev_input);
+			print__m128i(initialDFFLable[2*j]);
+			print__m128i(initialDFFLable[2*j+1]);
+			printf("\n");
+		}
+	}
+	printf("\n\n");
+
+	block DKCkey = randomBlock();
+	send_block(connfd, DKCkey); // send DKC key
+
+
+	garbleCircuit(&garbledCircuit, inputLabels, initialDFFLable, outputs, R, DKCkey, connfd);
 
 	return 0;
 }
