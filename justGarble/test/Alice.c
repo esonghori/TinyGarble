@@ -75,12 +75,16 @@ int main(int argc, char* argv[])
 	int connfd = server_init(port);
 	if (connfd == -1)
 	{
-		printf( "Something's wrong with the socket!");
+		printf( "Something's wrong with the socket!\n");
 		return -1;
 	}
 
 	readCircuitFromFile(&garbledCircuit, argv[1]);
 	
+
+	printf("garbledCircuit.I[0] = %d\n", garbledCircuit.I[0]);
+
+
 	int n = garbledCircuit.n;
 	int g = garbledCircuit.g;
 	int p = garbledCircuit.p;
@@ -111,7 +115,7 @@ int main(int argc, char* argv[])
 #endif
 
 	createInputLabels(inputLabels, R, n*c);
-	createInputLabels(initialDFFLable, R, n*c);
+	createInputLabels(initialDFFLable, R, p);
 
 
 	for (cid = 0; cid < c; cid++)
@@ -146,6 +150,7 @@ int main(int argc, char* argv[])
 
 	for (j = 0; j < p; j++)
 	{
+		printf("garbledCircuit.I[j] = %d\n", garbledCircuit.I[j]);
 		if(garbledCircuit.I[j] == CONST_ZERO) // constant zero
 		{
 			send_block(connfd, initialDFFLable[2*j]);

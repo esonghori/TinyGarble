@@ -136,7 +136,7 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 			print__m128i(garbledCircuit->wires[garbledGate->output].label);
 		}
 		
-		printf ("\n :OUTPUTMAP: \n");
+		printf ("\noutput: \n");
 
 		for (i = 0; i < garbledCircuit->m; i++)
 		{
