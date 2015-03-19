@@ -105,8 +105,8 @@ block randomBlock() {
 
 void print__m128i(__m128i var)
 {
-    uint16_t *val = (uint16_t*) &var;
-    printf("%i \t%i \t%i \t%i \t%i \t%i \t%i \t%i \n", val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
+    uint32_t *val = (uint32_t*) &var;
+    printf("%08x \t%08x \t%08x \t%08x \n", val[0], val[1], val[2], val[3]);
 }
 
 #ifdef __cplusplus
