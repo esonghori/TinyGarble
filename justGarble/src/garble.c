@@ -627,7 +627,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, block* inputLabels,
 
 		}
 		
-		printf ("\n :OUTPUTMAP: \n");
+		printf ("\noutput: \n");
 		
 		for(i=0;i<garbledCircuit->m;i++)
 		{

@@ -169,6 +169,9 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	++p; // # of sequential cycle
 
 
+	printf("n = %d\n g = %d\n p = %d\n m = %d\n q = %d\n c = %d\n", n, g, pp, m, q, c);
+
+
 	garbledCircuit->n = n;
 	garbledCircuit->g = g;
 	garbledCircuit->p = pp;
@@ -183,8 +186,8 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	garbledCircuit->outputs = (int *) memalign(128, sizeof(int) * m);
 	garbledCircuit->wires = (Wire *) malloc(sizeof(Wire) * (garbledCircuit->r)); //wires
 
-	garbledCircuit->D = (int *) malloc(sizeof(int) * garbledCircuit->n);
-	garbledCircuit->I = (int *) malloc(sizeof(int) * garbledCircuit->n);
+	garbledCircuit->D = (int *) malloc(sizeof(int) * garbledCircuit->p);
+	garbledCircuit->I = (int *) malloc(sizeof(int) * garbledCircuit->p);
 
 
 	if (	garbledCircuit->garbledGates == NULL ||
@@ -213,32 +216,38 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	for (i = 0; i < q; i++)
 	{
 		garbledCircuit->garbledGates[i].input0 = (*p).via.i64;
+		printf("garbledCircuit->garbledGates[%d].input0 = %d\n", i, garbledCircuit->garbledGates[i].input0);
 		++p;
 	}
 
 	for (i = 0; i < q; i++)
 	{
 		garbledCircuit->garbledGates[i].input1 = (*p).via.i64;
+		printf("garbledCircuit->garbledGates[%d].input1 = %d\n", i, garbledCircuit->garbledGates[i].input1);
 		++p;
 	}
 	for (i = 0; i < q; i++)
 	{
 		garbledCircuit->garbledGates[i].type = (*p).via.i64;
+		printf("garbledCircuit->garbledGates[%d].type = %d\n", i, garbledCircuit->garbledGates[i].type);
 		++p;
 	}
 	for (i = 0; i < m; i++)
 	{
 		garbledCircuit->outputs[i] = (*p).via.i64;
+		printf("garbledCircuit->outputs[%d] = %d\n", i, garbledCircuit->outputs[i]);
 		++p;
 	}
 	for (i = 0; i < pp; i++)
 	{
 		garbledCircuit->D[i] = (*p).via.i64;
+		printf("garbledCircuit->D[%d] = %d\n", i, garbledCircuit->D[i]);
 		++p;
 	}
 	for (i = 0; i < pp; i++)
 	{
 		garbledCircuit->I[i] = (*p).via.i64;
+		printf("garbledCircuit->I[%d] = %d\n", i, garbledCircuit->I[i]);
 		++p;
 	}
 	return SUCCESS;
