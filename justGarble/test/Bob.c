@@ -76,12 +76,14 @@ int main(int argc, char* argv[])
 	int sockfd = client_init(argv[2], port);
 	if (sockfd == -1)
 	{
-		printf( "Something's wrong with the socket!");
+		printf( "Something's wrong with the socket!\n");
 		return -1;
 	}
 
 	readCircuitFromFile(&garbledCircuit, argv[1]);
 	
+	printf("garbledCircuit.I[0] = %d\n", garbledCircuit.I[0]);
+
 	int n = garbledCircuit.n;
 	int g = garbledCircuit.g;
 	int p = garbledCircuit.p;
@@ -125,6 +127,8 @@ int main(int argc, char* argv[])
 
 	for (j = 0; j < p; j++)
 	{
+		printf("garbledCircuit.I[j] = %d\n", garbledCircuit.I[j]);
+
 		if(garbledCircuit.I[j] < g) // initial value is constant or belongs to Alice (garbler)
 		{
 			recv_block(sockfd, &initialDFFLable[j]);
