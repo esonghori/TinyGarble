@@ -29,8 +29,7 @@ extern "C" {
 #endif
 
 typedef struct Wire{
-	long value, id; //TODO: remove id and label
-	block label, label0, label1;
+	block label0, label1;
 } Wire;
 
 typedef struct GarbledWire{
@@ -85,7 +84,6 @@ typedef struct GarbledCircuit{
 	int *outputs;
 	int *D;
 	int *I;
-	long id;
 	block globalKey;
 } GarbledCircuit;
 
@@ -116,26 +114,6 @@ typedef block* OutputMap;
  * above, and the rest are in other header files.
  */
 
-//1. Basic circuit building
-// Create memory for an empty circuit of the specified size.
-//int createEmptyCircuit(Circuit *circuit, int n, int m, int q, int r);
-
-// Start and finish building a circuit. In between these two steps, gates
-// and sub-circuits can be added in. See AESFullTest and LargeCircuitTest
-// for examples. Note that the data-structures involved are GarbledCircuit
-// and GarblingContext, although these steps do not involve any garbling.
-// The reason for this is efficiency. Typically, garbleCircuit is called
-// right after finishBuilding. So, using a GarbledCircuit data-structure
-// here means that there is no need to create and initialize a new 
-// data-structure just before calling garbleCircuit.
-int startBuilding(GarbledCircuit *gc, GarblingContext *ctx);
-long finishBuilding(GarbledCircuit *garbledCircuit,
-		GarblingContext *garbledContext, int *outputs,  int *S, int *I);
-
-
-// Create memory for an empty circuit of the specified size.
-long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
-		int q, int r, int p, int c);
 
 //Create memory for 2*n input labels.
 int createInputLabels(InputLabels inputLabels, block R, int n);
@@ -153,7 +131,7 @@ int createInputLabels(InputLabels inputLabels, block R, int n);
 //The inputLabels field is expected to contain 2n fresh input labels, obtained
 //by calling createInputLabels. The outputMap is expected to be a 2m-block sized
 //empty array.
-long garbleCircuit(GarbledCircuit *garbledCircuit, block* inputLabels,
+long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd);
 
 //Evaluate a garbled circuit, using n input labels in the Extracted Labels
@@ -164,20 +142,7 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, block* inputLabels,
 long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
 		block* initialDFFLable, block *outputs, block DKCkey, int sockfd);
 
-// A simple function that selects n input labels from 2n labels, using the 
-// inputBits array where each element is a bit.
-int extractLabels(ExtractedLabels extractedLabels, InputLabels inputLabels,
-		int* inputBits, int n);
 
-// A simple function that takes 2m output labels, m labels from evaluate, 
-// and returns a m bit output by matching the labels. If one or more of the
-// m evaluated labels donot match either of the two corresponding output labels,
-// then the function flags an error.
-int mapOutputs(OutputMap outputMap, OutputMap extractedMap, int *outputVals,
-		int m);
-
-
-int writeCircuitToFile(GarbledCircuit *garbledCircuit, const char *fileName);
 int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
 
 #ifdef __cplusplus
@@ -186,8 +151,6 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
 
 
 #include "garble.h"
-#include "circuits.h"
-#include "check.h"
 #include "util.h"
 
 #endif

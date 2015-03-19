@@ -18,8 +18,6 @@
 
 #include "../include/common.h"
 #include "../include/garble.h"
-#include "../include/circuits.h"
-#include "../include/gates.h"
 #include "../include/util.h"
 #include "../include/dkcipher.h"
 #include "../include/aes.h"
@@ -58,14 +56,14 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 
 		for(i=0;i<garbledCircuit->n;i++) //inputs
 		{
-			garbledCircuit->wires[i].label = inputLables[cid*garbledCircuit->n + i];
+			garbledCircuit->wires[i].label0 = inputLables[cid*garbledCircuit->n + i];
 		}
 
 		if(cid == 0) //dff initial value
 		{
 			for(i=0;i<garbledCircuit->p;i++)
 			{
-				garbledCircuit->wires[garbledCircuit->n + i].label = initialDFFLable[i];
+				garbledCircuit->wires[garbledCircuit->n + i].label0 = initialDFFLable[i];
 			}
 
 		}
@@ -74,7 +72,7 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 			for(i=0;i<garbledCircuit->p;i++)
 			{
 				int wireIndex = garbledCircuit->D[i];
-				garbledCircuit->wires[garbledCircuit->n + i].label = garbledCircuit->wires[wireIndex].label;
+				garbledCircuit->wires[garbledCircuit->n + i].label0 = garbledCircuit->wires[wireIndex].label0;
 			}
 		}
 
@@ -83,28 +81,28 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 			garbledGate = &(garbledCircuit->garbledGates[i]);
 
 			printf("(%ld, %ld)\n", cid, i);
-			print__m128i(garbledCircuit->wires[garbledGate->input0].label);
-			print__m128i(garbledCircuit->wires[garbledGate->input1].label);
+			print__m128i(garbledCircuit->wires[garbledGate->input0].label0);
+			print__m128i(garbledCircuit->wires[garbledGate->input1].label0);
 
 			if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE)
 			{
-				garbledCircuit->wires[garbledGate->output].label =
-				xorBlocks(garbledCircuit->wires[garbledGate->input0].label,
-						garbledCircuit->wires[garbledGate->input1].label);
+				garbledCircuit->wires[garbledGate->output].label0 =
+				xorBlocks(garbledCircuit->wires[garbledGate->input0].label0,
+						garbledCircuit->wires[garbledGate->input1].label0);
 			}
 			else if (garbledGate->type == NOTGATE)
 			{
-				garbledCircuit->wires[garbledGate->output].label = garbledCircuit->wires[garbledGate->input0].label;
+				garbledCircuit->wires[garbledGate->output].label0 = garbledCircuit->wires[garbledGate->input0].label0;
 			}
 			else
 			{
-				A = DOUBLE(garbledCircuit->wires[garbledGate->input0].label);
-				B = DOUBLE(DOUBLE(garbledCircuit->wires[garbledGate->input1].label));
+				A = DOUBLE(garbledCircuit->wires[garbledGate->input0].label0);
+				B = DOUBLE(DOUBLE(garbledCircuit->wires[garbledGate->input1].label0));
 
-				plainText = &garbledCircuit->wires[garbledGate->output].label;
+				plainText = &garbledCircuit->wires[garbledGate->output].label0;
 
-				a = getLSB(garbledCircuit->wires[garbledGate->input0].label);
-				b = getLSB(garbledCircuit->wires[garbledGate->input1].label);
+				a = getLSB(garbledCircuit->wires[garbledGate->input0].label0);
+				b = getLSB(garbledCircuit->wires[garbledGate->input1].label0);
 				block temp;
 
 				val = xorBlocks(A, B);
@@ -133,14 +131,14 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 
 				*plainText = xorBlocks(val, temp);
 			}
-			print__m128i(garbledCircuit->wires[garbledGate->output].label);
+			print__m128i(garbledCircuit->wires[garbledGate->output].label0);
 		}
 		
 		printf ("\noutput: \n");
 
 		for (i = 0; i < garbledCircuit->m; i++)
 		{
-			outputs[cid*garbledCircuit->m + i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label;
+			outputs[cid*garbledCircuit->m + i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
 			
 			printf ("(%ld, %ld)", cid, i);
 			print__m128i(outputs[cid*garbledCircuit->m + i]);

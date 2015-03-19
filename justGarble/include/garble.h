@@ -50,9 +50,7 @@ extern "C" {
 #define XOR_ID -2
 #define NOT_ID -3
 
-int createNewGate(Gate *gate, Wire *input0, Wire *input1, Wire *output, int type );
-int createNewWire(Wire *in, GarblingContext *garblingContext, int id);
-int getNextWire(GarblingContext *garblingContext);
+
 void removeGarbledCircuit(GarbledCircuit *garbledCircuit);
 
 int blockEqual(block a, block b);

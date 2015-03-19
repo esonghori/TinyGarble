@@ -18,8 +18,6 @@
 
 #include "../include/garble.h"
 #include "../include/common.h"
-#include "../include/circuits.h"
-#include "../include/gates.h"
 #include "../include/util.h"
 #include "../include/dkcipher.h"
 #include "../include/aes.h"
@@ -35,189 +33,8 @@ int FINAL_ROUND = 0;
 extern "C" {
 #endif
 
-int createNewWire(Wire *in, GarblingContext *garblingContext, int id)
-{
-	in->id = id; //getNextWire(garblingContext);
-	//in->label0 = randomBlock();
-	//in->label1 = xorBlocks(garblingContext->R, in->label0);
-	return 0;
-}
 
-void TRUNCATE(char *X)
-{
-	char *__ct;
-	short *__msks;
-	int *__mski;
-	{
-		__ct = (char*) X;
-		__msks = (short*) (&__ct[10]);
-		__mski = (int*) (&__ct[10]);
-		__mski[0] = 0;
-		__msks[2] = 0;
-	}
-}
-
-void TRUNC_COPY(char *X, char *Y)
-{
-	int __itc;
-	short*__itc_src;
-	short*__itc_dst;
-
-	{
-		__itc_src = (short *) X;
-		__itc_dst = (short *) Y;
-		for (__itc = 0; __itc < 5; __itc++)
-			__itc_dst[__itc] = __itc_src[__itc];
-	}
-}
-
-static unsigned long currentId;
-int getNextId()
-{
-	currentId++;
-	return currentId;
-}
-
-int getFreshId()
-{
-	currentId = 0;
-	return currentId;
-}
-
-int getNextWire(GarblingContext *garblingContext)
-{
-	int i = garblingContext->wireIndex;
-	garblingContext->wireIndex++;
-	return i;
-}
-
-long createEmptyGarbledCircuit(GarbledCircuit *garbledCircuit, int n, int m,
-		int q, int r, int p, int c)
-{
-
-	long startTime = RDTSC;
-	garbledCircuit->id = getNextId();
-	garbledCircuit->D = (int *) memalign(128, sizeof(int) * n);//TODO: can be avoided when c==1
-	garbledCircuit->I = (int *) memalign(128, sizeof(int) * n);//TODO: can be avoided when c==1
-	garbledCircuit->garbledGates = (GarbledGate *) memalign(128, sizeof(GarbledGate) * q);
-	garbledCircuit->wires = (Wire *) memalign(128, sizeof(Wire) * r);
-	garbledCircuit->outputs = (int *) memalign(128, sizeof(int) * m);
-
-	if (	garbledCircuit->garbledGates == NULL
-			|| garbledCircuit->wires == NULL
-			|| garbledCircuit->outputs == NULL
-			|| garbledCircuit->D == NULL
-			|| garbledCircuit->I == NULL) //|| garbledCircuit->garbledTable == NULL
-	{
-		dbgs("Linux is a cheap miser that refuses to give us memory");
-		exit(1);
-	}
-
-	garbledCircuit->m = m;
-	garbledCircuit->n = n;
-	garbledCircuit->q = q;
-	garbledCircuit->r = r;
-	garbledCircuit->p = p;
-	garbledCircuit->c = c;
-	int i;
-	for (i = 0; i < r; i++)
-	{
-		garbledCircuit->wires[i].id = 0;
-	}
-	for (i = 0; i < q; i++)
-	{
-		garbledCircuit->garbledGates[i].id = 0;
-	}
-
-	return (long)startTime;
-}
-
-void removeGarbledCircuit(GarbledCircuit *garbledCircuit)
-{
-	garbledCircuit->id = getNextId();
-	free(garbledCircuit->garbledGates);
-	free(garbledCircuit->wires);
-	free(garbledCircuit->outputs);
-	free(garbledCircuit->I);
-	free(garbledCircuit->D);
-}
-
-int startBuilding(GarbledCircuit *garbledCircuit,GarblingContext *garblingContext)
-{
-	garblingContext->gateIndex = 0;
-	garblingContext->tableIndex = 0;
-	garblingContext->wireIndex = garbledCircuit->n; //TODO: it was n + 1
-
-	garblingContext->R =
-			xorBlocks(garbledCircuit->wires[0].label0, garbledCircuit->wires[0].label1);
-	garblingContext->fixedWires = (int *) malloc(
-			sizeof(int) * garbledCircuit->r);
-	block key = randomBlock();
-	garbledCircuit->globalKey = key;
-	DKCipherInit(&key, &(garblingContext->dkCipherContext));
-
-	return 0;
-}
-
-
-
-long finishBuilding(GarbledCircuit *garbledCircuit, GarblingContext *garbledContext, int *outputs, int *D, int *I)
-{
-	int i;
-
-	for (i = 0; i < garbledCircuit->m; i++)
-	{
-		garbledCircuit->outputs[i] = outputs[i];
-	}
-	for (i = 0; i < garbledCircuit->r; i++)
-	{
-		if (garbledContext->fixedWires[i] == FIXED_ZERO_GATE)
-		{
-			garbledCircuit->wires[i].label = garbledCircuit->wires[i].label0;
-		}
-		if (garbledContext->fixedWires[i] == FIXED_ONE_GATE)
-		{
-			garbledCircuit->wires[i].label = garbledCircuit->wires[i].label1;
-		}
-	}
-	garbledCircuit->q = garbledContext->gateIndex;
-
-	if(garbledCircuit->c > 1)
-	{
-		for(int i=0;i<garbledCircuit->n;i++)
-		{
-			garbledCircuit->D[i] = D[i];
-		}
-		for(int i=0;i<garbledCircuit->n;i++)
-		{
-			garbledCircuit->I[i] = I[i];
-		}
-	}
-
-
-	long endTime = RDTSC;
-	return endTime;
-}
-
-int extractLabels(ExtractedLabels extractedLabels, InputLabels inputLabels,
-		int* inputBits, int n)
-{
-	int i;
-	for (i = 0; i < n; i++)
-	{
-		if (inputBits[i])
-		{
-			extractedLabels[i] = inputLabels[2 * i + 1];
-		}
-		else
-		{
-			extractedLabels[i] = inputLabels[2 * i];
-		}
-	}
-	return 0;
-
-}
-long garbleCircuit(GarbledCircuit *garbledCircuit, block* inputLabels,
+long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd)
 {
 	int n = garbledCircuit->n;
@@ -243,9 +60,6 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, block* inputLabels,
 
 	long startTime = RDTSC;
 
-	garbledCircuit->id = getFreshId();
-	garblingContext.gateIndex = 0;
-	garblingContext.wireIndex = garbledCircuit->n;
 	garblingContext.R = R;
 	garbledCircuit->globalKey = DKCkey;
 	DKCipherInit(&DKCkey, &(garblingContext.dkCipherContext));
@@ -645,37 +459,6 @@ long garbleCircuit(GarbledCircuit *garbledCircuit, block* inputLabels,
 }
 
 
-int blockEqual(block a, block b)
-{
-	long *ap = (long*) &a;
-	long *bp = (long*) &b;
-	if ((ap[0] == bp[0]) && (ap[1] == bp[1]))
-		return 1;
-	else
-		return 0;
-}
-
-int mapOutputs(OutputMap outputMap, OutputMap outputMap2, int *vals, int m)
-{
-	int i;
-	for (i = 0; i < m; i++)
-	{
-		if (blockEqual(outputMap2[i], outputMap[2 * i]))
-		{
-			vals[i] = 0;
-			continue;
-		}
-		if (blockEqual(outputMap2[i], outputMap[2 * i + 1]))
-		{
-			vals[i] = 1;
-			continue;
-		}
-		printf("MAP FAILED %d\n", i);
-	}
-	return 0;
-
-}
-
 int createInputLabels(InputLabels inputLabels, block R, int n)
 {
 	int i;
@@ -690,35 +473,13 @@ int createInputLabels(InputLabels inputLabels, block R, int n)
 }
 
 
-int findGatesWithMatchingInputs(GarbledCircuit *garbledCircuit,
-		InputLabels inputLabels, OutputMap outputMap, int *outputs)
+void removeGarbledCircuit(GarbledCircuit *garbledCircuit)
 {
-	int i;
-	GarbledGate *garbledGate1, *garbledGate2;
-	DKCipherContext dkCipherContext;
-
-	DKCipherInit(&(garbledCircuit->globalKey), &dkCipherContext);
-
-	for (i = 0; i < garbledCircuit->n; i++)
-	{
-		garbledCircuit->wires[i].label = inputLabels[i];
-	}
-	int matching = 0;
-	int j;
-	for (i = 0; i < garbledCircuit->q; i++)
-	{
-		garbledGate1 = &garbledCircuit->garbledGates[i];
-		for (j = i + 1; j < garbledCircuit->q; j++)
-		{
-			garbledGate2 = &garbledCircuit->garbledGates[j];
-			if (garbledGate1->input0 == garbledGate2->input0
-					&& garbledGate1->input1 == garbledGate2->input1)
-			{
-				matching++;
-			}
-		}
-	}
-	return 0;
+	free(garbledCircuit->garbledGates);
+	free(garbledCircuit->wires);
+	free(garbledCircuit->outputs);
+	free(garbledCircuit->I);
+	free(garbledCircuit->D);
 }
 
 #ifdef __cplusplus

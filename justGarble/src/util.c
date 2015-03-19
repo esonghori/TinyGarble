@@ -29,48 +29,13 @@ extern "C" {
 
 static __m128i cur_seed;
 
-int countToN(int *a, int n) {
-	int i;
-	for (i = 0; i < n; i++)
-		a[i] = i;
-	return 0;
-}
-
-int dbgBlock(block a) {
-	int *A = (int *) &a;
-	int i;
-	int out = 0;
-	for (i = 0; i < 4; i++)
-		out = out + (A[i] + 13432) * 23517;
-	return out;
-}
-
-int compare(const void * a, const void * b) {
-	return (*(int*) a - *(int*) b);
-}
-
-int median(int *values, int n) {
-	int i;
-	qsort(values, n, sizeof(int), compare);
-	if (n % 2 == 1)
-		return values[(n + 1) / 2];
-	else
-		return (values[n / 2] + values[n / 2 + 1]) / 2;
-}
-
-double doubleMean(double *values, int n) {
-	int i;
-	double total = 0;
-	for (i = 0; i < n; i++)
-		total += values[i];
-	return total / n;
-}
-
-void srand_sse(unsigned int seed) {
+void srand_sse(unsigned int seed)
+{
 	cur_seed = _mm_set_epi32(seed, seed + 1, seed, seed + 1);
 }
 
-block randomBlock() {
+block randomBlock()
+{
 
 	block cur_seed_split;
 	block multiplier;
