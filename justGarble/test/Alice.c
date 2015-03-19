@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
 	send_block(connfd, DKCkey); // send DKC key
 
 
-	garbleCircuit(&garbledCircuit, inputLabels, initialDFFLable, outputs, R, DKCkey, connfd);
+	garble(&garbledCircuit, inputLabels, initialDFFLable, outputs, R, DKCkey, connfd);
 
 	return 0;
 }
