@@ -36,18 +36,10 @@ extern "C" {
 typedef __m128i block;
 #define xorBlocks(x,y) _mm_xor_si128(x,y)
 #define zero_block() _mm_setzero_si128()
-#define unequal_blocks(x,y) (_mm_movemask_epi8(_mm_cmpeq_epi8(x,y)) != 0xffff)
-#define dbg(X) printf("DEBUG %s:%d says %d \n",__FILE__, __LINE__, X)
-#define dbgx(X) printf("DEBUG %s:%d says %X \n",__FILE__, __LINE__, X)
-#define dbgp(X) printf("DEBUG %s:%d says %p \n",__FILE__, __LINE__, X)
-#define dbgs(X) printf("DEBUG %s:%d says %s \n",__FILE__, __LINE__, X)
-#define dbgb(X) printf("DEBUG %s:%d says %lx %lx\n",__FILE__, __LINE__, ((long *)X)[0], ((long *)X)[1])
 
 #define getLSB(x) (*((unsigned short *)&x)&1)
 #define makeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
-#define getFromBlock(X,i) _mm_extract_epi64(X, i)
 
-extern int FINAL_ROUND;
 
 /*------------------------------------------------------------------------
 / OCB Version 3 Reference Code (Optimized C)     Last modified 08-SEP-2012
@@ -112,38 +104,39 @@ static inline block RIGHTSHIFT(block bl) {
                          "emr" (in2.lo64), "emr"(in2.hi64),     \
                          "0" (in1.lo64), "1" (in1.hi64));
 
-/*
-char *__ct;
-short *__msks;
-int *__mski;
-int __itc;
-char *__itc_src;
-char *__itc_dst;
-*/
 
-void inline TRUNCATE(char *X);
-
-void inline TRUNC_COPY(char *X, char *Y);
-//#define TRUNCATE(X) {__ct = (char*)X; __msks = (short*)( &__ct[10]);__mski = (int*)( &__ct[10]); __mski[0]=0; __msks[2]=0;}
-//#define TRUNC_COPY(X, Y) {__itc_src = (char*)X; __itc_dst = (char*)Y; for(__itc=0;__itc<10;__itc++)__itc_dst[__itc] = __itc_src[__itc];}
 #define SUCCESS 0
 #define FAILURE -1
 
 
-#define CONST_ZERO -2
-#define CONST_ONE  -3
 
 #define ROW_REDUCTION
 #define FREE_XOR
 #define DKC2
-//#define TRUNCATED
 
-//#define WRITECIRCUIT
+#define CONST_ZERO -2
+#define CONST_ONE  -3
 
 
-#define TIMES 100
-#define RUNNING_TIME_ITER 100
+#define ANDGATE 8
+#define ANDNGATE 4
+#define NANDGATE 7
+#define NANDNGATE 11
+#define ORGATE 14
+#define ORNGATE 13
+#define NORGATE 1
+#define NORNGATE 2
+#define XORGATE 6
+#define XNORGATE 9
+#define NOTGATE 12
+#define DFFGATE -1
+
+#define RDTSC ({unsigned long long res;  unsigned hi, lo;   __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi)); res =  ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );res;})
+#define fbits( v, p) ((v & (1 << p))>>p)
+
 block randomBlock();
+void srand_sse(unsigned int seed);
+void print__m128i(__m128i);
 
 #ifdef __cplusplus
 }

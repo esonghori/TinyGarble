@@ -18,7 +18,6 @@
 
 
 #include "../include/common.h"
-#include "../include/garble.h"
 #include "../include/justGarble.h"
 
 #include <stdio.h>
@@ -204,7 +203,6 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName)
 	int i;
 	for (i = 0; i < q; i++)
 	{
-		garbledCircuit->garbledGates[i].id = 0;
 		garbledCircuit->garbledGates[i].output = n+pp+i;
     }
 
