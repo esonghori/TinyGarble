@@ -1,12 +1,8 @@
 #include "include/read_netlist.h"
 
-#include "../include/garble.h"
-
 
 void verilog2SCD(const string &infilename, const string &outfilename, int c)
 {
-	GarbledCircuit garbledCircuit;
-	GarblingContext garblingContext;
 
 	ReadCircuitString readCircuitString;
 	ReadCircuit readCircuit;
@@ -38,7 +34,6 @@ void writeSCD(const ReadCircuit &readCircuit,  int _c, const string &fileName)
 	int q = readCircuit.no_of_gates; // # of gates
 	int c = _c; // # of sequential cycle
 
-	GarbledGate *garbledGate;
 	msgpack_pack_array(pk, 6 + 3 * q + m + p + p);
 	msgpack_pack_int(pk, n);
 	msgpack_pack_int(pk, g);
@@ -114,7 +109,7 @@ int main(int argc, char** argv)
 {
 	if(argc < 4)
 	{
-		cout << "Enter infilename outfilename c" << endl;
+		cout << "usage: " << argv[0] << " <verilog infilename> <scd outfilename> <c>" << endl;
 		return -1;
 	}
 	string infilename(argv[1]);
