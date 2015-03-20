@@ -24,3 +24,4 @@ justGarble/readNetlist/debug
 work/
 transcript
 *.wlf
+syn/
