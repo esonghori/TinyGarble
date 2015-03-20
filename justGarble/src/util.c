@@ -17,8 +17,9 @@
 */
 
 #include "../include/common.h"
-#include "../include/util.h"
 #include "../include/justGarble.h"
+#include "../include/aes.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <stdint.h>
