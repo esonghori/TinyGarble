@@ -34,6 +34,264 @@ extern "C" {
 #endif
 
 
+long garbleHG(GarbledCircuit *garbledCircuit, block* inputLabels,
+		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd)
+{
+	int n = garbledCircuit->n;
+	int m = garbledCircuit->m;
+	int p = garbledCircuit->p;
+	int c = garbledCircuit->c;
+
+	AES_KEY AES_key;
+	GarbledGate *garbledGate;
+	block val;
+
+	block *A, *B, *plainText,*cipherText;
+	block tweak0, tweak1;
+	long cc, a, b, i, j, cid ,rnds = 10;
+	block blocks[4];
+	block keys[4];
+	unsigned short pa,pb;
+	block keyToEncrypt;
+	int input0, input1, output;
+
+	long startTime = RDTSC;
+
+	DKCipherInit(&DKCkey, &(AES_key));
+
+	for(i=0;i<15;i++)
+	{
+
+	}
+
+
+	for(cid = 0; cid <garbledCircuit->c; cid++) //for each clock cycle
+	{
+
+		for(i=0;i<garbledCircuit->n;i++) //inputs
+		{
+			garbledCircuit->wires[i].label0 = inputLabels[2*(cid*garbledCircuit->n +i)];
+			garbledCircuit->wires[i].label1 = inputLabels[2*(cid*garbledCircuit->n +i) + 1];
+		}
+
+		if(cid == 0) //dff initial value
+		{
+			for(i=0;i<garbledCircuit->p;i++)
+			{
+				garbledCircuit->wires[garbledCircuit->n + i].label0 = initialDFFLable[2*i];
+				garbledCircuit->wires[garbledCircuit->n + i].label1 = initialDFFLable[2*i+1];
+			}
+
+		}
+		else //copy latched labels
+		{
+			for(i=0;i<garbledCircuit->p;i++)
+			{
+				int wireIndex = garbledCircuit->D[i];
+				garbledCircuit->wires[garbledCircuit->n + i].label0 = garbledCircuit->wires[wireIndex].label0;
+				garbledCircuit->wires[garbledCircuit->n + i].label1 = garbledCircuit->wires[wireIndex].label1;
+			}
+		}
+
+
+		for(i=0; i< garbledCircuit->q;i++) //for each gates
+		{
+
+			garbledGate = &(garbledCircuit->garbledGates[i]);
+			input0 = garbledGate->input0;
+			input1 = garbledGate->input1;
+			output = garbledGate->output;
+
+			printf("(%ld, %ld)\n", cid, i);
+			print__m128i(garbledCircuit->wires[input0].label0);
+			print__m128i(garbledCircuit->wires[input0].label1);
+
+			print__m128i(garbledCircuit->wires[input1].label0);
+			print__m128i(garbledCircuit->wires[input1].label1);
+
+
+			if (garbledGate->type == XORGATE)
+			{
+				garbledCircuit->wires[output].label0 = xorBlocks(garbledCircuit->wires[input0].label0, garbledCircuit->wires[input1].label0);
+				garbledCircuit->wires[output].label1 = xorBlocks(garbledCircuit->wires[input0].label1, garbledCircuit->wires[input1].label0);
+
+
+				print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+				print__m128i(garbledCircuit->wires[garbledGate->output].label1);
+
+				continue;
+			}
+			else if (garbledGate->type == XNORGATE)
+			{
+				garbledCircuit->wires[output].label0 = xorBlocks(garbledCircuit->wires[input0].label1, garbledCircuit->wires[input1].label0);
+				garbledCircuit->wires[output].label1 = xorBlocks(garbledCircuit->wires[input0].label0, garbledCircuit->wires[input1].label0);
+
+				print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+				print__m128i(garbledCircuit->wires[garbledGate->output].label1);
+
+				continue;
+			}
+			else if (garbledGate->type == NOTGATE){
+				garbledCircuit->wires[output].label0 = garbledCircuit->wires[input0].label1;
+				garbledCircuit->wires[output].label1 = garbledCircuit->wires[input0].label0;
+
+				print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+				print__m128i(garbledCircuit->wires[garbledGate->output].label1);
+
+				continue;
+			}
+
+			unsigned short v = type2V(garbledGate->type);
+
+			block A0, A1, B0, B1, C0, C1;
+
+			if(v&1 == 0)
+			{
+				A0 = (garbledCircuit->wires[input0].label0);
+				A1 = (garbledCircuit->wires[input0].label1);
+			}
+			else
+			{
+				A1 = (garbledCircuit->wires[input0].label0);
+				A0 = (garbledCircuit->wires[input0].label1);
+			}
+
+			if(v&2 == 0)
+			{
+				B0 = (garbledCircuit->wires[input1].label0);
+				B1 = (garbledCircuit->wires[input1].label1);
+			}
+			else
+			{
+				B1 = (garbledCircuit->wires[input1].label0);
+				B0 = (garbledCircuit->wires[input1].label1);
+			}
+
+			pa = getLSB(A0);
+			pb = getLSB(B0);
+
+			tweak0 = makeBlock(cid, 2*i+0);
+			tweak1 = makeBlock(cid, 2*i+1);
+
+			keys[0] = xorBlocks(A0, tweak0);
+			keys[1] = xorBlocks(A1, tweak0);
+			keys[2] = xorBlocks(B0, tweak1);
+			keys[3] = xorBlocks(B1, tweak1);
+
+
+			for (j = 0; j < 4; j++)
+			{
+				printf("k(%ld)\t", j);
+				print__m128i(keys[j]);
+			}
+
+
+
+			block mask[4];
+			mask[0] = keys[0];
+			mask[1] = keys[1];
+			mask[2] = keys[2];
+			mask[3] = keys[3];
+			AES_ecb_encrypt_blks(keys, 4, &(AES_key));
+
+
+			for (j = 0; j < 4; j++)
+			{
+				printf("kd(%ld)\t", j);
+				print__m128i(keys[j]);
+			}
+
+
+
+			mask[0] = xorBlocks(mask[0], keys[0]);
+			mask[1] = xorBlocks(mask[1], keys[1]);
+			mask[2] = xorBlocks(mask[2], keys[2]);
+			mask[3] = xorBlocks(mask[3], keys[3]);
+
+
+			for (j = 0; j < 4; j++)
+			{
+				printf("m(%ld)\t", j);
+				print__m128i(mask[j]);
+			}
+
+
+
+
+			block table[2];
+			block G, E;
+
+			table[0] = xorBlocks(mask[0], mask[1]);
+			if(pb)
+				table[0] = xorBlocks(table[0], R);
+
+			G = mask[0];
+			if(pa)
+				G = xorBlocks(G, table[0]);
+
+			table[1] = xorBlocks(mask[2], mask[3]);
+			table[1] = xorBlocks(table[1], A0);
+
+			E = mask[2];
+			if(pb)
+			{
+				E = xorBlocks(E, table[1]);
+				E = xorBlocks(E, A0);
+			}
+
+
+			printf("G\t");
+			print__m128i(G);
+			printf("E\t");
+			print__m128i(E);
+
+			if(v&4 == 0)
+			{
+				C0 = xorBlocks(G, E);
+				C1 = xorBlocks(R, C0);
+			}
+			else
+			{
+				C1 = xorBlocks(G, E);
+				C0 = xorBlocks(R, C1);
+			}
+
+
+			garbledCircuit->wires[garbledGate->output].label0 = C0;
+			garbledCircuit->wires[garbledGate->output].label1 = C1;
+
+
+			for (j = 0; j < 2; j++)
+			{
+				printf("t(%ld)\t", j);
+				print__m128i(table[j]);
+
+				send_block(connfd, table[j]);
+			}
+
+			print__m128i(garbledCircuit->wires[garbledGate->output].label0);
+			print__m128i(garbledCircuit->wires[garbledGate->output].label1);
+
+		}
+
+		printf ("\noutput: \n");
+
+		for(i=0;i<garbledCircuit->m;i++)
+		{
+			block o0 = garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
+			block o1 = garbledCircuit->wires[garbledCircuit->outputs[i]].label1;
+			outputMap[cid*2*garbledCircuit->m + 2*i] = o0;
+			outputMap[cid*2*garbledCircuit->m + 2*i+1] = o1;
+
+			printf ("o(%ld,%ld)\n", cid, i);
+			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i]);
+			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i+1]);
+		}
+	}
+	return (RDTSC - startTime);
+}
+
+
 long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd)
 {
@@ -42,7 +300,6 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 	int p = garbledCircuit->p;
 	int c = garbledCircuit->c;
 	
-	GarblingContext garblingContext;
 	GarbledGate *garbledGate;
 	GarbledTable garbledTable;
 	DKCipherContext dkCipherContext;
@@ -60,9 +317,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
 	long startTime = RDTSC;
 
-	garblingContext.R = R;
-	garbledCircuit->globalKey = DKCkey;
-	DKCipherInit(&DKCkey, &(garblingContext.dkCipherContext));
+	DKCipherInit(&DKCkey, &(dkCipherContext));
 
 
 
@@ -172,11 +427,11 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 			mask[1] = keys[1];
 			mask[2] = keys[2];
 			mask[3] = keys[3];
-			AES_ecb_encrypt_blks(keys, 4, &(garblingContext.dkCipherContext.K));
+			AES_ecb_encrypt_blks(keys, 4, &(dkCipherContext.K));
 			mask[0] = xorBlocks(mask[0], keys[0]);
-			mask[1] = xorBlocks(mask[1],keys[1]);
-			mask[2] = xorBlocks(mask[2],keys[2]);
-			mask[3] = xorBlocks(mask[3],keys[3]);
+			mask[1] = xorBlocks(mask[1], keys[1]);
+			mask[2] = xorBlocks(mask[2], keys[2]);
+			mask[3] = xorBlocks(mask[3], keys[3]);
 
 			if (2*lsb0 + lsb1 ==0)
 				newToken = mask[0];
@@ -187,7 +442,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 			else if (2*(1-lsb0) + 1-lsb1 ==0)
 				newToken = mask[3];
 
-			block newToken2 = xorBlocks(garblingContext.R, newToken);
+			block newToken2 = xorBlocks(R, newToken);
 
 			if (garbledGate->type == ANDGATE)
 			{
