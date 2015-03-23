@@ -23,32 +23,10 @@
 #include <stdio.h>
 #include <time.h>
 #include "../include/justGarble.h"
-#include "../include/garble.h"
 #include "../include/tcpip.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-int check_test_seq(int *input, int *outputs, int nc)
-{
-	int n = 3;
-	int m = 2;
-	int w[3];
-	w[1] = 0; // DFF reset
-	for(int cc=0;cc<3;cc++)
-	{
-		int x = input[cc*n+0];
-		int y = input[cc*n+1];
-		w[0] = x & y;
-		w[1] = w[1] ^ w[0];
-		outputs[cc*m + 0] = w[1];
-		outputs[cc*m + 1] = w[1] & x;
-	}
-
-
-	return 0;
-}
 
 
 int main(int argc, char* argv[])
@@ -198,13 +176,15 @@ int main(int argc, char* argv[])
 	}
 	printf("\n\n");
 
-	block DKCkey = randomBlock();
-	send_block(connfd, DKCkey); // send DKC key
+	garbledCircuit.globalKey = randomBlock();
+	send_block(connfd, garbledCircuit.globalKey); // send DKC key
 
 
-	garbleHG(&garbledCircuit, inputLabels, initialDFFLable, outputs, R, DKCkey, connfd);
+	garbleHG(&garbledCircuit, inputLabels, initialDFFLable, outputs, &R, connfd);
 
 	server_close(connfd);
+	removeGarbledCircuit(&garbledCircuit);
+
 
 	return 0;
 }

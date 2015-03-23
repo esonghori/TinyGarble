@@ -61,7 +61,10 @@ extern "C" {
 #endif
 
 typedef __m128i block;
-    
+
+#define DOUBLE(B) _mm_slli_epi64(B,1)
+
+
 typedef struct { __m128i rd_key[15]; int rounds; } AES_KEY;
 #define ROUNDS(ctx) ((ctx)->rounds)
 
