@@ -24,8 +24,8 @@
 extern "C" {
 #endif
 
-void DKCipher1Init(block *key, DKCipherContext *c) {
-	AES_set_encrypt_key((unsigned char *) key, 128, &c->K);
+void DKCipher1Init(block *key, AES_KEY *AES_key) {
+	AES_set_encrypt_key((unsigned char *) key, 128, AES_key);
 }
 
 

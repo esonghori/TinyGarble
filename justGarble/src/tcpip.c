@@ -3,9 +3,18 @@
 #include <errno.h>
 #include "../include/tcpip.h"
 
+int listenfd = 0;
+
+int server_close(int sock)
+{
+	close(sock);
+	close(listenfd);
+	return 0;
+}
+
 int server_init(int port)
 {
-	int connfd, listenfd;
+	int connfd;
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
 	int n;
@@ -25,7 +34,7 @@ int server_init(int port)
 		printf("%s \n", strerror(errno));
 		return -1;
 	}
-	listen(listenfd,5);
+	listen(listenfd, 5);
 	clilen = sizeof(cli_addr);
 	printf("Wait for client\n");
 	connfd = accept(listenfd, (struct sockaddr *) &cli_addr, &clilen);
@@ -43,6 +52,12 @@ int server_init(int port)
 		return -1;
 	}
 	return connfd;
+}
+
+int client_close(int sock)
+{
+	close(sock);
+	return 0;
 }
 
 int client_init(char* ip, int port)

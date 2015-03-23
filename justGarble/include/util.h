@@ -57,6 +57,7 @@ extern "C" {
 
 block randomBlock();
 void srand_sse(unsigned int seed);
+unsigned short type2V(int gateType);
 void print__m128i(__m128i);
 
 #ifdef __cplusplus
