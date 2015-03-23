@@ -16,18 +16,13 @@
 
 */
 
-#include "../include/garble.h"
 #include "../include/common.h"
-#include "../include/util.h"
-#include "../include/dkcipher.h"
 #include "../include/aes.h"
 #include "../include/justGarble.h"
 #include "../include/tcpip.h"
-#include <malloc.h>
-#include <wmmintrin.h>
-#include <time.h>
+#include "../include/aes.h"
 
-int FINAL_ROUND = 0;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +52,7 @@ long garbleHG(GarbledCircuit *garbledCircuit, block* inputLabels,
 
 	long startTime = RDTSC;
 
-	DKCipherInit(&DKCkey, &(AES_key));
+	AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128, &AES_Key);
 
 	for(i=0;i<15;i++)
 	{
@@ -293,7 +288,7 @@ long garbleHG(GarbledCircuit *garbledCircuit, block* inputLabels,
 
 
 long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd)
+		block* initialDFFLable, block* outputMap, block* R, int connfd)
 {
 	int n = garbledCircuit->n;
 	int m = garbledCircuit->m;
@@ -302,8 +297,8 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 	
 	GarbledGate *garbledGate;
 	GarbledTable garbledTable;
-	DKCipherContext dkCipherContext;
-	const __m128i *sched = ((__m128i *)(dkCipherContext.K.rd_key));
+	AES_KEY AES_Key;
+	const __m128i *sched = ((__m128i *)(AES_Key.rd_key));
 	block val;
 
 	block *A, *B, *plainText,*cipherText;
@@ -317,9 +312,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
 	long startTime = RDTSC;
 
-	DKCipherInit(&DKCkey, &(dkCipherContext));
-
-
+	AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128, &AES_Key);
 
 	for(cid = 0; cid <garbledCircuit->c; cid++) //for each clock cycle
 	{
@@ -427,7 +420,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 			mask[1] = keys[1];
 			mask[2] = keys[2];
 			mask[3] = keys[3];
-			AES_ecb_encrypt_blks(keys, 4, &(dkCipherContext.K));
+			AES_ecb_encrypt_blks(keys, 4, &(AES_Key));
 			mask[0] = xorBlocks(mask[0], keys[0]);
 			mask[1] = xorBlocks(mask[1], keys[1]);
 			mask[2] = xorBlocks(mask[2], keys[2]);
@@ -442,7 +435,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 			else if (2*(1-lsb0) + 1-lsb1 ==0)
 				newToken = mask[3];
 
-			block newToken2 = xorBlocks(R, newToken);
+			block newToken2 = xorBlocks(*R, newToken);
 
 			if (garbledGate->type == ANDGATE)
 			{
@@ -714,7 +707,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 }
 
 
-int createInputLabels(InputLabels inputLabels, block R, int n)
+int createInputLabels(block* inputLabels, block R, int n)
 {
 	int i;
 
