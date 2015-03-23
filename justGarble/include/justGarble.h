@@ -21,7 +21,6 @@
 #define JUSTGARBLE_H_
 
 
-#include "dkcipher.h"
 #include "common.h"
 
 #ifdef __cplusplus
@@ -32,41 +31,17 @@ typedef struct Wire{
 	block label0, label1;
 } Wire;
 
-typedef struct GarbledWire{
-	block label; long id;
-} GarbledWire;
-
-
-typedef struct Gate{
-	long type, id; 
-	Wire *input0, *input1, *output;
-} Gate;
 
 typedef struct GarbledGate{
 	long input0, input1, output;
-	int id, type;
+	int type;
 } GarbledGate;
 
 
-typedef char shortBlock[10];
-
-#ifdef TRUNCATED
 typedef struct GarbledTable{
-	char table[4][10];
-
+	block table[3];
 } GarbledTable;
-#else
-typedef struct GarbledTable{
-	block table[4];
-} GarbledTable;
-#endif
 
-/*typedef struct Circuit{
-	int n,m,q,r;
-	Gate* gates;
-	Wire* wires;
-	long id;
-} Circuit;*/
 
 typedef struct GarbledCircuit{
 	int n; // # of inputs
@@ -75,36 +50,14 @@ typedef struct GarbledCircuit{
 	int m; // # of outputs
 	int q; // # of gates
 	int c; // # of sequential cycle
-	int r; // # of wires = n+p+q+2 for Zero and One
+	int r; // # of wires = n+p+q
 
-	block* inputLabels;
-	block* outputLabels;
 	GarbledGate* garbledGates;
 	Wire* wires;
 	int *outputs;
 	int *D;
 	int *I;
 } GarbledCircuit;
-
-typedef struct GarbledOutput{
-	int m;
-	block *outputLabels;
-	long id;
-} GarbledOutput;
-
-typedef struct GarblingContext{
-	long wireIndex, gateIndex, tableIndex;
-	DKCipherContext dkCipherContext;
-	int* fixedWires;
-	int fixCount;
-	block R;
-} GarblingContext;
-
-
-typedef block* InputLabels;
-typedef block* ExtractedLabels;
-typedef block* OutputMap;
-
 
 
 /*
@@ -115,7 +68,7 @@ typedef block* OutputMap;
 
 
 //Create memory for 2*n input labels.
-int createInputLabels(InputLabels inputLabels, block R, int n);
+int createInputLabels(block* inputLabels, block R, int n);
 
 //Garble the circuit described in garbledCircuit. For efficiency reasons,
 //we use the garbledCircuit data-structure for representing the input 
@@ -131,7 +84,7 @@ int createInputLabels(InputLabels inputLabels, block R, int n);
 //by calling createInputLabels. The outputMap is expected to be a 2m-block sized
 //empty array.
 long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd);
+		block* initialDFFLable, block* outputMap, block* R, int connfd);
 
 long garbleHG(GarbledCircuit *garbledCircuit, block* inputLabels,
 		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd);
@@ -143,19 +96,20 @@ long garbleHG(GarbledCircuit *garbledCircuit, block* inputLabels,
 // by building the circuit (startBuilding ... finishBuilding), and adding 
 // garbledTable from another source, say, a network transmission.
 long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
-		block* initialDFFLable, block *outputs, block DKCkey, int sockfd);
+		block* initialDFFLable, block *outputs, int sockfd);
 
 long evaluateHG(GarbledCircuit *garbledCircuit, block* inputLables,
 		block* initialDFFLable, block *outputs, block DKCkey, int sockfd);
 
 int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
 
+
+void removeGarbledCircuit(GarbledCircuit *garbledCircuit);
+
+
 #ifdef __cplusplus
 }
 #endif
 
-
-#include "garble.h"
-#include "util.h"
 
 #endif

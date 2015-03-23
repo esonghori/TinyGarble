@@ -17,12 +17,9 @@
 */
 
 #include "../include/common.h"
-#include "../include/garble.h"
-#include "../include/util.h"
-#include "../include/dkcipher.h"
-#include "../include/aes.h"
 #include "../include/justGarble.h"
 #include "../include/tcpip.h"
+#include "../include/aes.h"
 
 #include <malloc.h>
 #include <wmmintrin.h>
@@ -31,16 +28,15 @@
 extern "C" {
 #endif
 
-long evaluateHG(GarbledCircuit *garbledCircuit, block* inputLables, block* initialDFFLable, block *outputs, block DKCkey, int sockfd)
+long evaluateHG(GarbledCircuit *garbledCircuit, block* inputLables, block* initialDFFLable, block *outputs, int sockfd)
 {
-	DKCipherContext dkCipherContext;
 	long i, j, cid;
 
+	AES_KEY AES_Key;
 
 	long startTime = RDTSC;
 
-	DKCipherInit(&DKCkey, &dkCipherContext);
-
+	AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128, &AES_Key);
 
 
 	for(cid=0;cid<garbledCircuit->c;cid++) //for each clock cycle
@@ -187,11 +183,11 @@ long evaluateHG(GarbledCircuit *garbledCircuit, block* inputLables, block* initi
 	return (RDTSC - startTime);
 }
 
-long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initialDFFLable, block *outputs, block DKCkey, int sockfd)
+long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initialDFFLable, block *outputs, int sockfd)
 {
 	GarbledGate *garbledGate;
-	DKCipherContext dkCipherContext;
-	const __m128i *sched = ((__m128i *) (dkCipherContext.K.rd_key));
+	AES_KEY AES_Key;
+	const __m128i *sched = ((__m128i *) (AES_Key.rd_key));
 	block val;
 
 	block A, B;
@@ -205,7 +201,8 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 	long startTime = RDTSC;
 
 
-	DKCipherInit(&DKCkey, &dkCipherContext);
+	AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128, &AES_Key);
+
 
 	for(cid=0;cid<garbledCircuit->c;cid++) //for each clock cycle
 	{
