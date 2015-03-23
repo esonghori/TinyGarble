@@ -36,7 +36,7 @@ typedef struct {
 //	block B;
 } DKCipherContext;
 
-void DKCipher1Init(block *key, DKCipherContext *c);
+void DKCipher1Init(block *key, AES_KEY *AES_key);
 
 
 #define DKCipherInit DKCipher1Init
