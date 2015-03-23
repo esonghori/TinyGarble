@@ -13,6 +13,9 @@
 
 #define BASE 8
 
+int client_close(int sock);
+int server_close(int sock);
+
 int server_init(int );
 int client_init(char*, int);
 void send_block(int , block );

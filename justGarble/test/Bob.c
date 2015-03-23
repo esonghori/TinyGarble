@@ -158,7 +158,9 @@ int main(int argc, char* argv[])
 	block DKCkey;
 	recv_block(sockfd, &DKCkey); //receive key
 
-	evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputs, DKCkey, sockfd);
+	evaluateHG(&garbledCircuit, inputLabels, initialDFFLable, outputs, DKCkey, sockfd);
+
+	client_close(sockfd);
 
 	return 0;
 }

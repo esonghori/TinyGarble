@@ -68,10 +68,47 @@ block randomBlock()
 
 }
 
+unsigned short type2V(int gateType)
+{
+	if (gateType == ANDGATE)
+	{
+		return 0b000;
+	}
+	else if (gateType == ANDNGATE)
+	{
+		return 0b100;
+	}
+	else if (gateType == NANDGATE)
+	{
+		return 0b001;
+	}
+	else if (gateType == NANDNGATE)
+	{
+		return 0b101;
+	}
+	else if (gateType == ORGATE)
+	{
+		return 0b111;
+	}
+	else if (gateType == ORNGATE)
+	{
+		return 0b011;
+	}
+	else if (gateType == NORGATE)
+	{
+		return 0b110;
+	}
+	else if (gateType == NORNGATE)
+	{
+		return 0b010;
+	}
+	return 0;
+}
+
 void print__m128i(__m128i var)
 {
     uint32_t *val = (uint32_t*) &var;
-    printf("%08x \t%08x \t%08x \t%08x \n", val[0], val[1], val[2], val[3]);
+    printf("%08x \t%08x \t%08x \t%08x \n", val[3], val[2], val[1], val[0]);
 }
 
 #ifdef __cplusplus
