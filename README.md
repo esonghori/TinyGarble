@@ -8,7 +8,7 @@ Caution: Under Construction!
 
 1. Compile library [Already done, please skip.]
 
-Go to `netlists/lib/dff_full` and run:
+Go to `genNetlist/lib/dff_full` and run:
 
 	$ ./compile
 
@@ -26,7 +26,7 @@ _Advanced detailed_: Let's suppose that our_lib.lib is located in /path/to/our_l
 
 2. Compile a benchmark:
 
-Go inside `/netlist/benchmark`, where benchmark is the name of the function. and run:  
+Go inside `genNetlist/benchmark`, where benchmark is the name of the function. and run:  
 
 	$ ./compile
 
@@ -51,9 +51,9 @@ It creates benchmark_syn.v in the current directory. [Note: commands starting wi
 
 3.Counting number of gates
 
-You can use `netlists/script/count.sh` to count the number of gates in a verilog file. For /path/to/benchmark/benchmark_syn.v, simply run:
+You can use `genNetlist/script/count.sh` to count the number of gates in a verilog file. For /path/to/benchmark/benchmark_syn.v, simply run:
 
-	$ netlists/script/count.sh /path/to/benchmark/benchmark_syn.v
+	$ genNetlist/script/count.sh /path/to/benchmark/benchmark_syn.v
 	
 ##Manual for Yosys
 
@@ -107,5 +107,4 @@ And test it:
 ##TODOs
 - Upgrade README.md.
 - Add synthesis library.
-- Add networking to JustGarble.
 - Add OT to JustGarble.
