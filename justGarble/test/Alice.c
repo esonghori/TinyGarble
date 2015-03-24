@@ -74,17 +74,18 @@ int main(int argc, char* argv[])
 	int *garbler_inputs = (int *)malloc(sizeof(int)*(g)*c);
 	block *inputLabels = (block *)malloc(sizeof(block)*2*n*c);
 	block *initialDFFLable = (block *)malloc(sizeof(block)*2*p);
-	block *outputs = (block *)malloc(sizeof(block)*2*m*c);
+	block *outputLabels = (block *)malloc(sizeof(block)*2*m*c);
 
-	int a = 11;
+	printf("\n\ninputs:\n");
 	for(cid=0;cid<c;cid++)
 	{
 		for (j = 0; j < g; j++)
 		{
-			garbler_inputs[cid*g + j] = a%2;//rand() % 2;
-			a = a >> 1;
+			garbler_inputs[cid*g + j] = rand() % 2;
+			printf("%d ", garbler_inputs[cid*g + j]);
 		}
 	}
+	printf("\n\n");
 
 #ifndef DEBUG
 	block R = randomBlock();
@@ -181,7 +182,19 @@ int main(int argc, char* argv[])
 	send_block(connfd, garbledCircuit.globalKey); // send DKC key
 
 
-	garble(&garbledCircuit, inputLabels, initialDFFLable, outputs, &R, connfd);
+	garble(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, &R, connfd);
+
+	for(cid=0;cid<c;cid++)
+	{
+		for(i=0;i<m;i++)
+		{
+			short outputType =  getLSB(outputLabels[2*(m*cid + i)+ 0]);
+			send_type(connfd, outputType);
+		}
+	}
+
+
+
 
 	server_close(connfd);
 	removeGarbledCircuit(&garbledCircuit);

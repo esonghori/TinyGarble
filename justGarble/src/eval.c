@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initialDFFLable, block *outputs, int sockfd)
+long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initialDFFLable, block *outputLabels, int sockfd)
 {
 	int n = garbledCircuit->n;
 	int m = garbledCircuit->m;
@@ -169,10 +169,10 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 
 		for (i = 0; i < garbledCircuit->m; i++)
 		{
-			outputs[cid*garbledCircuit->m + i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
+			outputLabels[cid*garbledCircuit->m + i] = garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
 
 			printf ("(%ld, %ld)", cid, i);
-			print__m128i(outputs[cid*garbledCircuit->m + i]);
+			print__m128i(outputLabels[cid*garbledCircuit->m + i]);
 		}
 	}
 	return (RDTSC - startTime);

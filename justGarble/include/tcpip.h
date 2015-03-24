@@ -11,14 +11,17 @@
 #include <netinet/tcp.h> 
 #include "../include/common.h"
 
-#define BASE 8
 
-int client_close(int sock);
+int server_init(int port);
 int server_close(int sock);
 
-int server_init(int );
-int client_init(char*, int);
-void send_block(int , block );
-void recv_block(int , block* );
+int client_init(char* ip, int port);
+int client_close(int sock);
+
+void send_block(int sock, block var);
+void recv_block(int sock, block* var);
+
+void send_type(int sock, short var);
+void recv_type(int sock, short* var);
 
 #endif
