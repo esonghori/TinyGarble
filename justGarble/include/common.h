@@ -34,7 +34,7 @@ extern "C" {
 
 
 typedef __m128i block;
-#define xorBlocks(x,y) _mm_xor_si128(x,y)
+#define xorBlocks(x,y) _mm_xor_si128((x),(y))
 #define zero_block() _mm_setzero_si128()
 
 #define getLSB(x) (*((unsigned short *)&x)&1)
@@ -136,6 +136,7 @@ static inline block RIGHTSHIFT(block bl) {
 
 block randomBlock();
 void srand_sse(unsigned int seed);
+unsigned short type2V(int gateType);
 void print__m128i(__m128i);
 
 #ifdef __cplusplus

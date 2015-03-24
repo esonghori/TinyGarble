@@ -36,8 +36,8 @@ int main(int argc, char* argv[])
 	srand( time(NULL));
 	srand_sse( time(NULL));
 #else
-	srand(0);
-	srand_sse(1000);
+	srand(5);
+	srand_sse(5555);
 #endif
 
 	GarbledCircuit garbledCircuit;
@@ -74,11 +74,14 @@ int main(int argc, char* argv[])
 	block *initialDFFLable = (block *)malloc(sizeof(block)*p);
 	block *outputs = (block *)malloc(sizeof(block)*m*c);
 	
+
+	int b = 5;
 	for(cid=0;cid<c;cid++)
 	{
 		for (j = 0; j < e; j++)
 		{
-			evalator_inputs[cid*e + j] = rand() % 2;
+			evalator_inputs[cid*e + j] = b%2;//rand() % 2;
+			b = b >> 1;
 		}
 	}
 
@@ -135,7 +138,7 @@ int main(int argc, char* argv[])
 
 	recv_block(sockfd, &(garbledCircuit.globalKey)); //receive key
 
-	evaluateHG(&garbledCircuit, inputLabels, initialDFFLable, outputs, sockfd);
+	evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputs, sockfd);
 
 	client_close(sockfd);
 	removeGarbledCircuit(&garbledCircuit);
