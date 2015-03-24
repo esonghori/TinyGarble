@@ -107,3 +107,16 @@ void recv_block(int sock, block* var)
 	uint8_t *val = (uint8_t*) var;
 	read(sock, val, 16);	
 }
+
+void send_type(int sock, short var)
+{
+	const void *val = (const void*) &var;
+	write(sock, val, sizeof(short));
+}
+
+void recv_type(int sock, short* var)
+{
+	void *val = (void*) var;
+	read(sock, val, sizeof(short));
+}
+
