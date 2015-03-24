@@ -11,7 +11,7 @@ DEBOBJDIR = $(DEBDIR)/$(OBJDIR)
 IDIR      = include
 
 CC=g++ 
-CFLAGS= -std=c++11 -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result -march=native -I$(IDIR) -I$(MSGPACK) -L$(MSGPACK)/..
+CFLAGS= -std=c++11 -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result -march=native -I$(IDIR) -I$(MSGPACK)/include -L$(MSGPACK)/src/.libs
 DBGCFLAGS = -g -O0 -DDEBUG
 RELCFLAGS = -O3 -DNDEBUG
 
