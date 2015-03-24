@@ -1,10 +1,13 @@
 Garbled
 =======
+**Caution: Under Construction!**
 
-Caution: Under Construction!
+TinyGarble consists of two main parts: netlist generation (/genNetlist) and two party secure function evalauation (SFE). Netlist generation is partially describe in TinyGarble paper in IEEE S&P'15. It is based on upon hardware synthesis and sequential circuits. The other part of TinyGarble, two party SFE, is implemented based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/) developed in UCSD. Beside Free-XOR, Row-reduction, and Fixed-key block cipher, TinyGarble SFE includes Half Gates which is the most recent optimization in garbled circuit (GC) protocol.
 
+## Netlist Generation 
+Netlist generation requires Synopsys Design Compiler or Yosys-ABC synthesis tools.
 
-##Manual for Synopsys Design Compiler
+###Manual for Synopsys Design Compiler
 
 1. Compile library [Already done, please skip.]
 
@@ -55,7 +58,7 @@ You can use `genNetlist/script/count.sh` to count the number of gates in a veril
 
 	$ genNetlist/script/count.sh /path/to/benchmark/benchmark_syn.v
 	
-##Manual for Yosys
+###Manual for Yosys
 
 Here is how to compile a verilog file named "benchmark.v" using the custom library "asic_cell.lib". We assume that the files are inside a folder named "Synthesis_yosys-abc" inside the "yosys" directory. The final output will be written in "benchmark_syn.v"
 
@@ -71,9 +74,9 @@ Here is how to compile a verilog file named "benchmark.v" using the custom libra
 	
 [Note: commands starting with "yosys>" should be called inside design_vision. Please ignore "yosys>" for them.]
 
-##Manual for JustGarbled
+##Two Party SFE
 
-For using JustGrable, the dependency should be installed and JustGarble need to be compiled.
+For using TinyGarble, the dependency should be installed and TinyGarble need to be compiled.
 
 - Dependencies
 Download msgpack-c from msgpack.org. Compile it using:
@@ -94,17 +97,19 @@ If you have a root access run `$ sudo make install`. Otherwise add the following
 
 [Note: Remember replace /path/to/msgpack-c with the actual msgpack path]. This way, it doesn't need "sudo make install".
 
-- Compile JustGarble
+- Compile TinyGarble
 
-Go to justGarble and make it:
+Go to the root directory of TinyGarble and make it:
 
 	$ make
 
 And test it:
 
-	$ bin/AESFullTest.out
+	$ debug/Alice.out readNetlist/netlists/test.scd 1515&
+	$ debug/Bob.out readNetlist/netlists/test.scd 127.0.0.1 1516
+
 
 ##TODOs
 - Upgrade README.md.
 - Add synthesis library.
-- Add OT to JustGarble.
+- Add OT.
