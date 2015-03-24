@@ -35,8 +35,8 @@ int main(int argc, char* argv[])
 	srand( time(NULL));
 	srand_sse( time(NULL));
 #else
-	srand(0);
-	srand_sse(1000);
+	srand(1);
+	srand_sse(1111);
 #endif
 
 
@@ -76,12 +76,13 @@ int main(int argc, char* argv[])
 	block *initialDFFLable = (block *)malloc(sizeof(block)*2*p);
 	block *outputs = (block *)malloc(sizeof(block)*2*m*c);
 
-	
+	int a = 11;
 	for(cid=0;cid<c;cid++)
 	{
 		for (j = 0; j < g; j++)
 		{
-			garbler_inputs[cid*g + j] = rand() % 2;
+			garbler_inputs[cid*g + j] = a%2;//rand() % 2;
+			a = a >> 1;
 		}
 	}
 
@@ -180,7 +181,7 @@ int main(int argc, char* argv[])
 	send_block(connfd, garbledCircuit.globalKey); // send DKC key
 
 
-	garbleHG(&garbledCircuit, inputLabels, initialDFFLable, outputs, &R, connfd);
+	garble(&garbledCircuit, inputLabels, initialDFFLable, outputs, &R, connfd);
 
 	server_close(connfd);
 	removeGarbledCircuit(&garbledCircuit);

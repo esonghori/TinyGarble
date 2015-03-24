@@ -57,6 +57,7 @@ typedef struct GarbledCircuit{
 	int *outputs;
 	int *D;
 	int *I;
+	block globalKey;
 } GarbledCircuit;
 
 
@@ -87,7 +88,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 		block* initialDFFLable, block* outputMap, block* R, int connfd);
 
 long garbleHG(GarbledCircuit *garbledCircuit, block* inputLabels,
-		block* initialDFFLable, block* outputMap, block R, block DKCkey, int connfd);
+		block* initialDFFLable, block* outputMap, block* R, int connfd);
 
 
 //Evaluate a garbled circuit, using n input labels in the Extracted Labels
@@ -99,7 +100,7 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
 		block* initialDFFLable, block *outputs, int sockfd);
 
 long evaluateHG(GarbledCircuit *garbledCircuit, block* inputLables,
-		block* initialDFFLable, block *outputs, block DKCkey, int sockfd);
+		block* initialDFFLable, block *outputs, int sockfd);
 
 int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
 
