@@ -36,8 +36,8 @@ int main(int argc, char* argv[])
 	srand( time(NULL));
 	srand_sse( time(NULL));
 #else
-	srand(5);
-	srand_sse(5555);
+	srand(7);
+	srand_sse(7777);
 #endif
 
 	GarbledCircuit garbledCircuit;
@@ -72,18 +72,19 @@ int main(int argc, char* argv[])
 	int *evalator_inputs = (int *)malloc(sizeof(int)*(e)*c);
 	block *inputLabels = (block *)malloc(sizeof(block)*n*c);
 	block *initialDFFLable = (block *)malloc(sizeof(block)*p);
-	block *outputs = (block *)malloc(sizeof(block)*m*c);
+	block *outputLabels = (block *)malloc(sizeof(block)*m*c);
 	
 
-	int b = 5;
+	printf("\n\ninputs:\n");
 	for(cid=0;cid<c;cid++)
 	{
 		for (j = 0; j < e; j++)
 		{
-			evalator_inputs[cid*e + j] = b%2;//rand() % 2;
-			b = b >> 1;
+			evalator_inputs[cid*e + j] = rand() % 2;
+			printf("%d ", evalator_inputs[cid*e + j]);
 		}
 	}
+	printf("\n\n");
 
 
 	for (cid = 0; cid < c; cid++)
@@ -138,7 +139,24 @@ int main(int argc, char* argv[])
 
 	recv_block(sockfd, &(garbledCircuit.globalKey)); //receive key
 
-	evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputs, sockfd);
+	evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, sockfd);
+
+
+	printf("\n\noutput:\n");
+	for(cid=0;cid<c;cid++)
+	{
+		for(i=0;i<m;i++)
+		{
+			short myOutputType =  getLSB(outputLabels[m*cid + i]);
+			short outputType;
+			recv_type(sockfd, &outputType);
+
+			printf("%d ", outputType^myOutputType);
+		}
+	}
+	printf("\n\n");
+
+
 
 	client_close(sockfd);
 	removeGarbledCircuit(&garbledCircuit);

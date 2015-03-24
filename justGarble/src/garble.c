@@ -29,8 +29,7 @@ extern "C" {
 #endif
 
 
-long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-		block* initialDFFLable, block* outputMap, block* R, int connfd)
+long garble(GarbledCircuit *garbledCircuit, block* inputLabels, block* initialDFFLable, block* outputLabels, block* R, int connfd)
 {
 	AES_KEY AES_Key;
 	long i, j, cid;
@@ -124,26 +123,26 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 			}
 
 			unsigned short v = type2V(garbledGate->type);
-			if(v&1 == 0)
-			{
-				A0 = (garbledCircuit->wires[input0].label0);
-				A1 = (garbledCircuit->wires[input0].label1);
-			}
-			else
+			if(v&1)
 			{
 				A1 = (garbledCircuit->wires[input0].label0);
 				A0 = (garbledCircuit->wires[input0].label1);
 			}
-
-			if(v&2 == 0)
-			{
-				B0 = (garbledCircuit->wires[input1].label0);
-				B1 = (garbledCircuit->wires[input1].label1);
-			}
 			else
+			{
+				A0 = (garbledCircuit->wires[input0].label0);
+				A1 = (garbledCircuit->wires[input0].label1);
+			}
+
+			if(v&2)
 			{
 				B1 = (garbledCircuit->wires[input1].label0);
 				B0 = (garbledCircuit->wires[input1].label1);
+			}
+			else
+			{
+				B0 = (garbledCircuit->wires[input1].label0);
+				B1 = (garbledCircuit->wires[input1].label1);
 			}
 
 			pa = getLSB(A0);
@@ -211,15 +210,15 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 			printf("E\t");
 			print__m128i(E);
 
-			if(v&4 == 0)
-			{
-				C0 = xorBlocks(G, E);
-				C1 = xorBlocks(*R, C0);
-			}
-			else
+			if(v&4)
 			{
 				C1 = xorBlocks(G, E);
 				C0 = xorBlocks(*R, C1);
+			}
+			else
+			{
+				C0 = xorBlocks(G, E);
+				C1 = xorBlocks(*R, C0);
 			}
 
 
@@ -246,12 +245,12 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 		{
 			block o0 = garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
 			block o1 = garbledCircuit->wires[garbledCircuit->outputs[i]].label1;
-			outputMap[cid*2*garbledCircuit->m + 2*i] = o0;
-			outputMap[cid*2*garbledCircuit->m + 2*i+1] = o1;
+			outputLabels[cid*2*garbledCircuit->m + 2*i] = o0;
+			outputLabels[cid*2*garbledCircuit->m + 2*i+1] = o1;
 
 			printf ("o(%ld,%ld)\n", cid, i);
-			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i]);
-			print__m128i(outputMap[cid*2*garbledCircuit->m + 2*i+1]);
+			print__m128i(outputLabels[cid*2*garbledCircuit->m + 2*i]);
+			print__m128i(outputLabels[cid*2*garbledCircuit->m + 2*i+1]);
 		}
 	}
 	return (RDTSC - startTime);
