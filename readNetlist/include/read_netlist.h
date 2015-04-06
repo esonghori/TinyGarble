@@ -31,7 +31,6 @@
 #include <ctime>
 #include <unistd.h>
 #include <assert.h>
-#include <msgpack.h>
 #include <sys/time.h>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>

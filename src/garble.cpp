@@ -39,13 +39,7 @@
 #include "../include/aes.h"
 
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-long garble(GarbledCircuit *garbledCircuit, block* inputLabels, block* initialDFFLable, block* outputLabels, block* R, int connfd)
+long garble(GarbledCircuit *garbledCircuit, block* inputLabels, block* initialDFFLabels, block* outputLabels, block* R, int connfd)
 {
 	AES_KEY AES_Key;
 	long i, j, cid;
@@ -67,8 +61,8 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels, block* initialDF
 		{
 			for(i=0;i<garbledCircuit->p;i++)
 			{
-				garbledCircuit->wires[garbledCircuit->n + i].label0 = initialDFFLable[2*i];
-				garbledCircuit->wires[garbledCircuit->n + i].label1 = initialDFFLable[2*i+1];
+				garbledCircuit->wires[garbledCircuit->n + i].label0 = initialDFFLabels[2*i];
+				garbledCircuit->wires[garbledCircuit->n + i].label1 = initialDFFLabels[2*i+1];
 			}
 
 		}
@@ -85,14 +79,6 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels, block* initialDF
 		for(i=0; i< garbledCircuit->q;i++) //for each gates
 		{
 			int input0, input1, output;
-			block A0, A1, B0, B1, C0, C1;
-			block tweak0, tweak1;
-			unsigned short pa,pb;
-			block keys[4];
-			block mask[4];
-			block table[2];
-			block G, E;
-
 			GarbledGate *garbledGate = &(garbledCircuit->garbledGates[i]);
 
 			input0 = garbledGate->input0;
@@ -137,6 +123,17 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels, block* initialDF
 
 				continue;
 			}
+
+
+			block A0, A1, B0, B1, C0, C1;
+			block tweak0, tweak1;
+			unsigned short pa,pb;
+			block keys[4];
+			block mask[4];
+			block table[2];
+			block G, E;
+
+
 
 			unsigned short v = type2V(garbledGate->type);
 			if(v&1)
@@ -273,7 +270,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels, block* initialDF
 }
 
 
-int createInputLabels(block* inputLabels, block R, int n)
+void createInputLabels(block* inputLabels, block R, int n)
 {
 	int i;
 
@@ -282,8 +279,6 @@ int createInputLabels(block* inputLabels, block R, int n)
 		inputLabels[i] = randomBlock();
 		inputLabels[i + 1] = xorBlocks(R, inputLabels[i]);
 	}
-	return 0;
-
 }
 
 
@@ -296,6 +291,3 @@ void removeGarbledCircuit(GarbledCircuit *garbledCircuit)
 	free(garbledCircuit->D);
 }
 
-#ifdef __cplusplus
-}
-#endif

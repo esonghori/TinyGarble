@@ -5,69 +5,57 @@
 #                    JustGarble
 # ***********************************************
 
-SRCDIR   = src
-OBJDIR   = obj
-RELDIR   = bin
-DEBDIR = debug
-RELOBJDIR = $(RELDIR)/$(OBJDIR)
-DEBOBJDIR = $(DEBDIR)/$(OBJDIR)
-TESTDIR   = test
-IDIR =include
 
 CC=g++
-CFLAGS=  -std=c++11 -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result -march=native -I$(IDIR) -I$(MSGPACK)/include -L$(MSGPACK)/src/.libs
+CFLAGS=  -std=c++11 -lm -lrt -lpthread -maes -msse4 -Wno-unused-result -march=native -I$(IDIR)
 DBGCFLAGS = -g -O0 -DDEBUG
 RELCFLAGS = -O3 -DNDEBUG
 
-SOURCES  := $(wildcard $(SRCDIR)/*.c) 
-RELOBJECT := $(SOURCES:$(SRCDIR)/%.c=$(RELOBJDIR)/%.o)
-DEBOBJECT := $(SOURCES:$(SRCDIR)/%.c=$(DEBOBJDIR)/%.o)
+SRCDIR   	= src
+OBJDIR   	= obj
+RELDIR   	= bin
+DEBDIR 		= debug
+RELOBJDIR 	= $(RELDIR)/$(OBJDIR)
+DEBOBJDIR 	= $(DEBDIR)/$(OBJDIR)
+EXEDIR   	= exe
+IDIR 		= include
+SRC   		:= $(wildcard $(SRCDIR)/*.cpp) 
+RELOBJECT 	:= $(SRC:$(SRCDIR)/%.cpp=$(RELOBJDIR)/%.o)
+DEBOBJECT 	:= $(SRC:$(SRCDIR)/%.cpp=$(DEBOBJDIR)/%.o)
 
 ALICE = Alice
 BOB = Bob
+
 rm = rm --f
 
-.PHONY: all release debug readnetlist check_msgpack prep clean
+.PHONY: all prep release debug clean
 
 all: release debug 
 
-release: check_msgpack prep $(RELDIR)/$(ALICE).out $(RELDIR)/$(BOB).out readnetlistrel
-debug:   check_msgpack prep $(DEBDIR)/$(ALICE).out $(DEBDIR)/$(BOB).out readnetlistdeb
+release: prep $(RELDIR)/$(ALICE).out $(RELDIR)/$(BOB).out 
+debug:   prep $(DEBDIR)/$(ALICE).out $(DEBDIR)/$(BOB).out
 
-
-#check MSGPACK library
-check_msgpack:
-ifeq ($(MSGPACK),)
-	$(error MSGPACK is not set.)
-endif
 
 ##release
-$(RELDIR)/$(ALICE).out: $(RELOBJECT) $(TESTDIR)/$(ALICE).c
-	$(CC) $(RELOBJECT) $(TESTDIR)/$(ALICE).c -o $(RELDIR)/$(ALICE).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
+$(RELDIR)/$(ALICE).out: $(RELOBJECT) $(EXEDIR)/$(ALICE).cpp
+	$(CC) $(RELOBJECT) $(EXEDIR)/$(ALICE).cpp -o $(RELDIR)/$(ALICE).out $(CFLAGS) $(RELCFLAGS)
 
-$(RELDIR)/$(BOB).out: $(RELOBJECT) $(TESTDIR)/$(BOB).c
-	$(CC) $(RELOBJECT) $(TESTDIR)/$(BOB).c -o $(RELDIR)/$(BOB).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
+$(RELDIR)/$(BOB).out: $(RELOBJECT) $(EXEDIR)/$(BOB).cpp
+	$(CC) $(RELOBJECT) $(EXEDIR)/$(BOB).cpp -o $(RELDIR)/$(BOB).out  $(CFLAGS) $(RELCFLAGS)
 
-
-$(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.c
+$(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.cpp
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
 
 ##debug
-$(DEBDIR)/$(ALICE).out: $(DEBOBJECT)  $(TESTDIR)/$(ALICE).c
-	$(CC) $(DEBOBJECT) $(TESTDIR)/$(ALICE).c -o $(DEBDIR)/$(ALICE).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+$(DEBDIR)/$(ALICE).out: $(DEBOBJECT)  $(EXEDIR)/$(ALICE).cpp
+	$(CC) $(DEBOBJECT) $(EXEDIR)/$(ALICE).cpp -o $(DEBDIR)/$(ALICE).out $(CFLAGS) $(DBGCFLAGS)
 
-$(DEBDIR)/$(BOB).out: $(DEBOBJECT)  $(TESTDIR)/$(BOB).c
-	$(CC) $(DEBOBJECT) $(TESTDIR)/$(BOB).c -o $(DEBDIR)/$(BOB).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+$(DEBDIR)/$(BOB).out: $(DEBOBJECT)  $(EXEDIR)/$(BOB).cpp
+	$(CC) $(DEBOBJECT) $(EXEDIR)/$(BOB).cpp -o $(DEBDIR)/$(BOB).out $(CFLAGS) $(DBGCFLAGS)
 
-
-$(DEBOBJECT): $(DEBOBJDIR)/%.o : $(SRCDIR)/%.c
+$(DEBOBJECT): $(DEBOBJDIR)/%.o : $(SRCDIR)/%.cpp
 	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)
 
-readnetlistrel:
-	cd readNetlist && $(MAKE) release
-
-readnetlistdeb:
-	cd readNetlist && $(MAKE) debug	
 
 prep:
 	@mkdir -p $(RELDIR) 
@@ -82,4 +70,3 @@ clean:
 	@$(rm) $(DEBOBJECT)
 	@$(rm) $(DEBDIR)/$(ALICE).out
 	@$(rm) $(DEBDIR)/$(BOB).out
-	cd readNetlist && $(MAKE) clean

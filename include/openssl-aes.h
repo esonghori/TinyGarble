@@ -67,9 +67,6 @@
 #define AES_MAXNR 14
 #define AES_BLOCK_SIZE 16
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
 
 /* This should be a hidden type, but EVP requires that the size be known */
 struct aes_key_st {
@@ -150,9 +147,5 @@ void aesni_ecb_encrypt(const unsigned char *in, unsigned char *out,
 void aesni_cbc_encrypt(const unsigned char *in, unsigned char *out,
 		size_t length, const AES_KEY *key, unsigned char *ivec, int enc);
 
-
-#ifdef  __cplusplus
-}
-#endif
 
 #endif /* !HEADER_AES_H */
