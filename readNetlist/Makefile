@@ -14,7 +14,7 @@ DEBOBJDIR = $(DEBDIR)/$(OBJDIR)
 IDIR      = include
 
 CC=g++ 
-CFLAGS= -std=c++11 -lm -lrt -lpthread -maes -msse4 -lmsgpack -Wno-unused-result -march=native -I$(IDIR) -I$(MSGPACK)/include -L$(MSGPACK)/src/.libs
+CFLAGS= -std=c++11 -lm -lrt -lpthread -maes -msse4 -Wno-unused-result -march=native -I$(IDIR)
 DBGCFLAGS = -g -O0 -DDEBUG
 RELCFLAGS = -O3 -DNDEBUG
 
@@ -30,14 +30,8 @@ rm = rm --f
 
 all: release debug
 
-release: check_msgpack prep  $(RELDIR)/$(READNETLIST).out 
-debug:   check_msgpack prep $(DEBDIR)/$(READNETLIST).out 
-
-#check MSGPACK library
-check_msgpack:
-ifeq ($(MSGPACK),)
-	$(error MSGPACK is not set.)
-endif
+release: prep  $(RELDIR)/$(READNETLIST).out 
+debug:   prep $(DEBDIR)/$(READNETLIST).out 
 
 ##release
 $(RELDIR)/$(READNETLIST).out: $(RELOBJECT)

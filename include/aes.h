@@ -56,9 +56,6 @@
 #include <emmintrin.h>              /* SSE2 instructions               */
 #include <wmmintrin.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef __m128i block;
 
@@ -259,8 +256,5 @@ inline void AES_ecb_decrypt_blks(block *blks, unsigned nblks, AES_KEY *key)
 		blks[i] = _mm_aesdeclast_si128(blks[i], sched[j]);
 }
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif
