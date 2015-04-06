@@ -42,10 +42,6 @@
 #include <malloc.h>
 #include <wmmintrin.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initialDFFLable, block *outputLabels, int sockfd)
 {
 	int n = garbledCircuit->n;
@@ -195,7 +191,3 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables, block* initial
 	}
 	return (RDTSC - startTime);
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -44,10 +44,6 @@
 #include <emmintrin.h>
 #include <smmintrin.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 typedef __m128i block;
 #define xorBlocks(x,y) _mm_xor_si128((x),(y))
@@ -154,9 +150,5 @@ block randomBlock();
 void srand_sse(unsigned int seed);
 unsigned short type2V(int gateType);
 void print__m128i(__m128i);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

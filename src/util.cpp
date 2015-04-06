@@ -42,10 +42,6 @@
 #include <ctype.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static __m128i cur_seed;
 
 void srand_sse(unsigned int seed)
@@ -86,7 +82,17 @@ block randomBlock()
 	return cur_seed;
 
 }
-
+/**
+ * \brief constant v value based on gate Type
+ *
+ * Two Halves Make a Whole Reducing Data Transfer in Garbled Circuits using Half Gates
+ *
+ *
+ *  a op b = ((a ^ v0) & (b ^v1)) ^ v2
+ *  v1v2v0
+ *  000b -> AND
+ *  111b -> OR
+ */
 unsigned short type2V(int gateType)
 {
 	if (gateType == ANDGATE)
@@ -129,7 +135,3 @@ void print__m128i(__m128i var)
     uint32_t *val = (uint32_t*) &var;
     printf("%08x \t%08x \t%08x \t%08x \n", val[3], val[2], val[1], val[0]);
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -79,23 +79,6 @@ Here is how to compile a verilog file named "benchmark.v" using the custom libra
 For using TinyGarble, the dependency should be installed and TinyGarble need to be compiled.
 
 - Dependencies
-Download msgpack-c from msgpack.org. Compile it using:
-
-	$ ./bootstrap
-	$ ./configure
-	$ make 
-
-If you have a root access run `$ sudo make install`. Otherwise add the following scripts to ~/.profile: 
-
-	if [ -n "$LD_LIBRARY_PATH"]; 
-	then
-		export LD_LIBRARY_PATH=/path/to/msgpack-c/src/.libs
-	else
-		export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/path/to/msgpack-c/src/.libs
-	fi
-	export MSGPACK=path/to/msgpack-c/src
-
-[Note: Remember replace /path/to/msgpack-c with the actual msgpack path]. This way, it doesn't need "sudo make install".
 
 - Compile TinyGarble
 
