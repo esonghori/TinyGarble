@@ -1,37 +1,37 @@
 /*
-	This file is part of JustGarble.
+ This file is part of JustGarble.
 
-	JustGarble is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+ JustGarble is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-	JustGarble is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ JustGarble is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with JustGarble.  If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU General Public License
+ along with JustGarble.  If not, see <http://www.gnu.org/licenses/>.
 
-*/
+ */
 /*
-	This file is part of TinyGarble. It is modified version of JustGarble
-	under GNU license.
+ This file is part of TinyGarble. It is modified version of JustGarble
+ under GNU license.
 
-	TinyGarble is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+ TinyGarble is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-	TinyGarble is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ TinyGarble is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /**
  * @file justGarble.h
@@ -41,10 +41,8 @@
  *
  */
 
-
 #ifndef JUSTGARBLE_H_
 #define JUSTGARBLE_H_
-
 
 #include "common.h"
 
@@ -54,20 +52,20 @@
  * In garbling, both labels are used, while in evaluation,
  * only one label is required which is label0.
  */
-typedef struct Wire{
-	block label0; /**< label for 0, and unknown. */
-	block label1; /**< label for 1. */
+typedef struct Wire {
+  block label0; /**< label for 0, and unknown. */
+  block label1; /**< label for 1. */
 } Wire;
 
 /**
  * @brief Used to store inputs, output, and type of gate in the circuit.
  *
  */
-typedef struct GarbledGate{
-	long input0; /**< wire index for 1st input. */
-	long input1; /**< wire index for 2st input. */
-	long output; /**< wire index for output. */
-	int type;    /**< wire Type, defined in common.h */
+typedef struct GarbledGate {
+  long input0; /**< wire index for 1st input. */
+  long input1; /**< wire index for 2st input. */
+  long output; /**< wire index for output. */
+  int type; /**< wire Type, defined in common.h */
 } GarbledGate;
 
 /**
@@ -76,25 +74,22 @@ typedef struct GarbledGate{
  * GarbledCircuit structure stores all the information required
  * for both garbling and evaluation. It is created based on SCD file.
  */
-typedef struct GarbledCircuit{
-	int n; /*!< # of inputs */
-	int g; /*!< # of g inputs */
-	int p; /*!< # of DFF */
-	int m; /*!< # of outputs */
-	int q; /*!< # of gates */
-	int c; /*!< # of sequential cycle */
-	int r; /*!< # of wires = n+p+q */
+typedef struct GarbledCircuit {
+  int n; /*!< # of inputs */
+  int g; /*!< # of g inputs */
+  int p; /*!< # of DFF */
+  int m; /*!< # of outputs */
+  int q; /*!< # of gates */
+  int c; /*!< # of sequential cycle */
+  int r; /*!< # of wires = n+p+q */
 
-	GarbledGate* garbledGates; /*!< topologically sorted gates */
-	Wire* wires; /*!< wire labels */
-	int *outputs; /*!< index of output wires */
-	int *D; /*!< p-length array of wire index corresponding to D signal (Data) of DFF. */
-	int *I; /*!< p-length array of wire index corresponding to I signal (Initial) of DFF. */
-	block globalKey; /*!< global key c for AES_c(.) in DKC scheme */
+  GarbledGate* garbledGates; /*!< topologically sorted gates */
+  Wire* wires; /*!< wire labels */
+  int *outputs; /*!< index of output wires */
+  int *D; /*!< p-length array of wire index corresponding to D signal (Data) of DFF. */
+  int *I; /*!< p-length array of wire index corresponding to I signal (Initial) of DFF. */
+  block globalKey; /*!< global key c for AES_c(.) in DKC scheme */
 } GarbledCircuit;
-
-
-
 
 /**
  * @brief Create 2*n input labels and initial DFF labels.
@@ -112,8 +107,6 @@ typedef struct GarbledCircuit{
  *
  */
 void createInputLabels(block* inputLabels, block R, int n);
-
-
 
 /**
  * @brief Garble the circuit described in garbledCircuit.
@@ -145,7 +138,7 @@ void createInputLabels(block* inputLabels, block R, int n);
  * @see Half-Gate paper.
  */
 long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-		block* initialDFFLabels, block* outputLabels, block* R, int connfd);
+            block* initialDFFLabels, block* outputLabels, block* R, int connfd);
 
 /**
  * @brief Evaluate a garbled circuit
@@ -171,7 +164,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
  */
 
 long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
-		block* initialDFFLabels, block *outputs, int sockfd);
+              block* initialDFFLabels, block *outputs, int sockfd);
 
 /**
  * @brief Read SCD file and initialize garbledCircuit
@@ -193,7 +186,5 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
  * @param param1 pointer to garbledCircuit. The garbledCircuit will be deallocated.
  */
 void removeGarbledCircuit(GarbledCircuit *garbledCircuit);
-
-
 
 #endif
