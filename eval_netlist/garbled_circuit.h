@@ -32,7 +32,6 @@
  You should have received a copy of the GNU General Public License
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
  * @file justGarble.h
  * @author JustGarble & Ebi
@@ -41,10 +40,10 @@
  *
  */
 
-#ifndef JUSTGARBLE_H_
-#define JUSTGARBLE_H_
+#ifndef EVAL_NETLIST_GARBLED_CIRCUIT_H_
+#define EVAL_NETLIST_GARBLED_CIRCUIT_H_
 
-#include "common.h"
+#include "block.h"
 
 /**
  * @brief Used to store two tokens (or labels).
@@ -86,8 +85,10 @@ typedef struct GarbledCircuit {
   GarbledGate* garbledGates; /*!< topologically sorted gates */
   Wire* wires; /*!< wire labels */
   int *outputs; /*!< index of output wires */
-  int *D; /*!< p-length array of wire index corresponding to D signal (Data) of DFF. */
-  int *I; /*!< p-length array of wire index corresponding to I signal (Initial) of DFF. */
+  int *D; /*!< p-length array of wire index corresponding
+   to D signal (Data) of DFF. */
+  int *I; /*!< p-length array of wire index corresponding
+   to I signal (Initial) of DFF. */
   block globalKey; /*!< global key c for AES_c(.) in DKC scheme */
 } GarbledCircuit;
 
@@ -164,20 +165,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
  */
 
 long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
-              block* initialDFFLabels, block *outputs, int sockfd);
-
-/**
- * @brief Read SCD file and initialize garbledCircuit
- *
- *
- * @param param1 pointer to garbledCircuit. The garbledCircuit will be filled
- * @param param2 SCD file name.
- * @return 0 in success and -1 in failure.
- *
- * @see JustGarble paper.
- * @see TinyGarble paper.
- */
-int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
+              block* initialDFFLabels, block *outputs, int connfd);
 
 /**
  * @brief Deallocates garbledCircuit
@@ -187,4 +175,4 @@ int readCircuitFromFile(GarbledCircuit *garbledCircuit, const char *fileName);
  */
 void removeGarbledCircuit(GarbledCircuit *garbledCircuit);
 
-#endif
+#endif /* EVAL_NETLIST_GARBLED_CIRCUIT_H_ */
