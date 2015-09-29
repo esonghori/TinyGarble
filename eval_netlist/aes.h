@@ -1,4 +1,3 @@
-/* crypto/aes/aes.h -*- mode:C; c-file-style: "eay" -*- */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -48,15 +47,30 @@
  * ====================================================================
  *
  */
+/*
+ This file is part of TinyGarble. It is modified version of JustGarble
+ under GNU license.
 
-#ifndef _AES_H_
-#define _AES_H_
+ TinyGarble is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ TinyGarble is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef EVAL_NETLIST_AES_H_
+#define EVAL_NETLIST_AES_H_
 
 #include <xmmintrin.h>              /* SSE instructions and _mm_malloc */
 #include <emmintrin.h>              /* SSE2 instructions               */
 #include <wmmintrin.h>
-
-typedef __m128i block;
 
 #define DOUBLE(B) _mm_slli_epi64(B,1)
 
@@ -220,7 +234,7 @@ inline void AES_decrypt(const unsigned char *in, unsigned char *out,
   _mm_store_si128((__m128i *) out, tmp);
 }
 
-inline void AES_ecb_encrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
+inline void AES_ecb_encrypt_blks(__m128i *blks, unsigned nblks, AES_KEY *key) {
   unsigned i, j, rnds = ROUNDS(key);
   const __m128i *sched = ((__m128i *) (key->rd_key));
   for (i = 0; i < nblks; ++i)
@@ -232,7 +246,7 @@ inline void AES_ecb_encrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
     blks[i] = _mm_aesenclast_si128(blks[i], sched[j]);
 }
 
-inline void AES_ecb_decrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
+inline void AES_ecb_decrypt_blks(__m128i *blks, unsigned nblks, AES_KEY *key) {
   unsigned i, j, rnds = ROUNDS(key);
   const __m128i *sched = ((__m128i *) (key->rd_key));
   for (i = 0; i < nblks; ++i)
@@ -244,4 +258,4 @@ inline void AES_ecb_decrypt_blks(block *blks, unsigned nblks, AES_KEY *key) {
     blks[i] = _mm_aesdeclast_si128(blks[i], sched[j]);
 }
 
-#endif
+#endif /* EVAL_NETLIST_AES_H_ */

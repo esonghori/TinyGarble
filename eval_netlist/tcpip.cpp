@@ -15,18 +15,22 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include<string.h>
-#include <errno.h>
-#include "../include/tcpip.h"
+#include "tcpip.h"
+
+#include <arpa/inet.h>
+#include <cstdio>
+#include <cstring>
+#include <cerrno>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <netinet/tcp.h>
+
+#include "common.h"
 
 int listenfd = 0;
-
-int server_close(int sock) {
-  close(sock);
-  close(listenfd);
-  return 0;
-}
 
 int server_init(int port) {
   int connfd;
@@ -35,8 +39,8 @@ int server_init(int port) {
   int n;
   listenfd = socket(AF_INET, SOCK_STREAM, 0);
   if (listenfd < 0) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
   bzero((char *) &serv_addr, sizeof(serv_addr));
 
@@ -44,16 +48,16 @@ int server_init(int port) {
   serv_addr.sin_addr.s_addr = INADDR_ANY;
   serv_addr.sin_port = htons(port);
   if (bind(listenfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
   listen(listenfd, 5);
   clilen = sizeof(cli_addr);
   printf("Wait for client\n");
   connfd = accept(listenfd, (struct sockaddr *) &cli_addr, &clilen);
   if (connfd < 0) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
 
   printf("Connected\n");
@@ -61,30 +65,31 @@ int server_init(int port) {
   int result = setsockopt(connfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag,
                           sizeof(int));
   if (result < 0) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
   return connfd;
 }
 
-int client_close(int sock) {
+int server_close(int sock) {
   close(sock);
-  return 0;
+  close(listenfd);
+  return SUCCESS;
 }
 
-int client_init(char* ip, int port) {
+int client_init(const char* ip, int port) {
   int sockfd;
   struct hostent *server;
   struct sockaddr_in serv_addr;
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd < 0) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
   server = gethostbyname(ip);
   if (server == NULL) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
   bzero((char *) &serv_addr, sizeof(serv_addr));
   serv_addr.sin_family = AF_INET;
@@ -92,18 +97,23 @@ int client_init(char* ip, int port) {
         server->h_length);
   serv_addr.sin_port = htons(port);
   if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
-  printf("Connected\n");
+
   int flag = 1;
   int result = setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag,
                           sizeof(int));
   if (result < 0) {
-    printf("%s \n", strerror(errno));
-    return -1;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
   }
   return sockfd;
+}
+
+int client_close(int sock) {
+  close(sock);
+  return SUCCESS;
 }
 
 void send_block(int sock, block var) {
@@ -118,6 +128,7 @@ void recv_block(int sock, block* var) {
 
 void send_type(int sock, short var) {
   const void *val = (const void*) &var;
+  // TODO(ebi): check if all the data is written.
   write(sock, val, sizeof(short));
 }
 

@@ -15,23 +15,15 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TCPIP_H
-#define _TCPIP_H
+#ifndef EVAL_NETLIST_TCPIP_H_
+#define EVAL_NETLIST_TCPIP_H_
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <errno.h>
-#include <arpa/inet.h> 
-#include <netinet/tcp.h> 
-#include "../include/common.h"
+#include "block.h"
 
 int server_init(int port);
 int server_close(int sock);
 
-int client_init(char* ip, int port);
+int client_init(const char* ip, int port);
 int client_close(int sock);
 
 void send_block(int sock, block var);
@@ -40,4 +32,4 @@ void recv_block(int sock, block* var);
 void send_type(int sock, short var);
 void recv_type(int sock, short* var);
 
-#endif //_TCPIP_H
+#endif /* EVAL_NETLIST_TCPIP_H_ */

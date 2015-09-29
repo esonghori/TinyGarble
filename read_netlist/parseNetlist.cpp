@@ -15,7 +15,7 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/read_netlist.h"
+#include "../read_netlist/include/read_netlist.h"
 
 const string typetoStrGate(short itype) {
   string type;
