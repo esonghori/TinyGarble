@@ -1,3 +1,27 @@
+/*------------------------------------------------------------------------
+ / OCB Version 3 Reference Code (Optimized C)     Last modified 08-SEP-2012
+ /-------------------------------------------------------------------------
+ / Copyright (c) 2012 Ted Krovetz.
+ /
+ / Permission to use, copy, modify, and/or distribute this software for any
+ / purpose with or without fee is hereby granted, provided that the above
+ / copyright notice and this permission notice appear in all copies.
+ /
+ / THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ / WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ / MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ / ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ / WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ / ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ / OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ /
+ / Phillip Rogaway holds patents relevant to OCB. See the following for
+ / his patent grant: http://www.cs.ucdavis.edu/~rogaway/ocb/grant.htm
+ /
+ / Special thanks to Keegan McAllister for suggesting several good improvements
+ /
+ / Comments are welcome: Ted Krovetz <ted@krovetz.net> - Dedicated to Laurel K
+ /------------------------------------------------------------------------- */
 /*
  This file is part of JustGarble.
 
@@ -33,12 +57,9 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COMMON_H_
-#define COMMON_H_
+#ifndef EVAL_NETLIST_BLOCK_H_
+#define EVAL_NETLIST_BLOCK_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <smmintrin.h>
@@ -50,30 +71,6 @@ typedef __m128i block;
 #define getLSB(x) (*((unsigned short *)&x)&1)
 #define makeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
 
-/*------------------------------------------------------------------------
- / OCB Version 3 Reference Code (Optimized C)     Last modified 08-SEP-2012
- /-------------------------------------------------------------------------
- / Copyright (c) 2012 Ted Krovetz.
- /
- / Permission to use, copy, modify, and/or distribute this software for any
- / purpose with or without fee is hereby granted, provided that the above
- / copyright notice and this permission notice appear in all copies.
- /
- / THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- / WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- / MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- / ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- / WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- / ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- / OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- /
- / Phillip Rogaway holds patents relevant to OCB. See the following for
- / his patent grant: http://www.cs.ucdavis.edu/~rogaway/ocb/grant.htm
- /
- / Special thanks to Keegan McAllister for suggesting several good improvements
- /
- / Comments are welcome: Ted Krovetz <ted@krovetz.net> - Dedicated to Laurel K
- /------------------------------------------------------------------------- */
 static inline block double_block(block bl) {
   const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
   __m128i tmp = _mm_srai_epi32(bl, 31);
@@ -113,35 +110,4 @@ static inline block RIGHTSHIFT(block bl) {
                          "emr" (in2.lo64), "emr"(in2.hi64),     \
                          "0" (in1.lo64), "1" (in1.hi64));
 
-#define SUCCESS 0
-#define FAILURE -1
-
-#define ROW_REDUCTION
-#define FREE_XOR
-#define DKC2
-
-#define CONST_ZERO -2
-#define CONST_ONE  -3
-
-#define ANDGATE 8
-#define ANDNGATE 4
-#define NANDGATE 7
-#define NANDNGATE 11
-#define ORGATE 14
-#define ORNGATE 13
-#define NORGATE 1
-#define NORNGATE 2
-#define XORGATE 6
-#define XNORGATE 9
-#define NOTGATE 12
-#define DFFGATE -1
-
-#define RDTSC ({unsigned long long res;  unsigned hi, lo;   __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi)); res =  ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );res;})
-#define fbits( v, p) ((v & (1 << p))>>p)
-
-block randomBlock();
-void srand_sse(unsigned int seed);
-unsigned short type2V(int gateType);
-void print__m128i(__m128i);
-
-#endif
+#endif /* EVAL_NETLIST_BLOCK_H_ */

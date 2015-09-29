@@ -33,15 +33,17 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../include/common.h"
-#include "../include/justGarble.h"
-#include "../include/aes.h"
+#include "aes.h"
+#include "common.h"
+#include "garbled_circuit.h"
 
 #include <stdio.h>
 #include <ctype.h>
 #include <stdint.h>
 
-static __m128i cur_seed;
+#include "util.h"
+
+static block cur_seed;
 
 void srand_sse(unsigned int seed) {
   cur_seed = _mm_set_epi32(seed, seed + 1, seed, seed + 1);
@@ -111,7 +113,7 @@ unsigned short type2V(int gateType) {
   return 0;
 }
 
-void print__m128i(__m128i var) {
+void print__m128i(block var) {
   uint32_t *val = (uint32_t*) &var;
   printf("%08x \t%08x \t%08x \t%08x \n", val[3], val[2], val[1], val[0]);
 }
