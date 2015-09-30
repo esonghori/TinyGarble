@@ -15,9 +15,10 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../read_netlist/include/read_netlist.h"
+#include "read_netlist.h"
+#include <cstring>
 
-void top_sort(const vector<ReadGate>& G, int no_task, int *index) {
+int top_sort(const vector<ReadGate>& G, int no_task, int *index) {
   int i, j, k, max;
   int *sl;
 
@@ -43,9 +44,11 @@ void top_sort(const vector<ReadGate>& G, int no_task, int *index) {
   quickSort(sl, index, 0, no_task - 1);  // sort in descending order of static b-level
 
   delete[] sl;
+
+  return 0;
 }
 
-void schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
+int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
 
   int i, j, max;
 
@@ -98,6 +101,8 @@ void schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
   }
 
   delete[] index, p0, p1, core_index, core_busy;
+
+  return 0;
 }
 
 void quickSort(int *arr, int *index, int left, int right) {
