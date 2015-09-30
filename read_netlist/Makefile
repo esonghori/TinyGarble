@@ -5,55 +5,39 @@
 #                    JustGarble
 # ***********************************************
 
-OBJDIR   = obj
-RELDIR   = bin
-DEBDIR   = debug
-RELOBJDIR = $(RELDIR)/$(OBJDIR)
-DEBOBJDIR = $(DEBDIR)/$(OBJDIR)
 
-IDIR      = include
+CC = g++
+CFLAGS = -std=c++11 -maes -msse4 -Wno-unused-result -march=native $(USER_FLAGS)
+LIBS = -lm -lrt -lpthread -lboost_program_options
 
-CC=g++ 
-CFLAGS= -std=c++11 -lm -lrt -lpthread -maes -msse4 -Wno-unused-result -march=native -I$(IDIR)
-DBGCFLAGS = -g -O0 -DDEBUG
-RELCFLAGS = -O3 -DNDEBUG
+ifeq ($(DEBUG),true)
+	CFLAGS += -g -O0 -DDEBUG
+else
+	CFLAGS += -O3 -DNDEBUG
+endif
 
-SOURCES := $(wildcard *.cpp)
-RELOBJECT := $(SOURCES:$/%.cpp=$(RELOBJDIR)/%.o)
-DEBOBJECT := $(SOURCES:$/%.cpp=$(DEBOBJDIR)/%.o) 
+SRCDIR   	= .
+BINDIR   	= bin
+OBJDIR 		= $(BINDIR)/obj
+READNETLIST	= $(BINDIR)/read_netlist.out
+SRC   		:= $(wildcard $(SRCDIR)/*.cpp) 
+OBJECT 		:= $(SRC:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
-
-READNETLIST = readNetlist
 rm = rm --f
 
-.PHONY: all release debug check_msgpack prep clean
+.PHONY: all prep clean
 
-all: release debug
+all: prep $(READNETLIST)
 
-release: prep  $(RELDIR)/$(READNETLIST).out 
-debug:   prep $(DEBDIR)/$(READNETLIST).out 
+$(READNETLIST): $(OBJECT) 
+	$(CC) $(OBJECT) -o $(READNETLIST) $(CFLAGS) $(LIBS)
 
-##release
-$(RELDIR)/$(READNETLIST).out: $(RELOBJECT)
-	$(CC) $(RELOBJECT) -o $(RELDIR)/$(READNETLIST).out $(LIBS) $(CFLAGS) $(RELCFLAGS)
-
-$(RELOBJECT): $(RELOBJDIR)/%.o : %.cpp
-	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
-
-##debug
-$(DEBDIR)/$(READNETLIST).out: $(DEBOBJECT)
-	$(CC) $(DEBOBJECT) -o $(DEBDIR)/$(READNETLIST).out $(LIBS) $(CFLAGS) $(DBGCFLAGS)
-
-$(DEBOBJECT): $(DEBOBJDIR)/%.o : %.cpp
-	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)
+$(OBJECT): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 prep:
-	@mkdir -p $(RELDIR) $(DEBDIR) 
-	@mkdir -p $(RELDIR)/$(OBJDIR) 
-	@mkdir -p $(DEBDIR)/$(OBJDIR) 
+	@mkdir -p $(BINDIR) 
+	@mkdir -p $(OBJDIR) 
 
 clean:
-	@$(rm) $(RELOBJECT)
-	@$(rm) $(RELDIR)/$(READNETLIST).out
-	@$(rm) $(DEBOBJECT)
-	@$(rm) $(DEBDIR)/$(READNETLIST).out
+	@$(rm) -r $(BINDIR)

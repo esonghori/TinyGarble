@@ -25,11 +25,9 @@ OBJECT 		:= $(SRC:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
 rm = rm --f
 
-.PHONY: all prep release clean
+.PHONY: all prep clean
 
-all: release
-
-release: prep $(TINYGARBLE)
+all: prep $(TINYGARBLE)
 
 $(TINYGARBLE): $(OBJECT) 
 	$(CC) $(OBJECT) -o $(TINYGARBLE) $(CFLAGS) $(LIBS)
