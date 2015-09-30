@@ -6,15 +6,16 @@ TinyGarble project consists of two main parts: netlist generation (/genNetlist) 
 
 ## TinyGarble 
 
-### Requirements
+### Prerequisites
 1. Install dependencies: g++, OpenSSL, boost, for Ubuntu run:
 	
 	`$ sudo apt-get install g++ libssl-dev libboost-all-dev`
 
-2. Compile TinyGarble by executing `make` in `eval_netlist` directory (for dumping data, use `USER_FLAGS=-DDUMP_HEX`):
-
-  `$ make`
-
+2. Compile TinyGarble by executing `make` in `eval_netlist/` directory (for dumping labels, use `USER_FLAGS=-DDUMP_HEX`):
+```
+  $ cd eval_netlist
+  $ make
+```
 ###Test
 ```
 	$ debug/tinygarble --alice &
@@ -22,14 +23,16 @@ TinyGarble project consists of two main parts: netlist generation (/genNetlist) 
 ```
 
 ## Netlist Generation 
+
+### Prerequisites
 Netlist generation requires Synopsys Design Compiler or Yosys-ABC synthesis tools.
 
-###Manual for Synopsys Design Compiler
+### Manual for Synopsys Design Compiler
+1. Compile library [This part is mentioned only for documentation and it is already done, please skip.]
 
-1. Compile library [Already done, please skip.]
-
-Go to `genNetlist/lib/dff_full` and run:
+Go to `gen_netlist/lib/dff_full` and compile the library:
 ```
+	$ cd gen_netlist/lib/dff_full
 	$ ./compile
 ```
 _Advanced detailed_: Let's suppose that our_lib.lib is located in /path/to/our_lib.
@@ -46,15 +49,16 @@ _Advanced detailed_: Let's suppose that our_lib.lib is located in /path/to/our_l
 
 2. Compile a benchmark:
 
-Go inside `genNetlist/benchmark`, where benchmark is the name of the function. and run:  
+Go inside `genNetlist/benchmark`, where benchmark is the name of the function and compile the benchmark to generate the nestlist:  
 ```
+	$ cd gen_netlist/benchmark
 	$ ./compile
 ```
-You can edit `benchmark.dcsh` file to change the parameter of the function.
+You can edit `benchmark.dcsh` file to change synthesis parameters.
 
-_Advanced detailed_: Let's suppose that our_lib.db is compiled and located in /path/to/our_lib and benchmark.v is located in /path/to/benchmark/. 
+_Advanced detailed_: Let's suppose that `our_lib.db` is compiled and located in `/path/to/our_lib` and benchmark.v is located in `/path/to/benchmark/`. 
 
-- Go to /path/to/benchmark/ and run: 
+- Go to `/path/to/benchmark/` and run: 
 ```
 	$ design_vision
 	design_vision> elaborate benchmark -architecture verilog -library DEFAULT -update
@@ -67,17 +71,17 @@ _Advanced detailed_: Let's suppose that our_lib.db is compiled and located in /p
 	design_vision> write -hierarchy -format verilog -output benchmark_syn.v
 	design_vision> exit
 ```
-It creates benchmark_syn.v in the current directory. [Note: commands starting with "design_vision>" should be called inside design_vision. Please ignore "design_vision>" for them.]
+It creates `benchmark_syn.v` in the current directory. [Note: commands starting with "design\_vision>" should be called inside `design_vision`. Please ignore "design\_vision>" for them.]
 
 3.Counting number of gates
 
-You can use `genNetlist/script/count.sh` to count the number of gates in a verilog file. For /path/to/benchmark/benchmark_syn.v, simply run:
+You can use `gen_netlist/script/count.sh` to count the number of gates in the genetrated netlist file. For counting gates in `/path/to/benchmark/benchmark_syn.v`, simply run:
 ```
-	$ genNetlist/script/count.sh /path/to/benchmark/benchmark_syn.v
+	$ gen_netlist/script/count.sh /path/to/benchmark/benchmark_syn.v
 ```	
 ###Manual for Yosys
 
-Here is how to compile a verilog file named "benchmark.v" using the custom library "asic_cell.lib". We assume that the files are inside a folder named "Synthesis_yosys-abc" inside the "yosys" directory. The final output will be written in "benchmark_syn.v"
+Here is how to compile a verilog file named "benchmark.v" using the custom library "asic\_cell.lib". We assume that the files are inside a folder named "Synthesis\_yosys-abc" inside the "yosys" directory. The final output will be written in "benchmark\_syn.v"
 ```
 	$ cd ~/yosys
 	$ ./yosys
@@ -99,6 +103,7 @@ Here is how to compile a verilog file named "benchmark.v" using the custom libra
 
 
 ##TODOs
+- Add read\_netlist documentation.
 - Add OT.
 - Update README.md.
 - Add synthesis library.
