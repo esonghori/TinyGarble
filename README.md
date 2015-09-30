@@ -2,7 +2,15 @@ TinyGarble
 =======
 **Caution: Pre-Alpha version and under construction!**
 
-TinyGarble project consists of two main parts: netlist generation (/genNetlist) and two-party secure function evaluation (SFE). Netlist generation is partially describe in TinyGarble paper in IEEE S&P'15 (see References). It is based on upon hardware synthesis and sequential circuits. The other part of TinyGarble, hereafter called "TinyGarble", is implemented based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/) project developed in UCSD. Beside Free-XOR, Row-reduction, OT extension, and Fixed-key block cipher, TinyGarble includes Half Gates which is the most recent optimization in garbled circuit (GC) protocol and reduces the communication 33%.
+TinyGarble project consists of two main parts: netlist generation (/genNetlist)
+and two-party secure function evaluation (SFE). Netlist generation is partially
+describe in TinyGarble paper in IEEE S&P'15 (see References). It is based on
+upon hardware synthesis and sequential circuits. The other part of TinyGarble,
+hereafter called "TinyGarble", is implemented based on
+[JustGarble](http://cseweb.ucsd.edu/groups/justgarble/) project developed in
+UCSD. Beside Free-XOR, Row-reduction, OT extension, and Fixed-key block cipher,
+TinyGarble includes Half Gates which is the most recent optimization in garbled
+circuit (GC) protocol and reduces the communication 33%.
 
 ## TinyGarble 
 
@@ -11,33 +19,56 @@ TinyGarble project consists of two main parts: netlist generation (/genNetlist) 
 	
 	`$ sudo apt-get install g++ libssl-dev libboost-all-dev`
 
-2. Compile TinyGarble by executing `make` in `eval_netlist/` directory (for dumping labels, use `USER_FLAGS=-DDUMP_HEX`):
+2. Compile TinyGarble by executing `make` in `eval_netlist/` directory
+(for dumping labels, use `USER_FLAGS=-DDUMP_HEX`):
 ```
   $ cd eval_netlist
   $ make
 ```
-###Test
+
+### Test
 ```
-	$ debug/tinygarble --alice &
-	$ debug/tinygarble --bob
+	$ bin/tinygarble --alice &
+	$ bin/tinygarble --bob
+```
+
+### Arguments
+```
+  -h [ --help ]                         produce help message
+  -a [ --alice ]                        Run as Alice (server).
+  -b [ --bob ]                          Run as Bob (client).
+  --deterministic                       Run with deterministic random 
+                                        generator.
+  -i [ --scd_file ] arg (=../read_netlist/netlists/test.scd)
+                                        Simple circuit description (.scd) file 
+                                        address.
+  -p [ --port ] arg (=1234)             socket port
+  -s [ --server_ip ] arg (=127.0.0.1)   Server's (Alice's) IP, required when 
+                                        running as Bob.
+  --dump_hex arg                        Directory for dumping memory hex files.
+  --input_data arg                      Hexadecimal input data, if not 
+                                        provided, it is randomly chosen.
 ```
 
 ## Netlist Generation 
 
 ### Prerequisites
-Netlist generation requires Synopsys Design Compiler or Yosys-ABC synthesis tools.
+Netlist generation requires Synopsys Design Compiler or Yosys-ABC synthesis
+tools.
 
 ### Manual for Synopsys Design Compiler
-1. Compile library [This part is mentioned only for documentation and it is already done, please skip.]
+1. Compile library [This part is mentioned only for documentation and it is
+already done, please skip.]
 
 Go to `gen_netlist/lib/dff_full` and compile the library:
 ```
 	$ cd gen_netlist/lib/dff_full
 	$ ./compile
 ```
-_Advanced detailed_: Let's suppose that our_lib.lib is located in /path/to/our_lib.
+_Advanced detailed_: Let's suppose that our\_lib.lib is located in
+/path/to/our\_lib.
 
-- Go inside /path/to/our_lib and run: 
+- Go inside /path/to/our\_lib and run: 
 ```
 	$ lc_shell
 	lc_shell> set search_path [concat /path/to/our_lib/]
@@ -45,18 +76,21 @@ _Advanced detailed_: Let's suppose that our_lib.lib is located in /path/to/our_l
 	lc_shell> write_lib our_lib -format db
 	lc_shell> exit
 ```
-[Note: commands starting with "lc_shell>" should be called inside `lc_shell`. Please ignore "lc_shell>" for them].
+[Note: commands starting with "lc_shell>" should be called inside `lc_shell`.
+Please ignore "lc_shell>" for them].
 
 2. Compile a benchmark:
 
-Go inside `genNetlist/benchmark`, where benchmark is the name of the function and compile the benchmark to generate the nestlist:  
+Go inside `genNetlist/benchmark`, where benchmark is the name of the function
+and compile the benchmark to generate the nestlist:  
 ```
 	$ cd gen_netlist/benchmark
 	$ ./compile
 ```
 You can edit `benchmark.dcsh` file to change synthesis parameters.
 
-_Advanced detailed_: Let's suppose that `our_lib.db` is compiled and located in `/path/to/our_lib` and benchmark.v is located in `/path/to/benchmark/`. 
+_Advanced detailed_: Let's suppose that `our_lib.db` is compiled and located
+in `/path/to/our_lib` and benchmark.v is located in `/path/to/benchmark/`. 
 
 - Go to `/path/to/benchmark/` and run: 
 ```
@@ -71,17 +105,24 @@ _Advanced detailed_: Let's suppose that `our_lib.db` is compiled and located in 
 	design_vision> write -hierarchy -format verilog -output benchmark_syn.v
 	design_vision> exit
 ```
-It creates `benchmark_syn.v` in the current directory. [Note: commands starting with "design\_vision>" should be called inside `design_vision`. Please ignore "design\_vision>" for them.]
+It creates `benchmark_syn.v` in the current directory. [Note: commands
+starting with "design\_vision>" should be called inside `design_vision`. 
+Please ignore "design\_vision>" for them.]
 
 3.Counting number of gates
 
-You can use `gen_netlist/script/count.sh` to count the number of gates in the genetrated netlist file. For counting gates in `/path/to/benchmark/benchmark_syn.v`, simply run:
+You can use `gen_netlist/script/count.sh` to count the number of gates in
+the genetrated netlist file. For counting gates in
+`/path/to/benchmark/benchmark_syn.v`, simply run:
 ```
 	$ gen_netlist/script/count.sh /path/to/benchmark/benchmark_syn.v
 ```	
-###Manual for Yosys
+### Manual for Yosys
 
-Here is how to compile a verilog file named "benchmark.v" using the custom library "asic\_cell.lib". We assume that the files are inside a folder named "Synthesis\_yosys-abc" inside the "yosys" directory. The final output will be written in "benchmark\_syn.v"
+Here is how to compile a verilog file named "benchmark.v" using the custom
+library "asic\_cell.lib". We assume that the files are inside a folder named
+"Synthesis\_yosys-abc" inside the "yosys" directory. The final output will be 
+written in "benchmark\_syn.v"
 ```
 	$ cd ~/yosys
 	$ ./yosys
@@ -93,17 +134,62 @@ Here is how to compile a verilog file named "benchmark.v" using the custom libra
 	yosys> write_verilog Synthesis_yosys-abc/benchmark_syn.v
 	yosys> exit
 ```	
-[Note: commands starting with "yosys>" should be called inside design_vision. Please ignore "yosys>" for them.]
+[Note: commands starting with "yosys>" should be called inside design_vision.
+Please ignore "yosys>" for them.]
 
-##References
-- Ebrahim M. Songhori, Siam U. Hussain, Ahmad-Reza Sadeghi, Thomas Schneider and Farinaz Koushanfar, ["TinyGarble: Highly Compressed and Scalable Sequential Garbled Circuits."](http://esonghori.github.io/file/TinyGarble.pdf) <i>Security and Privacy, 2015 IEEE Symposium on</i> May, 2015.
-- Mihir Bellare, Viet Tung Hoang, Sriram Keelveedhi, and Phillip Rogaway. Efficient garbling from a fixed-key blockcipher. In <i>S&P</i>, pages 478–492. IEEE, 2013.
-- Samee Zahur, Mike Rosulek, and David Evans. ["Two halves make a whole: Reducing data transfer in garbled circuits using half gates."](http://eprint.iacr.org/2014/756) In <i>Eurocrypt, 2015</i>.
-- G. Asharov, Y. Lindell, T. Schneider and M. Zohner: More Efficient Oblivious Transfer and Extensions for Faster Secure Computation In <i>CCS'13</i>.
+
+## Read Netlis
+To transform a verilog netlist file which is generated by synthesis process to
+a file readble by TinyGarble, one should use `read_netlist`. It transforms a
+netlist verilog file to a Simple Circuit Descreption (SCD) file. The format of
+the SCD file allows TinyGarble to load the circuit without dealing with
+complicated gate transformation and string matching.
+
+### Prerequisites
+1. Install dependencies: g++, boost, for Ubuntu run:
+	
+	`$ sudo apt-get install g++ libboost-all-dev`
+
+2. Compile `read_netlist` by executing `make` in `read_netlist/` directory:
+```
+  $ cd read_netlist
+  $ make
+```
+
+### Test
+```
+	$ bin/read_netlist.out --netlist netlists/test.v --scd netlists/test.scd
+```
+
+### Arguments
+```
+  -h [ --help ]                         produce help message.
+  -i [ --netlist ] arg (=netlists/test.v)
+                                        Input netlist (verilog .v) file 
+                                        address.
+  -o [ --scd ] arg (=netlists/test.scd) Output simple circuit description (scd)
+                                        file address.
+  -c [ --clock ] arg (=1)               Number of clock cycles for sequential 
+                                        circuits
+```
+
+## References
+- Ebrahim M. Songhori, Siam U. Hussain, Ahmad-Reza Sadeghi, Thomas Schneider
+and Farinaz Koushanfar, ["TinyGarble: Highly Compressed and Scalable Sequential
+Garbled Circuits."](http://esonghori.github.io/file/TinyGarble.pdf) <i>Security
+and Privacy, 2015 IEEE Symposium on</i> May, 2015.
+- Mihir Bellare, Viet Tung Hoang, Sriram Keelveedhi, and Phillip Rogaway.
+Efficient garbling from a fixed-key blockcipher. In <i>S&P</i>, pages 478–492.
+IEEE, 2013.
+- Samee Zahur, Mike Rosulek, and David Evans. ["Two halves make a whole:
+Reducing data transfer in garbled circuits using half
+gates."](http://eprint.iacr.org/2014/756)
+In <i>Eurocrypt, 2015</i>.
+- G. Asharov, Y. Lindell, T. Schneider and M. Zohner: More Efficient Oblivious
+Transfer and Extensions for Faster Secure Computation In <i>CCS'13</i>.
 
 
 ##TODOs
-- Add read\_netlist documentation.
 - Add OT.
 - Update README.md.
 - Add synthesis library.

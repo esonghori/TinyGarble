@@ -132,23 +132,29 @@ int writeSCD(const ReadCircuit &readCircuit, int c_, const string &fileName) {
 
 int main(int argc, char** argv) {
 
-  po::options_description desc("Allowed options");
+  po::options_description desc(
+      "Read Netlist, TinyGarble version 0.1\nAllowed options");
   desc.add_options()  //
-  ("help", "produce help message.")  //
-  ("netlist", po::value<string>()->default_value("netlists/test.v"),
+  ("help,h", "produce help message.")  //
+  ("netlist,i", po::value<string>()->default_value("netlists/test.v"),
    "Input netlist (verilog .v) file address.")  //
-  ("scd", po::value<string>()->default_value("netlists/test.scd"),
-   "Output simple circuit descreption (scd) file address.")  //
-  ("clock", po::value<int>()->default_value(1),
+  ("scd,o", po::value<string>()->default_value("netlists/test.scd"),
+   "Output simple circuit description (scd) file address.")  //
+  ("clock,c", po::value<int>()->default_value(1),
    "Number of clock cycles for sequential circuits");
 
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    cout << desc << endl;
-    return 1;
+  try {
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    if (vm.count("help")) {
+      cout << desc << endl;
+      return 0;
+    }
+    po::notify(vm);
+  } catch (po::error& e) {
+    cerr << "ERROR: " << e.what() << endl << endl;
+    cerr << desc << endl;
+    return -1;
   }
 
   string input_netlist_file;
