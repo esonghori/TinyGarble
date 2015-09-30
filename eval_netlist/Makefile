@@ -6,55 +6,40 @@
 # ***********************************************
 
 
-CC=g++
-CFLAGS=  -std=c++11 -lm -lrt -lpthread -lboost_program_options -maes -msse4 -Wno-unused-result -march=native $(USER_FLAGS)
-DBGCFLAGS = -g -O0 -DDEBUG
-RELCFLAGS = -O3 -DNDEBUG
+CC = g++
+CFLAGS = -std=c++11 -maes -msse4 -Wno-unused-result -march=native $(USER_FLAGS)
+LIBS = -lm -lrt -lpthread -lboost_program_options
+
+ifeq ($(DEBUG),true)
+	CFLAGS += -g -O0 -DDEBUG
+else
+	CFLAGS += -O3 -DNDEBUG
+endif
 
 SRCDIR   	= .
-OBJDIR   	= obj
-RELDIR   	= bin
-DEBDIR 		= debug
-RELOBJDIR 	= $(RELDIR)/$(OBJDIR)
-DEBOBJDIR 	= $(DEBDIR)/$(OBJDIR)
+BINDIR   	= bin
+OBJDIR 		= $(BINDIR)/obj
+TINYGARBLE	= $(BINDIR)/tinygarble.out
 SRC   		:= $(wildcard $(SRCDIR)/*.cpp) 
-RELOBJECT 	:= $(SRC:$(SRCDIR)/%.cpp=$(RELOBJDIR)/%.o)
-DEBOBJECT 	:= $(SRC:$(SRCDIR)/%.cpp=$(DEBOBJDIR)/%.o)
-
+OBJECT 		:= $(SRC:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
 rm = rm --f
 
-.PHONY: all prep release debug clean
+.PHONY: all prep release clean
 
-all: release debug 
+all: release
 
-release: prep $(RELDIR)/tinygarble.out
-debug:   prep $(DEBDIR)/tinygarble.out
+release: prep $(TINYGARBLE)
 
+$(TINYGARBLE): $(OBJECT) 
+	$(CC) $(OBJECT) -o $(TINYGARBLE) $(CFLAGS) $(LIBS)
 
-##release
-$(RELDIR)/tinygarble.out: $(RELOBJECT) 
-	$(CC) $(RELOBJECT) -o $(RELDIR)/tinygarble.out $(CFLAGS) $(RELCFLAGS)
-
-$(RELOBJECT): $(RELOBJDIR)/%.o : $(SRCDIR)/%.cpp
-	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(RELCFLAGS)
-
-##debug
-$(DEBDIR)/tinygarble.out: $(DEBOBJECT)
-	$(CC) $(DEBOBJECT) -o $(DEBDIR)/tinygarble.out $(CFLAGS) $(DBGCFLAGS)
-
-$(DEBOBJECT): $(DEBOBJDIR)/%.o : $(SRCDIR)/%.cpp
-	$(CC) -c $< -o $@ $(LIBS) $(CFLAGS) $(DBGCFLAGS)
-
+$(OBJECT): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 prep:
-	@mkdir -p $(RELDIR) 
-	@mkdir -p $(DEBDIR) 
-	@mkdir -p $(RELDIR)/$(OBJDIR) 
-	@mkdir -p $(DEBDIR)/$(OBJDIR) 
+	@mkdir -p $(BINDIR) 
+	@mkdir -p $(OBJDIR) 
 
 clean:
-	@$(rm) $(RELOBJECT)
-	@$(rm) $(RELDIR)/tinygarble.out
-	@$(rm) $(DEBOBJECT)
-	@$(rm) $(DEBDIR)/tinygarble.out
+	@$(rm) -r $(BINDIR)
