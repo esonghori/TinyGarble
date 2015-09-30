@@ -41,6 +41,7 @@
 #include "tcpip.h"
 #include "scd.h"
 #include "util.h"
+#include "dump_hex.h"
 
 namespace po = boost::program_options;
 using std::string;
@@ -129,7 +130,7 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input, block R,
   garbledCircuit.globalKey = randomBlock();
   send_block(connfd, garbledCircuit.globalKey);  // send DKC key
 
-  garble(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, &R,
+  garble(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, R,
          connfd);
 
   for (int cid = 0; cid < c; cid++) {
@@ -145,8 +146,7 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input, block R,
   return SUCCESS;
 }
 
-int bob(GarbledCircuit& garbledCircuit, bool random_input, block R,
-        int connfd) {
+int bob(GarbledCircuit& garbledCircuit, bool random_input, int connfd) {
 
   int n = garbledCircuit.n;
   int g = garbledCircuit.g;
@@ -228,6 +228,7 @@ int main(int argc, char* argv[]) {
   ("port", po::value<int>()->default_value(1234), "socket port")  //
   ("server_ip", po::value<string>()->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
+  ("dump_hex", po::value<string>(), "Directory for dumping memory hex files.")  //
   ("input_data", po::value<string>(),
    "Hexadecimal input data, if not provided, it is randomly chosen.");
 
@@ -273,6 +274,10 @@ int main(int argc, char* argv[]) {
     cerr << "One of --alice or --bob mode flag should be used." << endl;
     return -1;
   }
+  if (vm.count("dump_hex")) {
+    dump_hex_prefix = vm["dump_hex"].as<string>();
+  }
+
   unsigned long long input_data = 0;
   bool random_input = true;
   if (vm.count("input_data")) {
@@ -296,6 +301,9 @@ int main(int argc, char* argv[]) {
     }
     cout << "Open Alice server on port: " << port << endl;
 
+    if (dump_hex_prefix != "")
+      dump_initial("g");
+
     alice(garbledCircuit, random_input, R, connfd);
 
   } else if (vm.count("bob")) {
@@ -317,8 +325,15 @@ int main(int argc, char* argv[]) {
     cout << "Connect Bob client to Alice server on " << server_ip << ":" << port
          << endl;
 
-    bob(garbledCircuit, random_input, R, connfd);
+    if (dump_hex_prefix != "")
+      dump_initial("e");
 
+    bob(garbledCircuit, random_input, connfd);
+
+  }
+
+  if (dump_hex_prefix != "") {
+    dump_finish();
   }
 
   return 0;

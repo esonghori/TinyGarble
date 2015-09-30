@@ -7,7 +7,7 @@
 
 
 CC=g++
-CFLAGS=  -std=c++11 -lm -lrt -lpthread -lboost_program_options -maes -msse4 -Wno-unused-result -march=native
+CFLAGS=  -std=c++11 -lm -lrt -lpthread -lboost_program_options -maes -msse4 -Wno-unused-result -march=native $(USER_FLAGS)
 DBGCFLAGS = -g -O0 -DDEBUG
 RELCFLAGS = -O3 -DNDEBUG
 
@@ -20,6 +20,7 @@ DEBOBJDIR 	= $(DEBDIR)/$(OBJDIR)
 SRC   		:= $(wildcard $(SRCDIR)/*.cpp) 
 RELOBJECT 	:= $(SRC:$(SRCDIR)/%.cpp=$(RELOBJDIR)/%.o)
 DEBOBJECT 	:= $(SRC:$(SRCDIR)/%.cpp=$(DEBOBJDIR)/%.o)
+
 
 rm = rm --f
 

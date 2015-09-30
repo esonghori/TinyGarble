@@ -139,7 +139,7 @@ void createInputLabels(block* inputLabels, block R, int n);
  * @see Half-Gate paper.
  */
 long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-            block* initialDFFLabels, block* outputLabels, block* R, int connfd);
+            block* initialDFFLabels, block* outputLabels, block R, int connfd);
 
 /**
  * @brief Evaluate a garbled circuit

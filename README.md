@@ -4,28 +4,21 @@ TinyGarble
 
 TinyGarble project consists of two main parts: netlist generation (/genNetlist) and two-party secure function evaluation (SFE). Netlist generation is partially describe in TinyGarble paper in IEEE S&P'15 (see References). It is based on upon hardware synthesis and sequential circuits. The other part of TinyGarble, hereafter called "TinyGarble", is implemented based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/) project developed in UCSD. Beside Free-XOR, Row-reduction, OT extension, and Fixed-key block cipher, TinyGarble includes Half Gates which is the most recent optimization in garbled circuit (GC) protocol and reduces the communication 33%.
 
-## Compile TinyGarble 
-TinyGarble uses [OTExtention](https://github.com/encryptogroup/OTExtension) project for Oblivious Transfer (OT).
+## TinyGarble 
 
 ### Requirements
-1. g++, for Ubuntu run:
+1. Install dependencies: g++, OpenSSL, boost, for Ubuntu run:
 	
-	`$ sudo apt-get install g++`
+	`$ sudo apt-get install g++ libssl-dev libboost-all-dev`
 
-2. OpenSSL, for Ubuntu run: 
-	
-	`$ sudo apt-get install libssl-dev`
+2. Compile TinyGarble by executing `make` in `eval_netlist` directory (for dumping data, use `USER_FLAGS=-DDUMP_HEX`):
 
-3. Compile Miracl in OTExtention/util/Miracl either using `bash linux` or `bash linux64` (see `util/Miracl/first.txt` for more information).
-
-4. Compile OTExtension by executing `make` in `OTExtention/` directory.
-
-5. Compile TinyGarble by executing `make` in the main directory.
+  `$ make`
 
 ###Test
 ```
-	$ debug/Alice.out readNetlist/netlists/test.scd 1515&
-	$ debug/Bob.out readNetlist/netlists/test.scd 127.0.0.1 1516
+	$ debug/tinygarble --alice &
+	$ debug/tinygarble --bob
 ```
 
 ## Netlist Generation 
@@ -106,5 +99,6 @@ Here is how to compile a verilog file named "benchmark.v" using the custom libra
 
 
 ##TODOs
+- Add OT.
 - Update README.md.
 - Add synthesis library.
