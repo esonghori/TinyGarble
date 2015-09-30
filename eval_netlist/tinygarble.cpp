@@ -216,29 +216,35 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, int connfd) {
 
 int main(int argc, char* argv[]) {
 
-  po::options_description desc("Allowed options");
+  po::options_description desc(
+      "Evaluate Netlist, TinyGarble version 0.1\nAllowed options");
   desc.add_options()  //
-  ("help", "produce help message")  //
-  ("alice", "Run as Alice (server).")  //
-  ("bob", "Run as Bob (client).")  //
+  ("help,h", "produce help message")  //
+  ("alice,a", "Run as Alice (server).")  //
+  ("bob,b", "Run as Bob (client).")  //
   ("deterministic", "Run with deterministic random generator.")  //
-  ("scd_file",
+  ("scd_file,i",
    po::value<string>()->default_value("../read_netlist/netlists/test.scd"),
    "Simple circuit description (.scd) file address.")  //
-  ("port", po::value<int>()->default_value(1234), "socket port")  //
-  ("server_ip", po::value<string>()->default_value("127.0.0.1"),
+  ("port,p", po::value<int>()->default_value(1234), "socket port")  //
+  ("server_ip,s", po::value<string>()->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
   ("dump_hex", po::value<string>(), "Directory for dumping memory hex files.")  //
   ("input_data", po::value<string>(),
    "Hexadecimal input data, if not provided, it is randomly chosen.");
 
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    cout << desc << endl;
-    return 1;
+  try {
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    if (vm.count("help")) {
+      cout << desc << endl;
+      return 0;
+    }
+    po::notify(vm);
+  } catch (po::error& e) {
+    cerr << "ERROR: " << e.what() << endl << endl;
+    cerr << desc << endl;
+    return -1;
   }
 
   block R;
@@ -258,20 +264,19 @@ int main(int argc, char* argv[]) {
   if (vm.count("scd_file")) {
     scd_file_address = vm["scd_file"].as<string>();
   } else {
-    cerr << "SCD file should be specified." << endl;
+    cerr << "SCD file should be specified." << endl << endl;
+    cerr << desc << endl;
     return -1;
   }
 
   int port;
   if (vm.count("port")) {
     port = vm["port"].as<int>();
-  } else {
-    cerr << "Socket port should be specified." << endl;
-    return -1;
   }
 
   if (vm.count("alice") == 0 && vm.count("bob") == 0) {
-    cerr << "One of --alice or --bob mode flag should be used." << endl;
+    cerr << "One of --alice or --bob mode flag should be used." << endl << endl;
+    cerr << desc << endl;
     return -1;
   }
   if (vm.count("dump_hex")) {
@@ -312,7 +317,9 @@ int main(int argc, char* argv[]) {
     if (vm.count("server_ip")) {
       server_ip = vm["server_ip"].as<string>();
     } else {
-      cerr << "Server IP should be specified, when running as Bob." << endl;
+      cerr << "Server IP should be specified, when running as Bob." << endl
+           << endl;
+      cerr << desc << endl;
       return -1;
     }
 
