@@ -39,40 +39,44 @@
 #include "common.h"
 #include "tcpip.h"
 #include "util.h"
+#include "dump_hex.h"
 
 long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-            block* initialDFFLabels, block* outputLabels, block* R,
+            block* initialDFFLabels, block* outputLabels, block R,
             int connfd) {
   AES_KEY AES_Key;
   long i, j, cid;
+
+  DUMP("r_key.g", R);
+  DUMP("r_key.g", garbledCircuit->globalKey);
 
   long startTime = RDTSC;
 
   AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128,
                       &AES_Key);
 
-  for (cid = 0; cid < garbledCircuit->c; cid++)  //for each clock cycle
-      {
-
-    for (i = 0; i < garbledCircuit->n; i++)  //inputs
-        {
+  for (cid = 0; cid < garbledCircuit->c; cid++) {  //for each clock cycle
+    for (i = 0; i < garbledCircuit->n; i++) {  //inputs
       garbledCircuit->wires[i].label0 = inputLabels[2
           * (cid * garbledCircuit->n + i)];
       garbledCircuit->wires[i].label1 = inputLabels[2
           * (cid * garbledCircuit->n + i) + 1];
+
+      if (cid == 0)
+        DUMP("input.e", inputLabels[2 * (cid * garbledCircuit->n + i)]);
     }
 
-    if (cid == 0)  //dff initial value
-        {
+    if (cid == 0) {  //dff initial value
       for (i = 0; i < garbledCircuit->p; i++) {
         garbledCircuit->wires[garbledCircuit->n + i].label0 = initialDFFLabels[2
             * i];
         garbledCircuit->wires[garbledCircuit->n + i].label1 = initialDFFLabels[2
             * i + 1];
+
+        DUMP("dff.g",  initialDFFLabels[2 * i]);
       }
 
-    } else  //copy latched labels
-    {
+    } else {  //copy latched labels
       for (i = 0; i < garbledCircuit->p; i++) {
         int wireIndex = garbledCircuit->D[i];
         garbledCircuit->wires[garbledCircuit->n + i].label0 = garbledCircuit
@@ -82,8 +86,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
       }
     }
 
-    for (i = 0; i < garbledCircuit->q; i++)  //for each gates
-        {
+    for (i = 0; i < garbledCircuit->q; i++) {  //for each gates
       int input0, input1, output;
       GarbledGate *garbledGate = &(garbledCircuit->garbledGates[i]);
 
@@ -167,7 +170,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
       table[0] = xorBlocks(mask[0], mask[1]);
       if (pb)
-        table[0] = xorBlocks(table[0], *R);
+        table[0] = xorBlocks(table[0], R);
 
       G = mask[0];
       if (pa)
@@ -184,10 +187,10 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
       if (v & 4) {
         C1 = xorBlocks(G, E);
-        C0 = xorBlocks(*R, C1);
+        C0 = xorBlocks(R, C1);
       } else {
         C0 = xorBlocks(G, E);
-        C1 = xorBlocks(*R, C0);
+        C1 = xorBlocks(R, C0);
       }
 
       garbledCircuit->wires[garbledGate->output].label0 = C0;
@@ -195,6 +198,8 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
       for (j = 0; j < 2; j++) {
         send_block(connfd, table[j]);
+
+        DUMP("table.g", table[j]);
       }
     }
 
@@ -203,12 +208,15 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
       block o1 = garbledCircuit->wires[garbledCircuit->outputs[i]].label1;
       outputLabels[cid * 2 * garbledCircuit->m + 2 * i] = o0;
       outputLabels[cid * 2 * garbledCircuit->m + 2 * i + 1] = o1;
+
+      if (cid == garbledCircuit->c - 1)
+        DUMP("output.g", o0);
     }
   }
   return (RDTSC - startTime);
 }
 
-long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
+long evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
               block* initialDFFLable, block *outputLabels, int connfd) {
   int n = garbledCircuit->n;
   int m = garbledCircuit->m;
@@ -217,26 +225,27 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
   long i, j, cid;
   AES_KEY AES_Key;
 
+  DUMP("r_key.e", garbledCircuit->globalKey);
+
   long startTime = RDTSC;
 
   AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128,
                       &AES_Key);
 
-  for (cid = 0; cid < garbledCircuit->c; cid++)  //for each clock cycle
-      {
-    for (i = 0; i < garbledCircuit->n; i++)  //inputs
-        {
+  for (cid = 0; cid < garbledCircuit->c; cid++) {  //for each clock cycle
+    for (i = 0; i < garbledCircuit->n; i++) {  //inputs
       garbledCircuit->wires[i].label0 =
-          inputLables[cid * garbledCircuit->n + i];
+          inputLabels[cid * garbledCircuit->n + i];
+      if (cid == 0)
+        DUMP("input.e", inputLabels[cid * garbledCircuit->n + i]);
     }
-    if (cid == 0)  //dff initial value
-        {
+    if (cid == 0) {  //dff initial value
       for (i = 0; i < garbledCircuit->p; i++) {
         garbledCircuit->wires[garbledCircuit->n + i].label0 =
             initialDFFLable[i];
+        DUMP("dff.e", initialDFFLable[i]);
       }
-    } else  //copy latched labels
-    {
+    } else {  //copy latched labels
       for (i = 0; i < garbledCircuit->p; i++) {
         int wireIndex = garbledCircuit->D[i];
         garbledCircuit->wires[garbledCircuit->n + i].label0 = garbledCircuit
@@ -244,8 +253,7 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
       }
     }
 
-    for (i = 0; i < garbledCircuit->q; i++)  // for each gates
-        {
+    for (i = 0; i < garbledCircuit->q; i++) {  // for each gates
       int input0, input1, output;
       GarbledGate *garbledGate = &(garbledCircuit->garbledGates[i]);
       input0 = garbledGate->input0;
@@ -278,6 +286,7 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
 
         for (j = 0; j < 2; j++) {
           recv_block(connfd, &(table[j]));
+          DUMP("table.e", table[j]);
         }
 
         keys[0] = xorBlocks(A, tweak0);
@@ -310,6 +319,9 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
     for (i = 0; i < garbledCircuit->m; i++) {
       outputLabels[cid * garbledCircuit->m + i] =
           garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
+
+      if (cid == garbledCircuit->c - 1)
+        DUMP("output.e", outputLabels[cid * garbledCircuit->m + i]);
     }
   }
   return (RDTSC - startTime);
@@ -323,10 +335,10 @@ void createInputLabels(block* inputLabels, block R, int n) {
 }
 
 void removeGarbledCircuit(GarbledCircuit *garbledCircuit) {
-  delete []garbledCircuit->garbledGates;
-  delete []garbledCircuit->wires;
-  delete []garbledCircuit->outputs;
-  delete []garbledCircuit->I;
-  delete []garbledCircuit->D;
+  delete[] garbledCircuit->garbledGates;
+  delete[] garbledCircuit->wires;
+  delete[] garbledCircuit->outputs;
+  delete[] garbledCircuit->I;
+  delete[] garbledCircuit->D;
 }
 
