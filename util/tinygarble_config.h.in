@@ -1,0 +1,7 @@
+// the configured options and settings for Tutorial
+#define TinyGarble_VERSION_MAJOR @Tutorial_VERSION_MAJOR@
+#define TinyGarble_VERSION_MINOR @Tutorial_VERSION_MINOR@
+#define TinyGarble_VERSION_PATCH @Tutorial_VERSION_PATCH@
+
+#cmakedefine DEBUG
+#cmakedefine DUMP_HEX

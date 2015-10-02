@@ -15,7 +15,7 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tcpip.h"
+#include "tcpip/tcpip.h"
 
 #include <arpa/inet.h>
 #include <cstdio>
@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <netinet/tcp.h>
 
-#include "common.h"
+#include "util/common.h"
 
 int listenfd = 0;
 
@@ -36,7 +36,6 @@ int server_init(int port) {
   int connfd;
   socklen_t clilen;
   struct sockaddr_in serv_addr, cli_addr;
-  int n;
   listenfd = socket(AF_INET, SOCK_STREAM, 0);
   if (listenfd < 0) {
     cerr << strerror(errno) << endl;
@@ -116,24 +115,18 @@ int client_close(int sock) {
   return SUCCESS;
 }
 
-void send_block(int sock, block var) {
-  uint8_t *val = (uint8_t*) &var;
-  write(sock, val, 16);
+int send_data(int sock, const void *var, int len) {
+  if(write(sock, var, len) < len) {
+    cerr << strerror(errno) << endl;
+    return FAILURE;
+  }
+  return SUCCESS;
 }
 
-void recv_block(int sock, block* var) {
-  uint8_t *val = (uint8_t*) var;
-  read(sock, val, 16);
+int recv_data(int sock, void* var, int len) {
+  if(read(sock, var, len) < len) {
+    cerr << strerror(errno) << endl;
+    return FAILURE;
+  }
+  return SUCCESS;
 }
-
-void send_type(int sock, short var) {
-  const void *val = (const void*) &var;
-  // TODO(ebi): check if all the data is written.
-  write(sock, val, sizeof(short));
-}
-
-void recv_type(int sock, short* var) {
-  void *val = (void*) var;
-  read(sock, val, sizeof(short));
-}
-

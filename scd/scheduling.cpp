@@ -15,22 +15,21 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "read_netlist.h"
+#include "scd/scheduling.h"
+ 
 #include <cstring>
 
 int top_sort(const vector<ReadGate>& G, int no_task, int *index) {
-  int i, j, k, max;
-  int *sl;
-
+  
   // calculate static b-level
-  sl = new int[no_task];
+  int *sl = new int[no_task];
 
-  for (i = 0; i < no_task; i++)
+  for (int i = 0; i < no_task; i++)
     index[i] = i;
 
-  for (i = no_task - 1; i >= 0; i--) {
-    max = 0;
-    for (j = i + 1; j < no_task; j++) {
+  for (int i = no_task - 1; i >= 0; i--) {
+    int max = 0;
+    for (int j = i + 1; j < no_task; j++) {
       if (G[j].input[0] == G[i].output)
         if (sl[j] > max)
           max = sl[j];
@@ -41,7 +40,8 @@ int top_sort(const vector<ReadGate>& G, int no_task, int *index) {
     sl[i] = 1 + max;
   }
 
-  quickSort(sl, index, 0, no_task - 1);  // sort in descending order of static b-level
+  // sort in descending order of static b-level
+  quickSort(sl, index, 0, no_task - 1);  
 
   delete[] sl;
 
@@ -49,8 +49,6 @@ int top_sort(const vector<ReadGate>& G, int no_task, int *index) {
 }
 
 int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
-
-  int i, j, max;
 
   const vector<ReadGate>& G = readCircuit.gate_list;
   int no_task;
@@ -77,7 +75,7 @@ int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
 
   int scheduled = 0;
   while (scheduled < no_task) {
-    for (i = 0; i < no_task; i++) {
+    for (int i = 0; i < no_task; i++) {
       if (p0[index[i]] == -1)  // not assigned yet
           {
         if (((G[index[i]].input[0] - no_of_input_dff < 0)
@@ -95,12 +93,16 @@ int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
       }
     }
 
-    for (i = 0; i < no_task; i++) {
+    for (int i = 0; i < no_task; i++) {
       p0[i] = p1[i];
     }
   }
 
-  delete[] index, p0, p1, core_index, core_busy;
+  delete[] index;
+  delete[] p0;
+  delete[] p1;
+  delete[] core_index;
+  delete[] core_busy;
 
   return 0;
 }
