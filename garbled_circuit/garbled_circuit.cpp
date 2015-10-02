@@ -33,30 +33,33 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "garbled_circuit.h"
+#include "garbled_circuit/garbled_circuit.h"
 
-#include "aes.h"
-#include "common.h"
-#include "tcpip.h"
-#include "util.h"
-#include "dump_hex.h"
+#include "crypto/aes.h"
+#include "tcpip/tcpip.h"
+#include "util/common.h"
+#include "util/util.h"
+#include "util/dump_hex.h"
 
-long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
+uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
             block* initialDFFLabels, block* outputLabels, block R,
             int connfd) {
-  AES_KEY AES_Key;
-  long i, j, cid;
-
+  uint64_t n = garbledCircuit->n;
+  uint64_t m = garbledCircuit->m;
+  uint64_t p = garbledCircuit->p;
+  uint64_t q = garbledCircuit->q;
+  uint64_t c = garbledCircuit->c;
   DUMP("r_key.g", R);
   DUMP("r_key.g", garbledCircuit->globalKey);
 
-  long startTime = RDTSC;
+  uint64_t startTime = RDTSC;
 
+  AES_KEY AES_Key;
   AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128,
                       &AES_Key);
 
-  for (cid = 0; cid < garbledCircuit->c; cid++) {  //for each clock cycle
-    for (i = 0; i < garbledCircuit->n; i++) {  //inputs
+  for (uint64_t cid = 0; cid < c; cid++) {  //for each clock cycle
+    for (uint64_t i = 0; i < n; i++) {  //inputs
       garbledCircuit->wires[i].label0 = inputLabels[2
           * (cid * garbledCircuit->n + i)];
       garbledCircuit->wires[i].label1 = inputLabels[2
@@ -67,32 +70,31 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
     }
 
     if (cid == 0) {  //dff initial value
-      for (i = 0; i < garbledCircuit->p; i++) {
-        garbledCircuit->wires[garbledCircuit->n + i].label0 = initialDFFLabels[2
+      for (uint64_t i = 0; i < p; i++) {
+        garbledCircuit->wires[n + i].label0 = initialDFFLabels[2
             * i];
-        garbledCircuit->wires[garbledCircuit->n + i].label1 = initialDFFLabels[2
+        garbledCircuit->wires[n + i].label1 = initialDFFLabels[2
             * i + 1];
 
         DUMP("dff.g",  initialDFFLabels[2 * i]);
       }
 
     } else {  //copy latched labels
-      for (i = 0; i < garbledCircuit->p; i++) {
-        int wireIndex = garbledCircuit->D[i];
-        garbledCircuit->wires[garbledCircuit->n + i].label0 = garbledCircuit
+      for (uint64_t i = 0; i < p; i++) {
+        uint64_t wireIndex = garbledCircuit->D[i];
+        garbledCircuit->wires[n + i].label0 = garbledCircuit
             ->wires[wireIndex].label0;
-        garbledCircuit->wires[garbledCircuit->n + i].label1 = garbledCircuit
+        garbledCircuit->wires[n + i].label1 = garbledCircuit
             ->wires[wireIndex].label1;
       }
     }
 
-    for (i = 0; i < garbledCircuit->q; i++) {  //for each gates
-      int input0, input1, output;
+    for (uint64_t i = 0; i < q; i++) {  //for each gates
       GarbledGate *garbledGate = &(garbledCircuit->garbledGates[i]);
 
-      input0 = garbledGate->input0;
-      input1 = garbledGate->input1;
-      output = garbledGate->output;
+      uint64_t input0 = garbledGate->input0;
+      uint64_t input1 = garbledGate->input1;
+      uint64_t output = garbledGate->output;
 
       if (garbledGate->type == XORGATE) {
         garbledCircuit->wires[output].label0 = xorBlocks(
@@ -121,14 +123,8 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
         continue;
       }
 
-      block A0, A1, B0, B1, C0, C1;
-      block tweak0, tweak1;
-      unsigned short pa, pb;
-      block keys[4];
-      block mask[4];
-      block table[2];
-      block G, E;
-
+      block A1;
+      block A0;
       unsigned short v = type2V(garbledGate->type);
       if (v & 1) {
         A1 = (garbledCircuit->wires[input0].label0);
@@ -138,6 +134,8 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
         A1 = (garbledCircuit->wires[input0].label1);
       }
 
+      block B1;
+      block B0;
       if (v & 2) {
         B1 = (garbledCircuit->wires[input1].label0);
         B0 = (garbledCircuit->wires[input1].label1);
@@ -146,17 +144,19 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
         B1 = (garbledCircuit->wires[input1].label1);
       }
 
-      pa = getLSB(A0);
-      pb = getLSB(B0);
+      unsigned short pa = getLSB(A0);
+      unsigned short pb = getLSB(B0);
 
-      tweak0 = makeBlock(cid, 2 * i + 0);
-      tweak1 = makeBlock(cid, 2 * i + 1);
+      block tweak0 = makeBlock(cid, 2 * i + 0);
+      block tweak1 = makeBlock(cid, 2 * i + 1);
 
+      block keys[4];
       keys[0] = xorBlocks(A0, tweak0);
       keys[1] = xorBlocks(A1, tweak0);
       keys[2] = xorBlocks(B0, tweak1);
       keys[3] = xorBlocks(B1, tweak1);
 
+      block mask[4];
       mask[0] = keys[0];
       mask[1] = keys[1];
       mask[2] = keys[2];
@@ -168,23 +168,26 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
       mask[2] = xorBlocks(mask[2], keys[2]);
       mask[3] = xorBlocks(mask[3], keys[3]);
 
+      block table[2];
       table[0] = xorBlocks(mask[0], mask[1]);
       if (pb)
         table[0] = xorBlocks(table[0], R);
 
-      G = mask[0];
+      block G = mask[0];
       if (pa)
         G = xorBlocks(G, table[0]);
 
       table[1] = xorBlocks(mask[2], mask[3]);
       table[1] = xorBlocks(table[1], A0);
 
-      E = mask[2];
+      block E = mask[2];
       if (pb) {
         E = xorBlocks(E, table[1]);
         E = xorBlocks(E, A0);
       }
 
+      block C0;
+      block C1;
       if (v & 4) {
         C1 = xorBlocks(G, E);
         C0 = xorBlocks(R, C1);
@@ -196,69 +199,65 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
       garbledCircuit->wires[garbledGate->output].label0 = C0;
       garbledCircuit->wires[garbledGate->output].label1 = C1;
 
-      for (j = 0; j < 2; j++) {
-        send_block(connfd, table[j]);
-
+      for (uint64_t j = 0; j < 2; j++) {
+        send_data(connfd, &table[j], sizeof(block));
         DUMP("table.g", table[j]);
       }
     }
 
-    for (i = 0; i < garbledCircuit->m; i++) {
+    for (uint64_t i = 0; i < m; i++) {
       block o0 = garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
       block o1 = garbledCircuit->wires[garbledCircuit->outputs[i]].label1;
-      outputLabels[cid * 2 * garbledCircuit->m + 2 * i] = o0;
-      outputLabels[cid * 2 * garbledCircuit->m + 2 * i + 1] = o1;
+      outputLabels[cid * 2 * m + 2 * i] = o0;
+      outputLabels[cid * 2 * m + 2 * i + 1] = o1;
 
-      if (cid == garbledCircuit->c - 1)
+      if (cid == c - 1)
         DUMP("output.g", o0);
     }
   }
   return (RDTSC - startTime);
 }
 
-long evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
+uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
               block* initialDFFLable, block *outputLabels, int connfd) {
-  int n = garbledCircuit->n;
-  int m = garbledCircuit->m;
-  int p = garbledCircuit->p;
-  int c = garbledCircuit->c;
-  long i, j, cid;
-  AES_KEY AES_Key;
-
+  uint64_t n = garbledCircuit->n;
+  uint64_t m = garbledCircuit->m;
+  uint64_t p = garbledCircuit->p;
+  uint64_t c = garbledCircuit->c;
   DUMP("r_key.e", garbledCircuit->globalKey);
 
-  long startTime = RDTSC;
+  uint64_t startTime = RDTSC;
 
+  AES_KEY AES_Key;
   AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128,
                       &AES_Key);
 
-  for (cid = 0; cid < garbledCircuit->c; cid++) {  //for each clock cycle
-    for (i = 0; i < garbledCircuit->n; i++) {  //inputs
+  for (uint64_t cid = 0; cid < c; cid++) {  //for each clock cycle
+    for (uint64_t i = 0; i < n; i++) {  //inputs
       garbledCircuit->wires[i].label0 =
-          inputLabels[cid * garbledCircuit->n + i];
+          inputLabels[cid * n + i];
       if (cid == 0)
-        DUMP("input.e", inputLabels[cid * garbledCircuit->n + i]);
+        DUMP("input.e", inputLabels[cid * n + i]);
     }
     if (cid == 0) {  //dff initial value
-      for (i = 0; i < garbledCircuit->p; i++) {
-        garbledCircuit->wires[garbledCircuit->n + i].label0 =
+      for (uint64_t i = 0; i < p; i++) {
+        garbledCircuit->wires[n + i].label0 =
             initialDFFLable[i];
         DUMP("dff.e", initialDFFLable[i]);
       }
     } else {  //copy latched labels
-      for (i = 0; i < garbledCircuit->p; i++) {
-        int wireIndex = garbledCircuit->D[i];
-        garbledCircuit->wires[garbledCircuit->n + i].label0 = garbledCircuit
+      for (uint64_t i = 0; i < p; i++) {
+        uint64_t wireIndex = garbledCircuit->D[i];
+        garbledCircuit->wires[n + i].label0 = garbledCircuit
             ->wires[wireIndex].label0;
       }
     }
 
-    for (i = 0; i < garbledCircuit->q; i++) {  // for each gates
-      int input0, input1, output;
+    for (uint64_t i = 0; i < garbledCircuit->q; i++) {  // for each gates
       GarbledGate *garbledGate = &(garbledCircuit->garbledGates[i]);
-      input0 = garbledGate->input0;
-      input1 = garbledGate->input1;
-      output = garbledGate->output;
+      uint64_t input0 = garbledGate->input0;
+      uint64_t input1 = garbledGate->input1;
+      uint64_t output = garbledGate->output;
 
       if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE) {
         garbledCircuit->wires[output].label0 = xorBlocks(
@@ -268,30 +267,26 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
         garbledCircuit->wires[output].label0 = garbledCircuit->wires[input0]
             .label0;
       } else {
-        block A, B, C, G, E;
-        unsigned short sa, sb;
-        block keys[2];
-        block mask[2];
+        block A = (garbledCircuit->wires[input0].label0);
+        block B = (garbledCircuit->wires[input1].label0);
+
+        unsigned short sa = getLSB(A);
+        unsigned short sb = getLSB(B);
+
+        block tweak0 = makeBlock(cid, 2 * i + 0);
+        block tweak1 = makeBlock(cid, 2 * i + 1);
+
         block table[2];
-        block tweak0, tweak1;
-
-        A = (garbledCircuit->wires[input0].label0);
-        B = (garbledCircuit->wires[input1].label0);
-
-        sa = getLSB(A);
-        sb = getLSB(B);
-
-        tweak0 = makeBlock(cid, 2 * i + 0);
-        tweak1 = makeBlock(cid, 2 * i + 1);
-
-        for (j = 0; j < 2; j++) {
-          recv_block(connfd, &(table[j]));
+        for (uint64_t j = 0; j < 2; j++) {
+          recv_data(connfd, &(table[j]), sizeof(block));
           DUMP("table.e", table[j]);
         }
 
+        block keys[2];
         keys[0] = xorBlocks(A, tweak0);
         keys[1] = xorBlocks(B, tweak1);
 
+        block mask[2];
         mask[0] = keys[0];
         mask[1] = keys[1];
         AES_ecb_encrypt_blks(keys, 2, &(AES_Key));
@@ -299,36 +294,36 @@ long evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
         mask[0] = xorBlocks(mask[0], keys[0]);
         mask[1] = xorBlocks(mask[1], keys[1]);
 
-        G = mask[0];
+        block G = mask[0];
         if (sa)
           G = xorBlocks(G, table[0]);
 
-        E = mask[1];
+        block E = mask[1];
         if (sb) {
           E = xorBlocks(E, table[1]);
           E = xorBlocks(E, A);
         }
 
-        C = xorBlocks(E, G);
+        block C = xorBlocks(E, G);
 
         garbledCircuit->wires[output].label0 = C;
 
       }
     }
 
-    for (i = 0; i < garbledCircuit->m; i++) {
-      outputLabels[cid * garbledCircuit->m + i] =
+    for (uint64_t i = 0; i < m; i++) {
+      outputLabels[cid * m + i] =
           garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
 
-      if (cid == garbledCircuit->c - 1)
-        DUMP("output.e", outputLabels[cid * garbledCircuit->m + i]);
+      if (cid == c - 1)
+        DUMP("output.e", outputLabels[cid * m + i]);
     }
   }
   return (RDTSC - startTime);
 }
 
-void createInputLabels(block* inputLabels, block R, int n) {
-  for (int i = 0; i < 2 * n; i += 2) {
+void createInputLabels(block* inputLabels, block R, uint64_t n) {
+  for (uint64_t i = 0; i < 2 * n; i += 2) {
     inputLabels[i] = randomBlock();
     inputLabels[i + 1] = xorBlocks(R, inputLabels[i]);
   }

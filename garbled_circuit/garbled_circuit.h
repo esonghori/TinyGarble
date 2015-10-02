@@ -43,8 +43,8 @@
 #ifndef EVAL_NETLIST_GARBLED_CIRCUIT_H_
 #define EVAL_NETLIST_GARBLED_CIRCUIT_H_
 
-#include "block.h"
-
+#include <cstdint>
+#include "crypto/block.h"
 /**
  * @brief Used to store two tokens (or labels).
  *
@@ -61,9 +61,9 @@ typedef struct Wire {
  *
  */
 typedef struct GarbledGate {
-  long input0; /**< wire index for 1st input. */
-  long input1; /**< wire index for 2st input. */
-  long output; /**< wire index for output. */
+  uint64_t input0; /**< wire index for 1st input. */
+  uint64_t input1; /**< wire index for 2st input. */
+  uint64_t output; /**< wire index for output. */
   int type; /**< wire Type, defined in common.h */
 } GarbledGate;
 
@@ -74,20 +74,20 @@ typedef struct GarbledGate {
  * for both garbling and evaluation. It is created based on SCD file.
  */
 typedef struct GarbledCircuit {
-  int n; /*!< # of inputs */
-  int g; /*!< # of g inputs */
-  int p; /*!< # of DFF */
-  int m; /*!< # of outputs */
-  int q; /*!< # of gates */
-  int c; /*!< # of sequential cycle */
-  int r; /*!< # of wires = n+p+q */
+  uint64_t n; /*!< # of inputs */
+  uint64_t g; /*!< # of g inputs */
+  uint64_t p; /*!< # of DFF */
+  uint64_t m; /*!< # of outputs */
+  uint64_t q; /*!< # of gates */
+  uint64_t c; /*!< # of sequential cycle */
+  uint64_t r; /*!< # of wires = n+p+q */
 
   GarbledGate* garbledGates; /*!< topologically sorted gates */
   Wire* wires; /*!< wire labels */
-  int *outputs; /*!< index of output wires */
-  int *D; /*!< p-length array of wire index corresponding
+  uint64_t *outputs; /*!< index of output wires */
+  uint64_t *D; /*!< p-length array of wire index corresponding
    to D signal (Data) of DFF. */
-  int *I; /*!< p-length array of wire index corresponding
+  uint64_t *I; /*!< p-length array of wire index corresponding
    to I signal (Initial) of DFF. */
   block globalKey; /*!< global key c for AES_c(.) in DKC scheme */
 } GarbledCircuit;
@@ -107,7 +107,7 @@ typedef struct GarbledCircuit {
  * @see JustGarble paper.
  *
  */
-void createInputLabels(block* inputLabels, block R, int n);
+void createInputLabels(block* inputLabels, block R, uint64_t n);
 
 /**
  * @brief Garble the circuit described in garbledCircuit.
@@ -138,7 +138,7 @@ void createInputLabels(block* inputLabels, block R, int n);
  * @see JustGarble paper.
  * @see Half-Gate paper.
  */
-long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
+uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
             block* initialDFFLabels, block* outputLabels, block R, int connfd);
 
 /**
@@ -164,7 +164,7 @@ long garble(GarbledCircuit *garbledCircuit, block* inputLabels,
  * @see Half-Gate paper.
  */
 
-long evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
+uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
               block* initialDFFLabels, block *outputs, int connfd);
 
 /**

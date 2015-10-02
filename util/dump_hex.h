@@ -22,7 +22,7 @@
 #include <fstream>
 #include <string>
 
-#include "block.h"
+#include "crypto/block.h"
 
 using std::ofstream;
 using std::string;

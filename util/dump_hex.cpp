@@ -16,7 +16,7 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dump_hex.h"
+#include "util/dump_hex.h"
 
 #include <iostream>
 #include <fstream>
@@ -24,7 +24,8 @@
 #include <iomanip>
 #include <map>
 #include <vector>
-#include "common.h"
+ 
+#include "util/common.h"
 
 using std::ofstream;
 using std::cerr;

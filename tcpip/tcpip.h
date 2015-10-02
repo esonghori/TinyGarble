@@ -18,7 +18,8 @@
 #ifndef EVAL_NETLIST_TCPIP_H_
 #define EVAL_NETLIST_TCPIP_H_
 
-#include "block.h"
+#include <cstdint>
+#include "crypto/block.h"
 
 int server_init(int port);
 int server_close(int sock);
@@ -26,10 +27,7 @@ int server_close(int sock);
 int client_init(const char* ip, int port);
 int client_close(int sock);
 
-void send_block(int sock, block var);
-void recv_block(int sock, block* var);
-
-void send_type(int sock, short var);
-void recv_type(int sock, short* var);
+int send_data(int sock, const void *var, int len);
+int recv_data(int sock, void* var, int len);
 
 #endif /* EVAL_NETLIST_TCPIP_H_ */
