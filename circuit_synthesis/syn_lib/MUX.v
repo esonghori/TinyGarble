@@ -1,27 +1,11 @@
 `timescale 1ns / 1ps
-// synopsys template
 
-module MUX
-#(
-	parameter N=8
-)
-(
-	A,
-	B,
-	S,
-	O
+module MUX #(parameter N=8)(
+	input [N-1:0] A,
+	input [N-1:0] B,
+	input S,
+	output [N-1:0] O
 );
-//pragma dc_tcl_script_begin
-//set_max_area -ignore_tns 0 
-//set_flatten false -design *
-//set_structure -design * false
-//set_resource_allocation area_only
-//pragma dc_tcl_script_end
-
-	input [N-1:0] A;
-	input [N-1:0] B;
-	input S;
-	output [N-1:0] O;
 
 	genvar g,h;
 	

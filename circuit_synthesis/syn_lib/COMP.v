@@ -1,19 +1,14 @@
 `timescale 1ns / 1ps
-// synopsys template
 
 module COMP
 #(
 	parameter N=8
 )
 (
-	A,
-	B, 
-	O
+	input [N-1:0] A,
+	input [N-1:0] B,
+	output 	O
 );
-
-	input [N-1:0] A;
-	input [N-1:0] B;
-	output 	O;
 
 	wire C[N:0];
 
@@ -29,9 +24,7 @@ module COMP
 	begin
 		for(g=0;g<N;g=g+1)
 		begin:FAINST
-			FA
-			FA_
-			(
+			FA FA_ (
 				.A(A[g]), 
 				.B(~B[g]), 
 				.CI(C[g]), 
@@ -46,9 +39,7 @@ module COMP
 		begin:FA_INST_0
 			for(g=0;g<MAX_LOOP;g=g+1)
 			begin:FA_INST_1
-				FA
-				FA_
-				(
+				FA FA_ (
 					.A(A[h*MAX_LOOP + g]), 
 					.B(~B[h*MAX_LOOP + g]), 
 					.CI(C[h*MAX_LOOP + g]), 
@@ -59,9 +50,7 @@ module COMP
 		end
 		for(g=(N/MAX_LOOP)*MAX_LOOP;g <N;g=g+1)
 		begin:FA_INST_1
-			FA
-			FA_
-			(
+			FA FA_ (
 				.A(A[g]), 
 				.B(~B[g]), 
 				.CI(C[g]), 
