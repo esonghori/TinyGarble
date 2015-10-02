@@ -15,10 +15,12 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "read_netlist.h"
+#include "scd/v_2_scd.h"
+ 
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <fstream>
+#include "scd/parse_netlist.h"
 
 namespace po = boost::program_options;
 using std::ofstream;
@@ -132,15 +134,19 @@ int writeSCD(const ReadCircuit &readCircuit, int c_, const string &fileName) {
 
 int main(int argc, char** argv) {
 
+  string input_netlist_file;
+  string output_scd_file;
+  int clock_cycles;
+
   po::options_description desc(
       "Read Netlist, TinyGarble version 0.1\nAllowed options");
   desc.add_options()  //
   ("help,h", "produce help message.")  //
-  ("netlist,i", po::value<string>()->default_value("netlists/test.v"),
+  ("netlist,i", po::value<string>(&input_netlist_file)->default_value("netlists/test.v"),
    "Input netlist (verilog .v) file address.")  //
-  ("scd,o", po::value<string>()->default_value("netlists/test.scd"),
+  ("scd,o", po::value<string>(&output_scd_file)->default_value("netlists/test.scd"),
    "Output simple circuit description (scd) file address.")  //
-  ("clock,c", po::value<int>()->default_value(1),
+  ("clock,c", po::value<int>(&clock_cycles)->default_value(1),
    "Number of clock cycles for sequential circuits");
 
   po::variables_map vm;
@@ -156,17 +162,13 @@ int main(int argc, char** argv) {
     cerr << desc << endl;
     return -1;
   }
-
-  string input_netlist_file;
   if (vm.count("netlist")) {
     input_netlist_file = vm["netlist"].as<string>();
   }
 
-  string output_scd_file;
   if (vm.count("scd")) {
     output_scd_file = vm["scd"].as<string>();
   }
-  int clock_cycles;
   if (vm.count("scd")) {
     clock_cycles = vm["clock"].as<int>();
   }

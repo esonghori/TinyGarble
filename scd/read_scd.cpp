@@ -33,13 +33,16 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "scd.h"
+#include "scd/read_scd.h"
 
+#include <cerrno>
+#include <cstring>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 
-int readCircuitFromFile(const string& fileName,
+
+int readSCD(const string& fileName,
                         GarbledCircuit *garbledCircuit) {
   std::ifstream f(fileName, std::ios::out);
   if (!f.is_open()) {
@@ -47,12 +50,12 @@ int readCircuitFromFile(const string& fileName,
     return FAILURE;
   }
 
-  int n;
-  int g;
-  int p;
-  int m;
-  int q;
-  int c;
+  uint64_t n;
+  uint64_t g;
+  uint64_t p;
+  uint64_t m;
+  uint64_t q;
+  uint64_t c;
 
   f >> n >> g >> p >> m >> q >> c;
 
@@ -64,12 +67,21 @@ int readCircuitFromFile(const string& fileName,
   garbledCircuit->c = c;
   garbledCircuit->r = n + p + q;
 
-  posix_memalign((void **) (&garbledCircuit->garbledGates), 128,
-                 sizeof(GarbledGate) * q);
-  posix_memalign((void **) (&garbledCircuit->outputs), 128, sizeof(int) * m);
+  if(posix_memalign((void **) (&garbledCircuit->garbledGates), 128,
+                 sizeof(GarbledGate) * q)) {
+    cerr << "Linux is a cheap miser that refuses to give us memory" << endl;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
+  }
+  if(posix_memalign((void **) (&garbledCircuit->outputs), 128,
+    sizeof(uint64_t) * m)) {
+    cerr << "Linux is a cheap miser that refuses to give us memory" << endl;
+    cerr << strerror(errno) << endl;
+    return FAILURE;
+  }
   garbledCircuit->wires = new Wire[garbledCircuit->r];
-  garbledCircuit->D = new int[garbledCircuit->p];
-  garbledCircuit->I = new int[garbledCircuit->p];
+  garbledCircuit->D = new uint64_t[garbledCircuit->p];
+  garbledCircuit->I = new uint64_t[garbledCircuit->p];
 
   if (garbledCircuit->garbledGates == nullptr
       || garbledCircuit->outputs == nullptr || garbledCircuit->wires == nullptr
@@ -78,28 +90,27 @@ int readCircuitFromFile(const string& fileName,
     return FAILURE;
   }
 
-  int i;
-  for (i = 0; i < q; i++) {
+  for (uint64_t i = 0; i < q; i++) {
     garbledCircuit->garbledGates[i].output = n + p + i;
   }
 
-  for (i = 0; i < q; i++) {
+  for (uint64_t i = 0; i < q; i++) {
     f >> garbledCircuit->garbledGates[i].input0;
   }
 
-  for (i = 0; i < q; i++) {
+  for (uint64_t i = 0; i < q; i++) {
     f >> garbledCircuit->garbledGates[i].input1;
   }
-  for (i = 0; i < q; i++) {
+  for (uint64_t i = 0; i < q; i++) {
     f >> garbledCircuit->garbledGates[i].type;
   }
-  for (i = 0; i < m; i++) {
+  for (uint64_t i = 0; i < m; i++) {
     f >> garbledCircuit->outputs[i];
   }
-  for (i = 0; i < p; i++) {
+  for (uint64_t i = 0; i < p; i++) {
     f >> garbledCircuit->D[i];
   }
-  for (i = 0; i < p; i++) {
+  for (uint64_t i = 0; i < p; i++) {
     f >> garbledCircuit->I[i];
   }
 

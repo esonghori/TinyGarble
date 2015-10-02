@@ -16,15 +16,24 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVAL_NETLIST_UTIL_H_
-#define EVAL_NETLIST_UTIL_H_
+#ifndef SCD_READ_SCD_H_
+#define SCD_READ_SCD_H_
 
-#include "block.h"
+#include "util/common.h"
+#include "garbled_circuit/garbled_circuit.h"
 
-block randomBlock();
-void srand_sse(unsigned int seed);
-unsigned short type2V(int gateType);
-void print__m128i(block);
+/**
+ * @brief Read SCD file and initialize garbledCircuit
+ *
+ *
+ * @param param1 SCD file name.
+ * @param param2 pointer to garbledCircuit. The garbledCircuit will be filled.
+ * @return 0 in success and -1 in failure.
+ *
+ * @see JustGarble paper.
+ * @see TinyGarble paper.
+ */
+int readSCD(const string& fileName, GarbledCircuit *garbledCircuit);
 
 
-#endif /* EVAL_NETLIST_UTIL_H_ */
+#endif /* SCD_READ_SCD_H_ */

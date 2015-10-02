@@ -94,12 +94,6 @@ class ReadCircuit {
   }
 };
 
-const string typetoStrGate(short itype);
-
-int parse_netlist(const string &filename, ReadCircuitString &readCircuitString);
-int id_assignment(const ReadCircuitString readCircuitString,
-                  ReadCircuit &readCircuit);
-int topological_sort(ReadCircuit &readCircuit);
 int top_sort(const vector<ReadGate>& G, int no_task, int *index);
 int schedule(const ReadCircuit &readCircuit, int no_core, int **core);
 void quickSort(int *, int *, int, int);
