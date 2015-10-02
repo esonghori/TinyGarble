@@ -1,45 +1,42 @@
 `timescale 1ns / 1ps
-// synopsys template
 
-module MULT
-#(
-	parameter N=8
-)
+module MULT #(parameter N = 8, M = 8)
 ( 
-	A,
-	B,
-	O
-);
-	input  [N-1:0] A;
-	input  [N-1:0] B;
-	output [N-1:0] O;
-	
+	input  [N-1:0] A,
+	input  [M-1:0] B,
+	output [N+M-1:0] O
+);	
 
-	wire [N-1:0] w[N:0];
+	wire [N+M-1:0] w[N-1:0];
+	wire [N+M-1:0] AA[N-1:0];
+	wire [N+M-1:0] B_;
 
 	
-	assign w[0] = (A[0])?B:0;
-	assign O = w[N];
+	assign w[0] = (A[0])?B_:0;
+	assign B_ = {{N{1'b0}}, B};
+	assign O = w[N-1];
 	
-	genvar g,h;
+	genvar g;
 	
 	generate
-	for(g=0;g<N;g=g+1)
-	begin:FAINST
-		if(g>0)
-			ADD 
-			#(
-				.N(N)
-			) 
-			ADD_
-			(
-				.A(((A[g])?{B[N-1-g:0], {g{1'b0}}}:{N{1'b0}})),
-				.B(w[g]), 
+	for(g=1;g<N;g=g+1)
+	begin:MULT_UNIT
+			MUX #(.N(N+M)) MUX(
+				.A({(N+M){1'b0}}),
+				.B({B_[N+M-1-g:0], {g{1'b0}}}),
+				.S(A[g]),
+				.O(AA[g])
+			);
+			ADD #(.N(N+M)) ADD_(
+				.A(AA[g]),
+				.B(w[g-1]), 
 				.CI(1'b0), 
-				.S(w[g+1]), 
+				.S(w[g]), 
 				.CO()
 			);
 	end
 	endgenerate
 	
 endmodule
+
+
