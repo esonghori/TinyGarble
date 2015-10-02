@@ -191,5 +191,6 @@ Transfer and Extensions for Faster Secure Computation In <i>CCS'13</i>.
 
 ##TODOs
 - Add OT.
+- Fix read netlist for Yosys.
 - Update README.md.
 - Add synthesis library.
