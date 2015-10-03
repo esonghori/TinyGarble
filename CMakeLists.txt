@@ -3,6 +3,11 @@ project (TinyGarble
   VERSION 0.2.0
   LANGUAGES CXX)
 
+
+enable_testing()
+include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories("${PROJECT_BINARY_DIR}")
+
 ###############
 # Compiler flags
 set(CMAKE_CXX_FLAGS 
@@ -12,6 +17,8 @@ set (CMAKE_CXX_STANDARD 11)
 
 ###############
 # Library
+
+## Boost 
 set (Boost_USE_STATIC_LIBS OFF)
 set (Boost_USE_MULTITHREADED ON)
 set (Boost_USE_STATIC_RUNTIME OFF)
@@ -23,8 +30,12 @@ if (Boost_FOUND)
   include_directories (${Boost_INCLUDE_DIRS})
 endif (Boost_FOUND)
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+## OpenSSL
+find_package (OpenSSL)
 
+if (OPENSSL_FOUND)
+	include_directories (${OPENSSL_INCLUDE_DIR})
+endif (OPENSSL_FOUND)
 ###############
 # Options
 option (DEBUG "Set debug flag" OFF)
@@ -43,7 +54,8 @@ configure_file (
  
 ###############
 # Subdirectory
+add_subdirectory ("crypto")
 add_subdirectory ("garbled_circuit")
 add_subdirectory ("scd")
-add_subdirectory ("util")
 add_subdirectory ("tcpip")
+add_subdirectory ("util")

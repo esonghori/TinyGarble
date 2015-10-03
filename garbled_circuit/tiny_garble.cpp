@@ -34,6 +34,7 @@
  */
 
 #include <boost/program_options.hpp>
+#include <boost/format.hpp>
 #include <cstdlib>
 #include <ctime>
 
@@ -42,13 +43,14 @@
 #include "scd/read_scd.h"
 #include "util/util.h"
 #include "util/dump_hex.h"
+#include "util/tinygarble_config.h"
 
 namespace po = boost::program_options;
 using std::string;
 using std::vector;
 
 int alice(GarbledCircuit& garbledCircuit, bool random_input,
-  uint64_t input_data, block R, int connfd) {
+          uint64_t input_data, block R, int connfd) {
 
   uint64_t n = garbledCircuit.n;
   uint64_t g = garbledCircuit.g;
@@ -68,8 +70,7 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input,
       if (random_input) {
         garbler_inputs[cid * g + j] = rand() % 2;
       } else {
-        garbler_inputs[cid * g + j] =
-            ((input_data & 1 << (cid * g + j)) != 0);
+        garbler_inputs[cid * g + j] = ((input_data & 1 << (cid * g + j)) != 0);
       }
     }
   }
@@ -93,7 +94,8 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input,
       if (!ev_input)
         send_data(connfd, &inputLabels[2 * (cid * n + g + j)], sizeof(block));
       else
-        send_data(connfd, &inputLabels[2 * (cid * n + g + j) + 1], sizeof(block));
+        send_data(connfd, &inputLabels[2 * (cid * n + g + j) + 1],
+                  sizeof(block));
     }
   }
 
@@ -128,7 +130,7 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input,
   }
 
   garbledCircuit.globalKey = randomBlock();
-  send_data(connfd, &garbledCircuit.globalKey, sizeof(block)); // send DKC key
+  send_data(connfd, &garbledCircuit.globalKey, sizeof(block));  // send DKC key
 
   garble(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, R,
          connfd);
@@ -146,8 +148,8 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input,
   return SUCCESS;
 }
 
-int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data, 
-  int connfd) {
+int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
+        int connfd) {
 
   uint64_t n = garbledCircuit.n;
   uint64_t g = garbledCircuit.g;
@@ -167,8 +169,7 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
       if (random_input) {
         evalator_inputs[cid * e + j] = rand() % 2;
       } else {
-        evalator_inputs[cid * e + j] =
-            ((input_data & 1 << (cid * e + j)) != 0);
+        evalator_inputs[cid * e + j] = ((input_data & 1 << (cid * e + j)) != 0);
       }
     }
   }
@@ -194,7 +195,7 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
       assert((garbledCircuit.I[j] - g > 0) && (garbledCircuit.I[j] - g < e));
 
       send_data(connfd, &evalator_inputs[garbledCircuit.I[j] - g],
-        sizeof(bool));
+                sizeof(bool));
       recv_data(connfd, &initialDFFLable[j], sizeof(block));
     }
   }
@@ -203,20 +204,20 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
   evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, connfd);
 
   // TODO(ebi): change to LOG(INFO)
-  cout << "output:" << endl; 
+  cout << "output:" << endl;
   for (uint64_t cid = 0; cid < c; cid++) {
     // TODO(ebi): change to LOG(INFO)
-    cout << "c = " << cid << endl; 
+    cout << "c = " << cid << endl;
     for (uint64_t i = 0; i < m; i++) {
       bool myOutputType = getLSB(outputLabels[m * cid + i]);
       bool outputType;
       recv_data(connfd, &outputType, sizeof(bool));
       // TODO(ebi): change to LOG(INFO)
       // myOutputType XOR outputType
-      cout << ((myOutputType != outputType)?'0':'1');
+      cout << ((myOutputType != outputType) ? '0' : '1');
     }
     // TODO(ebi): change to LOG(INFO)
-    cout << endl; 
+    cout << endl;
   }
 
   client_close(connfd);
@@ -229,15 +230,20 @@ int main(int argc, char* argv[]) {
   int port;
   string scd_file_address;
   string server_ip;
-  po::options_description desc(
-      "Evaluate Netlist, TinyGarble version 0.1\nAllowed options");
+
+  boost::format fmter(
+      "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
+  fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
+    % TinyGarble_VERSION_PATCH;
+  po::options_description desc(fmter.str());
   desc.add_options()  //
   ("help,h", "produce help message")  //
   ("alice,a", "Run as Alice (server).")  //
   ("bob,b", "Run as Bob (client).")  //
   ("deterministic", "Run with deterministic random generator.")  //
   ("scd_file,i",
-   po::value<string>(&scd_file_address)->default_value("../read_netlist/netlists/test.scd"),
+   po::value<string>(&scd_file_address)->default_value(
+       "../read_netlist/netlists/test.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
@@ -322,6 +328,7 @@ int main(int argc, char* argv[]) {
 
     alice(garbledCircuit, random_input, input_data, R, connfd);
 
+    server_close(connfd);
   } else if (vm.count("bob")) {
 
     if (vm.count("server_ip")) {
@@ -347,6 +354,7 @@ int main(int argc, char* argv[]) {
 
     bob(garbledCircuit, random_input, input_data, connfd);
 
+     client_close(connfd);
   }
 
   if (dump_hex_prefix != "") {

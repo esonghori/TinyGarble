@@ -20,11 +20,11 @@
 #define EVAL_NETLIST_UTIL_H_
 
 #include "crypto/block.h"
+#include <ostream>
 
 block randomBlock();
 void srand_sse(unsigned int seed);
 unsigned short type2V(int gateType);
-void print__m128i(block);
-
+std::ostream & operator <<(std::ostream & o, const block& v);
 
 #endif /* EVAL_NETLIST_UTIL_H_ */
