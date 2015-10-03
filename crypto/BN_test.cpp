@@ -7,7 +7,6 @@
 
 #include "crypto/OT.h"
 
-#include <cassert>
 #include <iostream>
 #include <openssl/bn.h>
 #include "util/util.h"
