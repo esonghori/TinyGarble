@@ -56,7 +56,7 @@ using std::endl;
   __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi)); \
   res =  ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 ); \
   res;})
-#define fbits( v, p) ((v & (1 << p))>>p)
+#define fbits(v, p) ((v & (1 << p))>>p)
 
 
 #ifdef DUMP_HEX

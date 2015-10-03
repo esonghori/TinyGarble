@@ -276,6 +276,7 @@ int main(int argc, char* argv[]) {
     srand(time(NULL));
     srand_sse(time(NULL));
     R = randomBlock();
+    //TODO(ebi): check if single bit gets 1 or 8 bit.
     *((short *) (&R)) = 1;
   }
 
