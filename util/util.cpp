@@ -33,15 +33,16 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "crypto/aes.h"
-#include "garbled_circuit/garbled_circuit.h"
-#include "util/common.h"
+#include "util/util.h"
 
+#include <boost/algorithm/string.hpp>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdint.h>
-
-#include "util/util.h"
+#include <iomanip>
+#include "crypto/aes.h"
+#include "garbled_circuit/garbled_circuit.h"
+#include "util/common.h"
 
 static block cur_seed;
 
@@ -113,7 +114,24 @@ unsigned short type2V(int gateType) {
   return 0;
 }
 
-void print__m128i(block var) {
-  uint32_t *val = (uint32_t*) &var;
-  printf("%08x \t%08x \t%08x \t%08x \n", val[3], val[2], val[1], val[0]);
+std::ostream & operator <<(std::ostream & o, const block& v) {
+  uint32_t *v_u32 = (uint32_t*) &v;
+  std::ios::fmtflags f(o.flags());
+  o << std::hex << std::setfill('0') << std::setw(8) << v_u32[3] << " "
+    << std::setfill('0') << std::setw(8) << v_u32[2] << " " << std::setfill('0')
+    << std::setw(8) << v_u32[1] << " " << std::setfill('0') << std::setw(8)
+    << v_u32[0];
+  o.flags(f);
+  return o;
+}
+
+block strToBlock(const string &s) {
+  block v;
+  boost::erase_all(s, " _\t\n");
+
+  if(s.length() > sizeof(block)*2) {
+    return
+  }
+
+  return v;
 }

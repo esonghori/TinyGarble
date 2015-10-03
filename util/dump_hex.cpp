@@ -24,8 +24,9 @@
 #include <iomanip>
 #include <map>
 #include <vector>
- 
+
 #include "util/common.h"
+#include "util/util.h"
 
 using std::ofstream;
 using std::cerr;
@@ -55,10 +56,7 @@ void dump_finish() {
 // dump_file : { "dff", "input", "output", "table", "r_key" } + {".g", ".f"}
 void dump(const string& dump_file, const block& a) {
   if (dump_map.count(dump_file)) {
-    uint32_t *val = (uint32_t*) &a;
-    *dump_map[dump_file] << std::hex << std::setw(8) << std::setfill('0')
-                         << val[3] << "\t" << val[2] << "\t" << val[1] << "\t"
-                         << val[0] << std::endl;
+    *dump_map[dump_file] << a << std::endl;
   } else {
     cerr << "No such a dump file " << dump_file << endl;
   }

@@ -1,3 +1,4 @@
+bin/
 alib-52/
 *.alib
 *.log
@@ -13,15 +14,10 @@ alib-52/
 .~*#
 .nfs*
 clog*
-justGarble/bin
-justGarble/debug
-justGarble/readNetlist/bin
-justGarble/readNetlist/debug
 .cproject
 .project
 .settings
 .metadata
-work/
 transcript
 *.wlf
 syn/
