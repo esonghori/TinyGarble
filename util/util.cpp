@@ -125,13 +125,29 @@ std::ostream & operator <<(std::ostream & o, const block& v) {
   return o;
 }
 
-block strToBlock(const string &s) {
-  block v;
+int strToBlock(const string &s, block* v) {
+  if(!v) {
+    cerr << "null pointer in strToBlock." << endl;
+    return FAILURE;
+  }
+
   boost::erase_all(s, " _\t\n");
 
   if(s.length() > sizeof(block)*2) {
-    return
+    cerr << "Can not parse hex string to 128-bit block: " << s << endl
+     "string is longer than " << sizeof(block)*2 << endl; 
+    return FAILURE;
   }
+  for(int i=0;i<8-s.length();i++) {
+    s.insert(0, "0");
+  }
+  string lo_str = s.substring(s.begin()+8, s.end());
+  string hi_str = s.substring(s.begin(), s.begin()+8);
+  
+  uint64_t lo = std::stoull(lo_str, nullptr, 16);
+  uint64_t hi = std::stoull(hi_str, nullptr, 16);
 
-  return v;
+  *v = makeBlock(hi, lo);
+
+  return SUCCESS;
 }
