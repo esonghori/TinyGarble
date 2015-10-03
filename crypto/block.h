@@ -97,6 +97,7 @@ static inline block LEFTSHIFT1(block bl) {
   bl = _mm_slli_epi64(bl, 1);
   return _mm_xor_si128(bl, tmp);
 }
+
 static inline block RIGHTSHIFT(block bl) {
   const __m128i mask = _mm_set_epi32(0, 1, 0, 0);
   __m128i tmp = _mm_and_si128(bl, mask);
@@ -109,5 +110,8 @@ static inline block RIGHTSHIFT(block bl) {
                          "=r"(out.lo64), "=r"(out.hi64) :       \
                          "emr" (in2.lo64), "emr"(in2.hi64),     \
                          "0" (in1.lo64), "1" (in1.hi64));
+
+#define _m128_switch_endian(x) \
+  _mm_shuffle_epi8((x), _mm_set_epi8(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
 
 #endif /* EVAL_NETLIST_BLOCK_H_ */
