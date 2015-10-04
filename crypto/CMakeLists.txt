@@ -35,6 +35,7 @@ add_executable(OT_Test
   "OT_test.cpp"
   "$<TARGET_OBJECTS:Crypto_OT>"
   "$<TARGET_OBJECTS:TCPIP_TCPIP>"
+  "$<TARGET_OBJECTS:TCPIP_TCPIP_Testsuit>"
   "$<TARGET_OBJECTS:Util_Util>")
 
 if (OPENSSL_FOUND)
