@@ -10,6 +10,9 @@ add_executable(OT_Main
 if (OPENSSL_FOUND)
 	target_link_libraries(OT_Main ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
+if (Boost_FOUND)
+  target_link_libraries(OT_Main ${Boost_LIBRARIES})
+endif (Boost_FOUND)
 
 add_executable(BN_Test
   "BN_test.cpp"
@@ -27,7 +30,6 @@ add_test (Crypto_BN_Test
 set_tests_properties (Crypto_BN_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Error;ERROR;Failed;failed")
-	
 	
 add_executable(OT_Test
   "OT_test.cpp"

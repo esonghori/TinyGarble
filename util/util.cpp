@@ -131,18 +131,19 @@ int strToBlock(const string &s, block* v) {
     return FAILURE;
   }
 
-  boost::erase_all(s, " _\t\n");
+  string v_str = s;
+  boost::erase_all(v_str, " _\t\n");
 
-  if(s.length() > sizeof(block)*2) {
-    cerr << "Can not parse hex string to 128-bit block: " << s << endl
+  if(v_str.length() > sizeof(block)*2) {
+    cerr << "Can not parse hex string to 128-bit block: " << v_str << endl <<
      "string is longer than " << sizeof(block)*2 << endl; 
     return FAILURE;
   }
-  for(int i=0;i<8-s.length();i++) {
-    s.insert(0, "0");
+  for(uint i=0;i<8-v_str.length();i++) {
+    v_str.insert(0, "0");
   }
-  string lo_str = s.substring(s.begin()+8, s.end());
-  string hi_str = s.substring(s.begin(), s.begin()+8);
+  string lo_str = v_str.substr(8, 8);
+  string hi_str = v_str.substr(0, 8);
   
   uint64_t lo = std::stoull(lo_str, nullptr, 16);
   uint64_t hi = std::stoull(hi_str, nullptr, 16);

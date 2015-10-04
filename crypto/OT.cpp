@@ -61,7 +61,7 @@ int recvBN(int connf, BIGNUM *bignum) {
   return SUCCESS;
 }
 
-int OTsend(const block** m, uint32_t m_len, int connfd) {
+int OTsend(const block* const* m, uint32_t m_len, int connfd) {
 
   // 0. check the vector size
   send_data(connfd, &m_len, sizeof(uint32_t));
