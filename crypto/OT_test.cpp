@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
   srand_sse(time(0));
 
   uint len = rand()%5 + 1;
+  cout << "Run OT 1 from 2 on a vector with size " << len << endl;
   block** message = new block*[len];
   bool* select = new bool[len];
   for (uint i = 0; i < len; i++) {
