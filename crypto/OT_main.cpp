@@ -5,9 +5,11 @@
  *      Author: ebi
  */
 
+#include "crypto/OT.h"
+
 #include <boost/program_options.hpp>
 #include <string>
-#include "crypto/OT.h"
+#include <cstdlib>
 
 namespace po = boost::program_options;
 using std::string;
@@ -27,15 +29,17 @@ int main(int argc, char *argv[]) {
   desc.add_options()  //
   ("help,h", "produce help message")  //
   ("alice,a", "Run as Alice (server).")  //
-  ("message0", po::value<string>(&message0_str)->default_value("1211109876543210"),
-   "Alice's message 0 in hexadecimal w/o '0x'.")  //
-  ("message1", po::value<string>(&message1_str)->default_value("0123456789101112"),
-   "Alice's message 1 in hexadecimal w/o '0x'.")  //
-  ("select", po::value<string>(&select_str)->default_value("0"),
-   "Bob's selection in hexadecimal w/o '0x'.")  //
+  ("message0",
+   po::value < string > (&message0_str)->default_value("1211109876543210"),
+   "Alice's 128-bit message 0 in hexadecimal w/o '0x'.")  //
+  ("message1",
+   po::value < string > (&message1_str)->default_value("0123456789101112"),
+   "Alice's 128-bit message 1 in hexadecimal w/o '0x'.")  //
+  ("select", po::value < string > (&select_str)->default_value("0"),
+   "Bob's 1-bit selection (0/1).")  //
   ("bob,b", "Run as Bob (client).")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
-  ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
+  ("server_ip,s", po::value < string > (&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.");
 
   po::variables_map vm;
@@ -67,11 +71,24 @@ int main(int argc, char *argv[]) {
     }
     cout << "Open Alice server on port: " << port << endl;
 
+    block message[2];
+    if (strToBlock(message0_str, &message[0]) == -1) {
+      cerr << "Cannot parse message0 " << message0_str << endl;
+      return -1;
+    }
+    if (strToBlock(message1_str, &message[1]) == -1) {
+      cerr << "Cannot parse message1 " << message1_str << endl;
+      return -1;
+    }
 
-    string message0_str;
-    string message1_str;
-    string select_str;
+    if (OTsend(&message, 1, connfd) == -1) {
+      cerr << "OTsend failed." << endl;
+      return -1;
+    }
 
+    cout << "messages were " << endl;
+    cout << "0: " << message[0] << ednl;
+    cout << "1: " << message[1] << ednl;
 
     server_close(connfd);
   } else if (vm.count("bob")) {
@@ -87,11 +104,18 @@ int main(int argc, char *argv[]) {
       return -1;
     }
     cout << "Connect Bob client to Alice server on " << server_ip << ":" << port
-         << endl;
+        << endl;
 
+    bool select = (atoi(select_str.c_str()) == 1);
 
+    block message;
+    if (OTsend(&select, 1, connfd, &message) == -1) {
+      cerr << "OTsend failed." << endl;
+      return -1;
+    }
 
-
+    cout << "select was " << select ? 1 : 0 << endl;
+    cout << "selected message = " << message << endl;
 
     client_close(connfd);
   }
