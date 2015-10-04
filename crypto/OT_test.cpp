@@ -7,87 +7,88 @@
 
 #include "crypto/OT.h"
 
-#include <cunistd>
-#include <sys/types.h>
-#include <cerrno>
-#include <cstdio>
-#include <sys/wait.h>
-#include <cstdlib>
 #include <iostream>
-#include <cstring>
-#include <ctime>
 #include "tcpip/tcpip.h"
+#include "tcpip/tcpip_testsuit.h"
 #include "util/common.h"
 
 using std::cerr;
 using std::cout;
 using std::endl;
 
-#define MESSAGE_LEN 10
+struct OTTestStruct {
+  block** message;
+  bool* select;
+  uint len;
+};
+
+int alice(void* data, int connfd) {
+  OTTestStruct* OT_test_str = (OTTestStruct*)data;
+  block **message = data->message;
+  uint len = data->len;
+  bool *select = data->select;
+  if (OTsend(message, len, connfd) == FAILURE) {
+    cerr << "OTsend failed." << endl;
+    return FAILURE;
+  }
+  return SUCCESS;
+}
+
+int bob(void *data, int connfd) {
+  OTTestStruct* OT_test_str = (OTTestStruct*)data;
+  block **message = data->message;
+  bool *select = data->select;
+  uint len = data->len;
+  block* message_recv = new block[len];
+
+  if (OTrecv(select, len, connfd, message_recv) == FAILURE) {
+    cerr << "OTsend failed." << endl;
+    return FAILURE;
+  }
+
+  for (int i = 0; i < len; i++) {
+    if (!blockCmp(message[i][select[i] ? 1 : 0], message_recv[i])) {
+      cerr << message_recv[i] << "!=" << message[i][select[i] ? 1 : 0] << endl;
+      cerr << "Equality test failed" << endl;
+      return FAILURE;
+    }
+  }
+
+  delete[] message_recv;
+  return SUCCESS;
+}
 
 int main(int argc, char* argv[]) {
 
   srand(time(0));
   srand_sse(time(0));
-  char server_ip[] = "127.0.0.1";
-  int port = rand() % 5000 + 1000;
 
-  block message[2][MESSAGE_LEN];
-  bool select[MESSAGE_LEN]
-  for (int i = 0; i < MESSAGE_LEN; i++) {
+  uint len = rand()%5 + 1;
+  block** message = new block*[len];
+  bool* select = new bool[len];
+  for (int i = 0; i < len; i++) {
+    message[i] = new block[2];
     for (int j = 0; j < 2; j++) {
-      message[j][i] = randomBlock();
+      message[i][j] = randomBlock();
     }
     select[i] = (rand() % 2 == 1);
   }
 
-  int connfd_server;
-  if ((connfd_server = server_init(port)) == -1) {
-    cerr << "Cannot open the socket in port." << port << " Test failed" << endl;
+  OTTestStruct OT_test_str;
+  OT_test_str.message = message;
+  OT_test_str.select = select;
+  OT_test_str.len = len;
+
+  if (tcpipTestRun(alice, (void *)&OT_test_str, bob,
+    (void *)&OT_test_str) == FAILURE) {
+    cerr << "tcpip test run failed." << endl;
     return FAILURE;
   }
 
-  pid_t childPID = fork();
-  if (childPID >= 0) {  // fork was successful
-    if (childPID == 0) {  // client
-      int connfd_client;
-      if ((connfd_client = client_init(server_ip.c_str(), port)) == -1) {
-        cerr << "Cannot connect to " << server_ip << ":" << port << endl;
-        return FAILURE;
-      }
-      if (OTsend(&message, MESSAGE_LEN, connfd_client) == -1) {
-        cerr << "OTsend failed." << endl;
-        return -1;
-      }
-
-      if (client_close(connfd_client) == FAILURE) {
-        cerr << "closing client failed. Test failed" << endl;
-        return FAILURE;
-      }
-    } else {  //server
-
-      block message_recv[MESSAGE_LEN];
-      if (OTrecv(select, MESSAGE_LEN, connfd_server, message_recv) == -1) {
-        cerr << "OTsend failed." << endl;
-        return -1;
-      }
-
-      for (int i = 0; i < MESSAGE_LEN; i++) {
-        if (!blockCmp(message_recv[i], message[select[i] ? 1 : 0][i])) {
-          cerr << "messages are not equal. test failed" << endl;
-          return -1;
-        }
-      }
-
-      if (server_close(connfd_server) == FAILURE) {
-        cerr << "closing server failed. Test failed" << endl;
-        return FAILURE;
-      }
-    }
-  } else {  // fork failed
-    cerr << "Fork failed. Test failed" << endl;
-    return FAILURE;
+  for (int i = 0; i < len; i++) {
+    delete[] message[i];
   }
+  delete[] message;
 
   return SUCCESS;
 }
