@@ -27,15 +27,17 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
-
+#include <iostream>
 #include "util/common.h"
+
+using std::cout;
+using std::endl;
 
 int listenfd = 0;
 
-int server_init(int port) {
-  int connfd;
-  socklen_t clilen;
-  struct sockaddr_in serv_addr, cli_addr;
+
+int serverOpenSocket(int port) {
+  struct sockaddr_in serv_addr;
   listenfd = socket(AF_INET, SOCK_STREAM, 0);
   if (listenfd < 0) {
     cerr << strerror(errno) << endl;
@@ -51,15 +53,19 @@ int server_init(int port) {
     return FAILURE;
   }
   listen(listenfd, 5);
-  clilen = sizeof(cli_addr);
-  printf("Wait for client\n");
-  connfd = accept(listenfd, (struct sockaddr *) &cli_addr, &clilen);
+  return SUCCESS;
+}
+
+int serverWaitForClient() {
+  struct sockaddr_in cli_addr;
+  socklen_t clilen = sizeof(cli_addr);
+  cout << "Wait for client" << endl;
+  int connfd = accept(listenfd, (struct sockaddr *) &cli_addr, &clilen);
   if (connfd < 0) {
     cerr << strerror(errno) << endl;
     return FAILURE;
   }
-
-  printf("Connected\n");
+  cout << "Connected" << endl;
   int flag = 1;
   int result = setsockopt(connfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag,
                           sizeof(int));
@@ -68,6 +74,14 @@ int server_init(int port) {
     return FAILURE;
   }
   return connfd;
+}
+
+int server_init(int port) {
+  if(serverOpenSocket(port) == FAILURE)
+    return FAILURE;
+  if(serverWaitForClient() == FAILURE)
+    return FAILURE;
+  return SUCCESS;
 }
 
 int server_close(int sock) {

@@ -13,18 +13,18 @@ using std::cout;
 using std::endl;
 
 #define PORT_TRIAL 10
+#define SLEEP_BEFORE_SEC 1 // sleep before connection in client
 
 int tcpipTestRun(
   const function<int(const void *, int)>& server_func,
   const void* server_data,
   const function<int(const void *, int)>& client_func,
   const void* client_data) {
-
-  int server_connfd;
+  
   char server_ip[] = "127.0.0.1";
   int port = rand() % 5000 + 1000;
   for(int i=0;i<PORT_TRIAL;i++) {
-    if ((server_connfd = server_init(port)) == -1) {
+    if (serverOpenSocket(port) == FAILURE) {
       port = rand() % 5000 + 1000;
       cerr << "Cannot open the socket in port " << port;
       if(i==PORT_TRIAL-1) {
@@ -40,6 +40,7 @@ int tcpipTestRun(
   pid_t childPID = fork();
   if (childPID >= 0) {  // fork was successful
     if (childPID == 0) {  // client
+      sleep(SLEEP_BEFORE_SEC);
       int client_connfd;
       if ((client_connfd = client_init(server_ip, port)) == -1) {
         cerr << "Cannot connect to " << server_ip << ":" << port << endl;
@@ -55,6 +56,11 @@ int tcpipTestRun(
         return FAILURE;
       }
     } else {  //server
+      int server_connfd;
+      if((server_connfd = serverWaitForClient()) ==  FAILURE) {
+        cerr << "server connection failed." << endl;
+        return FAILURE;
+      }
       if (server_func(server_data, server_connfd) == FAILURE) {
         cerr << "server failed." << endl;
         return FAILURE;

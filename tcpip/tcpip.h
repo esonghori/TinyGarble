@@ -21,6 +21,8 @@
 #include <cstdint>
 #include "crypto/block.h"
 
+int serverOpenSocket(int port);
+int serverWaitForClient();
 int server_init(int port);
 int server_close(int sock);
 
