@@ -11,6 +11,7 @@
 #include "tcpip/tcpip.h"
 #include "tcpip/tcpip_testsuit.h"
 #include "util/common.h"
+#include "util/util.h"
 
 using std::cerr;
 using std::cout;
@@ -22,11 +23,10 @@ struct OTTestStruct {
   uint len;
 };
 
-int alice(void* data, int connfd) {
+int alice(const void* data, int connfd) {
   OTTestStruct* OT_test_str = (OTTestStruct*)data;
-  block **message = data->message;
-  uint len = data->len;
-  bool *select = data->select;
+  block **message = OT_test_str->message;
+  uint len = OT_test_str->len;
   if (OTsend(message, len, connfd) == FAILURE) {
     cerr << "OTsend failed." << endl;
     return FAILURE;
@@ -34,11 +34,11 @@ int alice(void* data, int connfd) {
   return SUCCESS;
 }
 
-int bob(void *data, int connfd) {
+int bob(const void *data, int connfd) {
   OTTestStruct* OT_test_str = (OTTestStruct*)data;
-  block **message = data->message;
-  bool *select = data->select;
-  uint len = data->len;
+  block **message = OT_test_str->message;
+  bool *select = OT_test_str->select;
+  uint len = OT_test_str->len;
   block* message_recv = new block[len];
 
   if (OTrecv(select, len, connfd, message_recv) == FAILURE) {
@@ -46,8 +46,8 @@ int bob(void *data, int connfd) {
     return FAILURE;
   }
 
-  for (int i = 0; i < len; i++) {
-    if (!blockCmp(message[i][select[i] ? 1 : 0], message_recv[i])) {
+  for (uint i = 0; i < len; i++) {
+    if (!blockCmp(message[i][(select[i] ? 1 : 0)], message_recv[i])) {
       cerr << message_recv[i] << "!=" << message[i][select[i] ? 1 : 0] << endl;
       cerr << "Equality test failed" << endl;
       return FAILURE;
@@ -66,9 +66,9 @@ int main(int argc, char* argv[]) {
   uint len = rand()%5 + 1;
   block** message = new block*[len];
   bool* select = new bool[len];
-  for (int i = 0; i < len; i++) {
+  for (uint i = 0; i < len; i++) {
     message[i] = new block[2];
-    for (int j = 0; j < 2; j++) {
+    for (uint j = 0; j < 2; j++) {
       message[i][j] = randomBlock();
     }
     select[i] = (rand() % 2 == 1);
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     return FAILURE;
   }
 
-  for (int i = 0; i < len; i++) {
+  for (uint i = 0; i < len; i++) {
     delete[] message[i];
   }
   delete[] message;
