@@ -1,6 +1,7 @@
 #include "util/util.h"
 
 #include <iostream>
+#include <sstream>
 #include "util/minunit.h"
 
 using std::cerr;

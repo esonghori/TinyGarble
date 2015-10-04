@@ -9,7 +9,10 @@
 
 #include <boost/program_options.hpp>
 #include <string>
+#include <iostream>
 #include <cstdlib>
+#include "tcpip/tcpip.h"
+#include "util/util.h"
 
 namespace po = boost::program_options;
 using std::string;
@@ -71,25 +74,28 @@ int main(int argc, char *argv[]) {
     }
     cout << "Open Alice server on port: " << port << endl;
 
-    block message[2];
-    if (strToBlock(message0_str, &message[0]) == -1) {
+    block** message = new block*[1];
+    message[0] = new block[2];
+    if (strToBlock(message0_str, &message[0][0]) == -1) {
       cerr << "Cannot parse message0 " << message0_str << endl;
       return -1;
     }
-    if (strToBlock(message1_str, &message[1]) == -1) {
+    if (strToBlock(message1_str, &message[0][1]) == -1) {
       cerr << "Cannot parse message1 " << message1_str << endl;
       return -1;
     }
 
-    if (OTsend(&message, 1, connfd) == -1) {
+    if (OTsend(message, 1, connfd) == -1) {
       cerr << "OTsend failed." << endl;
       return -1;
     }
 
     cout << "messages were " << endl;
-    cout << "0: " << message[0] << ednl;
-    cout << "1: " << message[1] << ednl;
+    cout << "0: " << message[0][0] << endl;
+    cout << "1: " << message[0][1] << endl;
 
+    delete [] message[0];
+    delete [] message;
     server_close(connfd);
   } else if (vm.count("bob")) {
 
@@ -109,12 +115,12 @@ int main(int argc, char *argv[]) {
     bool select = (atoi(select_str.c_str()) == 1);
 
     block message;
-    if (OTsend(&select, 1, connfd, &message) == -1) {
+    if (OTrecv(&select, 1, connfd, &message) == -1) {
       cerr << "OTsend failed." << endl;
       return -1;
     }
 
-    cout << "select was " << select ? 1 : 0 << endl;
+    cout << "select was " << (select ? "1" : "0") << endl;
     cout << "selected message = " << message << endl;
 
     client_close(connfd);

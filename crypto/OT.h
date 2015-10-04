@@ -17,7 +17,7 @@ void BNToBlock(const BIGNUM *a, block *w);
 int sendBN(int connf, const BIGNUM *bignum);
 int recvBN(int connf, BIGNUM *bignum);
 
-int OTsend(const block** m, uint32_t m_len, int connfd);
+int OTsend(const block* const* m, uint32_t m_len, int connfd);
 int OTrecv(const bool *sel, uint32_t m_len, int connfd, block* m);
 
 

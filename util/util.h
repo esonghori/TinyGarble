@@ -21,6 +21,9 @@
 
 #include "crypto/block.h"
 #include <ostream>
+#include <string>
+
+using std::string;
 
 block randomBlock();
 void srand_sse(unsigned int seed);
