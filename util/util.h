@@ -26,5 +26,6 @@ block randomBlock();
 void srand_sse(unsigned int seed);
 unsigned short type2V(int gateType);
 std::ostream & operator <<(std::ostream & o, const block& v);
+int strToBlock(const string &s, block* v);
 
 #endif /* EVAL_NETLIST_UTIL_H_ */
