@@ -42,7 +42,7 @@
 #include <iostream>
 #include "util/log.h"
 
-int readSCD(const string& fileName,
+int ReadSCD(const string& fileName,
                         GarbledCircuit *garbledCircuit) {
   std::ifstream f(fileName, std::ios::out);
   if (!f.is_open()) {

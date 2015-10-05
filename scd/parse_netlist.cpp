@@ -30,7 +30,7 @@ using boost::tokenizer;
 using std::map;
 using std::pair;
 
-string typetoStrGate(short itype) {
+string Type2StrGate(short itype) {
   string type;
   if (itype == ANDGATE) {
     type = "AND";
@@ -62,7 +62,7 @@ string typetoStrGate(short itype) {
   return type;
 }
 
-int parse_netlist(const string &filename,
+int ParseNetlist(const string &filename,
                   ReadCircuitString &readCircuitString) {
 
   ifstream fin(filename.c_str(), std::ios::in);
@@ -320,7 +320,7 @@ int parse_netlist(const string &filename,
   for (uint i = 0; i < readCircuitString.gate_list_string.size(); i++)
   {
     cout << i << "\t"
-    << typetoStrGate(readCircuitString.gate_list_string[i].type) << "\t"
+    << Type2StrGate(readCircuitString.gate_list_string[i].type) << "\t"
     << readCircuitString.gate_list_string[i].input[0] << "\t"
     << readCircuitString.gate_list_string[i].input[1] << "\t"
     << readCircuitString.gate_list_string[i].output
@@ -332,7 +332,7 @@ int parse_netlist(const string &filename,
   for (uint i = 0; i < readCircuitString.dff_list_string.size(); i++)
   {
     cout << i << "\t"
-    << typetoStrGate(readCircuitString.dff_list_string[i].type) << "\t"
+    << Type2StrGate(readCircuitString.dff_list_string[i].type) << "\t"
     << readCircuitString.dff_list_string[i].input[0] << "\t"
     << readCircuitString.dff_list_string[i].input[1] << "\t"
     << readCircuitString.dff_list_string[i].output
@@ -343,7 +343,7 @@ int parse_netlist(const string &filename,
   return 0;
 }
 
-int id_assignment(const ReadCircuitString& readCircuitString,
+int IdAssignment(const ReadCircuitString& readCircuitString,
                   ReadCircuit &readCircuit) {
   readCircuit.no_of_g_inports = readCircuitString.no_of_g_inports;
   readCircuit.no_of_inports = readCircuitString.inport_list.size();
@@ -416,7 +416,7 @@ int id_assignment(const ReadCircuitString& readCircuitString,
   for (uint i = 0; i < readCircuit.no_of_gates; i++)
   {
     cout << i << "\t"
-    << typetoStrGate(readCircuit.gate_list[i].type) << "\t"
+    << Type2StrGate(readCircuit.gate_list[i].type) << "\t"
     << readCircuit.gate_list[i].input[0] << "\t"
     << readCircuit.gate_list[i].input[1] << "\t"
     << readCircuit.gate_list[i].output
@@ -428,7 +428,7 @@ int id_assignment(const ReadCircuitString& readCircuitString,
   for (uint i = 0; i < readCircuit.no_of_dffs; i++)
   {
     cout << i << "\t"
-    << typetoStrGate(readCircuit.dff_list[i].type) << "\t"
+    << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
     << readCircuit.dff_list[i].input[0] << "\t"
     << readCircuit.dff_list[i].input[1] << "\t"
     << readCircuit.dff_list[i].output
@@ -440,14 +440,14 @@ int id_assignment(const ReadCircuitString& readCircuitString,
   return 0;
 }
 
-int topological_sort(ReadCircuit &readCircuit) {
+int TopologicalSort(ReadCircuit &readCircuit) {
 
   int **core;
   core = new int*[1];  // no of rows = no_core
   core[0] = new int[readCircuit.no_of_gates + 1];  // no of columns = no_of_gates+1
   memset(core[0], -1, (readCircuit.no_of_gates + 1) * sizeof(int));
 
-  schedule(readCircuit, 1, core);
+  Schedule(readCircuit, 1, core);
 
   readCircuit.task_schedule.resize(readCircuit.no_of_gates);
 
@@ -503,7 +503,7 @@ int topological_sort(ReadCircuit &readCircuit) {
   {
     int gid = readCircuit.task_schedule[i];
     cout << i << "\t"
-    << typetoStrGate(readCircuit.gate_list[gid].type) << "\t"
+    << Type2StrGate(readCircuit.gate_list[gid].type) << "\t"
     << readCircuit.gate_list[gid].input[0] << "\t"
     << readCircuit.gate_list[gid].input[1] << "\t"
     << readCircuit.gate_list[gid].output
@@ -515,7 +515,7 @@ int topological_sort(ReadCircuit &readCircuit) {
   for (uint i = 0; i < readCircuit.no_of_dffs; i++)
   {
     cout << i << "\t"
-    << typetoStrGate(readCircuit.dff_list[i].type) << "\t"
+    << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
     << readCircuit.dff_list[i].input[0] << "\t"
     << readCircuit.dff_list[i].input[1] << "\t"
     << readCircuit.dff_list[i].output

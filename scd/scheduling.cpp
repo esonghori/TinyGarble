@@ -19,7 +19,7 @@
  
 #include <cstring>
 
-int top_sort(const vector<ReadGate>& G, int no_task, int *index) {
+int TopSort(const vector<ReadGate>& G, int no_task, int *index) {
   
   // calculate static b-level
   int *sl = new int[no_task];
@@ -41,14 +41,14 @@ int top_sort(const vector<ReadGate>& G, int no_task, int *index) {
   }
 
   // sort in descending order of static b-level
-  quickSort(sl, index, 0, no_task - 1);  
+  QuickSort(sl, index, 0, no_task - 1);  
 
   delete[] sl;
 
   return 0;
 }
 
-int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
+int Schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
 
   const vector<ReadGate>& G = readCircuit.gate_list;
   int no_task;
@@ -58,7 +58,7 @@ int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
 
   int *index;
   index = new int[no_task];
-  top_sort(G, no_task, index);
+  TopSort(G, no_task, index);
 
   // start of scheduling
   int *p0, *p1, *core_busy, *core_index;
@@ -83,7 +83,7 @@ int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
           if ((G[index[i]].input[1] - no_of_input_dff < 0)
               || (p0[G[index[i]].input[1] - no_of_input_dff] > -1))  //ready
               {
-            p1[index[i]] = get_min_index(core_busy, no_core);
+            p1[index[i]] = GetMinIndex(core_busy, no_core);
             core[p1[index[i]]][core_index[p1[index[i]]]] = index[i];
             core_index[p1[index[i]]]++;
             core_busy[p1[index[i]]] = core_busy[p1[index[i]]] + 1;
@@ -107,7 +107,7 @@ int schedule(const ReadCircuit &readCircuit, int no_core, int **core) {
   return 0;
 }
 
-void quickSort(int *arr, int *index, int left, int right) {
+void QuickSort(int *arr, int *index, int left, int right) {
   int i = left, j = right;
   int tmp;
   int pivot = arr[(left + right) / 2];
@@ -133,12 +133,12 @@ void quickSort(int *arr, int *index, int left, int right) {
   }
   /* recursion */
   if (left < j)
-    quickSort(arr, index, left, j);
+    QuickSort(arr, index, left, j);
   if (i < right)
-    quickSort(arr, index, i, right);
+    QuickSort(arr, index, i, right);
 }
 
-int get_min_index(int *arr, int size) {
+int GetMinIndex(int *arr, int size) {
   int minimum = arr[0], min_index = 0, i = 1;
   while (i < size) {
     if (arr[i] < minimum) {
@@ -150,7 +150,7 @@ int get_min_index(int *arr, int size) {
   return min_index;
 }
 
-int get_max(int *arr, int size) {
+int GetMax(int *arr, int size) {
   int maximum = arr[0], i = 1;
   while (i < size) {
     if (arr[i] > maximum)

@@ -16,8 +16,8 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVAL_NETLIST_UTIL_H_
-#define EVAL_NETLIST_UTIL_H_
+#ifndef UTIL_UTIL_H_
+#define UTIL_UTIL_H_
 
 #include "crypto/block.h"
 #include <ostream>
@@ -25,9 +25,9 @@
 
 using std::string;
 
-block randomBlock();
-void srand_sse(unsigned int seed);
-unsigned short type2V(int gateType);
-int strToBlock(const string &s, block* v);
+block RandomBlock();
+void SrandSSE(unsigned int seed);
+unsigned short Type2V(int gateType);
+int Str2Block(const string &s, block* v);
 
-#endif /* EVAL_NETLIST_UTIL_H_ */
+#endif /* UTIL_UTIL_H_ */

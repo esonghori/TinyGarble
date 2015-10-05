@@ -35,7 +35,7 @@ using std::endl;
 
 int listenfd = 0;
 
-int serverOpenSocket(int port) {
+int ServerOpenSocket(int port) {
   struct sockaddr_in serv_addr;
   listenfd = socket(AF_INET, SOCK_STREAM, 0);
   if (listenfd < 0) {
@@ -55,7 +55,7 @@ int serverOpenSocket(int port) {
   return SUCCESS;
 }
 
-int serverWaitForClient() {
+int ServerWaitForClient() {
   struct sockaddr_in cli_addr;
   socklen_t clilen = sizeof(cli_addr);
   LOG(INFO) << "Wait for client" << endl;
@@ -75,21 +75,21 @@ int serverWaitForClient() {
   return connfd;
 }
 
-int server_init(int port) {
-  if (serverOpenSocket(port) == FAILURE)
+int ServerInit(int port) {
+  if (ServerOpenSocket(port) == FAILURE)
     return FAILURE;
-  if (serverWaitForClient() == FAILURE)
+  if (ServerWaitForClient() == FAILURE)
     return FAILURE;
   return SUCCESS;
 }
 
-int server_close(int sock) {
+int ServerClose(int sock) {
   close(sock);
   close(listenfd);
   return SUCCESS;
 }
 
-int client_init(const char* ip, int port) {
+int ClientInit(const char* ip, int port) {
   int sockfd;
   struct hostent *server;
   struct sockaddr_in serv_addr;
@@ -123,12 +123,12 @@ int client_init(const char* ip, int port) {
   return sockfd;
 }
 
-int client_close(int sock) {
+int ClientClose(int sock) {
   close(sock);
   return SUCCESS;
 }
 
-int send_data(int sock, const void *var, int len) {
+int SendData(int sock, const void *var, int len) {
   int len_ret = write(sock, var, len);
   if (len_ret == FAILURE) {
     LOG(ERROR) << strerror(errno) << endl;
@@ -141,7 +141,7 @@ int send_data(int sock, const void *var, int len) {
   return SUCCESS;
 }
 
-int recv_data(int sock, void* var, int len) {
+int RecvData(int sock, void* var, int len) {
   int len_ret = read(sock, var, len);
   if (len_ret == FAILURE) {
     LOG(ERROR) << strerror(errno) << endl;

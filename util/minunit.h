@@ -20,8 +20,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __MINUNIT_H__
-#define __MINUNIT_H__
+#ifndef _UTIL_MINUNIT_H_
+#define _UTIL_MINUNIT_H_
 
 #ifdef __cplusplus
 	extern "C" {
@@ -359,4 +359,4 @@ static double mu_timer_cpu( )
 }
 #endif
 
-#endif /* __MINUNIT_H__ */
+#endif /* _UTIL_MINUNIT_H_ */

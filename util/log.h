@@ -16,8 +16,8 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVAL_NETLIST_DUMP_HEX_H_
-#define EVAL_NETLIST_DUMP_HEX_H_
+#ifndef UTIL_LOG_H_
+#define UTIL_LOG_H_
 
 #include <fstream>
 #include <string>
@@ -27,16 +27,16 @@
 using std::ostream;
 using std::string;
 
-void log_initial(int argc, char *argv[], bool to_std = true);
-void dump_initial(const string& mode);
-void log_finish();
-void dump_finish();
-ostream& log_stream(int log_code);
-void dump(const string& dump_file, const block& a);
+void LogInitial(int argc, char *argv[], bool to_std = true);
+void DumpInitial(const string& mode);
+void LogFinish();
+void DumpFinish();
+ostream& LogStream(int log_code);
+void Dump(const string& dump_file, const block& a);
 ostream& operator <<(ostream & o, const block& v);
 
 #ifdef DUMP_ENABLE
-#define DUMP(file, block) dump(file, block)
+#define DUMP(file, block) Dump(file, block)
 #else /* DUMP_ENABLE */
 #define DUMP(file, block)
 #endif /* DUMP_ENABLE */
@@ -47,6 +47,7 @@ ostream& operator <<(ostream & o, const block& v);
 // Error: red, info:green
 #define LOG_COLOR(X) (((X)==ERROR)?31:32)
 
-#define LOG(X) log_stream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" << LOG_COLOR(X) << "m" << #X << "\033[0m: "
+#define LOG(X) LogStream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" \
+  << LOG_COLOR(X) << "m" << #X << "\033[0m: "
 
-#endif /* EVAL_NETLIST_DUMP_HEX_H_ */
+#endif /* UTIL_LOG_H_ */
