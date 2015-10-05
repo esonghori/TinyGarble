@@ -26,9 +26,11 @@
 using std::endl;
 
 #define RSA_BITS 1024
-#define RSA_EXPONENT 65537
 
-#define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" << endl; return FAILURE; }
+#define CHECK(X) if((X)==FAILURE) { LOG(ERROR) << #X << " failed" \
+  << std::endl; return FAILURE; }
+#define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" \
+  << std::endl; return FAILURE; }
 
 void BlockToBN(BIGNUM *a, block w) {
 
@@ -54,27 +56,11 @@ int SendBN(int connf, const BIGNUM *bignum) {
     LOG(ERROR) << "bignum pointer is null" << endl;
     return FAILURE;
   }
-  // TODO(ebi) :check for error
-  if (SendData(connf, (void *) &bignum->top, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "sending top failed" << endl;
-    return FAILURE;
-  }
-  if (SendData(connf, (void *) &bignum->dmax, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "sending dmax failed" << endl;
-    return FAILURE;
-  }
-  if (SendData(connf, (void *) &bignum->neg, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "sending neg failed" << endl;
-    return FAILURE;
-  }
-  if (SendData(connf, (void *) &bignum->flags, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "sending flags failed" << endl;
-    return FAILURE;
-  }
-  if (SendData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)) == FAILURE) {
-    LOG(ERROR) << "sending d failed" << endl;
-    return FAILURE;
-  }
+  CHECK(SendData(connf, (void * ) &bignum->top, sizeof(int)));
+  CHECK(SendData(connf, (void * ) &bignum->dmax, sizeof(int)));
+  CHECK(SendData(connf, (void * ) &bignum->neg, sizeof(int)));
+  CHECK(SendData(connf, (void * ) &bignum->flags, sizeof(int)));
+  CHECK(SendData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));
 
   return SUCCESS;
 }
@@ -83,28 +69,12 @@ int RecvBN(int connf, BIGNUM *bignum) {
     LOG(ERROR) << "bignum pointer is null" << endl;
     return FAILURE;
   }
-  // TODO(ebi) :check for error
-  if (RecvData(connf, (void *) &bignum->top, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "receiving top failed" << endl;
-    return FAILURE;
-  }
-  if (RecvData(connf, (void *) &bignum->dmax, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "receiving dmax failed" << endl;
-    return FAILURE;
-  }
-  if (RecvData(connf, (void *) &bignum->neg, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "receiving neg failed" << endl;
-    return FAILURE;
-  }
-  if (RecvData(connf, (void *) &bignum->flags, sizeof(int)) == FAILURE) {
-    LOG(ERROR) << "receiving flags failed" << endl;
-    return FAILURE;
-  }
+  CHECK(RecvData(connf, (void * ) &bignum->top, sizeof(int)));
+  CHECK(RecvData(connf, (void * ) &bignum->dmax, sizeof(int)));
+  CHECK(RecvData(connf, (void * ) &bignum->neg, sizeof(int)));
+  CHECK(RecvData(connf, (void * ) &bignum->flags, sizeof(int)));
   bignum->d = new BN_ULONG[bignum->dmax];
-  if (RecvData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)) == FAILURE) {
-    LOG(ERROR) << "receiving d failed" << endl;
-    return FAILURE;
-  }
+  CHECK(RecvData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));
   return SUCCESS;
 }
 
@@ -112,7 +82,7 @@ int OTsend(const block* const * m, uint32_t m_len, int connfd) {
 
   BN_CTX *ctx;
   ctx = BN_CTX_new();
-  if(ctx == nullptr) {
+  if (ctx == nullptr) {
     LOG(ERROR) << "allocating ctx failed." << endl;
   }
 
@@ -123,9 +93,10 @@ int OTsend(const block* const * m, uint32_t m_len, int connfd) {
   // 1.0. generate RSA key
   LOG(INFO) << "sender: generate RSA key" << endl;
   BIGNUM * rsa_exponent = BN_new();
-  BN_set_word(rsa_exponent, RSA_EXPONENT);
+  BN_CHECK(BN_set_word(rsa_exponent, RSA_F4));
   RSA *rsa = RSA_new();
-  RSA_generate_key_ex(rsa, RSA_BITS, rsa_exponent, nullptr);
+  BN_CHECK(RSA_generate_key_ex(rsa, RSA_BITS, rsa_exponent, nullptr));
+  BN_CHECK(RSA_check_key(rsa));
   BN_free(rsa_exponent);
 
   // 1.1. send public portion to Bob (receiver)
@@ -140,7 +111,7 @@ int OTsend(const block* const * m, uint32_t m_len, int connfd) {
     x[i] = new BIGNUM*[2];
     for (uint32_t j = 0; j < 2; j++) {
       x[i][j] = BN_new();
-      BN_rand(x[i][j], RSA_BITS, -1, 0);
+      BN_CHECK(BN_rand(x[i][j], RSA_BITS, -1, 0));
       SendBN(connfd, x[i][j]);
     }
   }
@@ -156,20 +127,20 @@ int OTsend(const block* const * m, uint32_t m_len, int connfd) {
   for (uint32_t i = 0; i < m_len; i++) {
     RecvBN(connfd, v);
 
-    BN_CHECK(BN_sub(v, v, x[i][0]));  // temp = v - x0
+    BN_CHECK(BN_sub(temp, v, x[i][0]));  // temp = v - x0
     BN_CHECK(BN_mod_exp(k0, temp, rsa->d, rsa->n, ctx));  // k0 = (v - x0)^d mod N
 
     BN_CHECK(BN_sub(temp, v, x[i][1]));  // temp = v - x1
-    BN_CHECK(BN_mod_exp(k0, v, rsa->d, rsa->n, ctx));  // k1 = (v - x0)^d mod N
+    BN_CHECK(BN_mod_exp(k1, temp, rsa->d, rsa->n, ctx));  // k1 = (v - x0)^d mod N
 
     BlockToBN(m0, m[i][0]);
-    BN_add(k0, k0, m0);
+    BN_CHECK(BN_add(k0, k0, m0));
     SendBN(connfd, k0);  // send m0' = m0 + k0
-
     BlockToBN(m1, m[i][1]);
-    BN_add(k1, k1, m1);
+    BN_CHECK(BN_add(k1, k1, m1));
     SendBN(connfd, k1);  // send m1' = m1 + k1
   }
+
   LOG(INFO) << "sender: free memories" << endl;
   RSA_free(rsa);
   BN_free(v);
@@ -184,8 +155,7 @@ int OTsend(const block* const * m, uint32_t m_len, int connfd) {
       BN_free(x[i][j]);
     }
   }
-  BN_CTX_free(ctx)
-  ;
+  BN_CTX_free(ctx);
   return SUCCESS;
 }
 
@@ -204,7 +174,7 @@ int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
 
   BN_CTX *ctx;
   ctx = BN_CTX_new();
-  if(ctx == nullptr) {
+  if (ctx == nullptr) {
     LOG(ERROR) << "allocating ctx failed." << endl;
   }
   BIGNUM* rsa_n = BN_new();
@@ -229,10 +199,13 @@ int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
   // 3. generate random k
   LOG(INFO) << "receiver: generate k" << endl;
   BIGNUM **k = new BIGNUM*[m_len];
+  BIGNUM *_k = BN_new();
   for (uint32_t i = 0; i < m_len; i++) {
+    BN_CHECK(BN_rand(_k, RSA_BITS, -1, 0));
     k[i] = BN_new();
-    BN_rand(k[i], RSA_BITS, -1, 0);
+    BN_CHECK(BN_nnmod(k[i], _k, rsa_n, ctx));  // k = _k mod N
   }
+  BN_free(_k);
 
   // 4. compute v = (x_b + k^e) mod N and send it to Alice (sender)
   LOG(INFO) << "receiver: compute and send v" << endl;
@@ -240,7 +213,7 @@ int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
   BIGNUM *temp = BN_new();
   for (uint32_t i = 0; i < m_len; i++) {
     BN_CHECK(BN_mod_exp(temp, k[i], rsa_e, rsa_n, ctx));  // K^e mod N
-    BN_CHECK(BN_add(temp, x[i][sel[i]], temp));  // x_b + (K^e mod N)
+    BN_CHECK(BN_add(temp, x[i][(sel[i] ? 1 : 0)], temp));  // x_b + (K^e mod N)
     BN_CHECK(BN_nnmod(v, temp, rsa_n, ctx));  // v = (x_b + K^e) mod N
     SendBN(connfd, v);
   }
@@ -257,14 +230,14 @@ int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
   for (uint32_t i = 0; i < m_len; i++) {
     RecvBN(connfd, m0p);
     RecvBN(connfd, m1p);
-    if (sel[i]) {
-      BN_sub(mb, m0p, k[i]);
+
+    if (sel[i] == false) {
+      BN_CHECK(BN_sub(mb, m0p, k[i]));  //mb = m0p - k[i]
     } else {
-      BN_sub(mb, m1p, k[i]);
+      BN_CHECK(BN_sub(mb, m1p, k[i]));  //mb = m1p - k[i]
     }
+    BNToBlock(mb, &m[i]);
   }
-  LOG(INFO) << "receiver: bignumber to block" << endl;
-  BNToBlock(mb, m);
 
   LOG(INFO) << "receiver: free memory" << endl;
   BN_free(m0p);
