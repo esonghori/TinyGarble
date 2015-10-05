@@ -13,15 +13,14 @@
 #include <cstdlib>
 #include "tcpip/tcpip.h"
 #include "util/util.h"
+#include "util/log.h"
 
 namespace po = boost::program_options;
 using std::string;
-using std::cout;
-using std::cerr;
 using std::endl;
 
 int main(int argc, char *argv[]) {
-
+  log_initial(argc, argv);
   int port;
   string scd_file_address;
   string server_ip;
@@ -49,19 +48,19 @@ int main(int argc, char *argv[]) {
   try {
     po::store(po::parse_command_line(argc, argv, desc), vm);
     if (vm.count("help")) {
-      cout << desc << endl;
+      std::cout << desc << endl;
       return 0;
     }
     po::notify(vm);
   } catch (po::error& e) {
-    cerr << "ERROR: " << e.what() << endl << endl;
-    cerr << desc << endl;
+    LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
+    std::cout << desc << endl;
     return -1;
   }
 
   if (vm.count("alice") == 0 && vm.count("bob") == 0) {
-    cerr << "One of --alice or --bob mode flag should be used." << endl << endl;
-    cerr << desc << endl;
+    LOG(ERROR) << "One of --alice or --bob mode flag should be used." << endl << endl;
+    std::cout << desc << endl;
     return -1;
   }
 
@@ -69,30 +68,30 @@ int main(int argc, char *argv[]) {
     // open the socket
     int connfd;
     if ((connfd = server_init(port)) == -1) {
-      cerr << "Cannot open the socket in port " << port << endl;
+      LOG(ERROR) << "Cannot open the socket in port " << port << endl;
       return -1;
     }
-    cout << "Open Alice server on port: " << port << endl;
+    LOG(INFO) << "Open Alice server on port: " << port << endl;
 
     block** message = new block*[1];
     message[0] = new block[2];
     if (strToBlock(message0_str, &message[0][0]) == -1) {
-      cerr << "Cannot parse message0 " << message0_str << endl;
+      LOG(ERROR) << "Cannot parse message0 " << message0_str << endl;
       return -1;
     }
     if (strToBlock(message1_str, &message[0][1]) == -1) {
-      cerr << "Cannot parse message1 " << message1_str << endl;
+      LOG(ERROR) << "Cannot parse message1 " << message1_str << endl;
       return -1;
     }
 
     if (OTsend(message, 1, connfd) == -1) {
-      cerr << "OTsend failed." << endl;
+      LOG(ERROR) << "OTsend failed." << endl;
       return -1;
     }
 
-    cout << "messages were " << endl;
-    cout << "0: " << message[0][0] << endl;
-    cout << "1: " << message[0][1] << endl;
+    LOG(INFO) << "messages were " << endl;
+    LOG(INFO) << "0: " << message[0][0] << endl;
+    LOG(INFO) << "1: " << message[0][1] << endl;
 
     delete [] message[0];
     delete [] message;
@@ -106,26 +105,26 @@ int main(int argc, char *argv[]) {
     // open socket, connect to server
     int connfd;
     if ((connfd = client_init(server_ip.c_str(), port)) == -1) {
-      cerr << "Cannot connect to " << server_ip << ":" << port << endl;
+      LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
       return -1;
     }
-    cout << "Connect Bob client to Alice server on " << server_ip << ":" << port
+    LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":" << port
         << endl;
 
     bool select = (atoi(select_str.c_str()) == 1);
 
     block message;
     if (OTrecv(&select, 1, connfd, &message) == -1) {
-      cerr << "OTsend failed." << endl;
+      LOG(ERROR) << "OTsend failed." << endl;
       return -1;
     }
 
-    cout << "select was " << (select ? "1" : "0") << endl;
-    cout << "selected message = " << message << endl;
+    LOG(INFO) << "select was " << (select ? "1" : "0") << endl;
+    LOG(INFO) << "selected message = " << message << endl;
 
     client_close(connfd);
   }
-
+  log_finish();
   return 0;
 }
 

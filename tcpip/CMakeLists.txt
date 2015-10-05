@@ -7,7 +7,8 @@ add_library (TCPIP_TCPIP_Testsuit OBJECT
 add_executable(TCPIP_Test
   "tcpip_test.cpp"
   "$<TARGET_OBJECTS:TCPIP_TCPIP>"
-  "$<TARGET_OBJECTS:TCPIP_TCPIP_Testsuit>")
+  "$<TARGET_OBJECTS:TCPIP_TCPIP_Testsuit>"
+  "$<TARGET_OBJECTS:Util_Log>")
 
 add_test (TCPIP_TCPIP_Test 
   TCPIP_Test)
