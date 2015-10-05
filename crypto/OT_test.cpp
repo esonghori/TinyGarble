@@ -1,8 +1,19 @@
 /*
- * OT_test.cpp
- *
- *  Created on: Oct 4, 2015
- *      Author: Ebi
+ This file is part of TinyGarble. It is modified version of JustGarble
+ under GNU license.
+
+ TinyGarble is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ TinyGarble is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "crypto/OT.h"
@@ -22,7 +33,7 @@ struct OTTestStruct {
   uint len;
 };
 
-int alice(const void* data, int connfd) {
+int Alice(const void* data, int connfd) {
   OTTestStruct* OT_test_str = (OTTestStruct*)data;
   block **message = OT_test_str->message;
   uint len = OT_test_str->len;
@@ -33,20 +44,20 @@ int alice(const void* data, int connfd) {
   return SUCCESS;
 }
 
-int bob(const void *data, int connfd) {
+int Bob(const void *data, int connfd) {
   OTTestStruct* OT_test_str = (OTTestStruct*)data;
   block **message = OT_test_str->message;
   bool *select = OT_test_str->select;
   uint len = OT_test_str->len;
   block* message_recv = new block[len];
 
-  if (OTrecv(select, len, connfd, message_recv) == FAILURE) {
+  if (OTRecv(select, len, connfd, message_recv) == FAILURE) {
     LOG(ERROR) << "OTsend failed." << endl;
     return FAILURE;
   }
 
   for (uint i = 0; i < len; i++) {
-    if (!blockCmp(message[i][(select[i] ? 1 : 0)], message_recv[i])) {
+    if (!CmpBlock(message[i][(select[i] ? 1 : 0)], message_recv[i])) {
       LOG(ERROR) << message_recv[i] << "!=" << message[i][select[i] ? 1 : 0] << endl;
       LOG(ERROR) << "Equality test failed" << endl;
       return FAILURE;
@@ -59,9 +70,9 @@ int bob(const void *data, int connfd) {
 
 int main(int argc, char* argv[]) {
 
-  log_initial(argc, argv);
+  LogInitial(argc, argv);
   srand(time(0));
-  srand_sse(time(0));
+  SrandSSE(time(0));
 
 
   uint len = rand()%5 + 1;
@@ -71,7 +82,7 @@ int main(int argc, char* argv[]) {
   for (uint i = 0; i < len; i++) {
     message[i] = new block[2];
     for (uint j = 0; j < 2; j++) {
-      message[i][j] = randomBlock();
+      message[i][j] = RandomBlock();
     }
     select[i] = (rand() % 2 == 1);
   }
@@ -81,7 +92,7 @@ int main(int argc, char* argv[]) {
   OT_test_str.select = select;
   OT_test_str.len = len;
 
-  if (tcpipTestRun(alice, (void *)&OT_test_str, bob,
+  if (TcpipTestRun(Alice, (void *)&OT_test_str, Bob,
     (void *)&OT_test_str) == FAILURE) {
     LOG(ERROR) << "tcpip test run failed." << endl;
     return FAILURE;
@@ -92,7 +103,7 @@ int main(int argc, char* argv[]) {
   }
   delete[] message;
 
-  log_finish();
+  LogFinish();
   return SUCCESS;
 }
 

@@ -1,3 +1,20 @@
+/*
+ This file is part of TinyGarble.
+
+ TinyGarble is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ TinyGarble is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "tcpip/tcpip.h"
 
 #include <iostream>
@@ -8,14 +25,14 @@
 
 using std::endl;
 
-int server_func(const void *data, int connfd) {
+int ServerFunc(const void *data, int connfd) {
   uint len = strlen((char *)data) + 1;
   char *data_recv = new char[len];
-  if (recv_data(connfd, data_recv, len) == FAILURE) {
+  if (RecvData(connfd, data_recv, len) == FAILURE) {
     LOG(ERROR) << "recv failed, server side. Test failed" << endl;
     return FAILURE;
   }
-  if (send_data(connfd, data, len) == FAILURE) {
+  if (SendData(connfd, data, len) == FAILURE) {
     LOG(ERROR) << "send failed, server side. Test failed" << endl;
     return FAILURE;
   }
@@ -27,14 +44,14 @@ int server_func(const void *data, int connfd) {
 }
 
 
-int client_func(const void *data, int connfd) {
+int ClientFunc(const void *data, int connfd) {
   uint len = strlen((char *)data) + 1;
-  if (send_data(connfd, data, len) == FAILURE) {
+  if (SendData(connfd, data, len) == FAILURE) {
     LOG(ERROR) << "send failed, client side. Test failed" << endl;
     return FAILURE;
   }
   char *data_recv = new char[len]; 
-  if (recv_data(connfd, data_recv, len) == FAILURE) {
+  if (RecvData(connfd, data_recv, len) == FAILURE) {
     LOG(ERROR) << "recv failed, client side. Test failed" << endl;
     return FAILURE;
   }
@@ -46,15 +63,15 @@ int client_func(const void *data, int connfd) {
 }
 
 int main(int argc, char* argv[]) {
-  log_initial(argc, argv);
+  LogInitial(argc, argv);
   srand(time(0));
   char data[] = "Hello World!";
-  if (tcpipTestRun(server_func, (const void *)data, client_func,
+  if (TcpipTestRun(ServerFunc, (const void *)data, ClientFunc,
     (const void *)data) == FAILURE) {
     LOG(ERROR) << "tcpip test run failed" << endl;
     return FAILURE;
   }
 
-  log_finish();
+  LogFinish();
   return SUCCESS;
 }

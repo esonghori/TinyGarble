@@ -57,21 +57,23 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVAL_NETLIST_BLOCK_H_
-#define EVAL_NETLIST_BLOCK_H_
+#ifndef CRYPTO_BLOCK_H_
+#define CRYPTO_BLOCK_H_
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <smmintrin.h>
 
 typedef __m128i block;
-#define xorBlocks(x,y) _mm_xor_si128((x),(y))
-#define zero_block() _mm_setzero_si128()
-#define getLSB(x) (*((unsigned short *)&x)&1)
-#define blockCmp(X, Y) (_mm_extract_epi16((_mm_cmpeq_epi64((X), (Y))),0)==0xffff)
-#define makeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
+#define get_LSB(x) (*((unsigned short *)&x)&1)
+#define XorBlock(x,y) _mm_xor_si128((x),(y))
+#define ZeroBlock() _mm_setzero_si128()
+#define CmpBlock(X, Y) (_mm_extract_epi16((_mm_cmpeq_epi64((X), (Y))),0)==0xffff)
+#define MakeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
+#define DoubleBlock(B) _mm_slli_epi64(B,1)
 
-static inline block double_block(block bl) {
+
+static inline block Double_Block(block bl) {
   const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
   __m128i tmp = _mm_srai_epi32(bl, 31);
   tmp = _mm_and_si128(tmp, mask);
@@ -79,7 +81,7 @@ static inline block double_block(block bl) {
   bl = _mm_slli_epi32(bl, 1);
   return _mm_xor_si128(bl, tmp);
 }
-static inline block slow_double_block(block bl) {
+static inline block SlowDouble_Block(block bl) {
   int i;
   __m128i tmp = _mm_srai_epi32(bl, 31);
   for (i = 0; i < 1; i++) {
@@ -91,14 +93,14 @@ static inline block slow_double_block(block bl) {
   return _mm_xor_si128(bl, tmp);
 }
 
-static inline block LEFTSHIFT1(block bl) {
+static inline block LeftShift(block bl) {
   const __m128i mask = _mm_set_epi32(0, 0, (1 << 31), 0);
   __m128i tmp = _mm_and_si128(bl, mask);
   bl = _mm_slli_epi64(bl, 1);
   return _mm_xor_si128(bl, tmp);
 }
 
-static inline block RIGHTSHIFT(block bl) {
+static inline block RightShift(block bl) {
   const __m128i mask = _mm_set_epi32(0, 1, 0, 0);
   __m128i tmp = _mm_and_si128(bl, mask);
   bl = _mm_slli_epi64(bl, 1);
@@ -114,4 +116,4 @@ static inline block RIGHTSHIFT(block bl) {
 #define _m128_switch_endian(x) \
   _mm_shuffle_epi8((x), _mm_set_epi8(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
 
-#endif /* EVAL_NETLIST_BLOCK_H_ */
+#endif /* CRYPTO_BLOCK_H_ */

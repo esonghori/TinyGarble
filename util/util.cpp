@@ -47,11 +47,11 @@
 
 static block cur_seed;
 
-void srand_sse(unsigned int seed) {
+void SrandSSE(unsigned int seed) {
   cur_seed = _mm_set_epi32(seed, seed + 1, seed, seed + 1);
 }
 
-block randomBlock() {
+block RandomBlock() {
 
   block cur_seed_split;
   block multiplier;
@@ -94,7 +94,7 @@ block randomBlock() {
  *  000b -> AND
  *  111b -> OR
  */
-unsigned short type2V(int gateType) {
+unsigned short Type2V(int gateType) {
   if (gateType == ANDGATE) {
     return 0b000;
   } else if (gateType == ANDNGATE) {
@@ -115,7 +115,7 @@ unsigned short type2V(int gateType) {
   return 0;
 }
 
-int strToBlock(const string &s, block* v) {
+int Str2Block(const string &s, block* v) {
   if (!v) {
     LOG(ERROR) << "null pointer in strToBlock." << endl;
     return FAILURE;
@@ -148,7 +148,7 @@ int strToBlock(const string &s, block* v) {
     return FAILURE;
   }
 
-  *v = makeBlock(hi, lo);
+  *v = MakeBlock(hi, lo);
 
   return SUCCESS;
 }

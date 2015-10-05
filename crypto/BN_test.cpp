@@ -16,12 +16,12 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-void test_setup() {
+void TestSetup() {
 }
-void test_teardown() {
+void TestTeardown() {
 }
 
-MU_TEST(block_endian) {
+MU_TEST(BlockEndian) {
 
   block w;
   uint8_t *w_ch = (uint8_t *) &w;
@@ -36,7 +36,7 @@ MU_TEST(block_endian) {
 
 }
 
-MU_TEST(BN_block) {
+MU_TEST(BNBlock) {
 
   block w;
   uint8_t *w_ch = (uint8_t *) &w;
@@ -45,7 +45,7 @@ MU_TEST(BN_block) {
   }
 
   BIGNUM* a = BN_new();
-  blockToBN(a, w);
+  BlockToBN(a, w);
 
   block v;
   BNToBlock(a, &v);
@@ -58,15 +58,15 @@ MU_TEST(BN_block) {
   BN_free(a);
 }
 
-MU_TEST_SUITE(test_suite) {
-  MU_SUITE_CONFIGURE(&test_setup, &test_teardown);
+MU_TEST_SUITE(TestSuite) {
+  MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
-  MU_RUN_TEST(block_endian);
-  MU_RUN_TEST(BN_block);
+  MU_RUN_TEST(BlockEndian);
+  MU_RUN_TEST(BNBlock);
 }
 
 int main(int argc, char *argv[]) {
-  MU_RUN_SUITE(test_suite);
+  MU_RUN_SUITE(TestSuite);
   MU_REPORT();
   return 0;
 }
