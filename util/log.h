@@ -44,6 +44,9 @@ ostream& operator <<(ostream & o, const block& v);
 #define ERROR 0
 #define INFO 1
 
-#define LOG(X) log_stream((X)) << __FILE__ << ":" <<  __LINE__ << " " << #X <<": "
+// Error: red, info:green
+#define LOG_COLOR(X) (((X)==ERROR)?31:32)
+
+#define LOG(X) log_stream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" << LOG_COLOR(X) << "m" << #X << "\033[0m: "
 
 #endif /* EVAL_NETLIST_DUMP_HEX_H_ */
