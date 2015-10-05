@@ -269,13 +269,13 @@ int main(int argc, char* argv[]) {
 
   block R;
   if (vm.count("deterministic")) {
-    LOG(INFO) << "Run with deterministic random generator.\n";
+    LOG(INFO) << "Run with deterministic random generator." << endl;
     srand(1);
     SrandSSE(1111);
     R = MakeBlock((long )(-1), (long )(-1));
   } else {
-    srand(time(NULL));
-    SrandSSE(time(NULL));
+    srand(time(0));
+    SrandSSE(time(0));
     R = RandomBlock();
     //TODO(ebi): check if single bit gets 1 or 8 bit.
     *((short *) (&R)) = 1;
