@@ -31,7 +31,7 @@ add_test (Crypto_BN_Test
   
 set_tests_properties (Crypto_BN_Test
 	PROPERTIES
-	FAIL_REGULAR_EXPRESSION "[^a-z]Error;ERROR;Failed;failed")
+	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
 	
 add_executable(OT_Test
   "OT_test.cpp"
@@ -51,4 +51,4 @@ add_test (Crypto_OT_Test
   
 set_tests_properties (Crypto_OT_Test
 	PROPERTIES
-	FAIL_REGULAR_EXPRESSION "[^a-z]Error;ERROR;Failed;failed")
+	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")

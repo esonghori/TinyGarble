@@ -18,6 +18,7 @@
 
 #include "crypto/OT.h"
 
+#include <openssl/rand.h>
 #include <iostream>
 #include "tcpip/tcpip.h"
 #include "tcpip/tcpip_testsuit.h"
@@ -34,7 +35,7 @@ struct OTTestStruct {
 };
 
 int Alice(const void* data, int connfd) {
-  OTTestStruct* OT_test_str = (OTTestStruct*)data;
+  OTTestStruct* OT_test_str = (OTTestStruct*) data;
   block **message = OT_test_str->message;
   uint len = OT_test_str->len;
   if (OTsend(message, len, connfd) == FAILURE) {
@@ -45,7 +46,7 @@ int Alice(const void* data, int connfd) {
 }
 
 int Bob(const void *data, int connfd) {
-  OTTestStruct* OT_test_str = (OTTestStruct*)data;
+  OTTestStruct* OT_test_str = (OTTestStruct*) data;
   block **message = OT_test_str->message;
   bool *select = OT_test_str->select;
   uint len = OT_test_str->len;
@@ -58,9 +59,9 @@ int Bob(const void *data, int connfd) {
 
   for (uint i = 0; i < len; i++) {
     if (!CmpBlock(message[i][(select[i] ? 1 : 0)], message_recv[i])) {
-      LOG(ERROR) << message_recv[i] << "!=" << message[i][select[i] ? 1 : 0] << endl;
-      LOG(ERROR) << "Equality test failed" << endl;
-      return FAILURE;
+      LOG(ERROR) << message_recv[i] << "!=" << message[i][select[i] ? 1 : 0]
+          << endl;
+      LOG(ERROR) << "Equality test failed." << endl;
     }
   }
 
@@ -71,11 +72,10 @@ int Bob(const void *data, int connfd) {
 int main(int argc, char* argv[]) {
 
   LogInitial(argc, argv);
-  srand(time(0));
-  SrandSSE(time(0));
 
-
-  uint len = rand()%5 + 1;
+  srand(time(NULL));
+  SrandSSE(time(NULL));
+  uint len = rand() % 5 + 5;
   LOG(INFO) << "Run OT 1 from 2 on a vector with size " << len << endl;
   block** message = new block*[len];
   bool* select = new bool[len];
@@ -92,8 +92,8 @@ int main(int argc, char* argv[]) {
   OT_test_str.select = select;
   OT_test_str.len = len;
 
-  if (TcpipTestRun(Alice, (void *)&OT_test_str, Bob,
-    (void *)&OT_test_str) == FAILURE) {
+  if (TcpipTestRun(Alice, (void *) &OT_test_str, Bob,
+                   (void *) &OT_test_str) == FAILURE) {
     LOG(ERROR) << "tcpip test run failed." << endl;
     return FAILURE;
   }
@@ -102,6 +102,7 @@ int main(int argc, char* argv[]) {
     delete[] message[i];
   }
   delete[] message;
+  delete[] select;
 
   LogFinish();
   return SUCCESS;
