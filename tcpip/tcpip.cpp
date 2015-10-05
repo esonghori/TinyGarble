@@ -78,9 +78,10 @@ int ServerWaitForClient() {
 int ServerInit(int port) {
   if (ServerOpenSocket(port) == FAILURE)
     return FAILURE;
-  if (ServerWaitForClient() == FAILURE)
+  int connfd;
+  if ((connfd = ServerWaitForClient()) == FAILURE)
     return FAILURE;
-  return SUCCESS;
+  return connfd;
 }
 
 int ServerClose(int sock) {

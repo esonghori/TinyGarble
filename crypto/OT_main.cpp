@@ -33,6 +33,11 @@ using std::endl;
 
 int main(int argc, char *argv[]) {
   LogInitial(argc, argv);
+
+  srand(time(NULL));
+  SrandSSE(time(NULL));
+
+  int m_len = 1;  // number of message pairs
   int port;
   string scd_file_address;
   string server_ip;
@@ -44,10 +49,12 @@ int main(int argc, char *argv[]) {
   ("help,h", "produce help message")  //
   ("alice,a", "Run as Alice (server).")  //
   ("message0",
-   po::value<string>(&message0_str)->default_value("15141312_11100908_07060504_03020100"),
+   po::value<string>(&message0_str)->default_value(
+       "15141312_11100908_07060504_03020100"),
    "Alice's 128-bit message 0 in hexadecimal w/o '0x'.")  //
   ("message1",
-   po::value<string>(&message1_str)->default_value("00010203_04050607_08091011_12131415"),
+   po::value<string>(&message1_str)->default_value(
+       "00010203_04050607_08091011_12131415"),
    "Alice's 128-bit message 1 in hexadecimal w/o '0x'.")  //
   ("select", po::value<string>(&select_str)->default_value("0"),
    "Bob's 1-bit selection (0/1).")  //
@@ -86,7 +93,7 @@ int main(int argc, char *argv[]) {
     }
     LOG(INFO) << "Open Alice server on port: " << port << endl;
 
-    block** message = new block*[1];
+    block** message = new block*[m_len];
     message[0] = new block[2];
     if (Str2Block(message0_str, &message[0][0]) == FAILURE) {
       LOG(ERROR) << "Cannot parse message0 " << message0_str << endl;
@@ -96,12 +103,11 @@ int main(int argc, char *argv[]) {
       LOG(ERROR) << "Cannot parse message1 " << message1_str << endl;
       return FAILURE;
     }
-    LOG(INFO) << "messages are " << endl;
-    LOG(INFO) << "0: " << message[0][0] << endl;
-    LOG(INFO) << "1: " << message[0][1] << endl;
+    LOG(INFO) << "messages are:" << endl << "0: " << message[0][0] << endl
+        << "1: " << message[0][1] << endl;
 
     LOG(INFO) << "start OT send" << endl;
-    if (OTsend(message, 1, connfd) == FAILURE) {
+    if (OTsend(message, m_len, connfd) == FAILURE) {
       LOG(ERROR) << "OTsend failed." << endl;
       return FAILURE;
     }
@@ -123,18 +129,23 @@ int main(int argc, char *argv[]) {
     LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":"
               << port << endl;
 
-    bool select = (atoi(select_str.c_str()) == 1);
-    LOG(INFO) << "select is " << (select ? "1" : "0") << endl;
+    bool *select = new bool[m_len];
+    select[0] = (atoi(select_str.c_str()) == 1);
+    LOG(INFO) << "select is " << (select[0] ? "1" : "0") << endl;
 
     LOG(INFO) << "start OT recv" << endl;
-    block message;
-    if (OTRecv(&select, 1, connfd, &message) == FAILURE) {
+
+    block *message = new block[m_len];
+    if (OTRecv(select, m_len, connfd, message) == FAILURE) {
       LOG(ERROR) << "OTsend failed." << endl;
       return FAILURE;
     }
 
-    LOG(INFO) << "selected message = " << message << endl;
+    LOG(INFO) << "selected message is:" << endl << select[0] << ": "
+        << message[0] << endl;
 
+    delete[] message;
+    delete[] select;
     ClientClose(connfd);
   }
   LogFinish();
