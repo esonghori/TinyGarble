@@ -65,14 +65,12 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVAL_NETLIST_AES_H_
-#define EVAL_NETLIST_AES_H_
+#ifndef CRYPTO_AES_H_
+#define CRYPTO_AES_H_
 
 #include <xmmintrin.h>              /* SSE instructions and _mm_malloc */
 #include <emmintrin.h>              /* SSE2 instructions               */
 #include <wmmintrin.h>
-
-#define DOUBLE(B) _mm_slli_epi64(B,1)
 
 typedef struct {
   __m128i rd_key[15];
@@ -104,7 +102,7 @@ typedef struct {
     x3 = _mm_xor_si128(x3,_mm_shuffle_epi32(x0, 255));                      \
     kp[idx+2] = x0; tmp = x3
 
-inline void AES_128_Key_Expansion(const unsigned char *userkey, void *key) {
+inline void AES128KeyExpansion(const unsigned char *userkey, void *key) {
   __m128i x0, x1, x2;
   __m128i *kp = (__m128i *) key;
   kp[0] = x0 = _mm_loadu_si128((__m128i *) userkey);
@@ -131,7 +129,7 @@ inline void AES_128_Key_Expansion(const unsigned char *userkey, void *key) {
   kp[10] = x0;
 }
 
-inline void AES_192_Key_Expansion(const unsigned char *userkey, void *key) {
+inline void AES192KeyExpansion(const unsigned char *userkey, void *key) {
   __m128i x0, x1, x2, x3, tmp, *kp = (__m128i *) key;
   kp[0] = x0 = _mm_loadu_si128((__m128i *) userkey);
   tmp = x3 = _mm_loadu_si128((__m128i *) (userkey + 16));
@@ -142,7 +140,7 @@ inline void AES_192_Key_Expansion(const unsigned char *userkey, void *key) {
   EXPAND192_STEP(10, 64);
 }
 
-inline void AES_256_Key_Expansion(const unsigned char *userkey, void *key) {
+inline void AES256KeyExpansion(const unsigned char *userkey, void *key) {
   __m128i x0, x1, x2, x3, *kp = (__m128i *) key;
   kp[0] = x0 = _mm_loadu_si128((__m128i *) userkey);
   kp[1] = x3 = _mm_loadu_si128((__m128i *) (userkey + 16));
@@ -175,14 +173,14 @@ inline void AES_256_Key_Expansion(const unsigned char *userkey, void *key) {
   kp[14] = x0;
 }
 
-inline int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
+inline int AESSetEncryptKey(const unsigned char *userKey, const int bits,
                                AES_KEY *key) {
   if (bits == 128) {
-    AES_128_Key_Expansion(userKey, key);
+    AES128KeyExpansion(userKey, key);
   } else if (bits == 192) {
-    AES_192_Key_Expansion(userKey, key);
+    AES192KeyExpansion(userKey, key);
   } else if (bits == 256) {
-    AES_256_Key_Expansion(userKey, key);
+    AES256KeyExpansion(userKey, key);
   }
 #if (OCB_KEY_LEN == 0)
   key->rounds = 6 + bits / 32;
@@ -190,7 +188,7 @@ inline int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
   return 0;
 }
 
-inline void AES_set_decrypt_key_fast(AES_KEY *dkey, const AES_KEY *ekey) {
+inline void AESSetDecryptKeyFast(AES_KEY *dkey, const AES_KEY *ekey) {
   int j = 0;
   int i = ROUNDS(ekey);
 #if (OCB_KEY_LEN == 0)
@@ -202,15 +200,15 @@ inline void AES_set_decrypt_key_fast(AES_KEY *dkey, const AES_KEY *ekey) {
   dkey->rd_key[i] = ekey->rd_key[j];
 }
 
-inline int AES_set_decrypt_key(const unsigned char *userKey, const int bits,
+inline int AESSetDecryptKey(const unsigned char *userKey, const int bits,
                                AES_KEY *key) {
   AES_KEY temp_key;
-  AES_set_encrypt_key(userKey, bits, &temp_key);
-  AES_set_decrypt_key_fast(key, &temp_key);
+  AESSetEncryptKey(userKey, bits, &temp_key);
+  AESSetDecryptKeyFast(key, &temp_key);
   return 0;
 }
 
-inline void AES_encrypt(const unsigned char *in, unsigned char *out,
+inline void AESEncrypt(const unsigned char *in, unsigned char *out,
                         const AES_KEY *key) {
   int j, rnds = ROUNDS(key);
   const __m128i *sched = ((__m128i *) (key->rd_key));
@@ -222,7 +220,7 @@ inline void AES_encrypt(const unsigned char *in, unsigned char *out,
   _mm_store_si128((__m128i *) out, tmp);
 }
 
-inline void AES_decrypt(const unsigned char *in, unsigned char *out,
+inline void AESDecrypt(const unsigned char *in, unsigned char *out,
                         const AES_KEY *key) {
   int j, rnds = ROUNDS(key);
   const __m128i *sched = ((__m128i *) (key->rd_key));
@@ -234,7 +232,7 @@ inline void AES_decrypt(const unsigned char *in, unsigned char *out,
   _mm_store_si128((__m128i *) out, tmp);
 }
 
-inline void AES_ecb_encrypt_blks(__m128i *blks, unsigned nblks, AES_KEY *key) {
+inline void AESEcbEncryptBlks(__m128i *blks, unsigned nblks, AES_KEY *key) {
   unsigned i, j, rnds = ROUNDS(key);
   const __m128i *sched = ((__m128i *) (key->rd_key));
   for (i = 0; i < nblks; ++i)
@@ -246,7 +244,7 @@ inline void AES_ecb_encrypt_blks(__m128i *blks, unsigned nblks, AES_KEY *key) {
     blks[i] = _mm_aesenclast_si128(blks[i], sched[j]);
 }
 
-inline void AES_ecb_decrypt_blks(__m128i *blks, unsigned nblks, AES_KEY *key) {
+inline void AESEcbDecryptBlks(__m128i *blks, unsigned nblks, AES_KEY *key) {
   unsigned i, j, rnds = ROUNDS(key);
   const __m128i *sched = ((__m128i *) (key->rd_key));
   for (i = 0; i < nblks; ++i)
@@ -258,4 +256,4 @@ inline void AES_ecb_decrypt_blks(__m128i *blks, unsigned nblks, AES_KEY *key) {
     blks[i] = _mm_aesdeclast_si128(blks[i], sched[j]);
 }
 
-#endif /* EVAL_NETLIST_AES_H_ */
+#endif /* CRYPTO_AES_H_ */

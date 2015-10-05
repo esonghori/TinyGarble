@@ -16,8 +16,8 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVAL_NETLIST_COMMON_H_
-#define EVAL_NETLIST_COMMON_H_
+#ifndef UTIL_COMMON_H_
+#define UTIL_COMMON_H_
 
 #include <string>
 #include <iostream>
@@ -60,4 +60,4 @@ using std::endl;
 
 extern string dump_prefix;
 
-#endif /* EVAL_NETLIST_COMMON_H_ */
+#endif /* UTIL_COMMON_H_ */

@@ -15,21 +15,21 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVAL_NETLIST_TCPIP_H_
-#define EVAL_NETLIST_TCPIP_H_
+#ifndef TCPIP_TCPIP_H_
+#define TCPIP_TCPIP_H_
 
 #include <cstdint>
 #include "crypto/block.h"
 
-int serverOpenSocket(int port);
-int serverWaitForClient();
-int server_init(int port);
-int server_close(int sock);
+int ServerOpenSocket(int port);
+int ServerWaitForClient();
+int ServerInit(int port);
+int ServerClose(int sock);
 
-int client_init(const char* ip, int port);
-int client_close(int sock);
+int ClientInit(const char* ip, int port);
+int ClientClose(int sock);
 
-int send_data(int sock, const void *var, int len);
-int recv_data(int sock, void* var, int len);
+int SendData(int sock, const void *var, int len);
+int RecvData(int sock, void* var, int len);
 
-#endif /* EVAL_NETLIST_TCPIP_H_ */
+#endif /* TCPIP_TCPIP_H_ */

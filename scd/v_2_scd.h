@@ -15,8 +15,8 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef READ_NETLIST_H_
-#define READ_NETLIST_H_
+#ifndef SCD_V_2_SCD_H_
+#define SCD_V_2_SCD_H_
 
 #include <string>
 #include <vector>
@@ -94,11 +94,11 @@ class ReadCircuit {
   }
 };
 
-int top_sort(const vector<ReadGate>& G, int no_task, int *index);
-int schedule(const ReadCircuit &readCircuit, int no_core, int **core);
-void quickSort(int *, int *, int, int);
-int get_min_index(int *, int);
-int get_max(int *, int);
-int writeSCD(const ReadCircuit &readCircuit, int c, const string &fileName);
+int TopSort(const vector<ReadGate>& G, int no_task, int *index);
+int Schedule(const ReadCircuit &readCircuit, int no_core, int **core);
+void QuickSort(int *, int *, int, int);
+int GetMinIndex(int *, int);
+int GetMax(int *, int);
+int WriteSCD(const ReadCircuit &readCircuit, int c, const string &fileName);
 
 #endif

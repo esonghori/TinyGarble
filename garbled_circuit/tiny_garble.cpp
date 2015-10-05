@@ -49,7 +49,7 @@ namespace po = boost::program_options;
 using std::string;
 using std::vector;
 
-int alice(GarbledCircuit& garbledCircuit, bool random_input,
+int Alice(GarbledCircuit& garbledCircuit, bool random_input,
           uint64_t input_data, block R, int connfd) {
 
   uint64_t n = garbledCircuit.n;
@@ -75,26 +75,26 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input,
     }
   }
 
-  createInputLabels(inputLabels, R, n * c);
-  createInputLabels(initialDFFLable, R, p);
+  CreateInputLabels(inputLabels, R, n * c);
+  CreateInputLabels(initialDFFLable, R, p);
 
   // send plain-text input
   for (uint64_t cid = 0; cid < c; cid++) {
     for (uint64_t j = 0; j < g; j++) {
       if (garbler_inputs[cid * g + j] == 0)
-        send_data(connfd, &inputLabels[2 * (cid * n + j)], sizeof(block));
+        SendData(connfd, &inputLabels[2 * (cid * n + j)], sizeof(block));
       else
-        send_data(connfd, &inputLabels[2 * (cid * n + j) + 1], sizeof(block));
+        SendData(connfd, &inputLabels[2 * (cid * n + j) + 1], sizeof(block));
     }
 
     // TODO(ebi): replace with OT
     for (uint64_t j = 0; j < e; j++) {
       bool ev_input;
-      recv_data(connfd, &ev_input, sizeof(bool));
+      RecvData(connfd, &ev_input, sizeof(bool));
       if (!ev_input)
-        send_data(connfd, &inputLabels[2 * (cid * n + g + j)], sizeof(block));
+        SendData(connfd, &inputLabels[2 * (cid * n + g + j)], sizeof(block));
       else
-        send_data(connfd, &inputLabels[2 * (cid * n + g + j) + 1],
+        SendData(connfd, &inputLabels[2 * (cid * n + g + j) + 1],
                   sizeof(block));
     }
   }
@@ -104,51 +104,51 @@ int alice(GarbledCircuit& garbledCircuit, bool random_input,
     if (garbledCircuit.I[j] == CONST_ZERO) {
       // constant zero
 
-      send_data(connfd, &initialDFFLable[2 * j], sizeof(block));
+      SendData(connfd, &initialDFFLable[2 * j], sizeof(block));
     } else if (garbledCircuit.I[j] == CONST_ONE) {
       // constant zero
 
-      send_data(connfd, &initialDFFLable[2 * j + 1], sizeof(block));
+      SendData(connfd, &initialDFFLable[2 * j + 1], sizeof(block));
     } else if (garbledCircuit.I[j] < g) {
       // belongs to Alice (garbler)
 
       uint64_t index = garbledCircuit.I[j];
       if (garbler_inputs[index] == 0)
-        send_data(connfd, &initialDFFLable[2 * j], sizeof(block));
+        SendData(connfd, &initialDFFLable[2 * j], sizeof(block));
       else
-        send_data(connfd, &initialDFFLable[2 * j + 1], sizeof(block));
+        SendData(connfd, &initialDFFLable[2 * j + 1], sizeof(block));
     } else {
       // belong to Bob
       // TODO(ebi): replace with OT
       bool ev_input;
-      recv_data(connfd, &ev_input, sizeof(bool));
+      RecvData(connfd, &ev_input, sizeof(bool));
       if (!ev_input)
-        send_data(connfd, &initialDFFLable[2 * j], sizeof(block));
+        SendData(connfd, &initialDFFLable[2 * j], sizeof(block));
       else
-        send_data(connfd, &initialDFFLable[2 * j + 1], sizeof(block));
+        SendData(connfd, &initialDFFLable[2 * j + 1], sizeof(block));
     }
   }
 
-  garbledCircuit.globalKey = randomBlock();
-  send_data(connfd, &garbledCircuit.globalKey, sizeof(block));  // send DKC key
+  garbledCircuit.globalKey = RandomBlock();
+  SendData(connfd, &garbledCircuit.globalKey, sizeof(block));  // send DKC key
 
-  garble(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, R,
+  Garble(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, R,
          connfd);
 
   for (uint64_t cid = 0; cid < c; cid++) {
     for (uint64_t i = 0; i < m; i++) {
-      bool outputType = getLSB(outputLabels[2 * (m * cid + i) + 0]);
-      send_data(connfd, &outputType, sizeof(bool));
+      bool outputType = get_LSB(outputLabels[2 * (m * cid + i) + 0]);
+      SendData(connfd, &outputType, sizeof(bool));
     }
   }
 
-  server_close(connfd);
-  removeGarbledCircuit(&garbledCircuit);
+  ServerClose(connfd);
+  RemoveGarbledCircuit(&garbledCircuit);
 
   return SUCCESS;
 }
 
-int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
+int Bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
         int connfd) {
 
   uint64_t n = garbledCircuit.n;
@@ -177,12 +177,12 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
   // receive inputs
   for (uint64_t cid = 0; cid < c; cid++) {
     for (uint64_t j = 0; j < g; j++) {
-      recv_data(connfd, &inputLabels[n * cid + j], sizeof(block));
+      RecvData(connfd, &inputLabels[n * cid + j], sizeof(block));
     }
 
     for (uint64_t j = 0; j < e; j++) {
-      send_data(connfd, &evalator_inputs[cid * e + j], sizeof(bool));
-      recv_data(connfd, &inputLabels[cid * n + g + j], sizeof(block));
+      SendData(connfd, &evalator_inputs[cid * e + j], sizeof(bool));
+      RecvData(connfd, &inputLabels[cid * n + g + j], sizeof(block));
     }
   }
 
@@ -190,18 +190,18 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
   for (uint64_t j = 0; j < p; j++) {
     if (garbledCircuit.I[j] < g) {
       // initial value is constant or belongs to Alice (garbler)
-      recv_data(connfd, &initialDFFLable[j], sizeof(block));
+      RecvData(connfd, &initialDFFLable[j], sizeof(block));
     } else {
       assert((garbledCircuit.I[j] - g > 0) && (garbledCircuit.I[j] - g < e));
 
-      send_data(connfd, &evalator_inputs[garbledCircuit.I[j] - g],
+      SendData(connfd, &evalator_inputs[garbledCircuit.I[j] - g],
                 sizeof(bool));
-      recv_data(connfd, &initialDFFLable[j], sizeof(block));
+      RecvData(connfd, &initialDFFLable[j], sizeof(block));
     }
   }
 
-  recv_data(connfd, &(garbledCircuit.globalKey), sizeof(block));  //receive key
-  evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, connfd);
+  RecvData(connfd, &(garbledCircuit.globalKey), sizeof(block));  //receive key
+  Evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, connfd);
 
   // TODO(ebi): change to LOG(INFO)
   LOG(INFO) << "output:" << endl;
@@ -209,9 +209,9 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
     // TODO(ebi): change to LOG(INFO)
     LOG(INFO) << "c = " << cid << endl;
     for (uint64_t i = 0; i < m; i++) {
-      bool myOutputType = getLSB(outputLabels[m * cid + i]);
+      bool myOutputType = get_LSB(outputLabels[m * cid + i]);
       bool outputType;
-      recv_data(connfd, &outputType, sizeof(bool));
+      RecvData(connfd, &outputType, sizeof(bool));
       // TODO(ebi): change to LOG(INFO)
       // myOutputType XOR outputType
       LOG(INFO) << ((myOutputType != outputType) ? '0' : '1');
@@ -220,14 +220,14 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
     LOG(INFO) << endl;
   }
 
-  client_close(connfd);
-  removeGarbledCircuit(&garbledCircuit);
+  ClientClose(connfd);
+  RemoveGarbledCircuit(&garbledCircuit);
   return SUCCESS;
 }
 
 int main(int argc, char* argv[]) {
 
-  log_initial(argc, argv);
+  LogInitial(argc, argv);
   int port;
   string scd_file_address;
   string server_ip;
@@ -271,12 +271,12 @@ int main(int argc, char* argv[]) {
   if (vm.count("deterministic")) {
     LOG(INFO) << "Run with deterministic random generator.\n";
     srand(1);
-    srand_sse(1111);
-    R = makeBlock((long )(-1), (long )(-1));
+    SrandSSE(1111);
+    R = MakeBlock((long )(-1), (long )(-1));
   } else {
     srand(time(NULL));
-    srand_sse(time(NULL));
-    R = randomBlock();
+    SrandSSE(time(NULL));
+    R = RandomBlock();
     //TODO(ebi): check if single bit gets 1 or 8 bit.
     *((short *) (&R)) = 1;
   }
@@ -311,7 +311,7 @@ int main(int argc, char* argv[]) {
   }
 
   GarbledCircuit garbledCircuit;
-  if (readSCD(scd_file_address, &garbledCircuit) == FAILURE) {
+  if (ReadSCD(scd_file_address, &garbledCircuit) == FAILURE) {
     LOG(ERROR) << "Error while reading scd file: " << scd_file_address << endl;
     return -1;
   }
@@ -319,18 +319,18 @@ int main(int argc, char* argv[]) {
   if (vm.count("alice")) {
     // open the socket
     int connfd;
-    if ((connfd = server_init(port)) == -1) {
+    if ((connfd = ServerInit(port)) == -1) {
       LOG(ERROR) << "Cannot open the socket in port " << port << endl;
       return -1;
     }
     LOG(INFO) << "Open Alice server on port: " << port << endl;
 
     if (dump_prefix != "")
-      dump_initial("g");
+      DumpInitial("g");
 
-    alice(garbledCircuit, random_input, input_data, R, connfd);
+    Alice(garbledCircuit, random_input, input_data, R, connfd);
 
-    server_close(connfd);
+    ServerClose(connfd);
   } else if (vm.count("bob")) {
 
     if (vm.count("server_ip")) {
@@ -344,7 +344,7 @@ int main(int argc, char* argv[]) {
 
     // open socket, connect to server
     int connfd;
-    if ((connfd = client_init(server_ip.c_str(), port)) == -1) {
+    if ((connfd = ClientInit(server_ip.c_str(), port)) == -1) {
       LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
       return -1;
     }
@@ -352,17 +352,17 @@ int main(int argc, char* argv[]) {
          << endl;
 
     if (dump_prefix != "")
-      dump_initial("e");
+      DumpInitial("e");
 
-    bob(garbledCircuit, random_input, input_data, connfd);
+    Bob(garbledCircuit, random_input, input_data, connfd);
 
-     client_close(connfd);
+     ClientClose(connfd);
   }
 
   if (dump_prefix != "") {
-    dump_finish();
+    DumpFinish();
   }
-  log_finish();
+  LogFinish();
   return 0;
 }
 
