@@ -61,7 +61,6 @@ MU_TEST(str_block_operator) {
   mu_check(strToBlock(test_hex, &v) == SUCCESS);
   o_stream << v;
   o_stream.flush();
-  LOG(INFO) << o_stream.str() << endl << test_hex << endl;
   mu_check(o_stream.str() == test_hex);
 }
 
@@ -75,9 +74,11 @@ MU_TEST_SUITE(test_suite) {
 }
 
 int main(int argc, char *argv[]) {
+  log_initial(argc, argv);
   MU_RUN_SUITE(test_suite);
   MU_REPORT()
   ;
+  log_finish();
   return 0;
 }
 
