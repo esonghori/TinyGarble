@@ -11,7 +11,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 ###############
 # Compiler flags
 set(CMAKE_CXX_FLAGS 
-  "${CMAKE_CXX_FLAGS} -Wall -Wno-strict-aliasing -march=native")
+  "${CMAKE_CXX_FLAGS} -Wall -Wno-strict-aliasing -march=native -O0 -g -DDEBUG")
 
 set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -DDEBUG")
