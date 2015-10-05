@@ -42,11 +42,11 @@ int TcpipTestRun(
   for(int i=0;i<PORT_TRIAL;i++) {
     if (ServerOpenSocket(port) == FAILURE) {
       port = rand() % 5000 + 1000;
-      LOG(ERROR) << "Cannot open the socket in port " << port;
+      LOG(INFO) << "Cannot open the socket in port " << port << endl;
       if(i==PORT_TRIAL-1) {
         LOG(ERROR) << "Connection failed." << endl;
+        return FAILURE;
       }
-      return FAILURE;
     }
     else {
       break;

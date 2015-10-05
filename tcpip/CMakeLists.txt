@@ -15,4 +15,4 @@ add_test (TCPIP_TCPIP_Test
   
 set_tests_properties (TCPIP_TCPIP_Test 
 	PROPERTIES
-	FAIL_REGULAR_EXPRESSION "[^a-z]Error;ERROR;Failed;failed")
+	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
