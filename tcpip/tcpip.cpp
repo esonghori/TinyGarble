@@ -29,18 +29,17 @@
 #include <netinet/tcp.h>
 #include <iostream>
 #include "util/common.h"
+#include "util/log.h"
 
-using std::cout;
 using std::endl;
 
 int listenfd = 0;
-
 
 int serverOpenSocket(int port) {
   struct sockaddr_in serv_addr;
   listenfd = socket(AF_INET, SOCK_STREAM, 0);
   if (listenfd < 0) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -49,7 +48,7 @@ int serverOpenSocket(int port) {
   serv_addr.sin_addr.s_addr = INADDR_ANY;
   serv_addr.sin_port = htons(port);
   if (bind(listenfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   listen(listenfd, 5);
@@ -59,27 +58,27 @@ int serverOpenSocket(int port) {
 int serverWaitForClient() {
   struct sockaddr_in cli_addr;
   socklen_t clilen = sizeof(cli_addr);
-  cout << "Wait for client" << endl;
+  LOG(INFO) << "Wait for client" << endl;
   int connfd = accept(listenfd, (struct sockaddr *) &cli_addr, &clilen);
   if (connfd < 0) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
-  cout << "Connected" << endl;
+  LOG(INFO) << "Connected" << endl;
   int flag = 1;
   int result = setsockopt(connfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag,
                           sizeof(int));
   if (result < 0) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   return connfd;
 }
 
 int server_init(int port) {
-  if(serverOpenSocket(port) == FAILURE)
+  if (serverOpenSocket(port) == FAILURE)
     return FAILURE;
-  if(serverWaitForClient() == FAILURE)
+  if (serverWaitForClient() == FAILURE)
     return FAILURE;
   return SUCCESS;
 }
@@ -96,21 +95,21 @@ int client_init(const char* ip, int port) {
   struct sockaddr_in serv_addr;
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd < 0) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   server = gethostbyname(ip);
   if (server == NULL) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   bzero((char *) &serv_addr, sizeof(serv_addr));
   serv_addr.sin_family = AF_INET;
   bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr,
-        server->h_length);
+  server->h_length);
   serv_addr.sin_port = htons(port);
   if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
 
@@ -118,7 +117,7 @@ int client_init(const char* ip, int port) {
   int result = setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag,
                           sizeof(int));
   if (result < 0) {
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   return sockfd;
@@ -130,17 +129,27 @@ int client_close(int sock) {
 }
 
 int send_data(int sock, const void *var, int len) {
-  if(write(sock, var, len) < len) {
-    cerr << strerror(errno) << endl;
+  int len_ret = write(sock, var, len);
+  if (len_ret == FAILURE) {
+    LOG(ERROR) << strerror(errno) << endl;
+    return FAILURE;
+  } else if (len_ret == 0) {
+    LOG(ERROR) << "connection is possibly closed" << endl;
     return FAILURE;
   }
+  // TODO(ebi): check 0 < len_ret < len
   return SUCCESS;
 }
 
 int recv_data(int sock, void* var, int len) {
-  if(read(sock, var, len) < len) {
-    cerr << strerror(errno) << endl;
+  int len_ret = read(sock, var, len);
+  if (len_ret == FAILURE) {
+    LOG(ERROR) << strerror(errno) << endl;
+    return FAILURE;
+  } else if (len_ret == 0) {
+    LOG(ERROR) << "connection is possibly closed" << endl;
     return FAILURE;
   }
+  // TODO(ebi): check 0 < len_ret < len
   return SUCCESS;
 }

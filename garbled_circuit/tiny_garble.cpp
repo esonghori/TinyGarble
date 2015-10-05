@@ -42,8 +42,8 @@
 #include "tcpip/tcpip.h"
 #include "scd/read_scd.h"
 #include "util/util.h"
-#include "util/dump_hex.h"
 #include "util/tinygarble_config.h"
+#include "util/log.h"
 
 namespace po = boost::program_options;
 using std::string;
@@ -204,20 +204,20 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
   evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, connfd);
 
   // TODO(ebi): change to LOG(INFO)
-  cout << "output:" << endl;
+  LOG(INFO) << "output:" << endl;
   for (uint64_t cid = 0; cid < c; cid++) {
     // TODO(ebi): change to LOG(INFO)
-    cout << "c = " << cid << endl;
+    LOG(INFO) << "c = " << cid << endl;
     for (uint64_t i = 0; i < m; i++) {
       bool myOutputType = getLSB(outputLabels[m * cid + i]);
       bool outputType;
       recv_data(connfd, &outputType, sizeof(bool));
       // TODO(ebi): change to LOG(INFO)
       // myOutputType XOR outputType
-      cout << ((myOutputType != outputType) ? '0' : '1');
+      LOG(INFO) << ((myOutputType != outputType) ? '0' : '1');
     }
     // TODO(ebi): change to LOG(INFO)
-    cout << endl;
+    LOG(INFO) << endl;
   }
 
   client_close(connfd);
@@ -227,6 +227,7 @@ int bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
 
 int main(int argc, char* argv[]) {
 
+  log_initial(argc, argv);
   int port;
   string scd_file_address;
   string server_ip;
@@ -256,19 +257,19 @@ int main(int argc, char* argv[]) {
   try {
     po::store(po::parse_command_line(argc, argv, desc), vm);
     if (vm.count("help")) {
-      cout << desc << endl;
+      std::cout << desc << endl;
       return 0;
     }
     po::notify(vm);
   } catch (po::error& e) {
-    cerr << "ERROR: " << e.what() << endl << endl;
-    cerr << desc << endl;
+    LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
+    std::cout << desc << endl;
     return -1;
   }
 
   block R;
   if (vm.count("deterministic")) {
-    cout << "Run with deterministic random generator.\n";
+    LOG(INFO) << "Run with deterministic random generator.\n";
     srand(1);
     srand_sse(1111);
     R = makeBlock((long )(-1), (long )(-1));
@@ -283,8 +284,8 @@ int main(int argc, char* argv[]) {
   if (vm.count("scd_file")) {
     scd_file_address = vm["scd_file"].as<string>();
   } else {
-    cerr << "SCD file should be specified." << endl << endl;
-    cerr << desc << endl;
+    LOG(ERROR) << "SCD file should be specified." << endl << endl;
+    std::cout << desc << endl;
     return -1;
   }
 
@@ -293,12 +294,12 @@ int main(int argc, char* argv[]) {
   }
 
   if (vm.count("alice") == 0 && vm.count("bob") == 0) {
-    cerr << "One of --alice or --bob mode flag should be used." << endl << endl;
-    cerr << desc << endl;
+    LOG(ERROR) << "One of --alice or --bob mode flag should be used." << endl << endl;
+    std::cout << desc << endl;
     return -1;
   }
   if (vm.count("dump_hex")) {
-    dump_hex_prefix = vm["dump_hex"].as<string>();
+    dump_prefix = vm["dump_hex"].as<string>();
   }
 
   uint64_t input_data = 0;
@@ -311,7 +312,7 @@ int main(int argc, char* argv[]) {
 
   GarbledCircuit garbledCircuit;
   if (readSCD(scd_file_address, &garbledCircuit) == FAILURE) {
-    cerr << "Error while reading scd file: " << scd_file_address << endl;
+    LOG(ERROR) << "Error while reading scd file: " << scd_file_address << endl;
     return -1;
   }
 
@@ -319,12 +320,12 @@ int main(int argc, char* argv[]) {
     // open the socket
     int connfd;
     if ((connfd = server_init(port)) == -1) {
-      cerr << "Cannot open the socket in port " << port << endl;
+      LOG(ERROR) << "Cannot open the socket in port " << port << endl;
       return -1;
     }
-    cout << "Open Alice server on port: " << port << endl;
+    LOG(INFO) << "Open Alice server on port: " << port << endl;
 
-    if (dump_hex_prefix != "")
+    if (dump_prefix != "")
       dump_initial("g");
 
     alice(garbledCircuit, random_input, input_data, R, connfd);
@@ -335,22 +336,22 @@ int main(int argc, char* argv[]) {
     if (vm.count("server_ip")) {
       server_ip = vm["server_ip"].as<string>();
     } else {
-      cerr << "Server IP should be specified, when running as Bob." << endl
+      LOG(ERROR) << "Server IP should be specified, when running as Bob." << endl
            << endl;
-      cerr << desc << endl;
+      std::cout << desc << endl;
       return -1;
     }
 
     // open socket, connect to server
     int connfd;
     if ((connfd = client_init(server_ip.c_str(), port)) == -1) {
-      cerr << "Cannot connect to " << server_ip << ":" << port << endl;
+      LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
       return -1;
     }
-    cout << "Connect Bob client to Alice server on " << server_ip << ":" << port
+    LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":" << port
          << endl;
 
-    if (dump_hex_prefix != "")
+    if (dump_prefix != "")
       dump_initial("e");
 
     bob(garbledCircuit, random_input, input_data, connfd);
@@ -358,10 +359,10 @@ int main(int argc, char* argv[]) {
      client_close(connfd);
   }
 
-  if (dump_hex_prefix != "") {
+  if (dump_prefix != "") {
     dump_finish();
   }
-
+  log_finish();
   return 0;
 }
 

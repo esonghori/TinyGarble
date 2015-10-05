@@ -43,6 +43,7 @@
 #include "crypto/aes.h"
 #include "garbled_circuit/garbled_circuit.h"
 #include "util/common.h"
+#include "util/log.h"
 
 static block cur_seed;
 
@@ -114,20 +115,9 @@ unsigned short type2V(int gateType) {
   return 0;
 }
 
-std::ostream & operator <<(std::ostream & o, const block& v) {
-  uint32_t *v_u32 = (uint32_t*) &v;
-  std::ios::fmtflags f(o.flags());
-  o << std::hex << std::setfill('0') << std::setw(8) << v_u32[3] << " "
-    << std::setfill('0') << std::setw(8) << v_u32[2] << " " << std::setfill('0')
-    << std::setw(8) << v_u32[1] << " " << std::setfill('0') << std::setw(8)
-    << v_u32[0];
-  o.flags(f);
-  return o;
-}
-
 int strToBlock(const string &s, block* v) {
   if(!v) {
-    cerr << "null pointer in strToBlock." << endl;
+    LOG(ERROR) << "null pointer in strToBlock." << endl;
     return FAILURE;
   }
 
@@ -135,7 +125,7 @@ int strToBlock(const string &s, block* v) {
   boost::erase_all(v_str, " _\t\n");
 
   if(v_str.length() > sizeof(block)*2) {
-    cerr << "Can not parse hex string to 128-bit block: " << v_str << endl <<
+    LOG(ERROR) << "Can not parse hex string to 128-bit block: " << v_str << endl <<
      "string is longer than " << sizeof(block)*2 << endl; 
     return FAILURE;
   }
