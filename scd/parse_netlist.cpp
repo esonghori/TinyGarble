@@ -70,9 +70,8 @@ int parse_netlist(const string &filename,
     LOG(ERROR) << "file not found:" << filename << endl;
     return -1;
   }
-  int i;
 
-  int no_of_bits = 0;
+  uint no_of_bits = 0;
   bool is_inport = 0;
   bool is_outport = 0;
   bool store_input0 = 0;
@@ -114,7 +113,7 @@ int parse_netlist(const string &filename,
         {
           if (no_of_bits)
           {
-            for(i = 0; i < no_of_bits; i++)
+            for(uint i = 0; i < no_of_bits; i++)
             {
               string t =str + "[" + std::to_string(i) + "]";
               readCircuitString.inport_list.push_back(t);
@@ -150,7 +149,7 @@ int parse_netlist(const string &filename,
 
         if (no_of_bits)
         {
-          for(i = 0; i < no_of_bits; i++)
+          for(uint i = 0; i < no_of_bits; i++)
           {
             string t = str + "[" + std::to_string(i) + "]";
             readCircuitString.outport_list.push_back(t);
@@ -297,28 +296,28 @@ int parse_netlist(const string &filename,
 #ifdef VERBOSE
   cout << endl << "string name" << endl;
   cout << "g inputs:" << endl;
-  for (i = 0; i < readCircuitString.no_of_g_inports; i++)
+  for (uint i = 0; i < readCircuitString.no_of_g_inports; i++)
   {
     cout << readCircuitString.inport_list[i] << " " << i << endl;
   }
   cout << endl;
 
   cout << "e inputs:" << endl;
-  for (i = readCircuitString.no_of_g_inports; i < readCircuitString.inport_list.size(); i++)
+  for (uint i = readCircuitString.no_of_g_inports; i < readCircuitString.inport_list.size(); i++)
   {
     cout << readCircuitString.inport_list[i] << " " << i << endl;
   }
   cout << endl;
 
   cout << "outputs:" << endl;
-  for (i = 0; i < readCircuitString.outport_list.size(); i++)
+  for (uint i = 0; i < readCircuitString.outport_list.size(); i++)
   {
     cout << readCircuitString.outport_list[i] << " " << i << endl;
   }
   cout << endl;
 
   cout << "gates:" << endl;
-  for (i = 0; i < readCircuitString.gate_list_string.size(); i++)
+  for (uint i = 0; i < readCircuitString.gate_list_string.size(); i++)
   {
     cout << i << "\t"
     << typetoStrGate(readCircuitString.gate_list_string[i].type) << "\t"
@@ -330,7 +329,7 @@ int parse_netlist(const string &filename,
   cout << endl;
 
   cout << "dffs:" << endl;
-  for (i = 0; i < readCircuitString.dff_list_string.size(); i++)
+  for (uint i = 0; i < readCircuitString.dff_list_string.size(); i++)
   {
     cout << i << "\t"
     << typetoStrGate(readCircuitString.dff_list_string[i].type) << "\t"
@@ -354,18 +353,18 @@ int id_assignment(const ReadCircuitString& readCircuitString,
 
   map<string, int> wire_name_table;
   int wire_index = 0;
-  for (int i = 0; i < readCircuit.no_of_inports; i++) {
+  for (uint i = 0; i < readCircuit.no_of_inports; i++) {
     wire_name_table.insert(
         pair<string, int>(readCircuitString.inport_list[i], wire_index++));  // inputs
   }
 
-  for (int i = 0; i < readCircuit.no_of_dffs; i++) {
+  for (uint i = 0; i < readCircuit.no_of_dffs; i++) {
     wire_name_table.insert(
         pair<string, int>(readCircuitString.dff_list_string[i].output,
                           wire_index++));  //DFF Qs
   }
 
-  for (int i = 0; i < readCircuit.no_of_gates; i++) {
+  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
     wire_name_table.insert(
         pair<string, int>(readCircuitString.gate_list_string[i].output,
                           wire_index++));  // gates' output
@@ -378,7 +377,7 @@ int id_assignment(const ReadCircuitString& readCircuitString,
   readCircuit.output_list.resize(readCircuit.no_of_outports);
   readCircuit.dff_list.resize(readCircuit.no_of_dffs);
 
-  for (int i = 0; i < readCircuit.no_of_gates; i++) {
+  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
     readCircuit.gate_list[i].type = readCircuitString.gate_list_string[i].type;
     readCircuit.gate_list[i].input[0] = wire_name_table[readCircuitString
         .gate_list_string[i].input[0]];
@@ -388,7 +387,7 @@ int id_assignment(const ReadCircuitString& readCircuitString,
         .gate_list_string[i].output];
   }
 
-  for (int i = 0; i < readCircuit.no_of_dffs; i++) {
+  for (uint i = 0; i < readCircuit.no_of_dffs; i++) {
     readCircuit.dff_list[i].type = readCircuitString.dff_list_string[i].type;
 
     readCircuit.dff_list[i].input[0] = wire_name_table[readCircuitString
@@ -399,7 +398,7 @@ int id_assignment(const ReadCircuitString& readCircuitString,
         .dff_list_string[i].output];
   }
 
-  for (int i = 0; i < readCircuit.no_of_outports; i++) {
+  for (uint i = 0; i < readCircuit.no_of_outports; i++) {
     readCircuit.output_list[i] =
         wire_name_table[readCircuitString.outport_list[i]];
   }
@@ -407,14 +406,14 @@ int id_assignment(const ReadCircuitString& readCircuitString,
 #ifdef VERBOSE
   cout << endl << "ID assignment" << endl;
   cout << "outputs:" << endl;
-  for (int i = 0; i < readCircuit.no_of_outports; i++)
+  for (uint i = 0; i < readCircuit.no_of_outports; i++)
   {
     cout << readCircuit.output_list[i] << endl;
   }
   cout << endl;
 
   cout << "gates:" << endl;
-  for (int i = 0; i < readCircuit.no_of_gates; i++)
+  for (uint i = 0; i < readCircuit.no_of_gates; i++)
   {
     cout << i << "\t"
     << typetoStrGate(readCircuit.gate_list[i].type) << "\t"
@@ -426,7 +425,7 @@ int id_assignment(const ReadCircuitString& readCircuitString,
   cout << endl;
 
   cout << "dffs:" << endl;
-  for (int i = 0; i < readCircuit.no_of_dffs; i++)
+  for (uint i = 0; i < readCircuit.no_of_dffs; i++)
   {
     cout << i << "\t"
     << typetoStrGate(readCircuit.dff_list[i].type) << "\t"
@@ -454,7 +453,7 @@ int topological_sort(ReadCircuit &readCircuit) {
 
   vector<int> ts(readCircuit.no_of_gates);
 
-  for (int i = 0; i < readCircuit.no_of_gates; i++) {
+  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
     readCircuit.task_schedule[i] = core[0][i];
     ts[i] = core[0][i] + readCircuit.no_of_inports + readCircuit.no_of_dffs;
   }
@@ -463,18 +462,18 @@ int topological_sort(ReadCircuit &readCircuit) {
       readCircuit.no_of_gates + readCircuit.no_of_inports
           + readCircuit.no_of_dffs);
 
-  for (int i = 0; i < readCircuit.no_of_inports + readCircuit.no_of_dffs; i++) {
+  for (uint i = 0; i < readCircuit.no_of_inports + readCircuit.no_of_dffs; i++) {
     ts_1[i] = i;
   }
 
-  for (int i = 0; i < readCircuit.no_of_gates; i++) {
+  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
     ts_1[ts[i]] = i + readCircuit.no_of_inports + readCircuit.no_of_dffs;
   }
 
-  for (int i = 0; i < readCircuit.no_of_outports; i++) {
+  for (uint i = 0; i < readCircuit.no_of_outports; i++) {
     readCircuit.output_list[i] = ts_1[readCircuit.output_list[i]];
   }
-  for (int i = 0; i < readCircuit.no_of_gates; i++) {
+  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
     readCircuit.gate_list[i].input[0] = ts_1[readCircuit.gate_list[i].input[0]];
     if (readCircuit.gate_list[i].input[1] > 0)  //IV has -1 input
       readCircuit.gate_list[i].input[1] =
@@ -483,7 +482,7 @@ int topological_sort(ReadCircuit &readCircuit) {
         + readCircuit.no_of_dffs];
   }
 
-  for (int i = 0; i < readCircuit.no_of_dffs; i++) {
+  for (uint i = 0; i < readCircuit.no_of_dffs; i++) {
     readCircuit.dff_list[i].input[0] = ts_1[readCircuit.dff_list[i].input[0]];
     if (readCircuit.dff_list[i].input[1] > 0)  // Constant values are negative
       readCircuit.dff_list[i].input[1] = ts_1[readCircuit.dff_list[i].input[1]];
@@ -493,14 +492,14 @@ int topological_sort(ReadCircuit &readCircuit) {
 #ifdef VERBOSE
   cout << endl << "Topological Sort" << endl;
   cout << "outputs:" << endl;
-  for (int i = 0; i < readCircuit.no_of_outports; i++)
+  for (uint i = 0; i < readCircuit.no_of_outports; i++)
   {
     cout << readCircuit.output_list[i] << endl;
   }
   cout << endl;
 
   cout << "gates:" << endl;
-  for (int i = 0; i < readCircuit.no_of_gates; i++)
+  for (uint i = 0; i < readCircuit.no_of_gates; i++)
   {
     int gid = readCircuit.task_schedule[i];
     cout << i << "\t"
@@ -513,7 +512,7 @@ int topological_sort(ReadCircuit &readCircuit) {
   cout << endl;
 
   cout << "dffs:" << endl;
-  for (int i = 0; i < readCircuit.no_of_dffs; i++)
+  for (uint i = 0; i < readCircuit.no_of_dffs; i++)
   {
     cout << i << "\t"
     << typetoStrGate(readCircuit.dff_list[i].type) << "\t"

@@ -1,4 +1,5 @@
 bin/
+debug/
 alib-52/
 *.alib
 *.log

@@ -47,7 +47,7 @@ class ReadCircuitString {
   vector<string> outport_list;
   vector<ReadGateString> gate_list_string;
   vector<ReadGateString> dff_list_string;
-  int no_of_g_inports;
+  uint no_of_g_inports;
 
   ReadCircuitString()
       : inport_list(0),
@@ -74,12 +74,12 @@ class ReadCircuit {
   vector<ReadGate> dff_list;
   vector<int> task_schedule;
 
-  int no_of_inports;
-  int no_of_g_inports;
+  uint no_of_inports;
+  uint no_of_g_inports;
 
-  int no_of_outports;
-  int no_of_gates;
-  int no_of_dffs;
+  uint no_of_outports;
+  uint no_of_gates;
+  uint no_of_dffs;
 
   ReadCircuit()
       : output_list(0),
