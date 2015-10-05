@@ -21,11 +21,10 @@
 #include <iostream>
 #include <fstream>
 #include "scd/parse_netlist.h"
+#include "util/log.h"
 
 namespace po = boost::program_options;
 using std::ofstream;
-using std::cout;
-using std::cerr;
 using std::endl;
 
 int verilog2SCD(const string &infilename, const string &outfilename, int c) {
@@ -34,20 +33,20 @@ int verilog2SCD(const string &infilename, const string &outfilename, int c) {
   ReadCircuit readCircuit;
 
   if (parse_netlist(infilename, readCircuitString) == -1) {
-    cerr << "parsing verilog netlist failed." << endl;
+    LOG(ERROR) << "parsing verilog netlist failed." << endl;
     return -1;
   }
   if (id_assignment(readCircuitString, readCircuit) == -1) {
-    cerr << "id assignment to netlist components failed." << endl;
+    LOG(ERROR) << "id assignment to netlist components failed." << endl;
     return -1;
   }
   if (topological_sort(readCircuit) == -1) {
-    cerr << "topological sort failed." << endl;
+    LOG(ERROR) << "topological sort failed." << endl;
     return -1;
   }
 
   if (writeSCD(readCircuit, c, outfilename) == -1) {
-    cerr << "write result to SCD file failed." << endl;
+    LOG(ERROR) << "write result to SCD file failed." << endl;
     return -1;
   }
 
@@ -57,7 +56,7 @@ int verilog2SCD(const string &infilename, const string &outfilename, int c) {
 int writeSCD(const ReadCircuit &readCircuit, int c_, const string &fileName) {
   ofstream f(fileName.c_str(), std::ios::out);
   if (!f.is_open()) {
-    cerr << "can't open " << fileName << endl;
+    LOG(ERROR) << "can't open " << fileName << endl;
     return -1;
   }
 
@@ -153,13 +152,13 @@ int main(int argc, char** argv) {
   try {
     po::store(po::parse_command_line(argc, argv, desc), vm);
     if (vm.count("help")) {
-      cout << desc << endl;
+      std::cout << desc << endl;
       return 0;
     }
     po::notify(vm);
   } catch (po::error& e) {
-    cerr << "ERROR: " << e.what() << endl << endl;
-    cerr << desc << endl;
+    LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
+    std::cout << desc << endl;
     return -1;
   }
   if (vm.count("netlist")) {
@@ -174,7 +173,7 @@ int main(int argc, char** argv) {
   }
 
   if (verilog2SCD(input_netlist_file, output_scd_file, clock_cycles) == -1) {
-    cerr << "Verilog to SCD failed." << endl;
+    LOG(ERROR) << "Verilog to SCD failed." << endl;
     return -1;
   }
   return 0;

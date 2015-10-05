@@ -7,9 +7,8 @@
 #include <iostream>
 #include "util/common.h"
 #include "tcpip/tcpip.h"
+#include "util/log.h"
 
-using std::cerr;
-using std::cout;
 using std::endl;
 
 #define PORT_TRIAL 10
@@ -26,9 +25,9 @@ int tcpipTestRun(
   for(int i=0;i<PORT_TRIAL;i++) {
     if (serverOpenSocket(port) == FAILURE) {
       port = rand() % 5000 + 1000;
-      cerr << "Cannot open the socket in port " << port;
+      LOG(ERROR) << "Cannot open the socket in port " << port;
       if(i==PORT_TRIAL-1) {
-        cerr << "Connection failed." << endl;
+        LOG(ERROR) << "Connection failed." << endl;
       }
       return FAILURE;
     }
@@ -43,41 +42,41 @@ int tcpipTestRun(
       sleep(SLEEP_BEFORE_SEC);
       int client_connfd;
       if ((client_connfd = client_init(server_ip, port)) == -1) {
-        cerr << "Cannot connect to " << server_ip << ":" << port << endl;
-        cerr << "Connection failed." << endl;
+        LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
+        LOG(ERROR) << "Connection failed." << endl;
         return FAILURE;
       }
       if (client_func(client_data, client_connfd) == FAILURE) {
-        cerr << "client failed." << endl;
+        LOG(ERROR) << "client failed." << endl;
         return FAILURE;
       }
       if (client_close(client_connfd) == FAILURE) {
-        cerr << "closing client failed." << endl;
+        LOG(ERROR) << "closing client failed." << endl;
         return FAILURE;
       }
     } else {  //server
       int server_connfd;
       if((server_connfd = serverWaitForClient()) ==  FAILURE) {
-        cerr << "server connection failed." << endl;
+        LOG(ERROR) << "server connection failed." << endl;
         return FAILURE;
       }
       if (server_func(server_data, server_connfd) == FAILURE) {
-        cerr << "server failed." << endl;
+        LOG(ERROR) << "server failed." << endl;
         return FAILURE;
       }
       if (server_close(server_connfd) == FAILURE) {
-        cerr << "closing server failed." << endl;
+        LOG(ERROR) << "closing server failed." << endl;
         return FAILURE;
       }
       int client_returnStatus;    
       waitpid(childPID, &client_returnStatus, 0);
       if (client_returnStatus == FAILURE) {
-        cerr << "client failed." << endl;
+        LOG(ERROR) << "client failed." << endl;
         return FAILURE;
       }
     }
   } else {  // fork failed
-    cerr << "Fork failed." << endl;
+    LOG(ERROR) << "Fork failed." << endl;
     return FAILURE;
   }
 

@@ -40,13 +40,13 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-
+#include "util/log.h"
 
 int readSCD(const string& fileName,
                         GarbledCircuit *garbledCircuit) {
   std::ifstream f(fileName, std::ios::out);
   if (!f.is_open()) {
-    cerr << "can't open " << fileName << endl;
+    LOG(ERROR) << "can't open " << fileName << endl;
     return FAILURE;
   }
 
@@ -69,14 +69,14 @@ int readSCD(const string& fileName,
 
   if(posix_memalign((void **) (&garbledCircuit->garbledGates), 128,
                  sizeof(GarbledGate) * q)) {
-    cerr << "Linux is a cheap miser that refuses to give us memory" << endl;
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory" << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   if(posix_memalign((void **) (&garbledCircuit->outputs), 128,
     sizeof(uint64_t) * m)) {
-    cerr << "Linux is a cheap miser that refuses to give us memory" << endl;
-    cerr << strerror(errno) << endl;
+    LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory" << endl;
+    LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
   garbledCircuit->wires = new Wire[garbledCircuit->r];
@@ -86,7 +86,7 @@ int readSCD(const string& fileName,
   if (garbledCircuit->garbledGates == nullptr
       || garbledCircuit->outputs == nullptr || garbledCircuit->wires == nullptr
       || garbledCircuit->D == nullptr || garbledCircuit->I == nullptr) {
-    cerr << "Linux is a cheap miser that refuses to give us memory" << endl;
+    LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory" << endl;
     return FAILURE;
   }
 

@@ -35,11 +35,11 @@
 
 #include "garbled_circuit/garbled_circuit.h"
 
+#include "../util/log.h"
 #include "crypto/aes.h"
 #include "tcpip/tcpip.h"
 #include "util/common.h"
 #include "util/util.h"
-#include "util/dump_hex.h"
 
 uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
             block* initialDFFLabels, block* outputLabels, block R,
