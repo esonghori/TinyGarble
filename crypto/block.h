@@ -68,7 +68,7 @@ typedef __m128i block;
 #define xorBlocks(x,y) _mm_xor_si128((x),(y))
 #define zero_block() _mm_setzero_si128()
 #define getLSB(x) (*((unsigned short *)&x)&1)
-#define blockCmp(X, Y) (_mm_movemask_epi8((_mm_cmpeq_epi64((X), (Y))))==0xfff)
+#define blockCmp(X, Y) (_mm_extract_epi16((_mm_cmpeq_epi64((X), (Y))),0)==0xffff)
 #define makeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
 
 static inline block double_block(block bl) {

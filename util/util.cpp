@@ -116,27 +116,37 @@ unsigned short type2V(int gateType) {
 }
 
 int strToBlock(const string &s, block* v) {
-  if(!v) {
+  if (!v) {
     LOG(ERROR) << "null pointer in strToBlock." << endl;
     return FAILURE;
   }
 
   string v_str = s;
-  boost::erase_all(v_str, " _\t\n");
+  boost::erase_all(v_str, " ");
+  boost::erase_all(v_str, "\t");
+  boost::erase_all(v_str, "_");
 
-  if(v_str.length() > sizeof(block)*2) {
-    LOG(ERROR) << "Can not parse hex string to 128-bit block: " << v_str << endl <<
-     "string is longer than " << sizeof(block)*2 << endl; 
+  if (v_str.length() > sizeof(block) * 2) {
+    LOG(ERROR) << "Can not parse hex string to 128-bit block: " << v_str << endl
+               << "string (len = " << v_str.length() << ") is longer than "
+               << sizeof(block) * 2 << endl;
     return FAILURE;
   }
-  for(uint i=0;i<8-v_str.length();i++) {
+
+  while (v_str.length() < sizeof(block) * 2) {
     v_str.insert(0, "0");
   }
-  string lo_str = v_str.substr(8, 8);
-  string hi_str = v_str.substr(0, 8);
-  
-  uint64_t lo = std::stoull(lo_str, nullptr, 16);
-  uint64_t hi = std::stoull(hi_str, nullptr, 16);
+  string lo_str = v_str.substr(sizeof(block), sizeof(block));
+  string hi_str = v_str.substr(0, sizeof(block));
+  uint64_t lo, hi;
+  try {
+    lo = std::stoull(lo_str, nullptr, 16);
+    hi = std::stoull(hi_str, nullptr, 16);
+  } catch (std::exception& e) {
+
+    //LOG(ERROR) << "error in string to ull: " << endl;
+    return FAILURE;
+  }
 
   *v = makeBlock(hi, lo);
 
