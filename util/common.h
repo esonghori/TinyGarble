@@ -58,13 +58,6 @@ using std::endl;
   res;})
 #define fbits(v, p) ((v & (1 << p))>>p)
 
-
-#ifdef DUMP_HEX
-#define DUMP(file, block) dump(file, block)
-#else
-#define DUMP(file, block)
-#endif /* DUMP_ENABLE */
-
-extern string dump_hex_prefix;
+extern string dump_prefix;
 
 #endif /* EVAL_NETLIST_COMMON_H_ */

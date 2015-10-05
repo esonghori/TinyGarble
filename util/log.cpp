@@ -16,7 +16,7 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "util/dump_hex.h"
+#include "util/log.h"
 
 #include <iostream>
 #include <fstream>
@@ -24,32 +24,61 @@
 #include <iomanip>
 #include <map>
 #include <vector>
-
 #include "util/common.h"
 #include "util/util.h"
 
-using std::ofstream;
-using std::cerr;
 using std::string;
 using std::map;
 using std::vector;
 
-string dump_hex_prefix = "";
-map<string, ofstream*> dump_map;
+string dump_prefix = "";
+map<string, ostream*> dump_map;
+ostream* log_map[2];  // ERROR, INFO
+
+void log_initial(int argc, char *argv[], bool to_std /* = true*/) {
+  if (to_std) {
+    log_map[ERROR] = &std::cerr;
+    log_map[INFO] = &std::cout;
+  } else {
+    string file_addresss_error = string(argv[0]) + "-error.log";
+    log_map[ERROR] = new std::ofstream(file_addresss_error.c_str(),
+                                       std::ios::out);
+    string file_addresss_info = string(argv[0]) + "-error.log";
+    log_map[INFO] = new std::ofstream(file_addresss_info.c_str(),
+                                      std::ios::out);
+  }
+}
 
 void dump_initial(const string& mode) {
   vector<string> file_names = { "dff", "input", "output", "table", "r_key" };
   for (const string& file_name : file_names) {
-    string file_addresss = dump_hex_prefix + file_name + "." + mode + ".hex";
-    dump_map[file_name + "." + mode] = new ofstream(file_addresss.c_str(),
-                                                    std::ios::out);
+    string file_addresss = dump_prefix + file_name;
+    if (mode != "") {
+      file_addresss += "." + mode;
+    }
+    file_addresss += ".hex";
+    dump_map[file_name + "." + mode] = new std::ofstream(file_addresss.c_str(),
+                                                         std::ios::out);
+  }
+}
+
+void log_finish() {
+  if (std::ofstream* log_of = dynamic_cast<std::ofstream*>(log_map[ERROR])) {
+    log_of->close();
+    delete log_map[ERROR];
+  }
+  if (std::ofstream* log_of = dynamic_cast<std::ofstream*>(log_map[INFO])) {
+    log_of->close();
+    delete log_map[INFO];
   }
 }
 
 void dump_finish() {
   for (const auto& dump : dump_map) {
-    dump.second->close();
-    delete dump.second;
+    if (std::ofstream* dump_of = dynamic_cast<std::ofstream*>(dump.second)) {
+      dump_of->close();
+      delete dump.second;
+    }
   }
 }
 
@@ -58,7 +87,21 @@ void dump(const string& dump_file, const block& a) {
   if (dump_map.count(dump_file)) {
     *dump_map[dump_file] << a << std::endl;
   } else {
-    cerr << "No such a dump file " << dump_file << endl;
+    LOG(ERROR) << "No such a dump file " << dump_file << endl;
   }
 }
 
+ostream& log_stream(int log_code) {
+  return *log_map[log_code];
+}
+
+std::ostream & operator <<(std::ostream & o, const block& v) {
+  uint32_t *v_u32 = (uint32_t*) &v;
+  std::ios::fmtflags f(o.flags());
+  o << std::hex << std::setfill('0') << std::setw(8) << v_u32[3] << " "
+    << std::setfill('0') << std::setw(8) << v_u32[2] << " " << std::setfill('0')
+    << std::setw(8) << v_u32[1] << " " << std::setfill('0') << std::setw(8)
+    << v_u32[0];
+  o.flags(f);
+  return o;
+}

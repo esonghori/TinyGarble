@@ -10,7 +10,8 @@ add_library (SCD_ReadSCD OBJECT
 add_executable(V2SCD
   "v_2_scd.cpp"
   "$<TARGET_OBJECTS:SCD_ParseNetlist>"
-  "$<TARGET_OBJECTS:SCD_Scheduling>")
+  "$<TARGET_OBJECTS:SCD_Scheduling>"
+  "$<TARGET_OBJECTS:Util_Log>")
 
 if (Boost_FOUND)
   target_link_libraries(V2SCD ${Boost_LIBRARIES})

@@ -22,6 +22,7 @@
 #include <fstream>
 #include <map>
 #include "util/common.h"
+#include "util/log.h"
 
 using std::ifstream;
 using boost::char_separator;
@@ -66,7 +67,7 @@ int parse_netlist(const string &filename,
 
   ifstream fin(filename.c_str(), std::ios::in);
   if (!fin.good()) {
-    cerr << "file not found:" << filename << endl;
+    LOG(ERROR) << "file not found:" << filename << endl;
     return -1;
   }
   int i;
