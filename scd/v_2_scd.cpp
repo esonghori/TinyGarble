@@ -27,25 +27,25 @@ namespace po = boost::program_options;
 using std::ofstream;
 using std::endl;
 
-int verilog2SCD(const string &infilename, const string &outfilename, int c) {
+int Verilog2SCD(const string &infilename, const string &outfilename, int c) {
 
   ReadCircuitString readCircuitString;
   ReadCircuit readCircuit;
 
-  if (parse_netlist(infilename, readCircuitString) == -1) {
+  if (ParseNetlist(infilename, readCircuitString) == -1) {
     LOG(ERROR) << "parsing verilog netlist failed." << endl;
     return -1;
   }
-  if (id_assignment(readCircuitString, readCircuit) == -1) {
+  if (IdAssignment(readCircuitString, readCircuit) == -1) {
     LOG(ERROR) << "id assignment to netlist components failed." << endl;
     return -1;
   }
-  if (topological_sort(readCircuit) == -1) {
+  if (TopologicalSort(readCircuit) == -1) {
     LOG(ERROR) << "topological sort failed." << endl;
     return -1;
   }
 
-  if (writeSCD(readCircuit, c, outfilename) == -1) {
+  if (WriteSCD(readCircuit, c, outfilename) == -1) {
     LOG(ERROR) << "write result to SCD file failed." << endl;
     return -1;
   }
@@ -53,7 +53,7 @@ int verilog2SCD(const string &infilename, const string &outfilename, int c) {
   return 0;
 }
 
-int writeSCD(const ReadCircuit &readCircuit, int c_, const string &fileName) {
+int WriteSCD(const ReadCircuit &readCircuit, int c_, const string &fileName) {
   ofstream f(fileName.c_str(), std::ios::out);
   if (!f.is_open()) {
     LOG(ERROR) << "can't open " << fileName << endl;
@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
     clock_cycles = vm["clock"].as<int>();
   }
 
-  if (verilog2SCD(input_netlist_file, output_scd_file, clock_cycles) == -1) {
+  if (Verilog2SCD(input_netlist_file, output_scd_file, clock_cycles) == -1) {
     LOG(ERROR) << "Verilog to SCD failed." << endl;
     return -1;
   }

@@ -41,7 +41,7 @@
 #include "util/common.h"
 #include "util/util.h"
 
-uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
+uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
             block* initialDFFLabels, block* outputLabels, block R,
             int connfd) {
   uint64_t n = garbledCircuit->n;
@@ -55,7 +55,7 @@ uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
   uint64_t startTime = RDTSC;
 
   AES_KEY AES_Key;
-  AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128,
+  AESSetEncryptKey((unsigned char *) &(garbledCircuit->globalKey), 128,
                       &AES_Key);
 
   for (uint64_t cid = 0; cid < c; cid++) {  //for each clock cycle
@@ -97,19 +97,19 @@ uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
       uint64_t output = garbledGate->output;
 
       if (garbledGate->type == XORGATE) {
-        garbledCircuit->wires[output].label0 = xorBlocks(
+        garbledCircuit->wires[output].label0 = XorBlock(
             garbledCircuit->wires[input0].label0,
             garbledCircuit->wires[input1].label0);
-        garbledCircuit->wires[output].label1 = xorBlocks(
+        garbledCircuit->wires[output].label1 = XorBlock(
             garbledCircuit->wires[input0].label1,
             garbledCircuit->wires[input1].label0);
 
         continue;
       } else if (garbledGate->type == XNORGATE) {
-        garbledCircuit->wires[output].label0 = xorBlocks(
+        garbledCircuit->wires[output].label0 = XorBlock(
             garbledCircuit->wires[input0].label1,
             garbledCircuit->wires[input1].label0);
-        garbledCircuit->wires[output].label1 = xorBlocks(
+        garbledCircuit->wires[output].label1 = XorBlock(
             garbledCircuit->wires[input0].label0,
             garbledCircuit->wires[input1].label0);
 
@@ -125,7 +125,7 @@ uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
       block A1;
       block A0;
-      unsigned short v = type2V(garbledGate->type);
+      unsigned short v = Type2V(garbledGate->type);
       if (v & 1) {
         A1 = (garbledCircuit->wires[input0].label0);
         A0 = (garbledCircuit->wires[input0].label1);
@@ -144,63 +144,63 @@ uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
         B1 = (garbledCircuit->wires[input1].label1);
       }
 
-      unsigned short pa = getLSB(A0);
-      unsigned short pb = getLSB(B0);
+      unsigned short pa = get_LSB(A0);
+      unsigned short pb = get_LSB(B0);
 
-      block tweak0 = makeBlock(cid, 2 * i + 0);
-      block tweak1 = makeBlock(cid, 2 * i + 1);
+      block tweak0 = MakeBlock(cid, 2 * i + 0);
+      block tweak1 = MakeBlock(cid, 2 * i + 1);
 
       block keys[4];
-      keys[0] = xorBlocks(A0, tweak0);
-      keys[1] = xorBlocks(A1, tweak0);
-      keys[2] = xorBlocks(B0, tweak1);
-      keys[3] = xorBlocks(B1, tweak1);
+      keys[0] = XorBlock(A0, tweak0);
+      keys[1] = XorBlock(A1, tweak0);
+      keys[2] = XorBlock(B0, tweak1);
+      keys[3] = XorBlock(B1, tweak1);
 
       block mask[4];
       mask[0] = keys[0];
       mask[1] = keys[1];
       mask[2] = keys[2];
       mask[3] = keys[3];
-      AES_ecb_encrypt_blks(keys, 4, &(AES_Key));
+      AESEcbEncryptBlks(keys, 4, &(AES_Key));
 
-      mask[0] = xorBlocks(mask[0], keys[0]);
-      mask[1] = xorBlocks(mask[1], keys[1]);
-      mask[2] = xorBlocks(mask[2], keys[2]);
-      mask[3] = xorBlocks(mask[3], keys[3]);
+      mask[0] = XorBlock(mask[0], keys[0]);
+      mask[1] = XorBlock(mask[1], keys[1]);
+      mask[2] = XorBlock(mask[2], keys[2]);
+      mask[3] = XorBlock(mask[3], keys[3]);
 
       block table[2];
-      table[0] = xorBlocks(mask[0], mask[1]);
+      table[0] = XorBlock(mask[0], mask[1]);
       if (pb)
-        table[0] = xorBlocks(table[0], R);
+        table[0] = XorBlock(table[0], R);
 
       block G = mask[0];
       if (pa)
-        G = xorBlocks(G, table[0]);
+        G = XorBlock(G, table[0]);
 
-      table[1] = xorBlocks(mask[2], mask[3]);
-      table[1] = xorBlocks(table[1], A0);
+      table[1] = XorBlock(mask[2], mask[3]);
+      table[1] = XorBlock(table[1], A0);
 
       block E = mask[2];
       if (pb) {
-        E = xorBlocks(E, table[1]);
-        E = xorBlocks(E, A0);
+        E = XorBlock(E, table[1]);
+        E = XorBlock(E, A0);
       }
 
       block C0;
       block C1;
       if (v & 4) {
-        C1 = xorBlocks(G, E);
-        C0 = xorBlocks(R, C1);
+        C1 = XorBlock(G, E);
+        C0 = XorBlock(R, C1);
       } else {
-        C0 = xorBlocks(G, E);
-        C1 = xorBlocks(R, C0);
+        C0 = XorBlock(G, E);
+        C1 = XorBlock(R, C0);
       }
 
       garbledCircuit->wires[garbledGate->output].label0 = C0;
       garbledCircuit->wires[garbledGate->output].label1 = C1;
 
       for (uint64_t j = 0; j < 2; j++) {
-        send_data(connfd, &table[j], sizeof(block));
+        SendData(connfd, &table[j], sizeof(block));
         DUMP("table.g", table[j]);
       }
     }
@@ -218,7 +218,7 @@ uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
   return (RDTSC - startTime);
 }
 
-uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
+uint64_t Evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
               block* initialDFFLable, block *outputLabels, int connfd) {
   uint64_t n = garbledCircuit->n;
   uint64_t m = garbledCircuit->m;
@@ -229,7 +229,7 @@ uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
   uint64_t startTime = RDTSC;
 
   AES_KEY AES_Key;
-  AES_set_encrypt_key((unsigned char *) &(garbledCircuit->globalKey), 128,
+  AESSetEncryptKey((unsigned char *) &(garbledCircuit->globalKey), 128,
                       &AES_Key);
 
   for (uint64_t cid = 0; cid < c; cid++) {  //for each clock cycle
@@ -260,7 +260,7 @@ uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
       uint64_t output = garbledGate->output;
 
       if (garbledGate->type == XORGATE || garbledGate->type == XNORGATE) {
-        garbledCircuit->wires[output].label0 = xorBlocks(
+        garbledCircuit->wires[output].label0 = XorBlock(
             garbledCircuit->wires[input0].label0,
             garbledCircuit->wires[input1].label0);
       } else if (garbledGate->type == NOTGATE) {
@@ -270,41 +270,41 @@ uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
         block A = (garbledCircuit->wires[input0].label0);
         block B = (garbledCircuit->wires[input1].label0);
 
-        unsigned short sa = getLSB(A);
-        unsigned short sb = getLSB(B);
+        unsigned short sa = get_LSB(A);
+        unsigned short sb = get_LSB(B);
 
-        block tweak0 = makeBlock(cid, 2 * i + 0);
-        block tweak1 = makeBlock(cid, 2 * i + 1);
+        block tweak0 = MakeBlock(cid, 2 * i + 0);
+        block tweak1 = MakeBlock(cid, 2 * i + 1);
 
         block table[2];
         for (uint64_t j = 0; j < 2; j++) {
-          recv_data(connfd, &(table[j]), sizeof(block));
+          RecvData(connfd, &(table[j]), sizeof(block));
           DUMP("table.e", table[j]);
         }
 
         block keys[2];
-        keys[0] = xorBlocks(A, tweak0);
-        keys[1] = xorBlocks(B, tweak1);
+        keys[0] = XorBlock(A, tweak0);
+        keys[1] = XorBlock(B, tweak1);
 
         block mask[2];
         mask[0] = keys[0];
         mask[1] = keys[1];
-        AES_ecb_encrypt_blks(keys, 2, &(AES_Key));
+        AESEcbEncryptBlks(keys, 2, &(AES_Key));
 
-        mask[0] = xorBlocks(mask[0], keys[0]);
-        mask[1] = xorBlocks(mask[1], keys[1]);
+        mask[0] = XorBlock(mask[0], keys[0]);
+        mask[1] = XorBlock(mask[1], keys[1]);
 
         block G = mask[0];
         if (sa)
-          G = xorBlocks(G, table[0]);
+          G = XorBlock(G, table[0]);
 
         block E = mask[1];
         if (sb) {
-          E = xorBlocks(E, table[1]);
-          E = xorBlocks(E, A);
+          E = XorBlock(E, table[1]);
+          E = XorBlock(E, A);
         }
 
-        block C = xorBlocks(E, G);
+        block C = XorBlock(E, G);
 
         garbledCircuit->wires[output].label0 = C;
 
@@ -322,14 +322,14 @@ uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
   return (RDTSC - startTime);
 }
 
-void createInputLabels(block* inputLabels, block R, uint64_t n) {
+void CreateInputLabels(block* inputLabels, block R, uint64_t n) {
   for (uint64_t i = 0; i < 2 * n; i += 2) {
-    inputLabels[i] = randomBlock();
-    inputLabels[i + 1] = xorBlocks(R, inputLabels[i]);
+    inputLabels[i] = RandomBlock();
+    inputLabels[i + 1] = XorBlock(R, inputLabels[i]);
   }
 }
 
-void removeGarbledCircuit(GarbledCircuit *garbledCircuit) {
+void RemoveGarbledCircuit(GarbledCircuit *garbledCircuit) {
   delete[] garbledCircuit->garbledGates;
   delete[] garbledCircuit->wires;
   delete[] garbledCircuit->outputs;

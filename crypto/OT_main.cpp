@@ -1,8 +1,19 @@
 /*
- * OT_main.cpp
- *
- *  Created on: Oct 2, 2015
- *      Author: ebi
+ This file is part of TinyGarble. It is modified version of JustGarble
+ under GNU license.
+
+ TinyGarble is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ TinyGarble is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "crypto/OT.h"
@@ -21,7 +32,7 @@ using std::string;
 using std::endl;
 
 int main(int argc, char *argv[]) {
-  log_initial(argc, argv);
+  LogInitial(argc, argv);
   int port;
   string scd_file_address;
   string server_ip;
@@ -69,7 +80,7 @@ int main(int argc, char *argv[]) {
   if (vm.count("alice")) {
     // open the socket
     int connfd;
-    if ((connfd = server_init(port)) == FAILURE) {
+    if ((connfd = ServerInit(port)) == FAILURE) {
       LOG(ERROR) << "Cannot open the socket in port " << port << endl;
       return FAILURE;
     }
@@ -77,11 +88,11 @@ int main(int argc, char *argv[]) {
 
     block** message = new block*[1];
     message[0] = new block[2];
-    if (strToBlock(message0_str, &message[0][0]) == FAILURE) {
+    if (Str2Block(message0_str, &message[0][0]) == FAILURE) {
       LOG(ERROR) << "Cannot parse message0 " << message0_str << endl;
       return FAILURE;
     }
-    if (strToBlock(message1_str, &message[0][1]) == FAILURE) {
+    if (Str2Block(message1_str, &message[0][1]) == FAILURE) {
       LOG(ERROR) << "Cannot parse message1 " << message1_str << endl;
       return FAILURE;
     }
@@ -97,7 +108,7 @@ int main(int argc, char *argv[]) {
 
     delete[] message[0];
     delete[] message;
-    server_close(connfd);
+    ServerClose(connfd);
   } else if (vm.count("bob")) {
     if (vm.count("server_ip")) {
       server_ip = vm["server_ip"].as<string>();
@@ -105,7 +116,7 @@ int main(int argc, char *argv[]) {
 
     // open socket, connect to server
     int connfd;
-    if ((connfd = client_init(server_ip.c_str(), port)) == FAILURE) {
+    if ((connfd = ClientInit(server_ip.c_str(), port)) == FAILURE) {
       LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
       return FAILURE;
     }
@@ -117,16 +128,16 @@ int main(int argc, char *argv[]) {
 
     LOG(INFO) << "start OT recv" << endl;
     block message;
-    if (OTrecv(&select, 1, connfd, &message) == FAILURE) {
+    if (OTRecv(&select, 1, connfd, &message) == FAILURE) {
       LOG(ERROR) << "OTsend failed." << endl;
       return FAILURE;
     }
 
     LOG(INFO) << "selected message = " << message << endl;
 
-    client_close(connfd);
+    ClientClose(connfd);
   }
-  log_finish();
+  LogFinish();
   return SUCCESS;
 }
 

@@ -1,3 +1,20 @@
+/*
+ This file is part of TinyGarble.
+
+ TinyGarble is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ TinyGarble is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "tcpip/tcpip_testsuit.h"
 
 #include <unistd.h>
@@ -14,7 +31,7 @@ using std::endl;
 #define PORT_TRIAL 10
 #define SLEEP_BEFORE_SEC 1 // sleep before connection in client
 
-int tcpipTestRun(
+int TcpipTestRun(
   const function<int(const void *, int)>& server_func,
   const void* server_data,
   const function<int(const void *, int)>& client_func,
@@ -23,7 +40,7 @@ int tcpipTestRun(
   char server_ip[] = "127.0.0.1";
   int port = rand() % 5000 + 1000;
   for(int i=0;i<PORT_TRIAL;i++) {
-    if (serverOpenSocket(port) == FAILURE) {
+    if (ServerOpenSocket(port) == FAILURE) {
       port = rand() % 5000 + 1000;
       LOG(ERROR) << "Cannot open the socket in port " << port;
       if(i==PORT_TRIAL-1) {
@@ -41,7 +58,7 @@ int tcpipTestRun(
     if (childPID == 0) {  // client
       sleep(SLEEP_BEFORE_SEC);
       int client_connfd;
-      if ((client_connfd = client_init(server_ip, port)) == -1) {
+      if ((client_connfd = ClientInit(server_ip, port)) == -1) {
         LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
         LOG(ERROR) << "Connection failed." << endl;
         return FAILURE;
@@ -50,13 +67,13 @@ int tcpipTestRun(
         LOG(ERROR) << "client failed." << endl;
         return FAILURE;
       }
-      if (client_close(client_connfd) == FAILURE) {
+      if (ClientClose(client_connfd) == FAILURE) {
         LOG(ERROR) << "closing client failed." << endl;
         return FAILURE;
       }
     } else {  //server
       int server_connfd;
-      if((server_connfd = serverWaitForClient()) ==  FAILURE) {
+      if((server_connfd = ServerWaitForClient()) ==  FAILURE) {
         LOG(ERROR) << "server connection failed." << endl;
         return FAILURE;
       }
@@ -64,7 +81,7 @@ int tcpipTestRun(
         LOG(ERROR) << "server failed." << endl;
         return FAILURE;
       }
-      if (server_close(server_connfd) == FAILURE) {
+      if (ServerClose(server_connfd) == FAILURE) {
         LOG(ERROR) << "closing server failed." << endl;
         return FAILURE;
       }

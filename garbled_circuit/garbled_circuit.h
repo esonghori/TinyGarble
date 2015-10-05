@@ -40,8 +40,8 @@
  *
  */
 
-#ifndef EVAL_NETLIST_GARBLED_CIRCUIT_H_
-#define EVAL_NETLIST_GARBLED_CIRCUIT_H_
+#ifndef GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_
+#define GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_
 
 #include <cstdint>
 #include "crypto/block.h"
@@ -107,7 +107,7 @@ typedef struct GarbledCircuit {
  * @see JustGarble paper.
  *
  */
-void createInputLabels(block* inputLabels, block R, uint64_t n);
+void CreateInputLabels(block* inputLabels, block R, uint64_t n);
 
 /**
  * @brief Garble the circuit described in garbledCircuit.
@@ -138,7 +138,7 @@ void createInputLabels(block* inputLabels, block R, uint64_t n);
  * @see JustGarble paper.
  * @see Half-Gate paper.
  */
-uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
+uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
             block* initialDFFLabels, block* outputLabels, block R, int connfd);
 
 /**
@@ -164,7 +164,7 @@ uint64_t garble(GarbledCircuit *garbledCircuit, block* inputLabels,
  * @see Half-Gate paper.
  */
 
-uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
+uint64_t Evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
               block* initialDFFLabels, block *outputs, int connfd);
 
 /**
@@ -173,6 +173,6 @@ uint64_t evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
  *
  * @param param1 pointer to garbledCircuit. The garbledCircuit will be deallocated.
  */
-void removeGarbledCircuit(GarbledCircuit *garbledCircuit);
+void RemoveGarbledCircuit(GarbledCircuit *garbledCircuit);
 
-#endif /* EVAL_NETLIST_GARBLED_CIRCUIT_H_ */
+#endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_ */

@@ -35,7 +35,7 @@ string dump_prefix = "";
 map<string, ostream*> dump_map;
 ostream* log_map[2];  // ERROR, INFO
 
-void log_initial(int argc, char *argv[], bool to_std /* = true*/) {
+void LogInitial(int argc, char *argv[], bool to_std /* = true*/) {
   if (to_std) {
     log_map[ERROR] = &std::cerr;
     log_map[INFO] = &std::cout;
@@ -49,7 +49,7 @@ void log_initial(int argc, char *argv[], bool to_std /* = true*/) {
   }
 }
 
-void dump_initial(const string& mode) {
+void DumpInitial(const string& mode) {
   vector<string> file_names = { "dff", "input", "output", "table", "r_key" };
   for (const string& file_name : file_names) {
     string file_addresss = dump_prefix + file_name;
@@ -62,7 +62,7 @@ void dump_initial(const string& mode) {
   }
 }
 
-void log_finish() {
+void LogFinish() {
   if (std::ofstream* log_of = dynamic_cast<std::ofstream*>(log_map[ERROR])) {
     log_of->close();
     delete log_map[ERROR];
@@ -73,7 +73,7 @@ void log_finish() {
   }
 }
 
-void dump_finish() {
+void DumpFinish() {
   for (const auto& dump : dump_map) {
     if (std::ofstream* dump_of = dynamic_cast<std::ofstream*>(dump.second)) {
       dump_of->close();
@@ -83,7 +83,7 @@ void dump_finish() {
 }
 
 // dump_file : { "dff", "input", "output", "table", "r_key" } + {".g", ".f"}
-void dump(const string& dump_file, const block& a) {
+void Dump(const string& dump_file, const block& a) {
   if (dump_map.count(dump_file)) {
     *dump_map[dump_file] << a << std::endl;
   } else {
@@ -91,7 +91,7 @@ void dump(const string& dump_file, const block& a) {
   }
 }
 
-ostream& log_stream(int log_code) {
+ostream& LogStream(int log_code) {
   return *log_map[log_code];
 }
 
