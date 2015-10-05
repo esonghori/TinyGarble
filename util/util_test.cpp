@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include "util/minunit.h"
+#include "util/log.h"
+#include "util/common.h"
 
 using std::cerr;
 using std::cout;
@@ -17,34 +19,35 @@ void test_teardown() {
 MU_TEST(str_block_seperation) {
   block v, w;
   string test_hex = "15141312 11100908 07060504 03020100";
-  mu_check(strToBlock(test_hex_str, &v) == SUCCESS);
+  mu_check(strToBlock(test_hex, &v) == SUCCESS);
   test_hex = "15141312_11100908_07060504_03020100";
-  mu_check(strToBlock(test_hex_str, &w) == SUCCESS);
-  mu_check(blockCmp(v, w)));
+  mu_check(strToBlock(test_hex, &w) == SUCCESS);
+  mu_check(blockCmp(v, w));
   test_hex = "15141312\t11100908\t07060504\t03020100";
-  mu_check(strToBlock(test_hex_str, &w) == SUCCESS);
-  mu_check(blockCmp(v, w)));
+  mu_check(strToBlock(test_hex, &w) == SUCCESS);
+  mu_check(blockCmp(v, w));
   test_hex = "15141312111009080706050403020100";
-  mu_check(strToBlock(test_hex_str, &w) == SUCCESS);
-  mu_check(blockCmp(v, w)));
+  mu_check(strToBlock(test_hex, &w) == SUCCESS);
+  mu_check(blockCmp(v, w));
   test_hex = "1514131\t211100 90807060504_03020100";
-  mu_check(strToBlock(test_hex_str, &w) == SUCCESS);
-  mu_check(blockCmp(v, w)));
+  mu_check(strToBlock(test_hex, &w) == SUCCESS);
+  mu_check(blockCmp(v, w));
 }
 
 MU_TEST(str_block_fill_zero) {
   block v, w;
   string test_hex = "00000000 00000000 00000000 03020100";
-  mu_check(strToBlock(test_hex_str, &v) == SUCCESS);
+  mu_check(strToBlock(test_hex, &v) == SUCCESS);
   test_hex = "3020100";
-  mu_check(strToBlock(test_hex_str, &w) == SUCCESS);
-  mu_check(blockCmp(v, w)));
+  mu_check(strToBlock(test_hex, &w) == SUCCESS);
+  mu_check(blockCmp(v, w));
   test_hex = "00000003020100";
-  mu_check(strToBlock(test_hex_str, &w) == SUCCESS);
-  mu_check(blockCmp(v, w)));
+  mu_check(strToBlock(test_hex, &w) == SUCCESS);
+  mu_check(blockCmp(v, w));
 }
 
 MU_TEST(str_block_lsb) {
+  block v;
   mu_check(strToBlock("01", &v) == SUCCESS);
   mu_check(getLSB(v));
   mu_check(strToBlock("00", &v) == SUCCESS);
@@ -55,8 +58,10 @@ MU_TEST(str_block_operator) {
   stringstream o_stream;
   string test_hex = "15141312 11100908 07060504 03020100";
   block v;
-  mu_check(strToBlock(test_hex_str, &v) == SUCCESS);
+  mu_check(strToBlock(test_hex, &v) == SUCCESS);
   o_stream << v;
+  o_stream.flush();
+  LOG(INFO) << o_stream.str() << endl << test_hex << endl;
   mu_check(o_stream.str() == test_hex);
 }
 
