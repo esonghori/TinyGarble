@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
         << "1: " << message[0][1] << endl;
 
     LOG(INFO) << "start OT send" << endl;
-    if (OTsend(message, m_len, connfd) == FAILURE) {
+    if (OTSend(message, m_len, connfd) == FAILURE) {
       LOG(ERROR) << "OTsend failed." << endl;
       return FAILURE;
     }

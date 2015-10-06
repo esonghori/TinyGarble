@@ -50,4 +50,10 @@ ostream& operator <<(ostream & o, const block& v);
 #define LOG(X) LogStream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" \
   << LOG_COLOR(X) << "m" << #X << "\033[0m: "
 
+#define CHECK(X) if((X)==FAILURE) { LOG(ERROR) << #X << " failed" \
+  << std::endl; return FAILURE; }
+#define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" \
+  << std::endl; return FAILURE; }
+
+
 #endif /* UTIL_LOG_H_ */
