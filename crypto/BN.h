@@ -16,23 +16,20 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CRYPTO_OT_EXTENSION_H_
-#define CRYPTO_OT_EXTENSION_H_
+#ifndef CRYPTO_BN_H_
+#define CRYPTO_BN_H_
 
-#include <cstdint>
-#include <openssl/rsa.h>
+
+#include <openssl/bn.h>
 #include "crypto/block.h"
 
 int BN_invert(BIGNUM* v);
-int SwitchRowColumnBN(const BIGNUM* const * v, uint32_t v_len, BIGNUM*** w,
-                      uint32_t* w_len);
-int SwitchRowColumnBNPair(const BIGNUM* const * const * v, uint32_t v_len,
-                          BIGNUM**** w, uint32_t* w_len);
+int BN_xor(BIGNUM* r, const BIGNUM* v, const BIGNUM* w);
+void BlockToBN(BIGNUM *a, block w);
+void BNToBlock(const BIGNUM *a, block *w);
+int SendBN(int connf, const BIGNUM *bignum);
+int RecvBN(int connf, BIGNUM *bignum);
 
-int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd);
-int OTExtRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m);
 
-int OTExtSend(const block* const * m, uint32_t m_len, int connfd);
-int OTExtRecv(const bool *sel, uint32_t m_len, int connfd, block* m);
+#endif /* CRYPTO_BN_H_ */
 
-#endif /* CRYPTO_OT_EXTENSION_H_ */

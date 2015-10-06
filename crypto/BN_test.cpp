@@ -16,7 +16,7 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "crypto/OT.h"
+#include "crypto/BN.h"
 
 #include <iostream>
 #include <openssl/bn.h>
