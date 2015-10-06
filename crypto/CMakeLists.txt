@@ -1,9 +1,13 @@
 add_library (Crypto_OT OBJECT
   "OT.cpp")
+  
+add_library (Crypto_OT_Extension OBJECT
+  "OT_extension.cpp")
 
 add_executable(OT_Main
   "OT_main.cpp"
   "$<TARGET_OBJECTS:Crypto_OT>"
+  "$<TARGET_OBJECTS:Crypto_OT_Extension>"
   "$<TARGET_OBJECTS:TCPIP_TCPIP>"
   "$<TARGET_OBJECTS:Util_Util>"
   "$<TARGET_OBJECTS:Util_Log>")
@@ -18,6 +22,7 @@ endif (Boost_FOUND)
 add_executable(BN_Test
   "BN_test.cpp"
   "$<TARGET_OBJECTS:Crypto_OT>"
+  "$<TARGET_OBJECTS:Crypto_OT_Extension>"
   "$<TARGET_OBJECTS:TCPIP_TCPIP>"
   "$<TARGET_OBJECTS:Util_Util>"
   "$<TARGET_OBJECTS:Util_Log>")
@@ -36,6 +41,7 @@ set_tests_properties (Crypto_BN_Test
 add_executable(OT_Test
   "OT_test.cpp"
   "$<TARGET_OBJECTS:Crypto_OT>"
+  "$<TARGET_OBJECTS:Crypto_OT_Extension>"
   "$<TARGET_OBJECTS:TCPIP_TCPIP>"
   "$<TARGET_OBJECTS:TCPIP_TCPIP_Testsuit>"
   "$<TARGET_OBJECTS:Util_Util>"

@@ -16,24 +16,21 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CRYPTO_OT_H_
-#define CRYPTO_OT_H_
+#ifndef CRYPTO_OT_EXTENSION_H_
+#define CRYPTO_OT_EXTENSION_H_
 
 #include <cstdint>
 #include <openssl/rsa.h>
 #include "crypto/block.h"
 
-void BlockToBN(BIGNUM *a, block w);
-void BNToBlock(const BIGNUM *a, block *w);
-int SendBN(int connf, const BIGNUM *bignum);
-int RecvBN(int connf, BIGNUM *bignum);
-int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd);
-int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m);
+int BN_invert(BIGNUM* v);
+int SwitchRowColumnBN(const BIGNUM* const * v, uint32_t v_len, BIGNUM*** w,
+                      uint32_t* w_len);
 
-int OTSend(const block* const * m, uint32_t m_len, int connfd);
-int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m);
+int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd);
+int OTExtRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m);
 
+int OTExtSend(const block* const * m, uint32_t m_len, int connfd);
+int OTExtRecv(const bool *sel, uint32_t m_len, int connfd, block* m);
 
-#define RSA_BITS 1024
-
-#endif /* CRYPTO_OT_H_ */
+#endif /* CRYPTO_OT_EXTENSION_H_ */
