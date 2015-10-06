@@ -38,7 +38,7 @@ int Alice(const void* data, int connfd) {
   OTTestStruct* OT_test_str = (OTTestStruct*) data;
   block **message = OT_test_str->message;
   uint len = OT_test_str->len;
-  if (OTsend(message, len, connfd) == FAILURE) {
+  if (OTSend(message, len, connfd) == FAILURE) {
     LOG(ERROR) << "OTsend failed." << endl;
     return FAILURE;
   }
