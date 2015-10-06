@@ -35,8 +35,8 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
   }
 
   // 0. check the vector size
-  LOG(INFO) << "sender: send length" << endl;
-  SendData(connfd, &m_len, sizeof(uint32_t));
+  LOG(INFO) << "sender: send length " << m_len << endl;
+  CHECK(SendData(connfd, &m_len, sizeof(uint32_t)));
 
   // 1.0. generate RSA key
   LOG(INFO) << "sender: generate RSA key" << endl;
@@ -49,8 +49,8 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
 
   // 1.1. send public portion to Bob (receiver)
   LOG(INFO) << "sender: send public key" << endl;
-  SendBN(connfd, rsa->n);
-  SendBN(connfd, rsa->e);
+  CHECK(SendBN(connfd, rsa->n));
+  CHECK(SendBN(connfd, rsa->e));
 
   // 2. generate two messages
   LOG(INFO) << "sender: generate random messages" << endl;
@@ -60,7 +60,7 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
     for (uint32_t j = 0; j < 2; j++) {
       x[i][j] = BN_new();
       BN_CHECK(BN_rand(x[i][j], RSA_BITS, -1, 0));
-      SendBN(connfd, x[i][j]);
+      CHECK(SendBN(connfd, x[i][j]));
     }
   }
 
@@ -73,7 +73,7 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
   BIGNUM *m0 = BN_new();
   BIGNUM *m1 = BN_new();
   for (uint32_t i = 0; i < m_len; i++) {
-    RecvBN(connfd, v);
+    CHECK(RecvBN(connfd, v));
 
     BN_CHECK(BN_sub(temp, v, x[i][0]));  // temp = v - x0
     BN_CHECK(BN_mod_exp(k0, temp, rsa->d, rsa->n, ctx));  // k0 = (v - x0)^d mod N
@@ -82,9 +82,9 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
     BN_CHECK(BN_mod_exp(k1, temp, rsa->d, rsa->n, ctx));  // k1 = (v - x0)^d mod N
 
     BN_CHECK(BN_add(k0, k0, m[i][0]));
-    SendBN(connfd, k0);  // send m0' = m0 + k0
+    CHECK(SendBN(connfd, k0));  // send m0' = m0 + k0
     BN_CHECK(BN_add(k1, k1, m[i][1]));
-    SendBN(connfd, k1);  // send m1' = m1 + k1
+    CHECK(SendBN(connfd, k1));  // send m1' = m1 + k1
   }
 
   LOG(INFO) << "sender: free memories" << endl;
@@ -106,11 +106,11 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
 }
 int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   // 0. check the vector size
-  LOG(INFO) << "receiver: check length" << endl;
+  LOG(INFO) << "receiver: check length " << m_len << endl;
   uint32_t m_len_from_sender;
-  RecvData(connfd, &m_len_from_sender, sizeof(uint32_t));
+  CHECK(RecvData(connfd, &m_len_from_sender, sizeof(uint32_t)));
   if (m_len_from_sender != m_len) {
-    LOG(ERROR) << "The size of vectors are not equal" << endl
+    LOG(ERROR) << "receiver: The size of vectors are not equal" << endl
                << "sender's length = " << m_len_from_sender << " "
                << "reciver's length = " << m_len << endl;
     return FAILURE;
@@ -126,8 +126,8 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
 
   // 1. receive public portion of a rsa key from Alice (receiver)
   LOG(INFO) << "receiver: recv public key" << endl;
-  RecvBN(connfd, rsa_n);
-  RecvBN(connfd, rsa_e);
+  CHECK(RecvBN(connfd, rsa_n));
+  CHECK(RecvBN(connfd, rsa_e));
 
   // 2. receive two random messages
   LOG(INFO) << "receiver: recv two random messages" << endl;
@@ -136,7 +136,7 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
     x[i] = new BIGNUM*[2];
     for (uint32_t j = 0; j < 2; j++) {
       x[i][j] = BN_new();
-      RecvBN(connfd, x[i][j]);
+      CHECK(RecvBN(connfd, x[i][j]));
     }
   }
 
@@ -160,7 +160,7 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
     BN_CHECK(BN_mod_exp(temp, k[i], rsa_e, rsa_n, ctx));  // K^e mod N
     BN_CHECK(BN_add(temp, x[i][sel_bit], temp));  // x_b + (K^e mod N)
     BN_CHECK(BN_nnmod(v, temp, rsa_n, ctx));  // v = (x_b + K^e) mod N
-    SendBN(connfd, v);
+    CHECK(SendBN(connfd, v));
   }
   BN_free(rsa_e);
   BN_free(rsa_n);
@@ -173,8 +173,8 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   BIGNUM *m1p = BN_new();
   BIGNUM *mb = BN_new();
   for (uint32_t i = 0; i < m_len; i++) {
-    RecvBN(connfd, m0p);
-    RecvBN(connfd, m1p);
+    CHECK(RecvBN(connfd, m0p));
+    CHECK(RecvBN(connfd, m1p));
     int sel_bit = BN_is_bit_set(sel, i);
     if (sel_bit == 0) {
       BN_CHECK(BN_sub(mb, m0p, k[i]));  //mb = m0p - k[i]

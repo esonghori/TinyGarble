@@ -57,15 +57,21 @@ int Bob(const void *data, int connfd) {
     return FAILURE;
   }
 
+  bool test_passed = true;
   for (uint i = 0; i < len; i++) {
     if (!CmpBlock(message[i][(select[i] ? 1 : 0)], message_recv[i])) {
-      LOG(ERROR) << message_recv[i] << "!=" << message[i][select[i] ? 1 : 0]
-          << endl;
-      LOG(ERROR) << "Equality test failed." << endl;
+      LOG(ERROR) << "Equality test failed." << endl << message_recv[i] << "!="
+          << message[i][select[i] ? 1 : 0] << endl;
+      test_passed = false;
     }
   }
 
   delete[] message_recv;
+  if (!test_passed) {
+    return FAILURE;
+  } else {
+    LOG(INFO) << "Equality test Passed." << endl;
+  }
   return SUCCESS;
 }
 
