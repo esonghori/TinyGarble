@@ -25,13 +25,6 @@
 
 using std::endl;
 
-#define RSA_BITS 1024
-
-#define CHECK(X) if((X)==FAILURE) { LOG(ERROR) << #X << " failed" \
-  << std::endl; return FAILURE; }
-#define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" \
-  << std::endl; return FAILURE; }
-
 void BlockToBN(BIGNUM *a, block w) {
 
   // change little-endian to big-endian
@@ -78,7 +71,7 @@ int RecvBN(int connf, BIGNUM *bignum) {
   return SUCCESS;
 }
 
-int OTsend(const block* const * m, uint32_t m_len, int connfd) {
+int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
 
   BN_CTX *ctx;
   ctx = BN_CTX_new();
@@ -133,11 +126,9 @@ int OTsend(const block* const * m, uint32_t m_len, int connfd) {
     BN_CHECK(BN_sub(temp, v, x[i][1]));  // temp = v - x1
     BN_CHECK(BN_mod_exp(k1, temp, rsa->d, rsa->n, ctx));  // k1 = (v - x0)^d mod N
 
-    BlockToBN(m0, m[i][0]);
-    BN_CHECK(BN_add(k0, k0, m0));
+    BN_CHECK(BN_add(k0, k0, m[i][0]));
     SendBN(connfd, k0);  // send m0' = m0 + k0
-    BlockToBN(m1, m[i][1]);
-    BN_CHECK(BN_add(k1, k1, m1));
+    BN_CHECK(BN_add(k1, k1, m[i][1]));
     SendBN(connfd, k1);  // send m1' = m1 + k1
   }
 
@@ -158,9 +149,7 @@ int OTsend(const block* const * m, uint32_t m_len, int connfd) {
   BN_CTX_free(ctx);
   return SUCCESS;
 }
-
-int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
-
+int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   // 0. check the vector size
   LOG(INFO) << "receiver: check length" << endl;
   uint32_t m_len_from_sender;
@@ -212,8 +201,9 @@ int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
   BIGNUM *v = BN_new();
   BIGNUM *temp = BN_new();
   for (uint32_t i = 0; i < m_len; i++) {
+    int sel_bit = BN_is_bit_set(sel, i);
     BN_CHECK(BN_mod_exp(temp, k[i], rsa_e, rsa_n, ctx));  // K^e mod N
-    BN_CHECK(BN_add(temp, x[i][(sel[i] ? 1 : 0)], temp));  // x_b + (K^e mod N)
+    BN_CHECK(BN_add(temp, x[i][sel_bit], temp));  // x_b + (K^e mod N)
     BN_CHECK(BN_nnmod(v, temp, rsa_n, ctx));  // v = (x_b + K^e) mod N
     SendBN(connfd, v);
   }
@@ -230,13 +220,13 @@ int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
   for (uint32_t i = 0; i < m_len; i++) {
     RecvBN(connfd, m0p);
     RecvBN(connfd, m1p);
-
-    if (sel[i] == false) {
+    int sel_bit = BN_is_bit_set(sel, i);
+    if (sel_bit == 0) {
       BN_CHECK(BN_sub(mb, m0p, k[i]));  //mb = m0p - k[i]
     } else {
       BN_CHECK(BN_sub(mb, m1p, k[i]));  //mb = m1p - k[i]
     }
-    BNToBlock(mb, &m[i]);
+    BN_copy(m[i], mb);
   }
 
   LOG(INFO) << "receiver: free memory" << endl;
@@ -252,5 +242,47 @@ int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
   BN_CTX_free(ctx);
 
   return SUCCESS;
+}
+
+int OTSend(const block* const * m, uint32_t m_len, int connfd) {
+  BIGNUM*** bn_m = new BIGNUM**[m_len];
+  for (uint32_t i = 0; i < m_len; i++) {
+    bn_m[i] = new BIGNUM*[2];
+    for (uint32_t j = 0; j < 2; j++) {
+      bn_m[i][j] = BN_new();
+      BlockToBN(bn_m[i][j], m[i][j]);
+    }
+  }
+  int ret = OTSendBN(bn_m, m_len, connfd);
+  for (uint32_t i = 0; i < m_len; i++) {
+    for (uint32_t j = 0; j < 2; j++) {
+      BN_free(bn_m[i][j]);
+    }
+    delete[] bn_m[i];
+  }
+  delete[] bn_m;
+  return ret;
+}
+
+int OTRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
+  int ret;
+  BIGNUM *bn_sel = BN_new();
+  BIGNUM** bn_m = new BIGNUM*[m_len];
+  for (uint32_t i = 0; i < m_len; ++i) {
+    bn_m[i] = BN_new();
+    if (sel[i]) {
+      BN_CHECK(BN_set_bit(bn_sel, i));
+    }
+  }
+  if ((ret = OTRecvBN(bn_sel, m_len, connfd, bn_m)) == FAILURE) {
+    return FAILURE;
+  }
+  for (uint32_t i = 0; i < m_len; ++i) {
+    BNToBlock(bn_m[i], &m[i]);
+    BN_free(bn_m[i]);
+  }
+  BN_free(bn_sel);
+  delete[] bn_m;
+  return ret;
 }
 
