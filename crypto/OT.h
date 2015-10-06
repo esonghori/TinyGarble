@@ -23,10 +23,6 @@
 #include <openssl/rsa.h>
 #include "crypto/block.h"
 
-void BlockToBN(BIGNUM *a, block w);
-void BNToBlock(const BIGNUM *a, block *w);
-int SendBN(int connf, const BIGNUM *bignum);
-int RecvBN(int connf, BIGNUM *bignum);
 int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd);
 int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m);
 

@@ -19,57 +19,12 @@
 #include "crypto/OT.h"
 
 #include <iostream>
+#include "crypto/BN.h"
 #include "tcpip/tcpip.h"
 #include "util/common.h"
 #include "util/log.h"
 
 using std::endl;
-
-void BlockToBN(BIGNUM *a, block w) {
-
-  // change little-endian to big-endian
-  block v = _m128_switch_endian(w);
-
-  BN_bin2bn((const unsigned char *) &v, sizeof(block), a);
-}
-
-void BNToBlock(const BIGNUM *a, block *w) {
-
-  unsigned char *temp = new unsigned char[BN_num_bytes(a)];
-  BN_bn2bin(a, temp);
-
-  // change little-endian to big-endian
-  block v = *(block *) temp;
-
-  *w = _m128_switch_endian(v);
-}
-
-int SendBN(int connf, const BIGNUM *bignum) {
-  if (bignum == nullptr) {
-    LOG(ERROR) << "bignum pointer is null" << endl;
-    return FAILURE;
-  }
-  CHECK(SendData(connf, (void * ) &bignum->top, sizeof(int)));
-  CHECK(SendData(connf, (void * ) &bignum->dmax, sizeof(int)));
-  CHECK(SendData(connf, (void * ) &bignum->neg, sizeof(int)));
-  CHECK(SendData(connf, (void * ) &bignum->flags, sizeof(int)));
-  CHECK(SendData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));
-
-  return SUCCESS;
-}
-int RecvBN(int connf, BIGNUM *bignum) {
-  if (bignum == nullptr) {
-    LOG(ERROR) << "bignum pointer is null" << endl;
-    return FAILURE;
-  }
-  CHECK(RecvData(connf, (void * ) &bignum->top, sizeof(int)));
-  CHECK(RecvData(connf, (void * ) &bignum->dmax, sizeof(int)));
-  CHECK(RecvData(connf, (void * ) &bignum->neg, sizeof(int)));
-  CHECK(RecvData(connf, (void * ) &bignum->flags, sizeof(int)));
-  bignum->d = new BN_ULONG[bignum->dmax];
-  CHECK(RecvData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));
-  return SUCCESS;
-}
 
 int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
 
