@@ -23,14 +23,15 @@
 #include <openssl/rsa.h>
 #include "crypto/block.h"
 
-int BN_invert(BIGNUM* v);
-int SwitchRowColumnBN(const BIGNUM* const * v, uint32_t v_len, BIGNUM*** w,
-                      uint32_t* w_len);
+int SwitchRowColumnBN(const BIGNUM* const * v, uint32_t v_len,
+                      uint32_t v_bit_len, BIGNUM*** w);
 int SwitchRowColumnBNPair(const BIGNUM* const * const * v, uint32_t v_len,
-                          BIGNUM**** w, uint32_t* w_len);
+                          uint32_t v_bit_len, BIGNUM**** w);
 
-int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd);
-int OTExtRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m);
+int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_bitlen,
+                uint32_t m_len, int connfd);
+int OTExtRecvBN(const BIGNUM *sel, uint32_t m_bitlen, uint32_t m_len,
+                int connfd, BIGNUM** m);
 
 int OTExtSend(const block* const * m, uint32_t m_len, int connfd);
 int OTExtRecv(const bool *sel, uint32_t m_len, int connfd, block* m);

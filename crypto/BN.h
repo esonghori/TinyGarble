@@ -19,17 +19,17 @@
 #ifndef CRYPTO_BN_H_
 #define CRYPTO_BN_H_
 
-
 #include <openssl/bn.h>
+#include <cstdint>
 #include "crypto/block.h"
 
-int BN_invert(BIGNUM* v);
-int BN_xor(BIGNUM* r, const BIGNUM* v, const BIGNUM* w);
+int BN_invert(BIGNUM* v, uint32_t bits);
+int BN_full_one(BIGNUM* v, uint32_t bits);
+int BN_xor(BIGNUM* r, uint32_t bits, const BIGNUM* v, const BIGNUM* w);
 void BlockToBN(BIGNUM *a, block w);
 void BNToBlock(const BIGNUM *a, block *w);
 int SendBN(int connf, const BIGNUM *bignum);
 int RecvBN(int connf, BIGNUM *bignum);
-
 
 #endif /* CRYPTO_BN_H_ */
 
