@@ -22,38 +22,54 @@
 #include <fstream>
 #include <string>
 
+#include "util/common.h"
 #include "crypto/block.h"
 
 using std::ostream;
 using std::string;
 
-void LogInitial(int argc, char *argv[], bool to_std = true);
-void DumpInitial(const string& mode);
-void LogFinish();
-void DumpFinish();
-ostream& LogStream(int log_code);
-void Dump(const string& dump_file, const block& a);
-ostream& operator <<(ostream & o, const block& v);
+class DummyLog {
+  typedef ostream& (*ostreamManipulator)(ostream&);
+ public:
+  template<class T>
+  DummyLog& operator <<(const T& v) {
+    return *this;
+  }
 
-#ifdef DUMP_ENABLE
-#define DUMP(file, block) Dump(file, block)
-#else /* DUMP_ENABLE */
-#define DUMP(file, block)
-#endif /* DUMP_ENABLE */
+  DummyLog& operator<<(ostreamManipulator manip) {
+    return *this;
+  }
+
+};
 
 #define ERROR 0
 #define INFO 1
-
 // Error: red, info:green
 #define LOG_COLOR(X) (((X)==ERROR)?31:32)
 
+#ifdef ENABLE_LOG
+
+#define DUMP(X) Dump(X)
 #define LOG(X) LogStream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" \
   << LOG_COLOR(X) << "m" << #X << "\033[0m: "
+
+#else /* ENABLE_LOG */
+
+#define DUMP(X) DummyLogStream()
+#define LOG(X) DummyLogStream()
+
+#endif /* ENABLE_LOG */
 
 #define CHECK(X) if((X)==FAILURE) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
 #define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
 
+void LogInitial(int argc, char *argv[]);
+void LogFinish();
+ostream& Dump(const string& dump_file);
+ostream& LogStream(int log_code);
+ostream& operator <<(ostream & o, const block& v);
+DummyLog& DummyLogStream();
 
 #endif /* UTIL_LOG_H_ */

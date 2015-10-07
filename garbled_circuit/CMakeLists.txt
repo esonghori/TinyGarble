@@ -9,6 +9,9 @@ add_executable(TinyGarble
   "$<TARGET_OBJECTS:TCPIP_TCPIP>"
   "$<TARGET_OBJECTS:Util_Log>")
 
+if (OPENSSL_FOUND)
+	target_link_libraries(TinyGarble ${OPENSSL_LIBRARIES})
+endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(TinyGarble ${Boost_LIBRARIES})
 endif (Boost_FOUND)

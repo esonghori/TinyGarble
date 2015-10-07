@@ -21,6 +21,7 @@
 
 #include <string>
 #include <iostream>
+#include "util/tinygarble_config.h"
 
 using std::string;
 using std::cerr;
