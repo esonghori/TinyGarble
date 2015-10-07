@@ -9,7 +9,12 @@ module ADD_ #(parameter N = 8, M = N)( // N >= M
 	 wire [N-1:0] BB;
 	 wire CO;
 	 
-	 assign BB = {{(N-M){B[M-1]}}, B};
+	 generate
+		if (N > M)
+			assign BB = {{(N-M){B[M-1]}}, B};
+		else
+			assign BB = B;
+	 endgenerate
 	 
 	 MUX #(.N(1)) MUX(
 		.A(CO),

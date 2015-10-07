@@ -9,7 +9,13 @@ module ADD #(parameter N = 8, M = N)( // N >= M
 );
 
 	wire [N-1:0] BB;
-	assign BB = {{(N-M){1'b0}}, B};
+	generate
+		if (N > M)
+			assign BB = {{(N-M){1'b0}}, B};
+		else
+			assign BB = B;
+	endgenerate
+	
 
 	wire C[N:0];
 

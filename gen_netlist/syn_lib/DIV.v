@@ -16,9 +16,18 @@ module DIV #( parameter N = 8, M = N )(
 	generate
 	for(g = N-1; g >= 0;g = g - 1)
 	begin:DIV_UNIT
+		if (g > 0)
 		ADD #(.N(N+M)) SUB(
 			.A(A_[g+1]),
 			.B({{(N-g){1'b1}}, ~B, {g{1'b1}}}),
+			.CI(1'b1),
+			.S(D[g]), 
+			.CO(O[g])
+		);
+		else 
+		ADD #(.N(N+M)) SUB(
+			.A(A_[g+1]),
+			.B({{(N-g){1'b1}}, ~B}),
 			.CI(1'b1),
 			.S(D[g]), 
 			.CO(O[g])
