@@ -41,6 +41,177 @@
 #include "util/common.h"
 #include "util/util.h"
 
+int Alice(GarbledCircuit& garbledCircuit, bool random_input,
+          uint64_t input_data, block R, int connfd) {
+
+  uint64_t n = garbledCircuit.n;
+  uint64_t g = garbledCircuit.g;
+  uint64_t p = garbledCircuit.p;
+  uint64_t m = garbledCircuit.m;
+  uint64_t c = garbledCircuit.c;
+  uint64_t e = n - g;
+
+  bool *garbler_inputs = new bool[g * c];
+  block *inputLabels = new block[2 * n * c];
+  block *initialDFFLable = new block[2 * p];
+  block *outputLabels = new block[2 * m * c];
+
+  // initialize inputs
+  for (uint64_t cid = 0; cid < c; cid++) {
+    for (uint64_t j = 0; j < g; j++) {
+      if (random_input) {
+        garbler_inputs[cid * g + j] = rand() % 2;
+      } else {
+        garbler_inputs[cid * g + j] = ((input_data & 1 << (cid * g + j)) != 0);
+      }
+    }
+  }
+
+  CreateInputLabels(inputLabels, R, n * c);
+  CreateInputLabels(initialDFFLable, R, p);
+
+  // send plain-text input
+  for (uint64_t cid = 0; cid < c; cid++) {
+    for (uint64_t j = 0; j < g; j++) {
+      if (garbler_inputs[cid * g + j] == 0)
+        CHECK(SendData(connfd, &inputLabels[2 * (cid * n + j)], sizeof(block)));
+      else
+        CHECK(SendData(connfd, &inputLabels[2 * (cid * n + j) + 1], sizeof(block)));
+    }
+
+    // TODO(ebi): replace with OT
+    for (uint64_t j = 0; j < e; j++) {
+      bool ev_input;
+      RecvData(connfd, &ev_input, sizeof(bool));
+      if (!ev_input)
+        CHECK(SendData(connfd, &inputLabels[2 * (cid * n + g + j)], sizeof(block)));
+      else
+        CHECK(SendData(connfd, &inputLabels[2 * (cid * n + g + j) + 1],
+                 sizeof(block)));
+    }
+  }
+
+  // send DFF inputs
+  for (uint64_t j = 0; j < p; j++) {
+    if (garbledCircuit.I[j] == CONST_ZERO) {
+      // constant zero
+
+      CHECK(SendData(connfd, &initialDFFLable[2 * j], sizeof(block)));
+    } else if (garbledCircuit.I[j] == CONST_ONE) {
+      // constant zero
+
+      CHECK(SendData(connfd, &initialDFFLable[2 * j + 1], sizeof(block)));
+    } else if (garbledCircuit.I[j] < g) {
+      // belongs to Alice (garbler)
+
+      uint64_t index = garbledCircuit.I[j];
+      if (garbler_inputs[index] == 0)
+        CHECK(SendData(connfd, &initialDFFLable[2 * j], sizeof(block)));
+      else
+        CHECK(SendData(connfd, &initialDFFLable[2 * j + 1], sizeof(block)));
+    } else {
+      // belong to Bob
+      // TODO(ebi): replace with OT
+      bool ev_input;
+      CHECK(RecvData(connfd, &ev_input, sizeof(bool)));
+      if (!ev_input)
+        CHECK(SendData(connfd, &initialDFFLable[2 * j], sizeof(block)));
+      else
+        CHECK(SendData(connfd, &initialDFFLable[2 * j + 1], sizeof(block)));
+    }
+  }
+
+  garbledCircuit.globalKey = RandomBlock();
+  SendData(connfd, &garbledCircuit.globalKey, sizeof(block));  // send DKC key
+
+  Garble(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, R,
+         connfd);
+
+  for (uint64_t cid = 0; cid < c; cid++) {
+    for (uint64_t i = 0; i < m; i++) {
+      bool outputType = get_LSB(outputLabels[2 * (m * cid + i) + 0]);
+      CHECK(SendData(connfd, &outputType, sizeof(bool)));
+    }
+  }
+
+  ServerClose(connfd);
+  RemoveGarbledCircuit(&garbledCircuit);
+
+  return SUCCESS;
+}
+
+int Bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
+        int connfd) {
+
+  uint64_t n = garbledCircuit.n;
+  uint64_t g = garbledCircuit.g;
+  uint64_t p = garbledCircuit.p;
+  uint64_t m = garbledCircuit.m;
+  uint64_t c = garbledCircuit.c;
+  uint64_t e = n - g;
+
+  bool *evalator_inputs = new bool[e * c];
+  block *inputLabels = new block[n * c];
+  block *initialDFFLable = new block[p];
+  block *outputLabels = new block[m * c];
+
+  // initialize input
+  for (uint64_t cid = 0; cid < c; cid++) {
+    for (uint64_t j = 0; j < e; j++) {
+      if (random_input) {
+        evalator_inputs[cid * e + j] = rand() % 2;
+      } else {
+        evalator_inputs[cid * e + j] = ((input_data & 1 << (cid * e + j)) != 0);
+      }
+    }
+  }
+
+  // receive inputs
+  for (uint64_t cid = 0; cid < c; cid++) {
+    for (uint64_t j = 0; j < g; j++) {
+      CHECK(RecvData(connfd, &inputLabels[n * cid + j], sizeof(block)));
+    }
+
+    for (uint64_t j = 0; j < e; j++) {
+      CHECK(SendData(connfd, &evalator_inputs[cid * e + j], sizeof(bool)));
+      CHECK(RecvData(connfd, &inputLabels[cid * n + g + j], sizeof(block)));
+    }
+  }
+
+  // receive DFF inputs
+  for (uint64_t j = 0; j < p; j++) {
+    if (garbledCircuit.I[j] < g) {
+      // initial value is constant or belongs to Alice (garbler)
+      RecvData(connfd, &initialDFFLable[j], sizeof(block));
+    } else {
+      CHECK_EXPR((garbledCircuit.I[j] - g > 0) && (garbledCircuit.I[j] - g < e));
+
+      CHECK(SendData(connfd, &evalator_inputs[garbledCircuit.I[j] - g], sizeof(bool)));
+      CHECK(RecvData(connfd, &initialDFFLable[j], sizeof(block)));
+    }
+  }
+
+  RecvData(connfd, &(garbledCircuit.globalKey), sizeof(block));  //receive key
+  Evaluate(&garbledCircuit, inputLabels, initialDFFLable, outputLabels, connfd);
+
+  LOG(INFO) << "output:" << endl;
+  for (uint64_t cid = 0; cid < c; cid++) {
+    std::cout << "c = " << cid << endl;
+    for (uint64_t i = 0; i < m; i++) {
+      bool myOutputType = get_LSB(outputLabels[m * cid + i]);
+      bool outputType;
+      RecvData(connfd, &outputType, sizeof(bool));
+      // myOutputType XOR outputType
+      std::cout << ((myOutputType != outputType) ? '0' : '1');
+    }
+    std::cout << endl;
+  }
+
+  ClientClose(connfd);
+  RemoveGarbledCircuit(&garbledCircuit);
+  return SUCCESS;
+}
+
 uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
                 block* initialDFFLabels, block* outputLabels, block R,
                 int connfd) {

@@ -28,6 +28,7 @@ using std::string;
 block RandomBlock();
 void SrandSSE(unsigned int seed);
 unsigned short Type2V(int gateType);
+bool GateOperator(int gateType, bool input0, bool input1 = false);
 int Str2Block(const string &s, block* v);
 
 #endif /* UTIL_UTIL_H_ */
