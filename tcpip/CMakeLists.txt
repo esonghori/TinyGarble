@@ -9,9 +9,13 @@ add_executable(TCPIP_Test
   "$<TARGET_OBJECTS:TCPIP_TCPIP>"
   "$<TARGET_OBJECTS:TCPIP_TCPIP_Testsuit>"
   "$<TARGET_OBJECTS:Util_Log>")
+  
+if (Boost_FOUND)
+  target_link_libraries(TCPIP_Test ${Boost_LIBRARIES})
+endif (Boost_FOUND)
 
 add_test (TCPIP_TCPIP_Test 
-  TCPIP_Test)
+  TCPIP_Test --log2std)
   
 set_tests_properties (TCPIP_TCPIP_Test 
 	PROPERTIES
