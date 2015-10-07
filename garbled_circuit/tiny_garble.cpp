@@ -95,7 +95,7 @@ int Alice(GarbledCircuit& garbledCircuit, bool random_input,
         SendData(connfd, &inputLabels[2 * (cid * n + g + j)], sizeof(block));
       else
         SendData(connfd, &inputLabels[2 * (cid * n + g + j) + 1],
-                  sizeof(block));
+                 sizeof(block));
     }
   }
 
@@ -194,8 +194,7 @@ int Bob(GarbledCircuit& garbledCircuit, bool random_input, uint64_t input_data,
     } else {
       assert((garbledCircuit.I[j] - g > 0) && (garbledCircuit.I[j] - g < e));
 
-      SendData(connfd, &evalator_inputs[garbledCircuit.I[j] - g],
-                sizeof(bool));
+      SendData(connfd, &evalator_inputs[garbledCircuit.I[j] - g], sizeof(bool));
       RecvData(connfd, &initialDFFLable[j], sizeof(block));
     }
   }
@@ -235,7 +234,7 @@ int main(int argc, char* argv[]) {
   boost::format fmter(
       "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
   fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
-    % TinyGarble_VERSION_PATCH;
+      % TinyGarble_VERSION_PATCH;
   po::options_description desc(fmter.str());
   desc.add_options()  //
   ("help,h", "produce help message")  //
@@ -249,9 +248,10 @@ int main(int argc, char* argv[]) {
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
-  ("dump_hex", po::value<string>(), "Directory for dumping memory hex files.")  //
+  ("dump_directory", po::value<string>(), "Directory for dumping memory hex files.")  //
   ("input_data", po::value<string>(),
-   "Hexadecimal input data, if not provided, it is randomly chosen.");
+   "Hexadecimal input data, if not provided, it is randomly chosen.")  //
+  ("log2std", "Print Logs into standard output and error.");
 
   po::variables_map vm;
   try {
@@ -294,7 +294,8 @@ int main(int argc, char* argv[]) {
   }
 
   if (vm.count("alice") == 0 && vm.count("bob") == 0) {
-    LOG(ERROR) << "One of --alice or --bob mode flag should be used." << endl << endl;
+    LOG(ERROR) << "One of --alice or --bob mode flag should be used." << endl
+               << endl;
     std::cout << desc << endl;
     return -1;
   }
@@ -325,9 +326,6 @@ int main(int argc, char* argv[]) {
     }
     LOG(INFO) << "Open Alice server on port: " << port << endl;
 
-    if (dump_prefix != "")
-      DumpInitial("g");
-
     Alice(garbledCircuit, random_input, input_data, R, connfd);
 
     ServerClose(connfd);
@@ -336,8 +334,8 @@ int main(int argc, char* argv[]) {
     if (vm.count("server_ip")) {
       server_ip = vm["server_ip"].as<string>();
     } else {
-      LOG(ERROR) << "Server IP should be specified, when running as Bob." << endl
-           << endl;
+      LOG(ERROR) << "Server IP should be specified, when running as Bob."
+                 << endl << endl;
       std::cout << desc << endl;
       return -1;
     }
@@ -348,20 +346,15 @@ int main(int argc, char* argv[]) {
       LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
       return -1;
     }
-    LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":" << port
-         << endl;
-
-    if (dump_prefix != "")
-      DumpInitial("e");
+    LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":"
+              << port << endl;
 
     Bob(garbledCircuit, random_input, input_data, connfd);
 
-     ClientClose(connfd);
+    ClientClose(connfd);
   }
 
-  if (dump_prefix != "") {
-    DumpFinish();
-  }
+
   LogFinish();
   return 0;
 }

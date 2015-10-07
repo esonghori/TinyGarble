@@ -3,5 +3,4 @@
 #define TinyGarble_VERSION_MINOR @TinyGarble_VERSION_MINOR@
 #define TinyGarble_VERSION_PATCH @TinyGarble_VERSION_PATCH@
 
-#cmakedefine DEBUG
-#cmakedefine DUMP_HEX
+#cmakedefine ENABLE_LOG
