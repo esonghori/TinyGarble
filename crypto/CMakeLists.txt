@@ -17,9 +17,13 @@ add_executable(BN_Test
 if (OPENSSL_FOUND)
 	target_link_libraries(BN_Test ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
+if (Boost_FOUND)
+  target_link_libraries(BN_Test ${Boost_LIBRARIES})
+endif (Boost_FOUND)
+
 
 add_test (Crypto_BN_Test 
-  BN_Test)
+  BN_Test --log2std)
   
 set_tests_properties (Crypto_BN_Test
 	PROPERTIES
@@ -37,10 +41,12 @@ add_executable(OT_Test
 if (OPENSSL_FOUND)
 	target_link_libraries(OT_Test ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
+if (Boost_FOUND)
+  target_link_libraries(OT_Test ${Boost_LIBRARIES})
+endif (Boost_FOUND)
 
 add_test (Crypto_OT_Test 
-  OT_Test
-  CONFIGURATIONS Debug)
+  OT_Test --log2std)
   
 set_tests_properties (Crypto_OT_Test
 	PROPERTIES
@@ -60,10 +66,12 @@ add_executable(OT_Extension_Test
 if (OPENSSL_FOUND)
 	target_link_libraries(OT_Extension_Test ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
+if (Boost_FOUND)
+  target_link_libraries(OT_Extension_Test ${Boost_LIBRARIES})
+endif (Boost_FOUND)
 
 add_test (Crypto_OT_Extension_Test 
-  OT_Extension_Test
-  CONFIGURATIONS Debug)
+  OT_Extension_Test --log2std)
   
 set_tests_properties (Crypto_OT_Extension_Test
 	PROPERTIES

@@ -35,28 +35,28 @@
 
 #include "garbled_circuit/garbled_circuit.h"
 
-#include "../util/log.h"
+#include "util/log.h"
 #include "crypto/aes.h"
 #include "tcpip/tcpip.h"
 #include "util/common.h"
 #include "util/util.h"
 
 uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-            block* initialDFFLabels, block* outputLabels, block R,
-            int connfd) {
+                block* initialDFFLabels, block* outputLabels, block R,
+                int connfd) {
   uint64_t n = garbledCircuit->n;
   uint64_t m = garbledCircuit->m;
   uint64_t p = garbledCircuit->p;
   uint64_t q = garbledCircuit->q;
   uint64_t c = garbledCircuit->c;
-  DUMP("r_key.g", R);
-  DUMP("r_key.g", garbledCircuit->globalKey);
+  DUMP("r_key") << R << endl;
+  DUMP("r_key") << garbledCircuit->globalKey << endl;
 
   uint64_t startTime = RDTSC;
 
   AES_KEY AES_Key;
   AESSetEncryptKey((unsigned char *) &(garbledCircuit->globalKey), 128,
-                      &AES_Key);
+                   &AES_Key);
 
   for (uint64_t cid = 0; cid < c; cid++) {  //for each clock cycle
     for (uint64_t i = 0; i < n; i++) {  //inputs
@@ -65,27 +65,26 @@ uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
       garbledCircuit->wires[i].label1 = inputLabels[2
           * (cid * garbledCircuit->n + i) + 1];
 
-      if (cid == 0)
-        DUMP("input.e", inputLabels[2 * (cid * garbledCircuit->n + i)]);
+      if (cid == 0) {
+        DUMP("input") << inputLabels[2 * (cid * garbledCircuit->n + i)] << endl;
+      }
     }
 
     if (cid == 0) {  //dff initial value
       for (uint64_t i = 0; i < p; i++) {
-        garbledCircuit->wires[n + i].label0 = initialDFFLabels[2
-            * i];
-        garbledCircuit->wires[n + i].label1 = initialDFFLabels[2
-            * i + 1];
+        garbledCircuit->wires[n + i].label0 = initialDFFLabels[2 * i];
+        garbledCircuit->wires[n + i].label1 = initialDFFLabels[2 * i + 1];
 
-        DUMP("dff.g",  initialDFFLabels[2 * i]);
+        DUMP("dff") << initialDFFLabels[2 * i] << endl;
       }
 
     } else {  //copy latched labels
       for (uint64_t i = 0; i < p; i++) {
         uint64_t wireIndex = garbledCircuit->D[i];
-        garbledCircuit->wires[n + i].label0 = garbledCircuit
-            ->wires[wireIndex].label0;
-        garbledCircuit->wires[n + i].label1 = garbledCircuit
-            ->wires[wireIndex].label1;
+        garbledCircuit->wires[n + i].label0 = garbledCircuit->wires[wireIndex]
+            .label0;
+        garbledCircuit->wires[n + i].label1 = garbledCircuit->wires[wireIndex]
+            .label1;
       }
     }
 
@@ -170,13 +169,13 @@ uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
       block table[2];
       table[0] = XorBlock(mask[0], mask[1]);
-      if (pb)
+      if (pb) {
         table[0] = XorBlock(table[0], R);
-
+      }
       block G = mask[0];
-      if (pa)
+      if (pa) {
         G = XorBlock(G, table[0]);
-
+      }
       table[1] = XorBlock(mask[2], mask[3]);
       table[1] = XorBlock(table[1], A0);
 
@@ -201,7 +200,7 @@ uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
 
       for (uint64_t j = 0; j < 2; j++) {
         SendData(connfd, &table[j], sizeof(block));
-        DUMP("table.g", table[j]);
+        DUMP("table") << table[j] << endl;
       }
     }
 
@@ -211,45 +210,44 @@ uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
       outputLabels[cid * 2 * m + 2 * i] = o0;
       outputLabels[cid * 2 * m + 2 * i + 1] = o1;
 
-      if (cid == c - 1)
-        DUMP("output.g", o0);
+      if (cid == c - 1) {
+        DUMP("output") << o0 << endl;
+      }
     }
   }
   return (RDTSC - startTime);
 }
 
 uint64_t Evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
-              block* initialDFFLable, block *outputLabels, int connfd) {
+                  block* initialDFFLable, block *outputLabels, int connfd) {
   uint64_t n = garbledCircuit->n;
   uint64_t m = garbledCircuit->m;
   uint64_t p = garbledCircuit->p;
   uint64_t c = garbledCircuit->c;
-  DUMP("r_key.e", garbledCircuit->globalKey);
+  DUMP("r_key") << garbledCircuit->globalKey << endl;
 
   uint64_t startTime = RDTSC;
 
   AES_KEY AES_Key;
   AESSetEncryptKey((unsigned char *) &(garbledCircuit->globalKey), 128,
-                      &AES_Key);
+                   &AES_Key);
 
   for (uint64_t cid = 0; cid < c; cid++) {  //for each clock cycle
     for (uint64_t i = 0; i < n; i++) {  //inputs
-      garbledCircuit->wires[i].label0 =
-          inputLabels[cid * n + i];
+      garbledCircuit->wires[i].label0 = inputLabels[cid * n + i];
       if (cid == 0)
-        DUMP("input.e", inputLabels[cid * n + i]);
+        DUMP("input") << inputLabels[cid * n + i] << endl;
     }
     if (cid == 0) {  //dff initial value
       for (uint64_t i = 0; i < p; i++) {
-        garbledCircuit->wires[n + i].label0 =
-            initialDFFLable[i];
-        DUMP("dff.e", initialDFFLable[i]);
+        garbledCircuit->wires[n + i].label0 = initialDFFLable[i];
+        DUMP("dff") << initialDFFLable[i] << endl;
       }
     } else {  //copy latched labels
       for (uint64_t i = 0; i < p; i++) {
         uint64_t wireIndex = garbledCircuit->D[i];
-        garbledCircuit->wires[n + i].label0 = garbledCircuit
-            ->wires[wireIndex].label0;
+        garbledCircuit->wires[n + i].label0 = garbledCircuit->wires[wireIndex]
+            .label0;
       }
     }
 
@@ -279,7 +277,7 @@ uint64_t Evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
         block table[2];
         for (uint64_t j = 0; j < 2; j++) {
           RecvData(connfd, &(table[j]), sizeof(block));
-          DUMP("table.e", table[j]);
+          DUMP("table") << table[j] << endl;
         }
 
         block keys[2];
@@ -316,7 +314,7 @@ uint64_t Evaluate(GarbledCircuit *garbledCircuit, block* inputLabels,
           garbledCircuit->wires[garbledCircuit->outputs[i]].label0;
 
       if (cid == c - 1)
-        DUMP("output.e", outputLabels[cid * m + i]);
+        DUMP("output") << outputLabels[cid * m + i] << endl;
     }
   }
   return (RDTSC - startTime);
