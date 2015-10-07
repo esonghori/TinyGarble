@@ -115,6 +115,34 @@ unsigned short Type2V(int gateType) {
   return 0;
 }
 
+bool GateOperator(int gateType, bool input0, bool input1 /* = false */) {
+  if (gateType == ANDGATE) {
+    return (input0 && input1);
+  } else if (gateType == ANDNGATE) {
+    return (input0 && !input1);
+  } else if (gateType == NANDGATE) {
+    return !(input0 && input1);
+  } else if (gateType == NANDNGATE) {
+    return !(input0 && !input1);
+  } else if (gateType == ORGATE) {
+    return (input0 || input1);
+  } else if (gateType == ORNGATE) {
+    return (input0 || !input1);
+  } else if (gateType == NORGATE) {
+    return !(input0 || input1);
+  } else if (gateType == NORNGATE) {
+    return !(input0 || !input1);
+  } else if (gateType == XORGATE) {
+    return (input0 != input1);
+  } else if (gateType == XNORGATE) {
+    return !(input0 != input1);
+  } else if (gateType == NOTGATE) {
+    return !input0;
+  }
+  LOG(ERROR) << "Unknown gate type " << gateType << endl;
+  return false;
+}
+
 int Str2Block(const string &s, block* v) {
   if (!v) {
     LOG(ERROR) << "null pointer in strToBlock." << endl;
