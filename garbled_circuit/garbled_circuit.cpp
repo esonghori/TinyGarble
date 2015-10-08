@@ -393,19 +393,35 @@ uint64_t Garble(GarbledCircuit& garbled_circuit, block** const_labels,
         } else if (wire_index == CONST_ONE) {
           wires[dff_bias + i].label1 = const_labels[1][0];
           wires[dff_bias + i].label1 = const_labels[1][1];
-        } else if (wire_index > 0) {
+        } else if (wire_index >= 0
+            && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
           wires[dff_bias + i].label0 = init_labels[wire_index][0];
           wires[dff_bias + i].label1 = init_labels[wire_index][1];
         } else {
           LOG(ERROR) << "Invalid I: " << wire_index << endl;
+          wires[dff_bias + i].label0 = const_labels[0][0];
+          wires[dff_bias + i].label1 = const_labels[0][1];
         }
         DUMP("dff") << init_labels[i][0] << endl;
       }
     } else {  //copy latched labels
       for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
-        uint64_t wire_index = garbled_circuit.D[i];
-        wires[dff_bias + i].label0 = wires[wire_index].label0;
-        wires[dff_bias + i].label1 = wires[wire_index].label1;
+        int64_t wire_index = garbled_circuit.D[i];
+        if (wire_index == CONST_ZERO) {
+          wires[dff_bias + i].label0 = const_labels[0][0];
+          wires[dff_bias + i].label1 = const_labels[0][1];
+        } else if (wire_index == CONST_ONE) {
+          wires[dff_bias + i].label1 = const_labels[1][0];
+          wires[dff_bias + i].label1 = const_labels[1][1];
+        } else if (wire_index >= 0
+            && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
+          wires[dff_bias + i].label0 = wires[wire_index].label0;
+          wires[dff_bias + i].label1 = wires[wire_index].label1;
+        } else {
+          LOG(ERROR) << "Invalid D: " << wire_index << endl;
+          wires[dff_bias + i].label0 = const_labels[0][0];
+          wires[dff_bias + i].label1 = const_labels[0][1];
+        }
       }
     }
 
@@ -423,26 +439,56 @@ uint64_t Garble(GarbledCircuit& garbled_circuit, block** const_labels,
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  //for each gates
       GarbledGate& garbledGate = garbled_circuit.garbledGates[i];
 
-      uint64_t input0 = garbledGate.input0;
-      uint64_t input1 = garbledGate.input1;
-      uint64_t output = garbledGate.output;
+      int64_t input0 = garbledGate.input0;
+      int64_t input1 = garbledGate.input1;
+      int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
+      block input0_labels[2];
+      if (input0 == CONST_ZERO) {
+        input0_labels[0] = const_labels[0][0];
+        input0_labels[1] = const_labels[0][1];
+      } else if (input0 == CONST_ONE) {
+        input0_labels[0] = const_labels[1][0];
+        input0_labels[1] = const_labels[1][1];
+      } else if (input0 >= 0
+          && input0 < (int64_t) garbled_circuit.get_wire_size()) {
+        input0_labels[0] = wires[input0].label0;
+        input0_labels[1] = wires[input0].label1;
+      } else {
+        LOG(ERROR) << "Invalid input0 index: " << input0 << endl;
+        input0_labels[0] = const_labels[0][0];
+        input0_labels[1] = const_labels[0][1];
+      }
+
+      block input1_labels[2];
+      if (input1 == CONST_ZERO) {
+        input1_labels[0] = const_labels[0][0];
+        input1_labels[1] = const_labels[0][1];
+      } else if (input0 == CONST_ONE) {
+        input1_labels[0] = const_labels[1][0];
+        input1_labels[1] = const_labels[1][1];
+      } else if (input0 >= 0
+          && input0 < (int64_t) garbled_circuit.get_wire_size()) {
+        input1_labels[0] = wires[input1].label0;
+        input1_labels[1] = wires[input1].label1;
+      } else {
+        LOG(ERROR) << "Invalid input1 index: " << input1 << endl;
+        input1_labels[0] = const_labels[0][0];
+        input1_labels[1] = const_labels[0][1];
+      }
+
       if (type == XORGATE) {
-        wires[output].label0 = XorBlock(wires[input0].label0,
-                                        wires[input1].label0);
-        wires[output].label1 = XorBlock(wires[input0].label1,
-                                        wires[input1].label0);
+        wires[output].label0 = XorBlock(input0_labels[0], input1_labels[0]);
+        wires[output].label1 = XorBlock(input0_labels[1], input1_labels[0]);
         continue;
       } else if (type == XNORGATE) {
-        wires[output].label0 = XorBlock(wires[input0].label1,
-                                        wires[input1].label0);
-        wires[output].label1 = XorBlock(wires[input0].label0,
-                                        wires[input1].label0);
+        wires[output].label0 = XorBlock(input0_labels[1], input1_labels[0]);
+        wires[output].label1 = XorBlock(input0_labels[0], input1_labels[0]);
         continue;
       } else if (type == NOTGATE) {
-        wires[output].label0 = wires[input0].label1;
-        wires[output].label1 = wires[input0].label0;
+        wires[output].label0 = input0_labels[1];
+        wires[output].label1 = input0_labels[0];
         continue;
       }
 
@@ -450,21 +496,21 @@ uint64_t Garble(GarbledCircuit& garbled_circuit, block** const_labels,
       block A0;
       unsigned short v = Type2V(type);
       if (v & 1) {
-        A1 = (wires[input0].label0);
-        A0 = (wires[input0].label1);
+        A1 = (input0_labels[0]);
+        A0 = (input0_labels[1]);
       } else {
-        A0 = (wires[input0].label0);
-        A1 = (wires[input0].label1);
+        A0 = (input0_labels[0]);
+        A1 = (input0_labels[1]);
       }
 
       block B1;
       block B0;
       if (v & 2) {
-        B1 = (wires[input1].label0);
-        B0 = (wires[input1].label1);
+        B1 = (input1_labels[0]);
+        B0 = (input1_labels[1]);
       } else {
-        B0 = (wires[input1].label0);
-        B1 = (wires[input1].label1);
+        B0 = (input1_labels[0]);
+        B1 = (input1_labels[1]);
       }
 
       unsigned short pa = get_LSB(A0);
@@ -565,17 +611,29 @@ uint64_t Evaluate(GarbledCircuit& garbled_circuit, block* const_labels,
           wires[dff_bias + i] = const_labels[0];
         } else if (wire_index == CONST_ONE) {
           wires[dff_bias + i] = const_labels[1];
-        } else if (wire_index > 0) {
+        } else if (wire_index >= 0
+            && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
           wires[dff_bias + i] = init_labels[wire_index];
         } else {
           LOG(ERROR) << "Invalid I: " << wire_index << endl;
+          wires[dff_bias + i] = const_labels[0];
         }
         DUMP("dff") << init_labels[i] << endl;
       }
     } else {  //copy latched labels
       for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
-        uint64_t wire_index = garbled_circuit.D[i];
-        wires[dff_bias + i] = wires[wire_index];
+        int64_t wire_index = garbled_circuit.D[i];
+        if (wire_index == CONST_ZERO) {
+          wires[dff_bias + i] = const_labels[0];
+        } else if (wire_index == CONST_ONE) {
+          wires[dff_bias + i] = const_labels[1];
+        } else if (wire_index >= 0
+            && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
+          wires[dff_bias + i] = wires[wire_index];
+        } else {
+          LOG(ERROR) << "Invalid D: " << wire_index << endl;
+          wires[dff_bias + i] = const_labels[0];
+        }
       }
     }
     // inputs
@@ -589,18 +647,44 @@ uint64_t Evaluate(GarbledCircuit& garbled_circuit, block* const_labels,
 
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  // for each gates
       GarbledGate& garbledGate = garbled_circuit.garbledGates[i];
-      uint64_t input0 = garbledGate.input0;
-      uint64_t input1 = garbledGate.input1;
-      uint64_t output = garbledGate.output;
+      int64_t input0 = garbledGate.input0;
+      int64_t input1 = garbledGate.input1;
+      int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      if (type == XORGATE || type == XNORGATE) {
-        wires[output] = XorBlock(wires[input0], wires[input1]);
-      } else if (type == NOTGATE) {
-        wires[output] = wires[input0];
+      block input0_labels;
+      if (input0 == CONST_ZERO) {
+        input0_labels = const_labels[0];
+      } else if (input0 == CONST_ONE) {
+        input0_labels = const_labels[1];
+      } else if (input0 >= 0
+          && input0 < (int64_t) garbled_circuit.get_wire_size()) {
+        input0_labels = wires[input0];
       } else {
-        block A = (wires[input0]);
-        block B = (wires[input1]);
+        LOG(ERROR) << "Invalid input0 index: " << input0 << endl;
+        input0_labels = const_labels[0];
+      }
+
+      block input1_labels;
+      if (input1 == CONST_ZERO) {
+        input1_labels = const_labels[0];
+      } else if (input0 == CONST_ONE) {
+        input1_labels = const_labels[1];
+      } else if (input0 >= 0
+          && input0 < (int64_t) garbled_circuit.get_wire_size()) {
+        input1_labels = wires[input1];
+      } else if (type != NOTGATE) {
+        LOG(ERROR) << "Invalid input1 index: " << input1 << endl;
+        input1_labels = const_labels[0];
+      }
+
+      if (type == XORGATE || type == XNORGATE) {
+        wires[output] = XorBlock(input0_labels, input1_labels);
+      } else if (type == NOTGATE) {
+        wires[output] = input0_labels;
+      } else {
+        block A = (input0_labels);
+        block B = (input1_labels);
 
         unsigned short sa = get_LSB(A);
         unsigned short sb = get_LSB(B);
