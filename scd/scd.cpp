@@ -49,9 +49,6 @@ int ReadSCD(const string& fileName, GarbledCircuit* garbledCircuit) {
     return FAILURE;
   }
 
-  // TODO(ebi)
-  garbledCircuit->clock_cycles = 2;
-
   f >> garbledCircuit->g_init_size >> garbledCircuit->e_init_size
       >> garbledCircuit->g_input_size >> garbledCircuit->e_input_size
       >> garbledCircuit->dff_size >> garbledCircuit->output_size
@@ -177,7 +174,7 @@ int WriteSCD(const ReadCircuit& readCircuit, const string &fileName) {
   // TODO(ebi): some of the input wires are only connected to initial signal.
   // Those wires do not require communication in cycles c > 1.
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
-    f << (int64_t)readCircuit.dff_list[i].input[1] << " ";  //I
+    f << (int64_t) readCircuit.dff_list[i].input[1] << " ";  //I
   }
   f << endl;
 

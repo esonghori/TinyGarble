@@ -352,7 +352,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
   LOG(INFO) << "g_input:" << readCircuitString.g_input_size << endl;
   LOG(INFO) << "e_input:" << readCircuitString.e_input_size << endl;
 
-  LOG(INFO) << "dffs:" << endl;
+  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (uint64_t i = 0; i < readCircuitString.dff_list_string.size(); i++) {
     LOG(INFO) << i << "\t"
               << Type2StrGate(readCircuitString.dff_list_string[i].type) << "\t"
@@ -362,7 +362,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
   }
   LOG(INFO) << endl;
 
-  LOG(INFO) << "gates:" << endl;
+  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
   for (uint64_t i = 0; i < readCircuitString.gate_list_string.size(); i++) {
     LOG(INFO) << i << "\t"
               << Type2StrGate(readCircuitString.gate_list_string[i].type)
@@ -383,7 +383,8 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
 void AddWireArray(map<string, uint64_t>& wire_name_table, const string& name,
                   uint size, uint64_t& wire_index) {
   if (size == 1) {
-    wire_name_table.insert(pair<string, uint64_t>(name, wire_index++));
+    wire_name_table.insert(pair<string, uint64_t>(name, wire_index));
+    wire_name_table.insert(pair<string, uint64_t>(name + "[0]", wire_index++)); // some cases, it is w[0]
   } else {
     for (uint i = 0; i < size; ++i) {
       wire_name_table.insert(
@@ -461,7 +462,7 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
 
   LOG(INFO) << "ID assignment" << endl;
 
-  LOG(INFO) << "dffs:" << endl;
+  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
               << readCircuit.dff_list[i].input[0] << "\t"
@@ -469,7 +470,7 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
               << readCircuit.dff_list[i].output << endl;
   }
   LOG(INFO) << endl;
-  LOG(INFO) << "gates:" << endl;
+  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
   for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[i].type)
               << "\t" << readCircuit.gate_list[i].input[0] << "\t"
@@ -537,7 +538,7 @@ int TopologicalSort(ReadCircuit &readCircuit) {
   }
 
   LOG(INFO) << endl << "Topological Sort" << endl;
-  LOG(INFO) << "dffs:" << endl;
+  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
               << readCircuit.dff_list[i].input[0] << "\t"
@@ -546,7 +547,7 @@ int TopologicalSort(ReadCircuit &readCircuit) {
   }
   LOG(INFO) << endl;
 
-  LOG(INFO) << "gates:" << endl;
+  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
   for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
     uint64_t gid = readCircuit.task_schedule[i];
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[gid].type)
