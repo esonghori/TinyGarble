@@ -118,38 +118,65 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       is_inport = 0;
       no_of_bits = 0;
     } else if(!str.compare("AND")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = ANDGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("ANDN")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = ANDNGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("NAND")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = NANDGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("NANDN")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = NANDNGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("OR")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = ORGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("ORN")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = ORNGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("NOR")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = NORGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("NORN")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = NORNGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("XOR")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = XORGATE;
       readCircuitString.gate_list_string.push_back(g);
@@ -158,16 +185,25 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       g.type = XNORGATE;
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("IV")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = NOTGATE;
       g.input[1] = "";
       readCircuitString.gate_list_string.push_back(g);
     } else if(!str.compare("DFF")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g;
       g.type = DFFGATE;
       g.input[1] = "";
       readCircuitString.dff_list_string.push_back(g);
     } else if(!str.compare("MUX")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g1, g2, g3;
       block_type = MUX;
       g1.type = XORGATE;
@@ -177,6 +213,9 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       readCircuitString.gate_list_string.push_back(g2);
       readCircuitString.gate_list_string.push_back(g3);
     } else if(!str.compare("HADDER")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g1, g2;
       block_type = HADDER;
       g1.type = ANDGATE;
@@ -184,6 +223,9 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       readCircuitString.gate_list_string.push_back(g1);
       readCircuitString.gate_list_string.push_back(g2);
     } else if(!str.compare("FADDER")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
       ReadGateString g1, g2, g3, g4, g5;
       block_type = FADDER;
       g1.type = XORGATE;
@@ -225,7 +267,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         no_of_bits = atoi(bits_str.c_str())+1;
         continue;
       } else if(!str.compare("o")) {
-        readCircuitString.output_size = no_of_bits;
+        readCircuitString.output_size = (no_of_bits>0)?no_of_bits:1;
       } else {
         LOG(ERROR) << "The output name is not valid " << str << endl <<
         "valid choice: { o }" << endl;
@@ -380,16 +422,16 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
   return 0;
 }
 
-void AddWireArray(map<string, uint64_t>& wire_name_table, const string& name,
-                  uint size, uint64_t& wire_index) {
+void AddWireArray(map<string, int64_t>& wire_name_table, const string& name,
+                  uint64_t size, int64_t& wire_index) {
   if (size == 1) {
-    wire_name_table.insert(pair<string, uint64_t>(name, wire_index));
-    wire_name_table.insert(pair<string, uint64_t>(name + "[0]", wire_index++)); // some cases, it is w[0]
+    wire_name_table.insert(pair<string, int64_t>(name, wire_index));
+    wire_name_table.insert(pair<string, int64_t>(name + "[0]", wire_index++));  // some cases, it is w[0]
   } else {
     for (uint i = 0; i < size; ++i) {
       wire_name_table.insert(
-          pair<string, uint64_t>(name + "[" + std::to_string(i) + "]",
-                                 wire_index++));
+          pair<string, int64_t>(name + "[" + std::to_string(i) + "]",
+                                wire_index++));
     }
   }
 }
@@ -405,8 +447,8 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
   readCircuit.gate_size = readCircuitString.gate_list_string.size();
   readCircuit.output_size = readCircuitString.output_size;
 
-  map<string, uint64_t> wire_name_table;
-  uint64_t wire_index = 0;
+  map<string, int64_t> wire_name_table;
+  int64_t wire_index = 0;
 
   AddWireArray(wire_name_table, "g_init", readCircuit.g_init_size, wire_index);
   AddWireArray(wire_name_table, "e_init", readCircuit.e_init_size, wire_index);
@@ -417,18 +459,18 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
 
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     wire_name_table.insert(
-        pair<string, uint64_t>(readCircuitString.dff_list_string[i].output,
-                               wire_index++));  //DFF Qs
+        pair<string, int64_t>(readCircuitString.dff_list_string[i].output,
+                              wire_index++));  //DFF Qs
   }
 
   for (uint i = 0; i < readCircuit.gate_size; i++) {
     wire_name_table.insert(
-        pair<string, uint64_t>(readCircuitString.gate_list_string[i].output,
-                               wire_index++));  // gates' output
+        pair<string, int64_t>(readCircuitString.gate_list_string[i].output,
+                              wire_index++));  // gates' output
   }
-  wire_name_table.insert(pair<string, uint64_t>("", ((uint64_t) -1)));
-  wire_name_table.insert(pair<string, uint64_t>("1'b0", CONST_ZERO));
-  wire_name_table.insert(pair<string, uint64_t>("1'b1", CONST_ONE));
+  wire_name_table.insert(pair<string, int64_t>("", ((uint64_t) -1)));
+  wire_name_table.insert(pair<string, int64_t>("1'b0", CONST_ZERO));
+  wire_name_table.insert(pair<string, int64_t>("1'b1", CONST_ONE));
 
   readCircuit.gate_list.resize(readCircuit.gate_size);
   readCircuit.output_list.resize(readCircuit.output_size);
@@ -436,6 +478,18 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
 
   for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
     readCircuit.gate_list[i].type = readCircuitString.gate_list_string[i].type;
+    CHECK_EXPR_MSG(
+        wire_name_table.count(readCircuitString.gate_list_string[i].input[0])
+            != 0,
+        readCircuitString.gate_list_string[i].input[0]);
+    CHECK_EXPR_MSG(
+        wire_name_table.count(readCircuitString.gate_list_string[i].input[1])
+            != 0,
+        readCircuitString.gate_list_string[i].input[1]);
+    CHECK_EXPR_MSG(
+        wire_name_table.count(readCircuitString.gate_list_string[i].output)
+            != 0,
+        readCircuitString.gate_list_string[i].output);
     readCircuit.gate_list[i].input[0] = wire_name_table[readCircuitString
         .gate_list_string[i].input[0]];
     readCircuit.gate_list[i].input[1] = wire_name_table[readCircuitString
@@ -447,6 +501,18 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     readCircuit.dff_list[i].type = readCircuitString.dff_list_string[i].type;
 
+    CHECK_EXPR_MSG(
+        wire_name_table.count(readCircuitString.dff_list_string[i].input[0])
+            != 0,
+        readCircuitString.dff_list_string[i].input[0]);
+    CHECK_EXPR_MSG(
+        wire_name_table.count(readCircuitString.dff_list_string[i].input[1])
+            != 0,
+        readCircuitString.dff_list_string[i].input[1]);
+    CHECK_EXPR_MSG(
+        wire_name_table.count(readCircuitString.dff_list_string[i].output) != 0,
+        readCircuitString.dff_list_string[i].output);
+
     readCircuit.dff_list[i].input[0] = wire_name_table[readCircuitString
         .dff_list_string[i].input[0]];
     readCircuit.dff_list[i].input[1] = wire_name_table[readCircuitString
@@ -456,8 +522,21 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
   }
 
   for (uint64_t i = 0; i < readCircuit.output_size; i++) {
-    readCircuit.output_list[i] =
-        wire_name_table["o[" + std::to_string(i) + "]"];
+    if (readCircuit.output_size == 1) {
+      CHECK_EXPR(
+          wire_name_table.count("o[0]") != 0 || wire_name_table.count("o") != 0);
+
+      if (wire_name_table.count("o[0]")) {
+        readCircuit.output_list[i] = wire_name_table["o[0]"];
+      } else {
+        readCircuit.output_list[i] = wire_name_table["o"];
+      }
+    } else {
+      CHECK_EXPR_MSG(wire_name_table.count("o[" + std::to_string(i) + "]") != 0,
+                     "o[" + std::to_string(i) + "]");
+      readCircuit.output_list[i] = wire_name_table["o[" + std::to_string(i)
+          + "]"];
+    }
   }
 
   LOG(INFO) << "ID assignment" << endl;
@@ -489,57 +568,62 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
 
 int TopologicalSort(ReadCircuit &readCircuit) {
 
-  uint64_t **core;
-  core = new uint64_t*[1];  // no of rows = no_core
-  core[0] = new uint64_t[readCircuit.gate_size + 1];  // no of columns = no_of_gates+1
+  int64_t **core;
+  core = new int64_t*[1];  // no of rows = no_core
+  core[0] = new int64_t[readCircuit.gate_size + 1];  // no of columns = no_of_gates+1
   memset(core[0], -1, (readCircuit.gate_size + 1) * sizeof(uint64_t));
 
   Schedule(readCircuit, 1, core);
 
   readCircuit.task_schedule.resize(readCircuit.gate_size);
 
-  vector<uint64_t> ts(readCircuit.gate_size);
+  vector<int64_t> ts(readCircuit.gate_size);
 
-  uint input_size = readCircuit.g_init_size + readCircuit.e_init_size
+  int64_t input_size = readCircuit.g_init_size + readCircuit.e_init_size
       + readCircuit.g_input_size + readCircuit.e_input_size;
-  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
+  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
     readCircuit.task_schedule[i] = core[0][i];
     ts[i] = core[0][i] + input_size + readCircuit.dff_size;
   }
 
-  vector<uint64_t> ts_1(
+  vector<int64_t> ts_1(
       input_size + readCircuit.dff_size + readCircuit.gate_size);
 
-  for (uint64_t i = 0; i < input_size + readCircuit.dff_size; i++) {
+  for (int64_t i = 0; i < input_size + (int64_t) readCircuit.dff_size; i++) {
     ts_1[i] = i;
   }
 
-  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
+  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
     ts_1[ts[i]] = i + input_size + readCircuit.dff_size;
   }
-
-  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
-    readCircuit.output_list[i] = ts_1[readCircuit.output_list[i]];
+  for (int64_t i = 0; i < (int64_t) readCircuit.dff_size; i++) {
+    if (readCircuit.dff_list[i].input[0] > 0) {  // Constant values are negative
+      readCircuit.dff_list[i].input[0] = ts_1[readCircuit.dff_list[i].input[0]];
+    }
+    if (readCircuit.dff_list[i].input[1] > 0) {  // Constant values are negative
+      readCircuit.dff_list[i].input[1] = ts_1[readCircuit.dff_list[i].input[1]];
+    }
+    readCircuit.dff_list[i].output = ts_1[readCircuit.dff_list[i].output];
   }
-  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
-    readCircuit.gate_list[i].input[0] = ts_1[readCircuit.gate_list[i].input[0]];
-    if (readCircuit.gate_list[i].input[1] > 0)  //IV has -1 input
+  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
+    if (readCircuit.gate_list[i].input[0] > 0) {  // Constant values are negative
+      readCircuit.gate_list[i].input[0] =
+          ts_1[readCircuit.gate_list[i].input[0]];
+    }
+    if (readCircuit.gate_list[i].input[1] > 0) {  // Constant values are negative
       readCircuit.gate_list[i].input[1] =
           ts_1[readCircuit.gate_list[i].input[1]];
+    }
     readCircuit.gate_list[i].output =
         ts_1[i + input_size + readCircuit.dff_size];
   }
-
-  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
-    readCircuit.dff_list[i].input[0] = ts_1[readCircuit.dff_list[i].input[0]];
-    if (readCircuit.dff_list[i].input[1] > 0)  // Constant values are negative
-      readCircuit.dff_list[i].input[1] = ts_1[readCircuit.dff_list[i].input[1]];
-    readCircuit.dff_list[i].output = ts_1[readCircuit.dff_list[i].output];
+  for (int64_t i = 0; i < (int64_t) readCircuit.output_size; i++) {
+    readCircuit.output_list[i] = ts_1[readCircuit.output_list[i]];
   }
 
   LOG(INFO) << endl << "Topological Sort" << endl;
   LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
-  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
+  for (int64_t i = 0; i < (int64_t) readCircuit.dff_size; i++) {
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
               << readCircuit.dff_list[i].input[0] << "\t"
               << readCircuit.dff_list[i].input[1] << "\t"
@@ -548,8 +632,8 @@ int TopologicalSort(ReadCircuit &readCircuit) {
   LOG(INFO) << endl;
 
   LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
-  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
-    uint64_t gid = readCircuit.task_schedule[i];
+  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
+    int64_t gid = readCircuit.task_schedule[i];
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[gid].type)
               << "\t" << readCircuit.gate_list[gid].input[0] << "\t"
               << readCircuit.gate_list[gid].input[1] << "\t"
@@ -558,7 +642,7 @@ int TopologicalSort(ReadCircuit &readCircuit) {
   LOG(INFO) << endl;
 
   LOG(INFO) << "outputs:" << endl;
-  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
+  for (int64_t i = 0; i < (int64_t) readCircuit.output_size; i++) {
     LOG(INFO) << readCircuit.output_list[i] << endl;
   }
   LOG(INFO) << endl;

@@ -62,9 +62,9 @@ typedef struct BlockPair {
  *
  */
 typedef struct GarbledGate {
-  uint64_t input0; /**< wire index for 1st input. */
-  uint64_t input1; /**< wire index for 2st input. */
-  uint64_t output; /**< wire index for output. */
+  int64_t input0; /**< wire index for 1st input. */
+  int64_t input1; /**< wire index for 2st input. */
+  int64_t output; /**< wire index for output. */
   int type; /**< wire Type, defined in util/common.h */
 } GarbledGate;
 
@@ -84,8 +84,8 @@ typedef struct GarbledCircuit {
   uint64_t gate_size;
 
   GarbledGate* garbledGates; /*!< topologically sorted gates */
-  uint64_t *outputs; /*!< index of output wires */
-  uint64_t *D; /*!< p-length array of wire index corresponding
+  int64_t *outputs; /*!< index of output wires */
+  int64_t *D; /*!< p-length array of wire index corresponding
    to D signal (Data) of DFF. */
   int64_t *I; /*!< p-length array of wire index corresponding
    to I signal (Initial) of DFF. */
