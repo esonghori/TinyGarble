@@ -81,6 +81,19 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
   bool store_i = 0;
   bool store_q = 0;
 
+  enum Block {
+    MUX,
+    FADDER,
+    HADDER
+  };
+
+  enum Block block_type;
+  bool store_in0 = 0;
+  bool store_in1 = 0;
+  bool store_sel_cin = 0;
+  bool store_cout = 0;
+  bool store_f_sum = 0;
+
   string buf("_");
   bool endoffile = false;
   while (!endoffile) {
@@ -154,6 +167,35 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       g.type = DFFGATE;
       g.input[1] = "";
       readCircuitString.dff_list_string.push_back(g);
+    } else if(!str.compare("MUX")) {
+      ReadGateString g1, g2, g3;
+      block_type = MUX;
+      g1.type = XORGATE;
+      g2.type = ANDGATE;
+      g3.type = XORGATE;
+      readCircuitString.gate_list_string.push_back(g1);
+      readCircuitString.gate_list_string.push_back(g2);
+      readCircuitString.gate_list_string.push_back(g3);
+    } else if(!str.compare("HADDER")) {
+      ReadGateString g1, g2;
+      block_type = HADDER;
+      g1.type = ANDGATE;
+      g2.type = XORGATE;
+      readCircuitString.gate_list_string.push_back(g1);
+      readCircuitString.gate_list_string.push_back(g2);
+    } else if(!str.compare("FADDER")) {
+      ReadGateString g1, g2, g3, g4, g5;
+      block_type = FADDER;
+      g1.type = XORGATE;
+      g2.type = XORGATE;
+      g3.type = ANDGATE;
+      g4.type = XORGATE;
+      g5.type = XORGATE;
+      readCircuitString.gate_list_string.push_back(g1);
+      readCircuitString.gate_list_string.push_back(g2);
+      readCircuitString.gate_list_string.push_back(g3);
+      readCircuitString.gate_list_string.push_back(g4);
+      readCircuitString.gate_list_string.push_back(g5);
     } else if(is_inport) {
       if (str.at(0) =='[') {
         tokenizer<> bits(str);
@@ -219,6 +261,86 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
     } else if(store_q) {
       readCircuitString.dff_list_string.back().output = str;
       store_q = 0;
+    } else if (!str.compare("IN0")) {
+      store_in0 = 1;
+    } else if(store_in0) {
+      int last = readCircuitString.gate_list_string.size() - 1;
+      if(block_type == MUX) {
+        readCircuitString.gate_list_string[last].input[0] = str;
+        readCircuitString.gate_list_string[last-2].input[0] = str;
+      } else if(block_type == HADDER) {
+        readCircuitString.gate_list_string[last].input[0] = str;
+        readCircuitString.gate_list_string[last-1].input[0] = str;
+      } else if(block_type == FADDER) {
+        readCircuitString.gate_list_string[last-4].input[0] = str;
+      }
+      store_in0 = 0;
+    } else if (!str.compare("IN1")) {
+      store_in1 = 1;
+    } else if(store_in1) {
+      int last = readCircuitString.gate_list_string.size() - 1;
+      if(block_type == MUX) {
+        readCircuitString.gate_list_string[last-2].input[1] = str;
+      } else if(block_type == HADDER) {
+        readCircuitString.gate_list_string[last].input[1] = str;
+        readCircuitString.gate_list_string[last-1].input[1] = str;
+      } else if(block_type == FADDER) {
+        readCircuitString.gate_list_string[last-3].input[0] = str;
+        readCircuitString.gate_list_string[last].input[1] = str;
+      }
+      store_in1 = 0;
+    } else if (!str.compare("SEL") || !str.compare("CIN")) {
+      store_sel_cin = 1;
+    } else if(store_sel_cin) {
+      int last = readCircuitString.gate_list_string.size() - 1;
+      if(block_type == MUX) {
+        readCircuitString.gate_list_string[last-1].input[1] = str;
+      } else if(block_type == FADDER) {
+        readCircuitString.gate_list_string[last-4].input[1] = str;
+        readCircuitString.gate_list_string[last-3].input[1] = str;
+        readCircuitString.gate_list_string[last-1].input[1] = str;
+      }
+      store_sel_cin = 0;
+    } else if (!str.compare("COUT")) {
+      store_cout = 1;
+    } else if(store_cout) {
+      int last = readCircuitString.gate_list_string.size() - 1;
+      if(block_type == HADDER) {
+        readCircuitString.gate_list_string[last-1].output = str;
+      } else if(block_type == FADDER) {
+        readCircuitString.gate_list_string[last-1].output = str;
+      }
+      store_cout = 0;
+    } else if (!str.compare("F") || !str.compare("SUM")) {
+      store_f_sum = 1;
+    } else if(store_f_sum) {
+      int last = readCircuitString.gate_list_string.size() - 1;
+      if(block_type == MUX) {
+        readCircuitString.gate_list_string[last-2].output = "MUX_INT_2_" + std::to_string(last-2);
+
+        readCircuitString.gate_list_string[last-1].input[0] = readCircuitString.gate_list_string[last-2].output;
+        readCircuitString.gate_list_string[last-1].output = "MUX_INT_1_" + std::to_string(last-1);
+
+        readCircuitString.gate_list_string[last].input[1] = readCircuitString.gate_list_string[last-1].output;
+        readCircuitString.gate_list_string[last].output = str;
+      } else if(block_type == HADDER) {
+        readCircuitString.gate_list_string[last].output = str;
+      } else if(block_type == FADDER) {
+        readCircuitString.gate_list_string[last-4].output = "FADDER_INT_1" + std::to_string(last-4);
+
+        readCircuitString.gate_list_string[last-3].output = "FADDER_INT_2" + std::to_string(last-3);
+
+        readCircuitString.gate_list_string[last-2].input[0] = readCircuitString.gate_list_string[last-4].output;
+        readCircuitString.gate_list_string[last-2].input[1] = readCircuitString.gate_list_string[last-3].output;
+        readCircuitString.gate_list_string[last-2].output = "FADDER_INT_3" + std::to_string(last-2);
+
+        readCircuitString.gate_list_string[last-1].input[0] = readCircuitString.gate_list_string[last-2].output;
+
+        readCircuitString.gate_list_string[last].input[0] = readCircuitString.gate_list_string[last-4].output;
+        readCircuitString.gate_list_string[last].output = str;
+
+      }
+      store_f_sum = 0;
     }
     // TODO(ebi): print error.
   }
