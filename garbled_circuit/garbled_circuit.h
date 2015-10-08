@@ -46,15 +46,12 @@
 #include <cstdint>
 #include "crypto/block.h"
 /**
- * @brief Used to store two tokens (or labels).
- *
- * In garbling, both labels are used, while in evaluation,
- * only one label is required which is label0.
+ * @brief Used to store two labels.
  */
-typedef struct Wire {
-  block label0; /**< label for 0, and unknown. */
-  block label1; /**< label for 1. */
-} Wire;
+typedef struct BlockPair {
+  block label0;
+  block label1;
+} BlockPair;
 
 /**
  * @brief Used to store inputs, output, and type of gate in the circuit.
@@ -64,7 +61,7 @@ typedef struct GarbledGate {
   uint64_t input0; /**< wire index for 1st input. */
   uint64_t input1; /**< wire index for 2st input. */
   uint64_t output; /**< wire index for output. */
-  int type; /**< wire Type, defined in common.h */
+  int type; /**< wire Type, defined in util/common.h */
 } GarbledGate;
 
 /**
@@ -74,22 +71,102 @@ typedef struct GarbledGate {
  * for both garbling and evaluation. It is created based on SCD file.
  */
 typedef struct GarbledCircuit {
-  uint64_t n; /*!< # of inputs */
-  uint64_t g; /*!< # of g inputs */
-  uint64_t p; /*!< # of DFF */
-  uint64_t m; /*!< # of outputs */
-  uint64_t q; /*!< # of gates */
-  uint64_t c; /*!< # of sequential cycle */
-  uint64_t r; /*!< # of wires = n+p+q */
+  uint64_t g_init_size;
+  uint64_t e_init_size;
+  uint64_t g_input_size;
+  uint64_t e_input_size;
+  uint64_t dff_size;
+  uint64_t output_size;
+  uint64_t gate_size;
+  uint64_t clock_cycles;
 
   GarbledGate* garbledGates; /*!< topologically sorted gates */
-  Wire* wires; /*!< wire labels */
   uint64_t *outputs; /*!< index of output wires */
   uint64_t *D; /*!< p-length array of wire index corresponding
    to D signal (Data) of DFF. */
-  uint64_t *I; /*!< p-length array of wire index corresponding
+  int64_t *I; /*!< p-length array of wire index corresponding
    to I signal (Initial) of DFF. */
-  block globalKey; /*!< global key c for AES_c(.) in DKC scheme */
+
+  inline uint64_t get_init_size() const {
+    return g_init_size + e_init_size;
+  }
+  inline uint64_t get_input_size() const {
+    return g_input_size + e_input_size;
+  }
+  inline uint64_t get_wire_size() const {
+    return get_init_size() + get_input_size() + dff_size + gate_size;
+  }
+
+  /**
+   * indexing structure:
+   * 0.g_init
+   * 1.e_init
+   * 2.g_input
+   * 3.e_input
+   * 4.dff
+   * 5.gate
+   */
+  inline uint64_t get_init_lo_index() const {
+    return 0;
+  }
+  inline uint64_t get_g_init_lo_index() const {
+    return 0;
+  }
+  inline uint64_t get_g_init_hi_index() const {
+    return g_init_size;
+  }
+
+  inline uint64_t get_e_init_lo_index() const {
+    return get_g_init_hi_index();
+  }
+  inline uint64_t get_e_init_hi_index() const {
+    return get_g_init_hi_index() + e_init_size;
+  }
+  inline uint64_t get_init_hi_index() const {
+    return get_e_init_hi_index();
+  }
+
+  inline uint64_t get_input_lo_index() const {
+    return get_e_init_hi_index();
+  }
+  inline uint64_t get_g_input_lo_index() const {
+    return get_e_init_hi_index();
+  }
+  inline uint64_t get_g_input_hi_index() const {
+    return get_e_init_hi_index() + g_input_size;
+  }
+
+  inline uint64_t get_e_input_lo_index() const {
+    return get_g_input_hi_index();
+  }
+  inline uint64_t get_e_input_hi_index() const {
+    return get_g_input_hi_index() + e_input_size;
+  }
+  inline uint64_t get_input_hi_index() const {
+    return get_e_input_hi_index();
+  }
+
+  inline uint64_t get_dff_lo_index() const {
+    return get_e_input_hi_index();
+  }
+  inline uint64_t get_dff_hi_index() const {
+    return get_e_input_hi_index() + dff_size;
+  }
+
+  inline uint64_t get_gate_lo_index() const {
+    return get_dff_hi_index();
+  }
+  inline uint64_t get_gate_hi_index() const {
+    return get_dff_hi_index() + gate_size;
+  }
+
+  inline uint64_t get_wire_lo_index() const {
+    return 0;
+  }
+  inline uint64_t get_wire_hi_index() const {
+    return get_gate_hi_index();
+  }
+
 } GarbledCircuit;
 
 /**
@@ -138,8 +215,9 @@ void CreateInputLabels(block* inputLabels, block R, uint64_t n);
  * @see JustGarble paper.
  * @see Half-Gate paper.
  */
-uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
-            block* initialDFFLabels, block* outputLabels, block R, int connfd);
+uint64_t Garble(GarbledCircuit& garbledCircuit, block** const_labels,
+                block** init_labels, block*** input_labels, block global_key,
+                block R, int connfd, block*** output_labels);
 
 /**
  * @brief Evaluate a garbled circuit
@@ -164,8 +242,9 @@ uint64_t Garble(GarbledCircuit *garbledCircuit, block* inputLabels,
  * @see Half-Gate paper.
  */
 
-uint64_t Evaluate(GarbledCircuit *garbledCircuit, block* inputLables,
-              block* initialDFFLabels, block *outputs, int connfd);
+uint64_t Evaluate(GarbledCircuit *garbled_gircuit, block* const_labels,
+                  block* init_labels, block** input_labels, block global_key,
+                  int connfd, block** output_labels);
 
 /**
  * @brief Deallocates garbledCircuit

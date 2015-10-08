@@ -21,10 +21,10 @@
 
 #include "scd/v_2_scd.h"
 
-int TopSort(const vector<ReadGate>& G, int no_task, int *index);
-int Schedule(const ReadCircuit& readCircuit, int no_core, int **core);
-void QuickSort(int *arr, int *index, int left, int right);
-int GetMinIndex(int *arr, int size);
-int GetMax(int *arr, int size);
+void TopSort(const vector<ReadGate>& G, uint64_t no_task, uint64_t *index);
+void Schedule(const ReadCircuit& readCircuit, uint64_t no_core, uint64_t **core);
+void QuickSort(uint64_t *arr, uint64_t *index, int64_t left, int64_t right);
+uint64_t GetMinIndex(uint64_t *arr, uint64_t size);
+uint64_t GetMax(uint64_t *arr, uint64_t size);
 
 #endif /* SCD_SCHEDULING_H_ */

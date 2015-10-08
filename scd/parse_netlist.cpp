@@ -21,6 +21,7 @@
 #include <boost/foreach.hpp>
 #include <fstream>
 #include <map>
+#include "scd/scheduling.h"
 #include "util/common.h"
 #include "util/log.h"
 
@@ -62,8 +63,7 @@ string Type2StrGate(short itype) {
   return type;
 }
 
-int ParseNetlist(const string &filename,
-                  ReadCircuitString &readCircuitString) {
+int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
 
   ifstream fin(filename.c_str(), std::ios::in);
   if (!fin.good()) {
@@ -71,7 +71,7 @@ int ParseNetlist(const string &filename,
     return -1;
   }
 
-  uint no_of_bits = 0;
+  uint64_t no_of_bits = 0;
   bool is_inport = 0;
   bool is_outport = 0;
   bool store_input0 = 0;
@@ -88,296 +88,230 @@ int ParseNetlist(const string &filename,
     char_separator<char> sep(" ,;.()\t\r");
     tokenizer<char_separator<char> > tok(buf, sep);
 
-    BOOST_FOREACH(string str, tok) {
-      if(!str.compare("endmodule"))
-      {
-        endoffile = true;
-        break;
-      }
-      else if(!str.compare("input"))
-      {
-        is_inport = 1;
-      }
-      else if(is_inport)
-      {
-        if (str.at(0) =='[')
-        {
-          tokenizer<> bits(str);
-          tokenizer<>::iterator beg = bits.begin();
-          string bits_str(*beg);
-          no_of_bits = atoi(bits_str.c_str())+1;
-          continue;
+    BOOST_FOREACH(string str, tok){
+    if(!str.compare("endmodule")) {
+      endoffile = true;
+      break;
+    } else if(!str.compare("input")) {
+      is_inport = 1;
+      is_outport = 0;
+      no_of_bits = 0;
+    } else if(!str.compare("output")) {
+      is_inport = 0;
+      is_outport = 1;
+      no_of_bits = 0;
+    } else if(!str.compare("wire")) {
+      is_outport = 0;
+      is_inport = 0;
+      no_of_bits = 0;
+    } else if(!str.compare("AND")) {
+      ReadGateString g;
+      g.type = ANDGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("ANDN")) {
+      ReadGateString g;
+      g.type = ANDNGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("NAND")) {
+      ReadGateString g;
+      g.type = NANDGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("NANDN")) {
+      ReadGateString g;
+      g.type = NANDNGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("OR")) {
+      ReadGateString g;
+      g.type = ORGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("ORN")) {
+      ReadGateString g;
+      g.type = ORNGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("NOR")) {
+      ReadGateString g;
+      g.type = NORGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("NORN")) {
+      ReadGateString g;
+      g.type = NORNGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("XOR")) {
+      ReadGateString g;
+      g.type = XORGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("XNOR")) {
+      ReadGateString g;
+      g.type = XNORGATE;
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("IV")) {
+      ReadGateString g;
+      g.type = NOTGATE;
+      g.input[1] = "";
+      readCircuitString.gate_list_string.push_back(g);
+    } else if(!str.compare("DFF")) {
+      ReadGateString g;
+      g.type = DFFGATE;
+      g.input[1] = "";
+      readCircuitString.dff_list_string.push_back(g);
+    } else if(is_inport) {
+      if (str.at(0) =='[') {
+        tokenizer<> bits(str);
+        tokenizer<>::iterator beg = bits.begin();
+        string bits_str(*beg);
+        no_of_bits = atoi(bits_str.c_str())+1;
+      } else if(str.compare("clk") && str.compare("rst")) {
+        if(!str.compare("g_init")) {
+          readCircuitString.g_init_size = (no_of_bits>0)?no_of_bits:1;
+        } else if(!str.compare("e_init")) {
+          readCircuitString.e_init_size = (no_of_bits>0)?no_of_bits:1;
+        } else if(!str.compare("g_input")) {
+          readCircuitString.g_input_size = (no_of_bits>0)?no_of_bits:1;
+        } else if(!str.compare("e_input")) {
+          readCircuitString.e_input_size = (no_of_bits>0)?no_of_bits:1;
+        } else {
+          LOG(ERROR) << "The input name is not valid " << str << endl <<
+          "valid choice: { g_init,  e_init, g_input, e_input}" << endl;
+          return FAILURE;
         }
-
-        if(str.compare("clk") && str.compare("rst"))
-        {
-          if (no_of_bits)
-          {
-            for(uint i = 0; i < no_of_bits; i++)
-            {
-              string t =str + "[" + std::to_string(i) + "]";
-              readCircuitString.inport_list.push_back(t);
-            }
-          }
-          else
-          {
-            readCircuitString.inport_list.push_back(str);
-          }
-
-          if(!str.compare("g"))
-          {
-            readCircuitString.no_of_g_inports = (no_of_bits>0)?no_of_bits:1;
-          }
-        }
-        no_of_bits = 0;
-        is_inport = 0;
       }
-      else if(!str.compare("output"))
-      {
-        is_outport = 1;
+    } else if(is_outport) {
+      if (str.at(0) =='[') {
+        tokenizer<> bits(str);
+        tokenizer<>::iterator beg = bits.begin();
+        string bits_str(*beg);
+        no_of_bits = atoi(bits_str.c_str())+1;
+        continue;
+      } else if(!str.compare("o")) {
+        readCircuitString.output_size = no_of_bits;
+      } else {
+        LOG(ERROR) << "The output name is not valid " << str << endl <<
+        "valid choice: { o }" << endl;
+        return FAILURE;
       }
-      else if(is_outport)
-      {
-        if (str.at(0) =='[')
-        {
-          tokenizer<> bits(str);
-          tokenizer<>::iterator beg = bits.begin();
-          string bits_str(*beg);
-          no_of_bits = atoi(bits_str.c_str())+1;
-          continue;
-        }
-
-        if (no_of_bits)
-        {
-          for(uint i = 0; i < no_of_bits; i++)
-          {
-            string t = str + "[" + std::to_string(i) + "]";
-            readCircuitString.outport_list.push_back(t);
-          }
-        }
-        else
-        {
-          readCircuitString.outport_list.push_back(str);
-        }
-        no_of_bits = 0;
-        is_outport = 0;
-      }
-      else if(!str.compare("AND"))
-      {
-        ReadGateString g;
-        g.type = ANDGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("ANDN"))
-      {
-        ReadGateString g;
-        g.type = ANDNGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("NAND"))
-      {
-        ReadGateString g;
-        g.type = NANDGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("NANDN"))
-      {
-        ReadGateString g;
-        g.type = NANDNGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("OR"))
-      {
-        ReadGateString g;
-        g.type = ORGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("ORN"))
-      {
-        ReadGateString g;
-        g.type = ORNGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("NOR"))
-      {
-        ReadGateString g;
-        g.type = NORGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("NORN"))
-      {
-        ReadGateString g;
-        g.type = NORNGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("XOR"))
-      {
-        ReadGateString g;
-        g.type = XORGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("XNOR"))
-      {
-        ReadGateString g;
-        g.type = XNORGATE;
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("IV"))
-      {
-        ReadGateString g;
-        g.type = NOTGATE;
-        g.input[1] = "";
-        readCircuitString.gate_list_string.push_back(g);
-      }
-      else if(!str.compare("DFF"))
-      {
-        ReadGateString g;
-        g.type = DFFGATE;
-        g.input[1] = "";
-        readCircuitString.dff_list_string.push_back(g);
-      }
-      else if (!str.compare("A"))
-      {
-        store_input0 = 1;
-      }
-      else if(store_input0)
-      {
-        readCircuitString.gate_list_string.back().input[0] = str;
-        store_input0 = 0;
-      }
-      else if(!str.compare("D"))
-      {
-        store_d = 1;
-      }
-      else if(store_d)
-      {
-        readCircuitString.dff_list_string.back().input[0] = str;
-        store_d = 0;
-      }
-      else if(!str.compare("I"))
-      {
-        store_i = 1;
-      }
-      else if(store_i)
-      {
-        readCircuitString.dff_list_string.back().input[1] = str;
-        store_i = 0;
-      }
-      else if (!str.compare("B"))
-      {
-        store_input1 = 1;
-      }
-      else if(store_input1)
-      {
-        readCircuitString.gate_list_string.back().input[1] = str;
-        store_input1 = 0;
-      }
-      else if (!str.compare("Z"))
-      {
-        store_output = 1;
-      }
-      else if(store_output)
-      {
-        readCircuitString.gate_list_string.back().output = str;
-        store_output = 0;
-      }
-      else if (!str.compare("Q"))
-      {
-        store_q = 1;
-      }
-      else if(store_q)
-      {
-        readCircuitString.dff_list_string.back().output = str;
-        store_q = 0;
-      }
+    } else if (!str.compare("A")) {
+      store_input0 = 1;
+    } else if(store_input0) {
+      readCircuitString.gate_list_string.back().input[0] = str;
+      store_input0 = 0;
+    } else if(!str.compare("D")) {
+      store_d = 1;
+    } else if(store_d) {
+      readCircuitString.dff_list_string.back().input[0] = str;
+      store_d = 0;
+    } else if(!str.compare("I")) {
+      store_i = 1;
+    } else if(store_i) {
+      readCircuitString.dff_list_string.back().input[1] = str;
+      store_i = 0;
+    } else if (!str.compare("B")) {
+      store_input1 = 1;
+    } else if(store_input1) {
+      readCircuitString.gate_list_string.back().input[1] = str;
+      store_input1 = 0;
+    } else if (!str.compare("Z")) {
+      store_output = 1;
+    } else if(store_output) {
+      readCircuitString.gate_list_string.back().output = str;
+      store_output = 0;
+    } else if (!str.compare("Q")) {
+      store_q = 1;
+    } else if(store_q) {
+      readCircuitString.dff_list_string.back().output = str;
+      store_q = 0;
     }
+    // TODO(ebi): print error.
   }
+}
 
-#ifdef VERBOSE
-  cout << endl << "string name" << endl;
-  cout << "g inputs:" << endl;
-  for (uint i = 0; i < readCircuitString.no_of_g_inports; i++)
-  {
-    cout << readCircuitString.inport_list[i] << " " << i << endl;
-  }
-  cout << endl;
+  LOG(INFO) << "string name" << endl;
+  LOG(INFO) << "g_init:" << readCircuitString.g_init_size << endl;
+  LOG(INFO) << "e_init:" << readCircuitString.e_init_size << endl;
+  LOG(INFO) << "g_input:" << readCircuitString.g_input_size << endl;
+  LOG(INFO) << "e_input:" << readCircuitString.e_input_size << endl;
 
-  cout << "e inputs:" << endl;
-  for (uint i = readCircuitString.no_of_g_inports; i < readCircuitString.inport_list.size(); i++)
-  {
-    cout << readCircuitString.inport_list[i] << " " << i << endl;
+  LOG(INFO) << "dffs:" << endl;
+  for (uint64_t i = 0; i < readCircuitString.dff_list_string.size(); i++) {
+    LOG(INFO) << i << "\t"
+              << Type2StrGate(readCircuitString.dff_list_string[i].type) << "\t"
+              << readCircuitString.dff_list_string[i].input[0] << "\t"
+              << readCircuitString.dff_list_string[i].input[1] << "\t"
+              << readCircuitString.dff_list_string[i].output << endl;
   }
-  cout << endl;
+  LOG(INFO) << endl;
 
-  cout << "outputs:" << endl;
-  for (uint i = 0; i < readCircuitString.outport_list.size(); i++)
-  {
-    cout << readCircuitString.outport_list[i] << " " << i << endl;
+  LOG(INFO) << "gates:" << endl;
+  for (uint64_t i = 0; i < readCircuitString.gate_list_string.size(); i++) {
+    LOG(INFO) << i << "\t"
+              << Type2StrGate(readCircuitString.gate_list_string[i].type)
+              << "\t" << readCircuitString.gate_list_string[i].input[0] << "\t"
+              << readCircuitString.gate_list_string[i].input[1] << "\t"
+              << readCircuitString.gate_list_string[i].output << endl;
   }
-  cout << endl;
+  LOG(INFO) << endl;
 
-  cout << "gates:" << endl;
-  for (uint i = 0; i < readCircuitString.gate_list_string.size(); i++)
-  {
-    cout << i << "\t"
-    << Type2StrGate(readCircuitString.gate_list_string[i].type) << "\t"
-    << readCircuitString.gate_list_string[i].input[0] << "\t"
-    << readCircuitString.gate_list_string[i].input[1] << "\t"
-    << readCircuitString.gate_list_string[i].output
-    << endl;
+  LOG(INFO) << "outputs:" << endl;
+  for (uint64_t i = 0; i < readCircuitString.output_size; i++) {
+    LOG(INFO) << "o[" << i << "]" << " " << i << endl;
   }
-  cout << endl;
-
-  cout << "dffs:" << endl;
-  for (uint i = 0; i < readCircuitString.dff_list_string.size(); i++)
-  {
-    cout << i << "\t"
-    << Type2StrGate(readCircuitString.dff_list_string[i].type) << "\t"
-    << readCircuitString.dff_list_string[i].input[0] << "\t"
-    << readCircuitString.dff_list_string[i].input[1] << "\t"
-    << readCircuitString.dff_list_string[i].output
-    << endl;
-  }
-  cout << endl;
-#endif
+  LOG(INFO) << endl;
   return 0;
 }
 
+void AddWireArray(map<string, uint64_t>& wire_name_table, const string& name,
+                  uint size, uint64_t& wire_index) {
+  if (size == 1) {
+    wire_name_table.insert(pair<string, uint64_t>(name, wire_index++));
+  } else {
+    for (uint i = 0; i < size; ++i) {
+      wire_name_table.insert(
+          pair<string, uint64_t>(name + "[" + std::to_string(i) + "]",
+                                 wire_index++));
+    }
+  }
+}
+
 int IdAssignment(const ReadCircuitString& readCircuitString,
-                  ReadCircuit &readCircuit) {
-  readCircuit.no_of_g_inports = readCircuitString.no_of_g_inports;
-  readCircuit.no_of_inports = readCircuitString.inport_list.size();
-  readCircuit.no_of_outports = readCircuitString.outport_list.size();
-  readCircuit.no_of_gates = readCircuitString.gate_list_string.size();
-  readCircuit.no_of_dffs = readCircuitString.dff_list_string.size();
+                 ReadCircuit &readCircuit) {
+  readCircuit.g_init_size = readCircuitString.g_init_size;
+  readCircuit.e_init_size = readCircuitString.e_init_size;
+  readCircuit.g_input_size = readCircuitString.g_input_size;
+  readCircuit.e_input_size = readCircuitString.e_input_size;
 
-  map<string, int> wire_name_table;
-  int wire_index = 0;
-  for (uint i = 0; i < readCircuit.no_of_inports; i++) {
+  readCircuit.dff_size = readCircuitString.dff_list_string.size();
+  readCircuit.gate_size = readCircuitString.gate_list_string.size();
+  readCircuit.output_size = readCircuitString.output_size;
+
+  map<string, uint64_t> wire_name_table;
+  uint64_t wire_index = 0;
+
+  AddWireArray(wire_name_table, "g_init", readCircuit.g_init_size, wire_index);
+  AddWireArray(wire_name_table, "e_init", readCircuit.e_init_size, wire_index);
+  AddWireArray(wire_name_table, "g_input", readCircuit.g_input_size,
+               wire_index);
+  AddWireArray(wire_name_table, "e_input", readCircuit.e_input_size,
+               wire_index);
+
+  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     wire_name_table.insert(
-        pair<string, int>(readCircuitString.inport_list[i], wire_index++));  // inputs
+        pair<string, uint64_t>(readCircuitString.dff_list_string[i].output,
+                               wire_index++));  //DFF Qs
   }
 
-  for (uint i = 0; i < readCircuit.no_of_dffs; i++) {
+  for (uint i = 0; i < readCircuit.gate_size; i++) {
     wire_name_table.insert(
-        pair<string, int>(readCircuitString.dff_list_string[i].output,
-                          wire_index++));  //DFF Qs
+        pair<string, uint64_t>(readCircuitString.gate_list_string[i].output,
+                               wire_index++));  // gates' output
   }
+  wire_name_table.insert(pair<string, uint64_t>("", ((uint64_t) -1)));
+  wire_name_table.insert(pair<string, uint64_t>("1'b0", CONST_ZERO));
+  wire_name_table.insert(pair<string, uint64_t>("1'b1", CONST_ONE));
 
-  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
-    wire_name_table.insert(
-        pair<string, int>(readCircuitString.gate_list_string[i].output,
-                          wire_index++));  // gates' output
-  }
-  wire_name_table.insert(pair<string, int>("", -1));
-  wire_name_table.insert(pair<string, int>("1'b0", CONST_ZERO));
-  wire_name_table.insert(pair<string, int>("1'b1", CONST_ONE));
+  readCircuit.gate_list.resize(readCircuit.gate_size);
+  readCircuit.output_list.resize(readCircuit.output_size);
+  readCircuit.dff_list.resize(readCircuit.dff_size);
 
-  readCircuit.gate_list.resize(readCircuit.no_of_gates);
-  readCircuit.output_list.resize(readCircuit.no_of_outports);
-  readCircuit.dff_list.resize(readCircuit.no_of_dffs);
-
-  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
+  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
     readCircuit.gate_list[i].type = readCircuitString.gate_list_string[i].type;
     readCircuit.gate_list[i].input[0] = wire_name_table[readCircuitString
         .gate_list_string[i].input[0]];
@@ -387,7 +321,7 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
         .gate_list_string[i].output];
   }
 
-  for (uint i = 0; i < readCircuit.no_of_dffs; i++) {
+  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     readCircuit.dff_list[i].type = readCircuitString.dff_list_string[i].type;
 
     readCircuit.dff_list[i].input[0] = wire_name_table[readCircuitString
@@ -398,133 +332,113 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
         .dff_list_string[i].output];
   }
 
-  for (uint i = 0; i < readCircuit.no_of_outports; i++) {
+  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
     readCircuit.output_list[i] =
-        wire_name_table[readCircuitString.outport_list[i]];
+        wire_name_table["o[" + std::to_string(i) + "]"];
   }
 
-#ifdef VERBOSE
-  cout << endl << "ID assignment" << endl;
-  cout << "outputs:" << endl;
-  for (uint i = 0; i < readCircuit.no_of_outports; i++)
-  {
-    cout << readCircuit.output_list[i] << endl;
-  }
-  cout << endl;
+  LOG(INFO) << "ID assignment" << endl;
 
-  cout << "gates:" << endl;
-  for (uint i = 0; i < readCircuit.no_of_gates; i++)
-  {
-    cout << i << "\t"
-    << Type2StrGate(readCircuit.gate_list[i].type) << "\t"
-    << readCircuit.gate_list[i].input[0] << "\t"
-    << readCircuit.gate_list[i].input[1] << "\t"
-    << readCircuit.gate_list[i].output
-    << endl;
+  LOG(INFO) << "dffs:" << endl;
+  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
+    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
+              << readCircuit.dff_list[i].input[0] << "\t"
+              << readCircuit.dff_list[i].input[1] << "\t"
+              << readCircuit.dff_list[i].output << endl;
   }
-  cout << endl;
-
-  cout << "dffs:" << endl;
-  for (uint i = 0; i < readCircuit.no_of_dffs; i++)
-  {
-    cout << i << "\t"
-    << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
-    << readCircuit.dff_list[i].input[0] << "\t"
-    << readCircuit.dff_list[i].input[1] << "\t"
-    << readCircuit.dff_list[i].output
-    << endl;
+  LOG(INFO) << endl;
+  LOG(INFO) << "gates:" << endl;
+  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
+    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[i].type)
+              << "\t" << readCircuit.gate_list[i].input[0] << "\t"
+              << readCircuit.gate_list[i].input[1] << "\t"
+              << readCircuit.gate_list[i].output << endl;
   }
-  cout << endl;
-#endif
+  LOG(INFO) << endl;
+  LOG(INFO) << "outputs:" << endl;
+  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
+    LOG(INFO) << readCircuit.output_list[i] << endl;
+  }
+  LOG(INFO) << endl;
 
   return 0;
 }
 
 int TopologicalSort(ReadCircuit &readCircuit) {
 
-  int **core;
-  core = new int*[1];  // no of rows = no_core
-  core[0] = new int[readCircuit.no_of_gates + 1];  // no of columns = no_of_gates+1
-  memset(core[0], -1, (readCircuit.no_of_gates + 1) * sizeof(int));
+  uint64_t **core;
+  core = new uint64_t*[1];  // no of rows = no_core
+  core[0] = new uint64_t[readCircuit.gate_size + 1];  // no of columns = no_of_gates+1
+  memset(core[0], -1, (readCircuit.gate_size + 1) * sizeof(uint64_t));
 
   Schedule(readCircuit, 1, core);
 
-  readCircuit.task_schedule.resize(readCircuit.no_of_gates);
+  readCircuit.task_schedule.resize(readCircuit.gate_size);
 
-  vector<int> ts(readCircuit.no_of_gates);
+  vector<uint64_t> ts(readCircuit.gate_size);
 
-  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
+  uint input_size = readCircuit.g_init_size + readCircuit.e_init_size
+      + readCircuit.g_input_size + readCircuit.e_input_size;
+  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
     readCircuit.task_schedule[i] = core[0][i];
-    ts[i] = core[0][i] + readCircuit.no_of_inports + readCircuit.no_of_dffs;
+    ts[i] = core[0][i] + input_size + readCircuit.dff_size;
   }
 
-  vector<int> ts_1(
-      readCircuit.no_of_gates + readCircuit.no_of_inports
-          + readCircuit.no_of_dffs);
+  vector<uint64_t> ts_1(
+      input_size + readCircuit.dff_size + readCircuit.gate_size);
 
-  for (uint i = 0; i < readCircuit.no_of_inports + readCircuit.no_of_dffs; i++) {
+  for (uint64_t i = 0; i < input_size + readCircuit.dff_size; i++) {
     ts_1[i] = i;
   }
 
-  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
-    ts_1[ts[i]] = i + readCircuit.no_of_inports + readCircuit.no_of_dffs;
+  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
+    ts_1[ts[i]] = i + input_size + readCircuit.dff_size;
   }
 
-  for (uint i = 0; i < readCircuit.no_of_outports; i++) {
+  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
     readCircuit.output_list[i] = ts_1[readCircuit.output_list[i]];
   }
-  for (uint i = 0; i < readCircuit.no_of_gates; i++) {
+  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
     readCircuit.gate_list[i].input[0] = ts_1[readCircuit.gate_list[i].input[0]];
     if (readCircuit.gate_list[i].input[1] > 0)  //IV has -1 input
       readCircuit.gate_list[i].input[1] =
           ts_1[readCircuit.gate_list[i].input[1]];
-    readCircuit.gate_list[i].output = ts_1[i + readCircuit.no_of_inports
-        + readCircuit.no_of_dffs];
+    readCircuit.gate_list[i].output =
+        ts_1[i + input_size + readCircuit.dff_size];
   }
 
-  for (uint i = 0; i < readCircuit.no_of_dffs; i++) {
+  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     readCircuit.dff_list[i].input[0] = ts_1[readCircuit.dff_list[i].input[0]];
     if (readCircuit.dff_list[i].input[1] > 0)  // Constant values are negative
       readCircuit.dff_list[i].input[1] = ts_1[readCircuit.dff_list[i].input[1]];
     readCircuit.dff_list[i].output = ts_1[readCircuit.dff_list[i].output];
   }
 
-#ifdef VERBOSE
-  cout << endl << "Topological Sort" << endl;
-  cout << "outputs:" << endl;
-  for (uint i = 0; i < readCircuit.no_of_outports; i++)
-  {
-    cout << readCircuit.output_list[i] << endl;
+  LOG(INFO) << endl << "Topological Sort" << endl;
+  LOG(INFO) << "dffs:" << endl;
+  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
+    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
+              << readCircuit.dff_list[i].input[0] << "\t"
+              << readCircuit.dff_list[i].input[1] << "\t"
+              << readCircuit.dff_list[i].output << endl;
   }
-  cout << endl;
+  LOG(INFO) << endl;
 
-  cout << "gates:" << endl;
-  for (uint i = 0; i < readCircuit.no_of_gates; i++)
-  {
-    int gid = readCircuit.task_schedule[i];
-    cout << i << "\t"
-    << Type2StrGate(readCircuit.gate_list[gid].type) << "\t"
-    << readCircuit.gate_list[gid].input[0] << "\t"
-    << readCircuit.gate_list[gid].input[1] << "\t"
-    << readCircuit.gate_list[gid].output
-    << endl;
+  LOG(INFO) << "gates:" << endl;
+  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
+    uint64_t gid = readCircuit.task_schedule[i];
+    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[gid].type)
+              << "\t" << readCircuit.gate_list[gid].input[0] << "\t"
+              << readCircuit.gate_list[gid].input[1] << "\t"
+              << readCircuit.gate_list[gid].output << endl;
   }
-  cout << endl;
+  LOG(INFO) << endl;
 
-  cout << "dffs:" << endl;
-  for (uint i = 0; i < readCircuit.no_of_dffs; i++)
-  {
-    cout << i << "\t"
-    << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
-    << readCircuit.dff_list[i].input[0] << "\t"
-    << readCircuit.dff_list[i].input[1] << "\t"
-    << readCircuit.dff_list[i].output
-    << endl;
+  LOG(INFO) << "outputs:" << endl;
+  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
+    LOG(INFO) << readCircuit.output_list[i] << endl;
   }
-  cout << endl;
-
-#endif
-
+  LOG(INFO) << endl;
   delete[] core[0];
   delete[] core;
   return 0;
