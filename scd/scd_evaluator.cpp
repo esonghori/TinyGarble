@@ -106,7 +106,7 @@ void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
       int type = garbled_gate.type;
 
       // constant values
-      bool inp0, inp1;
+      bool inp0;
       if (input0 == CONST_ZERO) {
         inp0 = false;
       } else if (input0 == CONST_ONE) {
@@ -119,6 +119,7 @@ void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
         inp0 = false;
       }
 
+      bool inp1;
       if (input1 == CONST_ZERO) {
         inp1 = false;
       } else if (input1 == CONST_ONE) {
@@ -126,7 +127,7 @@ void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
       } else if (input1 >= 0
           && input1 < (int64_t) garbled_circuit.get_wire_size()) {
         inp1 = wires[input1];
-      } else {
+      } else if (type != NOTGATE) {
         LOG(ERROR) << "Invalid input1 index: " << input1 << endl;
         inp1 = false;
       }
