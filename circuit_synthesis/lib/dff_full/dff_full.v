@@ -12,7 +12,7 @@ module MUX
   input IN0, IN1, SEL;
   output F;
 
-  assign F  = IN0^n2; (~SEL&IN0)|(SEL&IN1);
+  assign F  = (~SEL&IN0)|(SEL&IN1);
 
 endmodule
 
