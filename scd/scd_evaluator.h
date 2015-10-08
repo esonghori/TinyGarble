@@ -16,25 +16,23 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SCD_SCD_EVALUATOR_H_
+#define SCD_SCD_EVALUATOR_H_
+
+#include <openssl/bn.h>
+#include <string>
 #include "garbled_circuit/garbled_circuit.h"
 
-#include <boost/program_options.hpp>
-#include <openssl/bn.h>
-#include "scd/scd_evaluator.h"
-#include "util/common.h"
-#include "util/log.h"
-#include "util/util.h"
-#include "scd/scd.h"
-
-namespace po = boost::program_options;
 using std::string;
 
+void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
+                        const BIGNUM* g_init, const BIGNUM* e_init,
+                        const BIGNUM* g_input, const BIGNUM* e_input,
+                        uint64_t clock_cycles, BIGNUM** outputs);
+int EvalauatePlaintextStr(const string& scd_file_address,
+                          const string& g_init_str, const string& e_init_str,
+                          const string& g_input_str, const string& e_input_str,
+                          uint64_t clock_cycles, string* outputs_str);
 
 
-int main(int argc, char*argv[]) {
-  LogInitial(argc, argv);
-
-  LogFinish();
-  return SUCCESS;
-}
-
+#endif /* SCD_SCD_EVALUATOR_H_ */
