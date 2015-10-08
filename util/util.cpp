@@ -40,6 +40,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <iomanip>
+#include <sstream>
 #include "crypto/aes.h"
 #include "garbled_circuit/garbled_circuit.h"
 #include "util/common.h"
@@ -179,4 +180,11 @@ int Str2Block(const string &s, block* v) {
   *v = MakeBlock(hi, lo);
 
   return SUCCESS;
+}
+
+string to_string_hex(uint64_t v, int pad /* = 0 */) {
+  std::stringstream stream;
+  stream << std::hex << std::setw(pad) << std::setfill('0') << v;
+  string ret = stream.str();
+  return ret;
 }

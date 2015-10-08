@@ -30,5 +30,6 @@ void SrandSSE(unsigned int seed);
 unsigned short Type2V(int gateType);
 bool GateOperator(int gateType, bool input0, bool input1 = false);
 int Str2Block(const string &s, block* v);
+string to_string_hex(uint64_t v, int pad = 0);
 
 #endif /* UTIL_UTIL_H_ */

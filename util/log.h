@@ -52,8 +52,10 @@ class DummyLog {
 #define DUMP(X) Dump(X)
 #define LOG(X) LogStream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" \
   << LOG_COLOR(X) << "m" << #X << "\033[0m: "
-#define CHECK_EXPR(X) if((X)==true) { LOG(ERROR) << #X << " failed" \
+#define CHECK_EXPR(X) if((X)==false) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
+#define CHECK_EXPR_MSG(X, Y) if((X)==false) { LOG(ERROR) << (#X) << " failed: \"" \
+  << (Y) << "\"" << std::endl; return FAILURE; }
 #define CHECK(X) if((X)==FAILURE) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
 #define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" \

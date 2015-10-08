@@ -62,13 +62,13 @@ int ReadSCD(const string& fileName, GarbledCircuit* garbledCircuit) {
     return FAILURE;
   }
   if (posix_memalign((void **) (&garbledCircuit->outputs), 128,
-                     sizeof(uint64_t) * garbledCircuit->output_size)) {
+                     sizeof(int64_t) * garbledCircuit->output_size)) {
     LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
                << endl;
     LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
-  garbledCircuit->D = new uint64_t[garbledCircuit->dff_size];
+  garbledCircuit->D = new int64_t[garbledCircuit->dff_size];
   garbledCircuit->I = new int64_t[garbledCircuit->dff_size];
 
   if (garbledCircuit->garbledGates == nullptr

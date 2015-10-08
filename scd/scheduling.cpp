@@ -19,17 +19,17 @@
 
 #include <cstring>
 
-void TopSort(const vector<ReadGate>& G, uint64_t no_task, uint64_t *index) {
+void TopSort(const vector<ReadGate>& G, int64_t no_task, int64_t *index) {
 
   // calculate static b-level
-  uint64_t *sl = new uint64_t[no_task];
+  int64_t *sl = new int64_t[no_task];
 
-  for (uint64_t i = 0; i < no_task; i++)
+  for (int64_t i = 0; i < no_task; i++)
     index[i] = i;
 
   for (int64_t i = no_task - 1; i >= 0; i--) {
-    uint64_t max = 0;
-    for (uint64_t j = i + 1; j < no_task; j++) {
+    int64_t max = 0;
+    for (int64_t j = i + 1; j < no_task; j++) {
       if (G[j].input[0] == G[i].output)
         if (sl[j] > max)
           max = sl[j];
@@ -46,43 +46,43 @@ void TopSort(const vector<ReadGate>& G, uint64_t no_task, uint64_t *index) {
   delete[] sl;
 }
 
-void Schedule(const ReadCircuit &readCircuit, uint64_t no_core, uint64_t **core) {
+void Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
 
   const vector<ReadGate>& G = readCircuit.gate_list;
-  uint64_t no_task;
+  int64_t no_task;
 
-  uint64_t input_size = readCircuit.g_init_size + readCircuit.e_init_size
+  int64_t input_size = readCircuit.g_init_size + readCircuit.e_init_size
       + readCircuit.g_input_size + readCircuit.e_input_size;
 
-  uint64_t no_of_input_dff = input_size + readCircuit.dff_size;
+  int64_t no_of_input_dff = input_size + readCircuit.dff_size;
   no_task = readCircuit.gate_size;
 
-  uint64_t *index;
-  index = new uint64_t[no_task];
+  int64_t *index;
+  index = new int64_t[no_task];
   TopSort(G, no_task, index);
 
   // start of scheduling
-  uint64_t *p0, *p1, *core_busy, *core_index;
+  int64_t *p0, *p1, *core_busy, *core_index;
 
-  p0 = new uint64_t[no_task];
-  memset(p0, -1, no_task * sizeof(uint64_t));
-  p1 = new uint64_t[no_task];
-  memset(p1, -1, no_task * sizeof(uint64_t));
+  p0 = new int64_t[no_task];
+  memset(p0, -1, no_task * sizeof(int64_t));
+  p1 = new int64_t[no_task];
+  memset(p1, -1, no_task * sizeof(int64_t));
 
-  core_index = new uint64_t[no_core];
-  memset(core_index, 0, no_core * sizeof(uint64_t));
-  core_busy = new uint64_t[no_core];
-  memset(core_busy, 0, no_core * sizeof(uint64_t));
+  core_index = new int64_t[no_core];
+  memset(core_index, 0, no_core * sizeof(int64_t));
+  core_busy = new int64_t[no_core];
+  memset(core_busy, 0, no_core * sizeof(int64_t));
 
-  uint64_t scheduled = 0;
+  int64_t scheduled = 0;
   while (scheduled < no_task) {
-    for (uint64_t i = 0; i < no_task; i++) {
-      if (p0[index[i]] == ((uint64_t)-1))  // not assigned yet
+    for (int64_t i = 0; i < no_task; i++) {
+      if (p0[index[i]] == ((int64_t)-1))  // not assigned yet
           {
         if (((G[index[i]].input[0] - no_of_input_dff < 0)
-            || (p0[G[index[i]].input[0] - no_of_input_dff] != uint64_t(-1)))) {
+            || (p0[G[index[i]].input[0] - no_of_input_dff] != int64_t(-1)))) {
           if ((G[index[i]].input[1] - no_of_input_dff < 0)
-              || (p0[G[index[i]].input[1] - no_of_input_dff] != uint64_t(-1)))  //ready
+              || (p0[G[index[i]].input[1] - no_of_input_dff] != int64_t(-1)))  //ready
               {
             p1[index[i]] = GetMinIndex(core_busy, no_core);
             core[p1[index[i]]][core_index[p1[index[i]]]] = index[i];
@@ -94,7 +94,7 @@ void Schedule(const ReadCircuit &readCircuit, uint64_t no_core, uint64_t **core)
       }
     }
 
-    for (uint64_t i = 0; i < no_task; i++) {
+    for (int64_t i = 0; i < no_task; i++) {
       p0[i] = p1[i];
     }
   }
@@ -106,10 +106,10 @@ void Schedule(const ReadCircuit &readCircuit, uint64_t no_core, uint64_t **core)
   delete[] core_busy;
 }
 
-void QuickSort(uint64_t *arr, uint64_t *index, int64_t left, int64_t right) {
+void QuickSort(int64_t *arr, int64_t *index, int64_t left, int64_t right) {
   int64_t i = left, j = right;
-  uint64_t tmp;
-  uint64_t pivot = arr[(left + right) / 2];
+  int64_t tmp;
+  int64_t pivot = arr[(left + right) / 2];
 
   /* partition */
   while (i <= j) {
@@ -137,8 +137,8 @@ void QuickSort(uint64_t *arr, uint64_t *index, int64_t left, int64_t right) {
     QuickSort(arr, index, i, right);
 }
 
-uint64_t GetMinIndex(uint64_t *arr, uint64_t size) {
-  uint64_t minimum = arr[0], min_index = 0, i = 1;
+int64_t GetMinIndex(int64_t *arr, int64_t size) {
+  int64_t minimum = arr[0], min_index = 0, i = 1;
   while (i < size) {
     if (arr[i] < minimum) {
       minimum = arr[i];
@@ -149,8 +149,8 @@ uint64_t GetMinIndex(uint64_t *arr, uint64_t size) {
   return min_index;
 }
 
-uint64_t GetMax(uint64_t *arr, uint64_t size) {
-  uint64_t maximum = arr[0], i = 1;
+int64_t GetMax(int64_t *arr, int64_t size) {
+  int64_t maximum = arr[0], i = 1;
   while (i < size) {
     if (arr[i] > maximum)
       maximum = arr[i];
