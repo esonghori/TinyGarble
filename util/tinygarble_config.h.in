@@ -3,4 +3,6 @@
 #define TinyGarble_VERSION_MINOR @TinyGarble_VERSION_MINOR@
 #define TinyGarble_VERSION_PATCH @TinyGarble_VERSION_PATCH@
 
+#define TINYGARBLE_SOURCE_DIR "@CMAKE_CURRENT_SOURCE_DIR@"
+
 #cmakedefine ENABLE_LOG
