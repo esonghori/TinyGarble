@@ -36,8 +36,8 @@ using std::endl;
 #define FREE_XOR
 #define DKC2
 
-#define CONST_ZERO ((uint64_t)-2)
-#define CONST_ONE  ((uint64_t)-3)
+#define CONST_ZERO ((int64_t)-2)
+#define CONST_ONE  ((int64_t)-3)
 
 #define ANDGATE 8
 #define ANDNGATE 4

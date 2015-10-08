@@ -69,7 +69,6 @@ class DummyLog {
 
 #endif /* ENABLE_LOG */
 
-
 void LogInitial(int argc, char *argv[]);
 void LogFinish();
 ostream& Dump(const string& dump_file);

@@ -4,13 +4,14 @@ add_library (SCD_ParseNetlist OBJECT
 add_library (SCD_Scheduling OBJECT
   "scheduling.cpp")
 
-add_library (SCD_ReadSCD OBJECT
-  "read_scd.cpp")
+add_library (SCD_SCD OBJECT
+  "scd.cpp")
 
 add_executable(V2SCD
   "v_2_scd.cpp"
   "$<TARGET_OBJECTS:SCD_ParseNetlist>"
   "$<TARGET_OBJECTS:SCD_Scheduling>"
+  "$<TARGET_OBJECTS:SCD_SCD>"
   "$<TARGET_OBJECTS:Util_Log>")
 
 if (Boost_FOUND)

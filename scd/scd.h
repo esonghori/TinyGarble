@@ -16,10 +16,11 @@
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SCD_READ_SCD_H_
-#define SCD_READ_SCD_H_
+#ifndef SCD_SCD_H_
+#define SCD_SCD_H_
 
 #include "util/common.h"
+#include "scd/v_2_scd.h"
 #include "garbled_circuit/garbled_circuit.h"
 
 /**
@@ -35,5 +36,7 @@
  */
 int ReadSCD(const string& fileName, GarbledCircuit *garbledCircuit);
 
+int WriteSCD(const ReadCircuit &readCircuit, const string &fileName);
 
-#endif /* SCD_READ_SCD_H_ */
+
+#endif /* SCD_SCD_H_ */
