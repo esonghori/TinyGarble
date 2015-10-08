@@ -85,7 +85,7 @@ MU_TEST(SUM8Bit) {
   }
 }
 
-MU_TEST(SUM1Bit) {
+MU_TEST(Sum1Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_1bit.scd";
   string g_init_str = "0";
@@ -115,7 +115,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
   MU_RUN_TEST(MUX8Bit);
-  MU_RUN_TEST(SUM1Bit);
+  MU_RUN_TEST(Sum1Bit);
   MU_RUN_TEST(SUM8Bit);
 }
 
