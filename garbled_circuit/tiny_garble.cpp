@@ -58,8 +58,9 @@ int main(int argc, char* argv[]) {
   int port;
   string scd_file_address;
   string server_ip;
-  string input_str = "";
   string init_str = "";
+  string input_str = "";
+  uint64_t clock_cycles;
   dump_prefix = "";
   boost::format fmter(
       "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
@@ -77,11 +78,13 @@ int main(int argc, char* argv[]) {
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
-  ("input", po::value<string>(&input_str),
-   "Hexadecimal input, if not provided, it will be random.")  //
   ("init", po::value<string>(&init_str),
    "Hexadecimal init for initializing DFFs, "
    "if not provided, it will be random.")  //
+  ("input", po::value<string>(&input_str),
+   "Hexadecimal input, if not provided, it will be random.")  //
+  ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
+   "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix),
    "Directory for dumping memory hex files.")  //
   ("log2std", "Print Logs into standard output and error.");
@@ -122,7 +125,7 @@ int main(int argc, char* argv[]) {
     }
     LOG(INFO) << "Open Alice server on port: " << port << endl;
 
-    Alice(garbledCircuit, input_str, init_str, connfd);
+    Alice(garbledCircuit, init_str, input_str, clock_cycles, connfd);
 
     ServerClose(connfd);
   } else if (vm.count("bob")) {
@@ -145,7 +148,7 @@ int main(int argc, char* argv[]) {
     LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":"
               << port << endl;
 
-    Bob(garbledCircuit, input_str, init_str, connfd);
+    Bob(garbledCircuit, init_str, input_str, clock_cycles, connfd);
 
     ClientClose(connfd);
   }

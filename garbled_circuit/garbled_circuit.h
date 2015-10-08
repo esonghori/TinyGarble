@@ -44,7 +44,11 @@
 #define GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_
 
 #include <cstdint>
+#include <string>
 #include "crypto/block.h"
+
+using std::string;
+
 /**
  * @brief Used to store two labels.
  */
@@ -78,7 +82,6 @@ typedef struct GarbledCircuit {
   uint64_t dff_size;
   uint64_t output_size;
   uint64_t gate_size;
-  uint64_t clock_cycles;
 
   GarbledGate* garbledGates; /*!< topologically sorted gates */
   uint64_t *outputs; /*!< index of output wires */
@@ -215,9 +218,10 @@ void CreateInputLabels(block* inputLabels, block R, uint64_t n);
  * @see JustGarble paper.
  * @see Half-Gate paper.
  */
-uint64_t Garble(GarbledCircuit& garbledCircuit, block** const_labels,
+uint64_t Garble(GarbledCircuit& garbled_circuit, block** const_labels,
                 block** init_labels, block*** input_labels, block global_key,
-                block R, int connfd, block*** output_labels);
+                block R, uint64_t clock_cycles, int connfd,
+                block*** output_labels);
 
 /**
  * @brief Evaluate a garbled circuit
@@ -242,9 +246,9 @@ uint64_t Garble(GarbledCircuit& garbledCircuit, block** const_labels,
  * @see Half-Gate paper.
  */
 
-uint64_t Evaluate(GarbledCircuit *garbled_gircuit, block* const_labels,
+uint64_t Evaluate(GarbledCircuit& garbled_circuit, block* const_labels,
                   block* init_labels, block** input_labels, block global_key,
-                  int connfd, block** output_labels);
+                  uint64_t clock_cycles, int connfd, block** output_labels);
 
 /**
  * @brief Deallocates garbledCircuit
@@ -253,5 +257,10 @@ uint64_t Evaluate(GarbledCircuit *garbled_gircuit, block* const_labels,
  * @param param1 pointer to garbledCircuit. The garbledCircuit will be deallocated.
  */
 void RemoveGarbledCircuit(GarbledCircuit *garbledCircuit);
+
+int Alice(GarbledCircuit& garbled_circuit, const string& init_str,
+          const string& input_str, uint64_t clock_cycles, int connfd);
+int Bob(GarbledCircuit& garbled_circuit, const string& init_str,
+        const string& input_str, uint64_t clock_cycles, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_ */
