@@ -55,14 +55,10 @@ void LogInitial(int argc, char *argv[]) {
   ("log2std", "");
 
   po::variables_map vm;
-  try {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
-  } catch (po::error& e) {
-    std::cerr << "ERROR: " << e.what() << endl;
-    std::cout << desc << endl;
-    exit(FAILURE);
-  }
+  po::parsed_options parsed = po::command_line_parser(argc, argv).options(desc)
+      .allow_unregistered().run();
+
+  po::store(parsed, vm);
 
   bool to_std = false;
   if (vm.count("log2std")) {

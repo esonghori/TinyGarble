@@ -43,62 +43,63 @@ class ReadGateString {
 class ReadCircuitString {
 
  public:
-  vector<string> inport_list;
-  vector<string> outport_list;
   vector<ReadGateString> gate_list_string;
   vector<ReadGateString> dff_list_string;
-  uint no_of_g_inports;
+  uint64_t g_init_size;
+  uint64_t e_init_size;
+  uint64_t g_input_size;
+  uint64_t e_input_size;
+  uint64_t output_size;
 
   ReadCircuitString()
-      : inport_list(0),
-        outport_list(0),
-        gate_list_string(0),
+      : gate_list_string(0),
         dff_list_string(0) {
-    no_of_g_inports = 0;
+    g_init_size = 0;
+    e_init_size = 0;
+    g_input_size = 0;
+    e_input_size = 0;
+    output_size = 0;
   }
   ;
 };
 
 class ReadGate {
  public:
-  int input[2];
-  int output;
+  int64_t input[2];
+  int64_t output;
   short type;
 };
 
 class ReadCircuit {
 
  public:
-  vector<int> output_list;
+  vector<uint64_t> output_list;
   vector<ReadGate> gate_list;
   vector<ReadGate> dff_list;
-  vector<int> task_schedule;
+  vector<uint64_t> task_schedule;
 
-  uint no_of_inports;
-  uint no_of_g_inports;
-
-  uint no_of_outports;
-  uint no_of_gates;
-  uint no_of_dffs;
+  uint64_t g_init_size;
+  uint64_t e_init_size;
+  uint64_t g_input_size;
+  uint64_t e_input_size;
+  uint64_t dff_size;
+  uint64_t gate_size;
+  uint64_t output_size;
 
   ReadCircuit()
       : output_list(0),
         gate_list(0),
         dff_list(0),
         task_schedule(0) {
-    no_of_inports = 0;
-    no_of_g_inports = 0;
-    no_of_outports = 0;
-    no_of_gates = 0;
-    no_of_dffs = 0;
+    g_init_size = 0;
+    e_init_size = 0;
+    g_input_size = 0;
+    e_input_size = 0;
+    dff_size = 0;
+    gate_size = 0;
+    output_size = 0;
   }
 };
 
-int TopSort(const vector<ReadGate>& G, int no_task, int *index);
-int Schedule(const ReadCircuit &readCircuit, int no_core, int **core);
-void QuickSort(int *, int *, int, int);
-int GetMinIndex(int *, int);
-int GetMax(int *, int);
-int WriteSCD(const ReadCircuit &readCircuit, int c, const string &fileName);
 
 #endif
