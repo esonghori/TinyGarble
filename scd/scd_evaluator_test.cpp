@@ -31,66 +31,13 @@ void TestSetup() {
 void TestTeardown() {
 }
 
-MU_TEST(MUX8Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/mux_8bit.scd";
-  string g_init_str = "0";
-  string e_init_str = "0";
-  uint64_t clock_cycles = 1;
-  for (int i = 0; i < TEST_REPEAT; i++) {
-    uint8_t x[2];
-    x[0] = (uint8_t) (rand() % 256);
-    x[1] = (uint8_t) (rand() % 256);
-    uint8_t select = (uint8_t) (rand() % 2);
-
-    string g_input_str = to_string_hex(x[1], 2) + to_string_hex(x[0], 2);
-    string e_input_str = std::to_string(select);
-    string output_str = "";
-
-    LOG(INFO) << "select with mux_8bit: " << e_input_str << " from {0:"
-              << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2) << "}. "
-              << g_input_str << endl;
-    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, &output_str);
-    LOG(INFO) << "result: " << output_str << endl;
-    uint8_t y = strtol(output_str.c_str(), nullptr, 16);
-
-    mu_check(y == x[select]);
-  }
-}
-
-MU_TEST(SUM8Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/sum_8bit.scd";
-  string g_init_str = "0";
-  string e_init_str = "0";
-  uint64_t clock_cycles = 1;
-  for (int i = 0; i < TEST_REPEAT; i++) {
-    uint8_t x[2];
-    x[0] = (uint8_t) (rand() % 127);
-    x[1] = (uint8_t) (rand() % 127);
-
-    string g_input_str = to_string_hex(x[0], 2);
-    string e_input_str = to_string_hex(x[1], 2);
-    string output_str = "";
-
-    LOG(INFO) << "add with sum_8bit: " << g_input_str << " + " << e_input_str
-              << endl;
-    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, &output_str);
-    LOG(INFO) << "result: " << output_str << endl;
-
-    uint8_t y = strtol(output_str.c_str(), nullptr, 16);
-    mu_check(y == x[0] + x[1]);
-  }
-}
-
 MU_TEST(Sum1Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_1bit.scd";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 8;
+  int output_mode = 0;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint8_t x[2];
     x[0] = (uint8_t) (rand() % 127);
@@ -103,7 +50,63 @@ MU_TEST(Sum1Bit) {
     LOG(INFO) << "add with sum_1bit: " << g_input_str << " + " << e_input_str
               << endl;
     EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, &output_str);
+                          e_input_str, clock_cycles, output_mode, &output_str);
+    LOG(INFO) << "result: " << output_str << endl;
+
+    uint8_t y = strtol(output_str.c_str(), nullptr, 16);
+    mu_check(y == x[0] + x[1]);
+  }
+}
+
+MU_TEST(Mux8Bit) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/mux_8bit.scd";
+  string g_init_str = "0";
+  string e_init_str = "0";
+  uint64_t clock_cycles = 1;
+  int output_mode = 0;
+  for (int i = 0; i < TEST_REPEAT; i++) {
+    uint8_t x[2];
+    x[0] = (uint8_t) (rand() % 256);
+    x[1] = (uint8_t) (rand() % 256);
+    uint8_t select = (uint8_t) (rand() % 2);
+
+    string g_input_str = to_string_hex(x[1], 2) + to_string_hex(x[0], 2);
+    string e_input_str = std::to_string(select);
+    string output_str = "";
+
+    LOG(INFO) << "select with mux_8bit: " << e_input_str << " from {0:"
+              << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2)
+              << "}. " << g_input_str << endl;
+    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
+                          e_input_str, clock_cycles, output_mode, &output_str);
+    LOG(INFO) << "result: " << output_str << endl;
+    uint8_t y = strtol(output_str.c_str(), nullptr, 16);
+
+    mu_check(y == x[select]);
+  }
+}
+
+MU_TEST(Sum8Bit) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/sum_8bit.scd";
+  string g_init_str = "0";
+  string e_init_str = "0";
+  uint64_t clock_cycles = 1;
+  int output_mode = 0;
+  for (int i = 0; i < TEST_REPEAT; i++) {
+    uint8_t x[2];
+    x[0] = (uint8_t) (rand() % 127);
+    x[1] = (uint8_t) (rand() % 127);
+
+    string g_input_str = to_string_hex(x[0], 2);
+    string e_input_str = to_string_hex(x[1], 2);
+    string output_str = "";
+
+    LOG(INFO) << "add with sum_8bit: " << g_input_str << " + " << e_input_str
+              << endl;
+    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
+                          e_input_str, clock_cycles, output_mode, &output_str);
     LOG(INFO) << "result: " << output_str << endl;
 
     uint8_t y = strtol(output_str.c_str(), nullptr, 16);
@@ -114,9 +117,9 @@ MU_TEST(Sum1Bit) {
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
-  MU_RUN_TEST(MUX8Bit);
+  MU_RUN_TEST(Mux8Bit);
   MU_RUN_TEST(Sum1Bit);
-  MU_RUN_TEST(SUM8Bit);
+  MU_RUN_TEST(Sum8Bit);
 }
 
 int main(int argc, char *argv[]) {
