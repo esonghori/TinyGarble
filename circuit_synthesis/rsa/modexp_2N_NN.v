@@ -6,19 +6,22 @@ module modexp_2N_NN
 (
 	clk,
 	rst,
-	m,
-	e,
-	n,
-	c 	// c = m^e mode n 
+	g_input,
+  e_input,
+	o 	// o = g_input^e mode n 
 );
 
 	input			clk;
 	input			rst;
-	input 	[N-1:0]	m;
-	input 	[N-1:0]	e;
-	input 	[N-1:0]	n;
+	input 	[N-1:0]	  g_input;
+	input   [2*N-1:0] e_input;
+	output [N-1:0]	  o;
 
-	output [N-1:0]	c;
+  wire  [N-1:0] e;
+  wire  [N-1:0] n;
+
+  assign e = e_input[N-1:0];
+  assign n = e_input[2*N-1:N];
 
 
 	reg 	first_one;
@@ -43,10 +46,10 @@ module modexp_2N_NN
 	
 	//assign start_in = (init)?start_reg:1'b1;
 	//assign ein = (init)?ereg:e;
-	//assign c = (ein[N-1])?o:creg;
+	//assign o = (ein[N-1])?o:creg;
 
 
-	assign c = creg_next;
+	assign o = creg_next;
 	
 	assign start_in = start_reg;
 	assign ein = ereg;
@@ -72,7 +75,7 @@ module modexp_2N_NN
 		.A(o),
 		.B(creg),
 		.S(ein[N-1]),
-		.O(c)
+		.O(o)
 	);*/
 
 
@@ -89,7 +92,7 @@ module modexp_2N_NN
 	endgenerate
 
 
-	//assign creg_next = (~init)?m:((first_one & ein[N-1] & mul_pow)|(first_one & ~mul_pow))?o:creg;
+	//assign creg_next = (~init)?g_input:((first_one & ein[N-1] & mul_pow)|(first_one & ~mul_pow))?o:creg;
 
 	wire [N-1:0] w1, w2, w3;
 
@@ -102,7 +105,7 @@ module modexp_2N_NN
 	)
 	MUX_3
 	(
-		.A(m),
+		.A(g_input),
 		.B(w1),
 		.S(~init),
 		.O(creg_next)
@@ -157,7 +160,7 @@ module modexp_2N_NN
 	begin
 		if(rst)
 		begin
-			creg <= m;
+			creg <= g_input;
 			ereg  <= e;
 			first_one <= 0;
 			mul_pow <= 0;
@@ -180,7 +183,7 @@ module modexp_2N_NN
 			/*if(~init)
 			begin
 				//ereg <= e;
-				//creg <= m;
+				//creg <= g_input;
 			end
 			else */
 			if(start_in[CC/(2*N)-1])
@@ -210,11 +213,11 @@ module modexp_2N_NN
 
 
 
-	//assign x = (init)?creg:m;
-	//assign y = (mul_pow)?m:(init)?creg:m;
+	//assign x = (init)?creg:g_input;
+	//assign y = (mul_pow)?g_input:(init)?creg:g_input;
 
 	assign x = creg;
-	//assign y = (mul_pow)?m:creg;
+	//assign y = (mul_pow)?g_input:creg;
 
 	/*MUX 
 	#(
@@ -223,7 +226,7 @@ module modexp_2N_NN
 	MUX_7
 	(
 		.A(creg),
-		.B(m),
+		.B(g_input),
 		.S(init),
 		.O(x)
 	);	
@@ -237,7 +240,7 @@ module modexp_2N_NN
 	MUX_8
 	(
 		.A(creg),
-		.B(m),
+		.B(g_input),
 		.S(init),
 		.O(w3)
 	);	*/
@@ -250,7 +253,7 @@ module modexp_2N_NN
 	)
 	MUX_9
 	(
-		.A(m),
+		.A(g_input),
 		.B(w3),
 		.S(mul_pow),
 		.O(y)

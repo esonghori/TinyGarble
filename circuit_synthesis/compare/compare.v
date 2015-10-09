@@ -8,17 +8,17 @@ module compare
 (
 	clk,
 	rst,
-	x,
-	y,
-	g
+	g_input,
+	e_input,
+	o
 );
 	localparam M = N/CC; 
 
 	input clk;
 	input rst;
-	input[M-1:0] x;
-	input[M-1:0] y;
-	output g;
+	input[M-1:0] g_input;
+	input[M-1:0] e_input;
+	output o;
 
 	reg ci;
 	wire co;
@@ -29,14 +29,14 @@ module compare
 	) 
 	UCOMP 
 	(
-		.A(x), 
-		.B(~y), 
+		.A(g_input), 
+		.B(~e_input), 
 		.CI(ci),
 		.S(),
 		.CO(co)
 	);
 
-	assign g = co;
+	assign o = co;
 	
 	generate
 	if(CC>1)

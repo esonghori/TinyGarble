@@ -8,16 +8,16 @@ module hamming
 (
 	clk,
 	rst,
-	x,
-	y,
+	g_input,
+	e_input,
 	o
 );
 	localparam M = N/CC; 
 
 	input clk;
 	input rst;
-	input[M-1:0] x;
-	input[M-1:0] y;
+	input[M-1:0] g_input;
+	input[M-1:0] e_input;
 	output[log2(N)-1:0] o;
 
 	function integer log2;
@@ -35,7 +35,7 @@ module hamming
 	wire	[M-1:0] 		xy;
 	
 
-	assign xy = x^y;
+	assign xy = g_input^e_input;
 
 	
 	COUNT

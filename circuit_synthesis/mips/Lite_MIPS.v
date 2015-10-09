@@ -9,19 +9,27 @@ module Lite_MIPS
 (	
 	clk, 
 	rst,
-	inst_mem_in_wire,
-	data_mem_in_wire,
-	data_mem_out_wire
+	g_init,
+	e_init,
+	o
 );
 
 	localparam  		N = 2**L;
 
 	input 				clk;
 	input 				rst;
-	input 	[N*W-1:0] 	inst_mem_in_wire;
-	input 	[N*W-1:0] 	data_mem_in_wire;
-	output 	[N*W-1:0] 	data_mem_out_wire;
+	input 	[N*W-1:0] 	g_init;
+	input 	[N*W-1:0] 	e_init;
+	output 	[N*W-1:0] 	o;
 
+
+  wire   [N*W-1:0]   inst_mem_in_wire;
+  wire   [N*W-1:0]   data_mem_in_wire;
+  wire   [N*W-1:0]   data_mem_out_wire;
+
+  assign inst_mem_in_wire = g_init;
+  assign data_mem_in_wire = e_init;
+  assign o = data_mem_out_wire;
 
 
 

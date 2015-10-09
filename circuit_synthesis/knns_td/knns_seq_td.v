@@ -7,8 +7,8 @@ module knns_seq
 (
 	clk,
 	rst,
-	g,
-	e,
+	g_input,
+	e_input,
 	o
 );
 
@@ -26,16 +26,16 @@ module knns_seq
 
 	input clk;
 	input rst;
-	input [2*W-1:0] g, e;
+	input [2*W-1:0] g_input, e_input;
 	output [2*W*K-1:0] o;
 
 	wire [W-1:0] x1, y1, x2, y2;
 	wire [2*W*K-1:0] min_val_out;
 	
-	assign x1 = e[2*W-1:W];
-	assign y1 = e[W-1:0];
-	assign x2 = g[2*W-1:W];
-	assign y2 = g[W-1:0];
+	assign x1 = e_input[2*W-1:W];
+	assign y1 = e_input[W-1:0];
+	assign x2 = g_input[2*W-1:W];
+	assign y2 = g_input[W-1:0];
 	assign min_val_out = o;
 
 	wire [W+1:0] dist;

@@ -4,21 +4,24 @@ module modexp_1_N
 	parameter CC	= N  //1 to N cc
 )
 (
-	clk,
-	rst,
-	m,
-	e,
-	n,
-	c 	// c = m^e mode n 
+  clk,
+  rst,
+  g_input,
+  e_input,
+  o   // o = g_input^e mode n 
 );
 
-	input			clk;
-	input			rst;
-	input 	[N-1:0]	m;
-	input 	[N-1:0]	e;
-	input 	[N-1:0]	n;
+  input     clk;
+  input     rst;
+  input   [N-1:0]   g_input;
+  input   [2*N-1:0] e_input;
+  output [N-1:0]    o;
 
-	output 	[N-1:0]	c;
+  wire  [N-1:0] e;
+  wire  [N-1:0] n;
+
+  assign e = e_input[N-1:0];
+  assign n = e_input[2*N-1:N];
 
 
 	reg 	init;

@@ -8,13 +8,13 @@ module matrixMult_N_M_2
 (
 	clk,
 	rst,
-	x,
-	y,
+	g_input,
+	e_input,
 	o
 );
 	input clk,rst;
-	input[N*M-1:0] x;
-	input[N*M-1:0] y;
+	input[N*M-1:0] g_input;
+	input[N*M-1:0] e_input;
 	output reg[M-1:0] o;
 
 	wire [M-1:0] xi[N-1:0];
@@ -28,8 +28,8 @@ module matrixMult_N_M_2
 	generate
 	for (i=0;i<N;i=i+1)
 	begin:ASS_ROW
-		assign xi[i] = x[M*(i+1)-1:M*(i)];
-		assign yi[i] = y[M*(i+1)-1:M*(i)];
+		assign xi[i] = g_input[M*(i+1)-1:M*(i)];
+		assign yi[i] = e_input[M*(i+1)-1:M*(i)];
 	end
 	endgenerate
 

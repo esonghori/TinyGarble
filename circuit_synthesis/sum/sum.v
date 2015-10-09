@@ -8,14 +8,14 @@ module sum
 ( 
 	clk,
 	rst,
-	a,
-	b,
-	c
+	g_input,
+	e_input,
+	o
 );
 	input clk, rst;
-	input  [N/CC-1:0] a;
-	input  [N/CC-1:0] b;
-	output [N/CC-1:0] c;
+	input  [N/CC-1:0] g_input;
+	input  [N/CC-1:0] e_input;
+	output [N/CC-1:0] o;
 	
 
 	reg carry_on; 
@@ -38,33 +38,33 @@ module sum
 	generate
 	if(CC>1)
 	begin
-		assign {carry_on_d, c} = a + b + carry_on;
+		assign {carry_on_d, o} = g_input + e_input + carry_on;
 		/*ADD 
 		#(
 			.N(N/CC)
 		)
 		ADD_
 		(
-			.A(a),
-			.B(b),
+			.A(g_input),
+			.B(e_input),
 			.CI(carry_on),
-			.S(c),
+			.S(o),
 			.CO(carry_on_d)
 		);*/
 	end
 	else
 	begin
-		assign c = a + b;
+		assign o = g_input + e_input;
 		/*ADD 
 		#(
 			.N(N/CC)
 		)
 		ADD_
 		(
-			.A(a),
-			.B(b),
+			.A(g_input),
+			.B(e_input),
 			.CI(1'b0),
-			.S(c),
+			.S(o),
 			.CO()
 		);*/
 	end

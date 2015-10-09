@@ -5,9 +5,9 @@ module first_nns_comb
 	parameter N =  32
 )
 (
-	q,
-	DB,
-	min_val_out
+	g_input,
+	e_input,
+	o
 );
 
 	function integer log2;
@@ -22,9 +22,9 @@ module first_nns_comb
 
 	localparam LOGW = log2(W);
 
-	input [W-1:0] q;
-	input [W*N-1:0] DB;
-	output [W-1:0] min_val_out;
+	input [W-1:0] g_input;
+	input [W*N-1:0] e_input;
+	output [W-1:0] o;
 
 	wire [W-1:0] DBi[N-1:0];
 	wire [LOGW-1:0] dist[N-1:0];
@@ -39,7 +39,7 @@ module first_nns_comb
 	generate
 	for (i=0;i<N;i=i+1)
 	begin:D_ASN
-		assign DBi[i] = DB[W*(i+1)-1:W*i];
+		assign DBi[i] = e_input[W*(i+1)-1:W*i];
 	end
 	endgenerate
 
@@ -52,7 +52,7 @@ module first_nns_comb
 		)
 		COUNT_
 		(
-			.A(q ^ DBi[i]),
+			.A(g_input ^ DBi[i]),
 			.S(dist[i])
 		);
 	end
@@ -108,7 +108,7 @@ module first_nns_comb
 	end
 	endgenerate
 
-	assign min_val_out = min_val[N-1];
+	assign o = min_val[N-1];
 
 
 endmodule

@@ -6,9 +6,9 @@ module first_nns_seq
 (
 	clk,
 	rst,
-	q,
-	DB,
-	min_val_out
+	g_input,
+	e_input,
+	o
 );
 
 	function integer log2;
@@ -25,9 +25,9 @@ module first_nns_seq
 
 	input clk;
 	input rst;
-	input [W-1:0] q;
-	input [W-1:0] DB;
-	output [W-1:0] min_val_out;
+	input [W-1:0] g_input;
+	input [W-1:0] e_input;
+	output [W-1:0] o;
 
 	wire [LOGW-1:0] dist;
 
@@ -45,7 +45,7 @@ module first_nns_seq
 	)
 	COUNT_
 	(
-		.A(q ^ DBi),
+		.A(g_input ^ DBi),
 		.S(dist)
 	);
 
@@ -67,7 +67,7 @@ module first_nns_seq
 	)
 	MUX_1
 	(
-		.A(DB),
+		.A(e_input),
 		.B(min_val_reg),
 		.S(gt_dist),
 		.O(min_val)
@@ -84,10 +84,10 @@ module first_nns_seq
 		.S(gt_dist),
 		.O(min_dist)
 	);
-	//assign min_val = (gt_dist)? DB	:min_val_reg;
+	//assign min_val = (gt_dist)? e_input	:min_val_reg;
 	//assign min_dist =  (gt_dist)? dist	:min_dist_reg;
 
-	assign min_val_out = min_val;
+	assign o = min_val;
 
 
 	always@(posedge clk or posedge rst)

@@ -7,9 +7,9 @@ module k_nns_seq
 (
 	clk,
 	rst,
-	q,
-	DB,
-	min_val_out
+	g_input,
+	e_input,
+	o
 );
 
 	function integer log2;
@@ -26,9 +26,9 @@ module k_nns_seq
 
 	input clk;
 	input rst;
-	input [W-1:0] q;
-	input [W-1:0] DB;
-	output [W*K-1:0] min_val_out;
+	input [W-1:0] g_input;
+	input [W-1:0] e_input;
+	output [W*K-1:0] o;
 
 
 
@@ -53,7 +53,7 @@ module k_nns_seq
 	generate
 	for (i=0;i<K;i=i+1)
 	begin:D_ASN
-		assign min_val_out[W*(i+1)-1:W*i] = min_val[i];
+		assign o[W*(i+1)-1:W*i] = min_val[i];
 	end
 	endgenerate
 
@@ -63,7 +63,7 @@ module k_nns_seq
 	)
 	COUNT_
 	(
-		.A(q ^ DB),
+		.A(g_input ^ e_input),
 		.S(dist)
 	);
 
@@ -174,7 +174,7 @@ module k_nns_seq
 	endgenerate
 
 	assign local_min_dist[K] = dist;
-	assign local_min_val[K] = DB;
+	assign local_min_val[K] = e_input;
 
 
 
