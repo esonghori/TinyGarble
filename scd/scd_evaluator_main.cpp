@@ -37,6 +37,7 @@ int main(int argc, char*argv[]) {
   string g_input_str;
   string e_input_str;
   uint64_t clock_cycles;
+  int output_mode;
   po::options_description desc("");
   desc.add_options()("help,h", "produce help message")  //
   ("scd_file,i",
@@ -52,7 +53,9 @@ int main(int argc, char*argv[]) {
   ("g_input", po::value<string>(&g_input_str)->default_value("5"),
    "g_input in hexadecimal.")  //
   ("e_input", po::value<string>(&e_input_str)->default_value("4"),
-   "e_input in hexadecimal.");
+   "e_input in hexadecimal.") //
+  ("output_mode", po::value<int>(&output_mode)->default_value(0),
+   "0: normal, 1:separated by clock 2:last clock.");
 
   po::variables_map vm;
   try {
@@ -72,7 +75,7 @@ int main(int argc, char*argv[]) {
 
   string output_str;
   EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                        e_input_str, clock_cycles, &output_str);
+                        e_input_str, clock_cycles, output_mode, &output_str);
 
   std::cout << output_str << endl;
 

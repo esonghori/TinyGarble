@@ -32,7 +32,7 @@ void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
 int EvalauatePlaintextStr(const string& scd_file_address,
                           const string& g_init_str, const string& e_init_str,
                           const string& g_input_str, const string& e_input_str,
-                          uint64_t clock_cycles, string* outputs_str);
-
+                          uint64_t clock_cycles, int output_mode,
+                          string* outputs_str);
 
 #endif /* SCD_SCD_EVALUATOR_H_ */
