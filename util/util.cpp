@@ -188,3 +188,31 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
   string ret = stream.str();
   return ret;
 }
+
+
+string OutputBN2Str(BIGNUM* outputs, uint64_t clock_cycles,
+                    uint64_t output_size, int output_mode) {
+  string outputs_str = "";
+  if (output_mode == 0) {  // normal
+    const char* output_c = BN_bn2hex(outputs);
+    outputs_str = output_c;
+  } else if (output_mode == 1) {  // Separated by clock
+    BIGNUM* temp = BN_new();
+    for (uint64_t i = 0; i < clock_cycles; i++) {
+      BN_rshift(temp, outputs, i * output_size);
+      BN_mask_bits(temp, output_size);
+      outputs_str += BN_bn2hex(temp);
+      if (i < clock_cycles - 1) {
+        outputs_str += "\n";
+      }
+    }
+    BN_free(temp);
+  } else if (output_mode == 2) {  // only last clock
+    BIGNUM* temp = BN_new();
+    BN_rshift(temp, outputs, (clock_cycles - 1) * output_size);
+    BN_mask_bits(temp, output_size);
+    outputs_str += BN_bn2hex(temp);
+    BN_free(temp);
+  }
+  return outputs_str;
+}

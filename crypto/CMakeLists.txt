@@ -21,7 +21,6 @@ if (Boost_FOUND)
   target_link_libraries(BN_Test ${Boost_LIBRARIES})
 endif (Boost_FOUND)
 
-
 add_test (Crypto_BN_Test 
   BN_Test --log2std)
   
@@ -51,7 +50,6 @@ add_test (Crypto_OT_Test
 set_tests_properties (Crypto_OT_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
-	
 	
 add_executable(OT_Extension_Test
   "OT_extension_test.cpp"

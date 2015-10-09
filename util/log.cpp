@@ -37,6 +37,7 @@ using std::vector;
 
 string dump_prefix = "";
 map<string, ofstream*> dump_map;
+ostream* dev_null;
 ostream* log_map[2];  // ERROR, INFO
 DummyLog dummy_log;
 
@@ -76,6 +77,8 @@ void LogInitial(int argc, char *argv[]) {
     for (const string& f : dumps) {
       dump_map[f] = new ofstream();
     }
+  } else {
+    dev_null = new ofstream("/dev/null", std::ios::out);
   }
 
   if (to_std) {
@@ -111,6 +114,9 @@ void LogFinish() {
 
 // dump_file : { "dff", "input", "output", "table", "r_key" }
 ostream& Dump(const string& dump_file) {
+  if(dump_prefix == "") {
+    return *dev_null;
+  }
   if (dump_map.count(dump_file)) {
     if (!dump_map[dump_file]->is_open()) {
       string file_addresss = dump_prefix + dump_file + ".hex";
