@@ -23,12 +23,13 @@
 #include "util/util.h"
 #include "scd/scd.h"
 
-void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
+int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
                         const BIGNUM* g_init, const BIGNUM* e_init,
                         const BIGNUM* g_input, const BIGNUM* e_input,
                         uint64_t clock_cycles, BIGNUM** outputs) {
 
-  bool* wires = new bool[garbled_circuit.get_wire_size()];
+  bool* wires = nullptr;
+  CHECK_ALLOC(wires = new bool[garbled_circuit.get_wire_size()]);
 
   if (*outputs == nullptr) {
     *outputs = BN_new();
@@ -86,17 +87,17 @@ void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
       if (i < (int64_t) garbled_circuit.g_input_size) {  // input belongs to g
         wires[input_bias + i] = BN_is_bit_set(
             g_input, cid * garbled_circuit.g_input_size + i);
-        LOG(INFO) << "g_input [" << cid << "][" << i << "]\t= input["
-                  << input_bias + i << "]\t= " << wires[input_bias + i] << endl;
+        /*LOG(INFO) << "g_input [" << cid << "][" << i << "]\t= input["
+         << input_bias + i << "]\t= " << wires[input_bias + i] << endl;*/
       } else {
         wires[input_bias + i] = BN_is_bit_set(
             e_input,
             cid * garbled_circuit.e_input_size
                 + (i - (int64_t) garbled_circuit.g_input_size));
-        LOG(INFO) << "e_input [" << cid << "]["
-                  << (i - (int64_t) garbled_circuit.g_input_size)
-                  << "]\t= input[" << input_bias + i << "]\t= "
-                  << wires[input_bias + i] << endl;
+        /*LOG(INFO) << "e_input [" << cid << "]["
+         << (i - (int64_t) garbled_circuit.g_input_size)
+         << "]\t= input[" << input_bias + i << "]\t= "
+         << wires[input_bias + i] << endl;*/
       }
     }
 
@@ -148,6 +149,8 @@ void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
     }
   }
   delete[] wires;
+
+  return SUCCESS;
 }
 
 int EvalauatePlaintextStr(const string& scd_file_address,
@@ -181,29 +184,8 @@ int EvalauatePlaintextStr(const string& scd_file_address,
                      clock_cycles, &outputs);
 
   LOG(INFO) << "outputs = " << BN_bn2hex(outputs) << endl;
-  if (output_mode == 0) {  // normal
-    const char* output_c = BN_bn2hex(outputs);
-    *outputs_str = output_c;
-  } else if (output_mode == 1) {  // Separated by clock
-    *outputs_str = "";
-    BIGNUM* temp = BN_new();
-    for (uint64_t i = 0; i < clock_cycles; i++) {
-      BN_rshift(temp, outputs, i * garbled_circuit.output_size);
-      BN_mask_bits(temp, garbled_circuit.output_size);
-      *outputs_str += BN_bn2hex(temp);
-      if (i < clock_cycles - 1) {
-        *outputs_str += "\n";
-      }
-    }
-    BN_free(temp);
-  } else if (output_mode == 2) {  // only last clock
-    *outputs_str = "";
-    BIGNUM* temp = BN_new();
-    BN_rshift(temp, outputs, (clock_cycles - 1) * garbled_circuit.output_size);
-    BN_mask_bits(temp, garbled_circuit.output_size);
-    *outputs_str += BN_bn2hex(temp);
-    BN_free(temp);
-  }
+  *outputs_str = OutputBN2Str(outputs, clock_cycles,
+                              garbled_circuit.output_size, output_mode);
   return SUCCESS;
 }
 

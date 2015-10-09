@@ -59,8 +59,11 @@ MU_TEST(Sum1Bit) {
 
     LOG(INFO) << "add with sum_1bit: " << g_input_str << " + " << e_input_str
               << endl;
-    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, output_mode, &output_str);
+
+    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
+                                    g_input_str, e_input_str, clock_cycles,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
     uint8_t y = strtol(output_str.c_str(), nullptr, 16);
@@ -88,8 +91,10 @@ MU_TEST(Mux8Bit) {
     LOG(INFO) << "select with mux_8bit: " << e_input_str << " from {0:"
               << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2)
               << "}. " << g_input_str << endl;
-    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
+                                    g_input_str, e_input_str, clock_cycles,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
     uint8_t y = strtol(output_str.c_str(), nullptr, 16);
 
@@ -115,8 +120,10 @@ MU_TEST(Sum8Bit) {
 
     LOG(INFO) << "add with sum_8bit: " << g_input_str << " + " << e_input_str
               << endl;
-    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
+                                    g_input_str, e_input_str, clock_cycles,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
     uint8_t y = strtol(output_str.c_str(), nullptr, 16);
@@ -143,8 +150,10 @@ MU_TEST(Hamming32Bit1cc) {
     LOG(INFO) << "Hamming distance between " << g_input_str << " and "
               << e_input_str << endl;
 
-    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
+                                    g_input_str, e_input_str, clock_cycles,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
     uint32_t y = strtol(output_str.c_str(), nullptr, 16);
@@ -172,8 +181,10 @@ MU_TEST(Hamming32Bit8cc) {
     LOG(INFO) << "Hamming distance between " << g_input_str << " and "
               << e_input_str << endl;
 
-    EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str, g_input_str,
-                          e_input_str, clock_cycles, output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
+                                    g_input_str, e_input_str, clock_cycles,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
     uint32_t y = strtol(output_str.c_str(), nullptr, 16);

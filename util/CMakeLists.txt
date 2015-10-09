@@ -9,8 +9,11 @@ add_executable(Util_Test
   "$<TARGET_OBJECTS:Util_Util>"
   "$<TARGET_OBJECTS:Util_Log>")
 if (Boost_FOUND)
-  target_link_libraries(Util_Test ${Boost_LIBRARIES})
+	target_link_libraries(Util_Test ${Boost_LIBRARIES})
 endif (Boost_FOUND)
+if (OPENSSL_FOUND)
+	target_link_libraries(Util_Test ${OPENSSL_LIBRARIES})
+endif (OPENSSL_FOUND)
 
 add_test (Util_Util_Test
   Util_Test --log2std)

@@ -40,6 +40,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <new>
 #include "util/log.h"
 
 int ReadSCD(const string& fileName, GarbledCircuit* garbledCircuit) {
@@ -61,22 +62,30 @@ int ReadSCD(const string& fileName, GarbledCircuit* garbledCircuit) {
     LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
-  if (posix_memalign((void **) (&garbledCircuit->outputs), 128,
-                     sizeof(int64_t) * garbledCircuit->output_size)) {
-    LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
-               << endl;
-    LOG(ERROR) << strerror(errno) << endl;
-    return FAILURE;
+  if (garbledCircuit->output_size > 0) {
+    if (posix_memalign((void **) (&garbledCircuit->outputs), 128,
+                       sizeof(int64_t) * garbledCircuit->output_size)) {
+      LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
+                 << endl;
+      LOG(ERROR) << strerror(errno) << endl;
+      return FAILURE;
+    }
+  } else {
+    garbledCircuit->outputs = nullptr;
   }
-  garbledCircuit->D = new int64_t[garbledCircuit->dff_size];
-  garbledCircuit->I = new int64_t[garbledCircuit->dff_size];
+  if (garbledCircuit->dff_size > 0) {
+    try {
+      garbledCircuit->D = new int64_t[garbledCircuit->dff_size];
+      garbledCircuit->I = new int64_t[garbledCircuit->dff_size];
+    } catch (std::bad_alloc& e) {
+      LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
+                 << endl << e.what() << endl;
+      return FAILURE;
 
-  if (garbledCircuit->garbledGates == nullptr
-      || garbledCircuit->outputs == nullptr || garbledCircuit->D == nullptr
-      || garbledCircuit->I == nullptr) {
-    LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
-               << endl;
-    return FAILURE;
+    }
+  } else {
+    garbledCircuit->D = nullptr;
+    garbledCircuit->I = nullptr;
   }
 
   for (uint64_t i = 0; i < garbledCircuit->gate_size; i++) {
@@ -171,8 +180,8 @@ int WriteSCD(const ReadCircuit& readCircuit, const string &fileName) {
    * circuit input (wire I[i]). At the first cycle, Evaluator should received
    * the tokens from the Garbler (using OT or directly).
    */
-  // TODO(ebi): some of the input wires are only connected to initial signal.
-  // Those wires do not require communication in cycles c > 1.
+// TODO(ebi): some of the input wires are only connected to initial signal.
+// Those wires do not require communication in cycles c > 1.
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     f << (int64_t) readCircuit.dff_list[i].input[1] << " ";  //I
   }
