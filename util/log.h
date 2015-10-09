@@ -21,6 +21,7 @@
 
 #include <fstream>
 #include <string>
+#include <new>
 
 #include "util/common.h"
 #include "crypto/block.h"
@@ -49,6 +50,10 @@ class DummyLog {
 
 #ifdef ENABLE_LOG
 
+#define CHECK_ALLOC(X) try { X; } catch (std::bad_alloc& e) { \
+    LOG(ERROR) << e.what() << std::endl; \
+    return FAILURE; } \
+
 #define DUMP(X) Dump(X)
 #define LOG(X) LogStream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" \
   << LOG_COLOR(X) << "m" << #X << "\033[0m: "
@@ -63,6 +68,7 @@ class DummyLog {
 
 #else /* ENABLE_LOG */
 
+#define CHECK_ALLOC(X) X
 #define DUMP(X) DummyLogStream()
 #define LOG(X) DummyLogStream()
 #define CHECK_EXPR(X) X

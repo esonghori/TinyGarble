@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
   string init_str = "";
   string input_str = "";
   uint64_t clock_cycles;
+  int output_mode;
   dump_prefix = "";
   boost::format fmter(
       "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
@@ -87,11 +88,14 @@ int main(int argc, char* argv[]) {
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix),
    "Directory for dumping memory hex files.")  //
-  ("log2std", "Print Logs into standard output and error.");
+  ("output_mode", po::value<int>(&output_mode)->default_value(0),
+   "0: normal, 1:separated by clock 2:last clock.");
 
   po::variables_map vm;
   try {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::parsed_options parsed = po::command_line_parser(argc, argv).options(
+        desc).allow_unregistered().run();
+    po::store(parsed, vm);
     if (vm.count("help")) {
       std::cout << desc << endl;
       return SUCCESS;
@@ -110,12 +114,6 @@ int main(int argc, char* argv[]) {
     return FAILURE;
   }
 
-  GarbledCircuit garbledCircuit;
-  if (ReadSCD(scd_file_address, &garbledCircuit) == FAILURE) {
-    LOG(ERROR) << "Error while reading scd file: " << scd_file_address << endl;
-    return FAILURE;
-  }
-
   if (vm.count("alice")) {
     // open the socket
     int connfd;
@@ -125,7 +123,7 @@ int main(int argc, char* argv[]) {
     }
     LOG(INFO) << "Open Alice server on port: " << port << endl;
 
-    Alice(garbledCircuit, init_str, input_str, clock_cycles, connfd);
+    GarbleStr(scd_file_address, init_str, input_str, clock_cycles, connfd);
 
     ServerClose(connfd);
   } else if (vm.count("bob")) {
@@ -148,7 +146,11 @@ int main(int argc, char* argv[]) {
     LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":"
               << port << endl;
 
-    Bob(garbledCircuit, init_str, input_str, clock_cycles, connfd);
+    string output_str;
+    EvaluateStr(scd_file_address, init_str, input_str, clock_cycles,
+                output_mode, &output_str, connfd);
+    LOG(INFO) << "output = " << output_str << endl;
+    std::cout << output_str << endl;
 
     ClientClose(connfd);
   }

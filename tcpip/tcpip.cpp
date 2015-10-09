@@ -48,7 +48,7 @@ int ServerOpenSocket(int port) {
   serv_addr.sin_addr.s_addr = INADDR_ANY;
   serv_addr.sin_port = htons(port);
   if (bind(listenfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-    LOG(ERROR) << strerror(errno) << endl;
+    LOG(INFO) << strerror(errno) << endl;
     return FAILURE;
   }
   listen(listenfd, 5);
@@ -130,6 +130,9 @@ int ClientClose(int sock) {
 }
 
 int SendData(int sock, const void *var, int len) {
+  if (len <= 0)
+    return SUCCESS;
+
   int len_ret = write(sock, var, len);
   if (len_ret == FAILURE) {
     LOG(ERROR) << strerror(errno) << endl;
@@ -143,6 +146,9 @@ int SendData(int sock, const void *var, int len) {
 }
 
 int RecvData(int sock, void* var, int len) {
+  if (len <= 0)
+    return SUCCESS;
+
   int len_ret = read(sock, var, len);
   if (len_ret == FAILURE) {
     LOG(ERROR) << strerror(errno) << endl;
