@@ -18,8 +18,9 @@
 #include "scd/scheduling.h"
 
 #include <cstring>
+#include "util/common.h"
 
-void TopSort(const vector<ReadGate>& G, int64_t no_task, int64_t *index) {
+int TopSort(const vector<ReadGate>& G, int64_t no_task, int64_t *index) {
 
   // calculate static b-level
   int64_t *sl = new int64_t[no_task];
@@ -44,9 +45,10 @@ void TopSort(const vector<ReadGate>& G, int64_t no_task, int64_t *index) {
   QuickSort(sl, index, 0, no_task - 1);
 
   delete[] sl;
+  return SUCCESS;
 }
 
-void Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
+int Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
 
   const vector<ReadGate>& G = readCircuit.gate_list;
   int64_t no_task;
@@ -104,9 +106,11 @@ void Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
   delete[] p1;
   delete[] core_index;
   delete[] core_busy;
+
+  return SUCCESS;
 }
 
-void QuickSort(int64_t *arr, int64_t *index, int64_t left, int64_t right) {
+int QuickSort(int64_t *arr, int64_t *index, int64_t left, int64_t right) {
   int64_t i = left, j = right;
   int64_t tmp;
   int64_t pivot = arr[(left + right) / 2];
@@ -135,6 +139,8 @@ void QuickSort(int64_t *arr, int64_t *index, int64_t left, int64_t right) {
     QuickSort(arr, index, left, j);
   if (i < right)
     QuickSort(arr, index, i, right);
+
+  return SUCCESS;
 }
 
 int64_t GetMinIndex(int64_t *arr, int64_t size) {

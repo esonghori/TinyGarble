@@ -258,9 +258,10 @@ uint64_t Evaluate(GarbledCircuit& garbled_circuit, block* const_labels,
  */
 void RemoveGarbledCircuit(GarbledCircuit *garbledCircuit);
 
-int Alice(GarbledCircuit& garbled_circuit, const string& init_str,
-          const string& input_str, uint64_t clock_cycles, int connfd);
-int Bob(GarbledCircuit& garbled_circuit, const string& init_str,
-        const string& input_str, uint64_t clock_cycles, int connfd);
+int GarbleStr(const string& scd_file_address, const string& init_str,
+              const string& input_str, uint64_t clock_cycles, int connfd);
+int EvaluateStr(const string& scd_file_address, const string& init_str,
+                const string& input_str, uint64_t clock_cycles, int output_mode,
+                string* output_str, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_ */

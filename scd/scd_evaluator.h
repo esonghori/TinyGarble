@@ -25,7 +25,7 @@
 
 using std::string;
 
-void EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
+int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
                         const BIGNUM* g_init, const BIGNUM* e_init,
                         const BIGNUM* g_input, const BIGNUM* e_input,
                         uint64_t clock_cycles, BIGNUM** outputs);
