@@ -90,8 +90,8 @@ block RandomBlock() {
  * Two Halves Make a Whole Reducing Data Transfer in Garbled Circuits using Half Gates
  *
  *
- *  a op b = ((a ^ v0) & (b ^v1)) ^ v2
- *  v1v2v0
+ *  a op b = ((a ^ v0) & (b ^ v1)) ^ v2
+ *  v2v1v0
  *  000b -> AND
  *  111b -> OR
  */
@@ -99,19 +99,19 @@ unsigned short Type2V(int gateType) {
   if (gateType == ANDGATE) {
     return 0b000;
   } else if (gateType == ANDNGATE) {
-    return 0b100;
+    return 0b010;
   } else if (gateType == NANDGATE) {
-    return 0b001;
+    return 0b100;
   } else if (gateType == NANDNGATE) {
-    return 0b101;
+    return 0b110;
   } else if (gateType == ORGATE) {
     return 0b111;
   } else if (gateType == ORNGATE) {
-    return 0b011;
+    return 0b101;
   } else if (gateType == NORGATE) {
-    return 0b110;
+    return 0b011;
   } else if (gateType == NORNGATE) {
-    return 0b010;
+    return 0b001;
   }
   return 0;
 }
