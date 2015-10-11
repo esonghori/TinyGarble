@@ -68,10 +68,13 @@ class DummyLog {
 
 #else /* ENABLE_LOG */
 
+extern bool __dummy_expr__;
+
 #define CHECK_ALLOC(X) X
 #define DUMP(X) DummyLogStream()
 #define LOG(X) DummyLogStream()
-#define CHECK_EXPR(X) X
+#define CHECK_EXPR(X) __dummy_expr__ = X
+#define CHECK_EXPR_MSG(X, Y) __dummy_expr__ = X
 #define CHECK(X) X
 #define BN_CHECK(X) X
 

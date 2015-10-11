@@ -40,6 +40,8 @@ map<string, ofstream*> dump_map;
 ostream* dev_null;
 ostream* log_map[2];  // ERROR, INFO
 DummyLog dummy_log;
+bool __dummy_expr__;
+
 
 DummyLog& DummyLogStream() {
   return dummy_log;

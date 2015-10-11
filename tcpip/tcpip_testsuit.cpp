@@ -28,27 +28,26 @@
 
 using std::endl;
 
-#define PORT_TRIAL 10
+#define PORT_TRIAL 20
 #define SLEEP_BEFORE_SEC 1 // sleep before connection in client
 
-int TcpipTestRun(
-  const function<int(const void *, int)>& server_func,
-  const void* server_data,
-  const function<int(const void *, int)>& client_func,
-  const void* client_data) {
-  
+int TcpipTestRun(const function<int(const void *, int)>& server_func,
+                 const void* server_data,
+                 const function<int(const void *, int)>& client_func,
+                 const void* client_data) {
+
   char server_ip[] = "127.0.0.1";
-  int port = rand() % 5000 + 1000;
-  for(int i=0;i<PORT_TRIAL;i++) {
+  int port = rand() % 50000 + 10000;
+
+  for (int i = 0; i < PORT_TRIAL; i++) {
     if (ServerOpenSocket(port) == FAILURE) {
       port = rand() % 5000 + 1000;
       LOG(INFO) << "Cannot open the socket in port " << port << endl;
-      if(i==PORT_TRIAL-1) {
+      if (i == PORT_TRIAL - 1) {
         LOG(ERROR) << "Connection failed." << endl;
         return FAILURE;
       }
-    }
-    else {
+    } else {
       break;
     }
   }
@@ -61,19 +60,20 @@ int TcpipTestRun(
       if ((client_connfd = ClientInit(server_ip, port)) == -1) {
         LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
         LOG(ERROR) << "Connection failed." << endl;
-        return FAILURE;
+        exit(FAILURE);
       }
       if (client_func(client_data, client_connfd) == FAILURE) {
         LOG(ERROR) << "client failed." << endl;
-        return FAILURE;
+        exit(FAILURE);
       }
       if (ClientClose(client_connfd) == FAILURE) {
         LOG(ERROR) << "closing client failed." << endl;
-        return FAILURE;
+        exit(FAILURE);
       }
+      exit(SUCCESS);
     } else {  //server
       int server_connfd;
-      if((server_connfd = ServerWaitForClient()) ==  FAILURE) {
+      if ((server_connfd = ServerWaitForClient()) == FAILURE) {
         LOG(ERROR) << "server connection failed." << endl;
         return FAILURE;
       }
@@ -85,7 +85,7 @@ int TcpipTestRun(
         LOG(ERROR) << "closing server failed." << endl;
         return FAILURE;
       }
-      int client_returnStatus;    
+      int client_returnStatus;
       waitpid(childPID, &client_returnStatus, 0);
       if (client_returnStatus == FAILURE) {
         LOG(ERROR) << "client failed." << endl;

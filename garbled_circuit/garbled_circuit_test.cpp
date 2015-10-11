@@ -30,7 +30,7 @@
 
 using std::endl;
 
-#define TEST_REPEAT 1
+#define TEST_REPEAT 3
 
 struct GCTestStruct {
   string scd_file_address;
@@ -90,6 +90,9 @@ int Bob(const void *data, int connfd) {
 }
 
 MU_TEST(Mux8Bit) {
+
+  LOG(INFO) << "Test Mux8Bit" << endl;
+
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/mux_8bit.scd";
   string g_init_str = "0";
@@ -121,7 +124,6 @@ MU_TEST(Mux8Bit) {
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
                                               e_input_str, output_mode,
                                               output_str, clock_cycles);
-    ;
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -129,6 +131,9 @@ MU_TEST(Mux8Bit) {
 }
 
 MU_TEST(Sum1Bit) {
+
+  LOG(INFO) << "Test Sum1Bit" << endl;
+
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_1bit.scd";
   string g_init_str = "0";
@@ -167,6 +172,9 @@ MU_TEST(Sum1Bit) {
 }
 
 MU_TEST(Sum8Bit) {
+
+  LOG(INFO) << "Test Sum8Bit" << endl;
+
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_8bit.scd";
   string g_init_str = "0";
@@ -203,6 +211,9 @@ MU_TEST(Sum8Bit) {
 }
 
 MU_TEST(Hamming32Bit1cc) {
+
+  LOG(INFO) << "Test Hamming32Bit1cc" << endl;
+
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_1cc.scd";
   int output_mode = 0;  // normal mode
@@ -240,6 +251,9 @@ MU_TEST(Hamming32Bit1cc) {
 }
 
 MU_TEST(Hamming32Bit8cc) {
+
+  LOG(INFO) << "Test Hamming32Bit8cc" << endl;
+
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   int output_mode = 2;  // print the last cycle
