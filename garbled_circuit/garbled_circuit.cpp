@@ -82,7 +82,7 @@ uint64_t Garble(GarbledCircuit& garbled_circuit, block** const_labels,
           wires[dff_bias + i].label0 = const_labels[0][0];
           wires[dff_bias + i].label1 = const_labels[0][1];
         }
-        DUMP("dff") << init_labels[i][0] << endl;
+        DUMP("dff") << wires[dff_bias + i].label0 << endl;
       }
     } else {  //copy latched labels
       for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
@@ -300,7 +300,7 @@ uint64_t Evaluate(GarbledCircuit& garbled_circuit, block* const_labels,
           LOG(ERROR) << "Invalid I: " << wire_index << endl;
           wires[dff_bias + i] = const_labels[0];
         }
-        DUMP("dff") << init_labels[i] << endl;
+        DUMP("dff") << wires[dff_bias + i] << endl;
       }
     } else {  //copy latched labels
       for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
@@ -468,7 +468,8 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
       for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
         if (cid * garbled_circuit.g_input_size + i
             >= (uint) BN_num_bits(temp_bn)
-            || !BN_is_bit_set(temp_bn, cid * clock_cycles + i)) {
+            || !BN_is_bit_set(temp_bn,
+                              cid * garbled_circuit.g_input_size + i)) {
           g_input[cid][i] = 0;
         } else {
           g_input[cid][i] = 1;
@@ -693,8 +694,10 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
     for (uint cid = 0; cid < clock_cycles; cid++) {
       CHECK_ALLOC(e_input[cid] = new short[garbled_circuit.e_input_size]);
       for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
-        if (cid * clock_cycles + i >= (uint) BN_num_bits(temp_bn)
-            || !BN_is_bit_set(temp_bn, cid * clock_cycles + i)) {
+        if (cid * garbled_circuit.e_input_size + i
+            >= (uint) BN_num_bits(temp_bn)
+            || !BN_is_bit_set(temp_bn,
+                              cid * garbled_circuit.e_input_size + i)) {
           e_input[cid][i] = 0;
         } else {
           e_input[cid][i] = 1;

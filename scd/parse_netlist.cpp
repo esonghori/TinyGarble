@@ -87,7 +87,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
     HADDER
   };
 
-  enum Block block_type;
+  enum Block block_type = MUX;
   bool store_in0 = 0;
   bool store_in1 = 0;
   bool store_sel_cin = 0;

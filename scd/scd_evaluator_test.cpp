@@ -24,7 +24,7 @@
 #include "util/tinygarble_config.h"
 #include "util/minunit.h"
 
-#define TEST_REPEAT 20
+#define TEST_REPEAT 10
 
 void TestSetup() {
 }
