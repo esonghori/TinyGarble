@@ -58,13 +58,11 @@ int ServerOpenSocket(int port) {
 int ServerWaitForClient() {
   struct sockaddr_in cli_addr;
   socklen_t clilen = sizeof(cli_addr);
-  LOG(INFO) << "Wait for client" << endl;
   int connfd = accept(listenfd, (struct sockaddr *) &cli_addr, &clilen);
   if (connfd < 0) {
     LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
-  LOG(INFO) << "Connected" << endl;
   int flag = 1;
   int result = setsockopt(connfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag,
                           sizeof(int));

@@ -35,11 +35,9 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
   }
 
   // 0. check the vector size
-  LOG(INFO) << "sender: send length " << m_len << endl;
   CHECK(SendData(connfd, &m_len, sizeof(uint32_t)));
 
   // 1.0. generate RSA key
-  LOG(INFO) << "sender: generate RSA key" << endl;
   BIGNUM * rsa_exponent = BN_new();
   BN_CHECK(BN_set_word(rsa_exponent, RSA_F4));
   RSA *rsa = RSA_new();
@@ -48,12 +46,10 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
   BN_free(rsa_exponent);
 
   // 1.1. send public portion to Bob (receiver)
-  LOG(INFO) << "sender: send public key" << endl;
   CHECK(SendBN(connfd, rsa->n));
   CHECK(SendBN(connfd, rsa->e));
 
   // 2. generate two messages
-  LOG(INFO) << "sender: generate random messages" << endl;
   BIGNUM ***x = new BIGNUM**[m_len];
   for (uint32_t i = 0; i < m_len; i++) {
     x[i] = new BIGNUM*[2];
@@ -65,7 +61,6 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
   }
 
   // 4. receive v from Bob (receiver) and send m0' and m1' to Bob
-  LOG(INFO) << "sender: receive v and send m0' and m1'" << endl;
   BIGNUM *v = BN_new();
   BIGNUM *temp = BN_new();
   BIGNUM *k0 = BN_new();
@@ -87,7 +82,6 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
     CHECK(SendBN(connfd, k1));  // send m1' = m1 + k1
   }
 
-  LOG(INFO) << "sender: free memories" << endl;
   RSA_free(rsa);
   BN_free(v);
   BN_free(temp);
@@ -106,7 +100,6 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
 }
 int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   // 0. check the vector size
-  LOG(INFO) << "receiver: check length " << m_len << endl;
   uint32_t m_len_from_sender;
   CHECK(RecvData(connfd, &m_len_from_sender, sizeof(uint32_t)));
   if (m_len_from_sender != m_len) {
@@ -125,12 +118,10 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   BIGNUM* rsa_e = BN_new();
 
   // 1. receive public portion of a rsa key from Alice (receiver)
-  LOG(INFO) << "receiver: recv public key" << endl;
   CHECK(RecvBN(connfd, rsa_n));
   CHECK(RecvBN(connfd, rsa_e));
 
   // 2. receive two random messages
-  LOG(INFO) << "receiver: recv two random messages" << endl;
   BIGNUM ***x = new BIGNUM**[m_len];
   for (uint32_t i = 0; i < m_len; i++) {
     x[i] = new BIGNUM*[2];
@@ -141,7 +132,6 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   }
 
   // 3. generate random k
-  LOG(INFO) << "receiver: generate k" << endl;
   BIGNUM **k = new BIGNUM*[m_len];
   BIGNUM *_k = BN_new();
   for (uint32_t i = 0; i < m_len; i++) {
@@ -152,7 +142,6 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   BN_free(_k);
 
   // 4. compute v = (x_b + k^e) mod N and send it to Alice (sender)
-  LOG(INFO) << "receiver: compute and send v" << endl;
   BIGNUM *v = BN_new();
   BIGNUM *temp = BN_new();
   for (uint32_t i = 0; i < m_len; i++) {
@@ -168,7 +157,6 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
   BN_free(temp);
 
   // 4. receive m0' and m1' from Alice
-  LOG(INFO) << "receiver: recv m0' and m1'" << endl;
   BIGNUM *m0p = BN_new();
   BIGNUM *m1p = BN_new();
   BIGNUM *mb = BN_new();
@@ -184,7 +172,6 @@ int OTRecvBN(const BIGNUM *sel, uint32_t m_len, int connfd, BIGNUM** m) {
     BN_copy(m[i], mb);
   }
 
-  LOG(INFO) << "receiver: free memory" << endl;
   BN_free(m0p);
   BN_free(m1p);
 

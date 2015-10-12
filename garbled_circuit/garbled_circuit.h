@@ -262,6 +262,12 @@ int ParseInitInputStr(const string& init_str, const string&input_str,
                       uint64_t init_size, uint64_t input_size,
                       uint64_t clock_cycles, short** init, short*** input);
 
+int GarbleOTExt(const GarbledCircuit& garbled_circuit, block** init_labels,
+                block*** input_labels, uint64_t clock_cycles, int connfd);
+int EvalauteOTExt(const GarbledCircuit& garbled_circuit, short* e_init,
+                  block* init_labels, short** e_input, block** input_labels,
+                  uint64_t clock_cycles, int connfd);
+
 int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
                          block** const_labels, short* g_init,
                          block** init_labels, short** g_input,
@@ -290,9 +296,10 @@ int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
                            int output_mode, string* output_str, int connfd);
 
 int GarbleStr(const string& scd_file_address, const string& init_str,
-              const string& input_str, uint64_t clock_cycles, int connfd);
+              const string& input_str, uint64_t clock_cycles, bool use_OT,
+              int connfd);
 int EvaluateStr(const string& scd_file_address, const string& init_str,
                 const string& input_str, uint64_t clock_cycles, int output_mode,
-                string* output_str, int connfd);
+                bool use_OT, string* output_str, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_ */
