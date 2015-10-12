@@ -218,7 +218,7 @@ void CreateInputLabels(block* inputLabels, block R, uint64_t n);
  * @see JustGarble paper.
  * @see Half-Gate paper.
  */
-uint64_t Garble(GarbledCircuit& garbled_circuit, block** const_labels,
+uint64_t Garble(const GarbledCircuit& garbled_circuit, block** const_labels,
                 block** init_labels, block*** input_labels, block global_key,
                 block R, uint64_t clock_cycles, int connfd,
                 block*** output_labels);
@@ -246,7 +246,7 @@ uint64_t Garble(GarbledCircuit& garbled_circuit, block** const_labels,
  * @see Half-Gate paper.
  */
 
-uint64_t Evaluate(GarbledCircuit& garbled_circuit, block* const_labels,
+uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
                   block* init_labels, block** input_labels, block global_key,
                   uint64_t clock_cycles, int connfd, block** output_labels);
 
@@ -257,6 +257,37 @@ uint64_t Evaluate(GarbledCircuit& garbled_circuit, block* const_labels,
  * @param param1 pointer to garbledCircuit. The garbledCircuit will be deallocated.
  */
 void RemoveGarbledCircuit(GarbledCircuit *garbledCircuit);
+
+int ParseInitInputStr(const string& init_str, const string&input_str,
+                      uint64_t init_size, uint64_t input_size,
+                      uint64_t clock_cycles, short** init, short*** input);
+
+int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
+                         block** const_labels, short* g_init,
+                         block** init_labels, short** g_input,
+                         block*** input_labels, uint64_t clock_cycles,
+                         bool use_OT, int connfd);
+int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
+                           block* const_labels, short* e_init,
+                           block* init_labels, short** e_input,
+                           block** input_labels, uint64_t clock_cycles,
+                           bool use_OT, int connfd);
+
+int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
+                     block*** const_labels, block*** init_labels,
+                     block**** input_labels, block**** output_labels, block R,
+                     uint64_t clock_cycles);
+int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
+                       block** const_labels, block** init_labels,
+                       block*** input_labels, block*** output_labels,
+                       uint64_t clock_cycles);
+
+int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
+                         block*** output_labels, uint64_t clock_cycles,
+                         int connfd);
+int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
+                           block** output_labels, uint64_t clock_cycles,
+                           int output_mode, string* output_str, int connfd);
 
 int GarbleStr(const string& scd_file_address, const string& init_str,
               const string& input_str, uint64_t clock_cycles, int connfd);
