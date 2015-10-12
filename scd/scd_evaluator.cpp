@@ -24,9 +24,9 @@
 #include "scd/scd.h"
 
 int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
-                        const BIGNUM* g_init, const BIGNUM* e_init,
-                        const BIGNUM* g_input, const BIGNUM* e_input,
-                        uint64_t clock_cycles, BIGNUM** outputs) {
+                       const BIGNUM* g_init, const BIGNUM* e_init,
+                       const BIGNUM* g_input, const BIGNUM* e_input,
+                       uint64_t clock_cycles, BIGNUM** outputs) {
 
   bool* wires = nullptr;
   CHECK_ALLOC(wires = new bool[garbled_circuit.get_wire_size()]);
@@ -168,10 +168,9 @@ int EvalauatePlaintextStr(const string& scd_file_address,
   BN_hex2bn(&g_input, g_input_str.c_str());
   BN_hex2bn(&e_input, e_input_str.c_str());
 
-  LOG(INFO) << "g_init = " << BN_bn2hex(g_init) << endl;
-  LOG(INFO) << "e_init = " << BN_bn2hex(e_init) << endl;
-  LOG(INFO) << "g_input = " << BN_bn2hex(g_input) << endl;
-  LOG(INFO) << "e_input = " << BN_bn2hex(e_input) << endl;
+  LOG(INFO) << "g_init = " << BN_bn2hex(g_init) << "\te_init = "
+            << BN_bn2hex(e_init) << "\tg_input = " << BN_bn2hex(g_input)
+            << "\te_input = " << BN_bn2hex(e_input) << endl;
 
   GarbledCircuit garbled_circuit;
   if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {

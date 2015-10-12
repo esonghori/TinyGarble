@@ -124,11 +124,9 @@ int SwitchRowColumnBNPair(const BIGNUM* const * const * v, uint32_t v_len,
 int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_bitlen,
                 uint32_t m_len, int connfd) {
 
-  LOG(INFO) << "senderExt: " << "initial hash" << endl;
   CHECK(InitialHash());
 
   // 0. generate random k-bit s
-  LOG(INFO) << "senderExt: " << "generate random S" << endl;
   BIGNUM* S = BN_new();
   BN_rand(S, SEC_K_BIT, -1, 0);
 
@@ -138,14 +136,11 @@ int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_bitlen,
   }
   BN_new();
 
-  LOG(INFO) << "senderExt: " << "Receiving Q based on S via OT" << endl;
   CHECK(OTRecvBN(S, SEC_K_BIT, connfd, Q));
 
-  LOG(INFO) << "senderExt: " << "row column switch on Q" << endl;
   BIGNUM** Q_rotate;
   CHECK(SwitchRowColumnBN(Q, SEC_K_BIT, m_len, &Q_rotate));
 
-  LOG(INFO) << "senderExt: " << "compute and send (y0, y1)" << endl;
   BIGNUM* h0 = BN_new();
   BIGNUM* h1 = BN_new();
   BIGNUM* QS = BN_new();
@@ -167,7 +162,6 @@ int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_bitlen,
   BN_free(y1);
 
   // free memory
-  LOG(INFO) << "senderExt: " << "free memory" << endl;
   for (uint32_t i = 0; i < m_len; i++) {
     BN_free(Q_rotate[i]);
   }
@@ -183,11 +177,9 @@ int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_bitlen,
 int OTExtRecvBN(const BIGNUM *sel, uint32_t m_bitlen, uint32_t m_len,
                 int connfd, BIGNUM** m) {
 
-  LOG(INFO) << "receiverExt: " << "initial hash" << endl;
   CHECK(InitialHash());
 
   // 0.generate m_len random k-bits T ([0]) and T^r ([1])
-  LOG(INFO) << "receiverExt: " << "generate random T and compute T^r" << endl;
   BIGNUM*** T = new BIGNUM**[m_len];
   for (uint32_t i = 0; i < m_len; i++) {
     T[i] = new BIGNUM*[2];
@@ -204,14 +196,11 @@ int OTExtRecvBN(const BIGNUM *sel, uint32_t m_bitlen, uint32_t m_len,
     }
   }
 
-  LOG(INFO) << "receiverExt: " << "row column switch on T" << endl;
   BIGNUM*** T_rotate;
   CHECK(SwitchRowColumnBNPair(T, m_len, SEC_K_BIT, &T_rotate));
 
-  LOG(INFO) << "receiverExt: " << "send T via OT" << endl;
   CHECK(OTSendBN(T_rotate, SEC_K_BIT, connfd));
 
-  LOG(INFO) << "receiverExt: " << "receive (y0,y1) and compute m" << endl;
   BIGNUM* h = BN_new();
   BIGNUM* y0 = BN_new();
   BIGNUM* y1 = BN_new();
@@ -233,7 +222,6 @@ int OTExtRecvBN(const BIGNUM *sel, uint32_t m_bitlen, uint32_t m_len,
   BN_free(y1);
 
   // free memory
-  LOG(INFO) << "receiverExt: " << "free memory" << endl;
   for (uint32_t i = 0; i < SEC_K_BIT; i++) {
     for (uint32_t j = 0; j < 2; j++) {
       BN_free(T_rotate[i][j]);
@@ -287,7 +275,6 @@ int OTExtRecv(const bool *sel, uint32_t m_len, int connfd, block* m) {
       == FAILURE) {
     return FAILURE;
   }
-  LOG(INFO) << "receiverExt: " << "translate BN to Block" << endl;
   for (uint32_t i = 0; i < m_len; ++i) {
     BNToBlock(bn_m[i], &m[i]);
     BN_free(bn_m[i]);

@@ -36,21 +36,23 @@ struct GCTestStruct {
   string scd_file_address;
   string init;
   string input;
-  int output_mode;
   string output;
+  int output_mode;
+  bool disable_OT;
   uint64_t clock_cycles;
 };
 
 GCTestStruct MakeGCTestStruct(string scd_file_address, string init,
-                              string input, int output_mode, string output,
-                              uint64_t clock_cycles) {
+                              string input, string output, int output_mode,
+                              bool disable_OT, uint64_t clock_cycles) {
   GCTestStruct ret;
 
   ret.scd_file_address = scd_file_address;
   ret.init = init;
   ret.input = input;
-  ret.output_mode = output_mode;
   ret.output = output;
+  ret.output_mode = output_mode;
+  ret.disable_OT = disable_OT;
   ret.clock_cycles = clock_cycles;
   return ret;
 }
@@ -64,7 +66,7 @@ int Alice(const void* data, int connfd) {
   GCTestStruct* gc_data = (GCTestStruct*) data;
 
   return GarbleStr(gc_data->scd_file_address, gc_data->init, gc_data->input,
-                   gc_data->clock_cycles, connfd);
+                   gc_data->clock_cycles, gc_data->disable_OT, connfd);
 }
 
 int Bob(const void *data, int connfd) {
@@ -72,7 +74,8 @@ int Bob(const void *data, int connfd) {
   string output_str;
   int ret = EvaluateStr(gc_data->scd_file_address, gc_data->init,
                         gc_data->input, gc_data->clock_cycles,
-                        gc_data->output_mode, &output_str, connfd);
+                        gc_data->output_mode, gc_data->disable_OT, &output_str,
+                        connfd);
   if (ret == FAILURE) {
     LOG(ERROR) << "EvaluateStr failed.";
     return FAILURE;
@@ -98,6 +101,7 @@ MU_TEST(Mux8Bit) {
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
+  bool disable_OT = false;
   int output_mode = 0;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint8_t x[2];
@@ -116,14 +120,15 @@ MU_TEST(Mux8Bit) {
                                     g_input_str, e_input_str, clock_cycles,
                                     output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
-    LOG(INFO) << "plain-text result: " << output_str << endl;
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
-                                                 g_input_str, output_mode,
-                                                 output_str, clock_cycles);
+                                                 g_input_str, output_str,
+                                                 output_mode, disable_OT,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
-                                              e_input_str, output_mode,
-                                              output_str, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mode, disable_OT,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -139,6 +144,7 @@ MU_TEST(Sum1Bit) {
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 8;
+  bool disable_OT = false;
   int output_mode = 0;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint8_t x[2];
@@ -156,14 +162,15 @@ MU_TEST(Sum1Bit) {
                                     g_input_str, e_input_str, clock_cycles,
                                     output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
-    LOG(INFO) << "plain-text result: " << output_str << endl;
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
-                                                 g_input_str, output_mode,
-                                                 output_str, clock_cycles);
+                                                 g_input_str, output_str,
+                                                 output_mode, disable_OT,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
-                                              e_input_str, output_mode,
-                                              output_str, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mode, disable_OT,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -180,6 +187,7 @@ MU_TEST(Sum8Bit) {
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
+  bool disable_OT = false;
   int output_mode = 0;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint8_t x[2];
@@ -196,14 +204,15 @@ MU_TEST(Sum8Bit) {
                                     g_input_str, e_input_str, clock_cycles,
                                     output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
-    LOG(INFO) << "plain-text result: " << output_str << endl;
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
-                                                 g_input_str, output_mode,
-                                                 output_str, clock_cycles);
+                                                 g_input_str, output_str,
+                                                 output_mode, disable_OT,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
-                                              e_input_str, output_mode,
-                                              output_str, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mode, disable_OT,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -220,6 +229,7 @@ MU_TEST(Hamming32Bit1cc) {
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 1;
+  bool disable_OT = false;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint32_t x[2];
     x[0] = (uint32_t) rand();
@@ -229,21 +239,22 @@ MU_TEST(Hamming32Bit1cc) {
     string e_input_str = to_string_hex(x[1], 8);
     string output_str = "";
 
-    LOG(INFO) << "Hamming (32bit 1cc) distance between " << g_input_str << " and "
-              << e_input_str << endl;
+    LOG(INFO) << "Hamming (32bit 1cc) distance between " << g_input_str
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
                                     output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
-    LOG(INFO) << "plain-text result: " << output_str << endl;
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
-                                                 g_input_str, output_mode,
-                                                 output_str, clock_cycles);
+                                                 g_input_str, output_str,
+                                                 output_mode, disable_OT,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
-                                              e_input_str, output_mode,
-                                              output_str, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mode, disable_OT,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -260,6 +271,7 @@ MU_TEST(Hamming32Bit8cc) {
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 8;
+  bool disable_OT = false;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint32_t x[2];
     x[0] = (uint32_t) rand();
@@ -269,21 +281,65 @@ MU_TEST(Hamming32Bit8cc) {
     string e_input_str = to_string_hex(x[1], 8);
     string output_str = "";
 
-    LOG(INFO) << "Hamming (32bit 8cc) distance between " << g_input_str << " and "
-              << e_input_str << endl;
+    LOG(INFO) << "Hamming (32bit 8cc) distance between " << g_input_str
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
                                     output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
-    LOG(INFO) << "plain-text result: " << output_str << endl;
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
-                                                 g_input_str, output_mode,
-                                                 output_str, clock_cycles);
+                                                 g_input_str, output_str,
+                                                 output_mode, disable_OT,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
-                                              e_input_str, output_mode,
-                                              output_str, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mode, disable_OT,
+                                              clock_cycles);
+
+    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+    mu_assert(ret == SUCCESS, "TcpipTestRun");
+
+  }
+}
+
+MU_TEST(Hamming32Bit8ccDisabledOT) {
+
+  LOG(INFO) << "Test Hamming32Bit8ccDisabledOT" << endl;
+
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/hamming_32bit_8cc.scd";
+  int output_mode = 2;  // print the last cycle
+  string g_init_str = "";
+  string e_init_str = "";
+  uint64_t clock_cycles = 8;
+  bool disable_OT = true;
+  for (int i = 0; i < TEST_REPEAT; i++) {
+    uint32_t x[2];
+    x[0] = (uint32_t) rand();
+    x[1] = (uint32_t) rand();
+
+    string g_input_str = to_string_hex(x[0], 8);
+    string e_input_str = to_string_hex(x[1], 8);
+    string output_str = "";
+
+    LOG(INFO) << "Hamming (32bit 8cc) distance between " << g_input_str
+              << " and " << e_input_str << endl;
+
+    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
+                                    g_input_str, e_input_str, clock_cycles,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+
+    GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
+                                                 g_input_str, output_str,
+                                                 output_mode, disable_OT,
+                                                 clock_cycles);
+    GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
+                                              e_input_str, output_str,
+                                              output_mode, disable_OT,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -299,6 +355,8 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(Sum8Bit);
   MU_RUN_TEST(Hamming32Bit1cc);
   MU_RUN_TEST(Hamming32Bit8cc);
+  MU_RUN_TEST(Hamming32Bit8ccDisabledOT);
+
 }
 
 int main(int argc, char* argv[]) {
