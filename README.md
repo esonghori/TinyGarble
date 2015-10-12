@@ -250,5 +250,3 @@ Transfer and Extensions for Faster Secure Computation In <i>CCS'13</i>.
 ## TODOs
 - Fix read netlist for Yosys.
 - Add synthesis library.
-
-
