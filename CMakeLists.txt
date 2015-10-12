@@ -10,13 +10,17 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 ##############
 # build type 
-IF(CMAKE_BUILD_TYPE MATCHES Debug)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
   message("Debug build.")
-ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
+elseif (CMAKE_BUILD_TYPE MATCHES Release)
   message("Release build.")
-ELSE()
+else()
   message("Some other build type.")
-ENDIF()
+endif ()
 
 ###############
 # Compiler flags

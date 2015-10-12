@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
   string init_str = "";
   string input_str = "";
   uint64_t clock_cycles;
-  bool disable_OT;
+  bool disable_OT = false;
   int output_mode;
   dump_prefix = "";
   boost::format fmter(
@@ -89,8 +89,7 @@ int main(int argc, char* argv[]) {
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix),
    "Directory for dumping memory hex files.")  //
-  ("disable_OT", po::value<bool>(&disable_OT)->default_value(false),
-   "Disable Oblivious Transfer (OT) for transferring labels. "
+  ("disable_OT", "Disable Oblivious Transfer (OT) for transferring labels. "
    "WARNING: OT is crucial for GC security.")  //
   ("output_mode", po::value<int>(&output_mode)->default_value(0),
    "0: normal, 1:separated by clock 2:last clock.");
@@ -111,6 +110,12 @@ int main(int argc, char* argv[]) {
     return FAILURE;
   }
 
+  if (vm.count("disable_OT")) {
+    disable_OT = true;
+    LOG(INFO) << "OT is disabled. WARNING:OT is crucial for GC security."
+              << endl;
+  }
+
   if (vm.count("alice") == 0 && vm.count("bob") == 0) {
     LOG(ERROR) << "One of --alice or --bob mode flag should be used." << endl
                << endl;
@@ -127,7 +132,8 @@ int main(int argc, char* argv[]) {
     }
     LOG(INFO) << "Open Alice server on port: " << port << endl;
 
-    GarbleStr(scd_file_address, init_str, input_str, clock_cycles, disable_OT, connfd);
+    GarbleStr(scd_file_address, init_str, input_str, clock_cycles, disable_OT,
+              connfd);
 
     ServerClose(connfd);
   } else if (vm.count("bob")) {
