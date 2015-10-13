@@ -12,7 +12,7 @@ install:
   - wget http://www.cmake.org/files/v3.3/cmake-3.3.2.tar.gz
   - tar xf cmake-3.3.2.tar.gz
   - cd cmake-3.3.2
-  - ./configure
+  - ./configure --parallel=8
   - make -j 8
   - sudo make install
   - cd ..
