@@ -13,11 +13,11 @@ install:
   - tar xf cmake-3.3.2.tar.gz
   - cd cmake-3.3.2
   - ./configure
-  - make
+  - make -j 3
   - sudo make install
   - cd ..
 
 before_script:
-  - ./config
+  - ./config.sh
 
 script: cd bin && make && ctest
