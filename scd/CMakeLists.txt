@@ -20,7 +20,7 @@ add_executable(V2SCD
 if (Boost_FOUND)
   target_link_libraries(V2SCD ${Boost_LIBRARIES})
 endif (Boost_FOUND)
-
+target_link_libraries(V2SCD -lrt)
 
 add_executable(SCD_Evaluator_Main
   "scd_evaluator_main.cpp"
@@ -37,7 +37,7 @@ endif (Boost_FOUND)
 if (OPENSSL_FOUND)
   target_link_libraries(SCD_Evaluator_Main ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
-
+target_link_libraries(SCD_Evaluator_Main -lrt)
 
 add_executable(SCD_Evaluator_Test
   "scd_evaluator_test.cpp"
@@ -54,6 +54,7 @@ endif (Boost_FOUND)
 if (OPENSSL_FOUND)
   target_link_libraries(SCD_Evaluator_Test ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
+target_link_libraries(SCD_Evaluator_Test -lrt)
 
 add_test (SCD_SCD_Evaluator_Test 
   SCD_Evaluator_Test --log2std)
