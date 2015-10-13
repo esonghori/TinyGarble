@@ -75,16 +75,15 @@ int main(int argc, char* argv[]) {
   ("bob,b", "Run as Bob (client).")  //
   ("scd_file,i",
    po::value<string>(&scd_file_address)->default_value(
-       "../read_netlist/netlists/test.scd"),
+       "../scd/netlists/hamming_32bit_1cc.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
   ("init", po::value<string>(&init_str),
-   "Hexadecimal init for initializing DFFs, "
-   "if not provided, it will be random.")  //
+   "Hexadecimal init for initializing DFFs, if not provided, it will be 0.")  //
   ("input", po::value<string>(&input_str),
-   "Hexadecimal input, if not provided, it will be random.")  //
+   "Hexadecimal input, if not provided, it will be 0.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),
@@ -136,9 +135,14 @@ int main(int argc, char* argv[]) {
     LOG(INFO) << "Open Alice's server on port: " << port << endl;
 
     string output_str;
-    GarbleStr(scd_file_address, init_str, input_str, clock_cycles, output_mask,
-              output_mode, disable_OT, &output_str, connfd);
+    uint64_t delta_time = RDTSC;
+    CHECK(
+        GarbleStr(scd_file_address, init_str, input_str, clock_cycles,
+                  output_mask, output_mode, disable_OT, &output_str, connfd));
+    delta_time = RDTSC - delta_time;
+
     LOG(INFO) << "Alice's output = " << output_str << endl;
+    LOG(INFO) << "Total Alice time (cc) = " << delta_time << endl;
     std::cout << output_str << endl;
 
     ServerClose(connfd);
@@ -163,9 +167,14 @@ int main(int argc, char* argv[]) {
               << ":" << port << endl;
 
     string output_str;
-    EvaluateStr(scd_file_address, init_str, input_str, clock_cycles,
-                output_mask, output_mode, disable_OT, &output_str, connfd);
+    uint64_t delta_time = RDTSC;
+    CHECK(
+        EvaluateStr(scd_file_address, init_str, input_str, clock_cycles,
+                    output_mask, output_mode, disable_OT, &output_str, connfd));
+    delta_time = RDTSC - delta_time;
+
     LOG(INFO) << "Bob's output = " << output_str << endl;
+    LOG(INFO) << "Total Bob time (cc) = " << delta_time << endl;
     std::cout << output_str << endl;
 
     ClientClose(connfd);
