@@ -18,6 +18,7 @@ endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(TinyGarble ${Boost_LIBRARIES})
 endif (Boost_FOUND)
+target_link_libraries(TinyGarble -lrt)
 
 add_executable(Garbled_Circuit_Test
   "garbled_circuit_test.cpp"
@@ -38,6 +39,7 @@ endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(Garbled_Circuit_Test ${Boost_LIBRARIES})
 endif (Boost_FOUND)
+target_link_libraries(Garbled_Circuit_Test -lrt)
 
 add_test (Garbled_Circuit_Garbled_Circuit_Test
   Garbled_Circuit_Test --log2std)
