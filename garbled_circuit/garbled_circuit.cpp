@@ -503,8 +503,8 @@ int EvalauteOTExt(const GarbledCircuit& garbled_circuit, short* e_init,
   CHECK(OTExtRecv(sel, m_len, connfd, m));
   uint64_t end_time = RDTSC;
 
-  LOG(INFO) << "Total OT Extension send time (cc) = " << end_time - start_time
-            << "\tOT Extension send time per byte (cc/Byte) = "
+  LOG(INFO) << "Total OT Extension receive time (cc) = " << end_time - start_time
+            << "\tOT Extension receive time per byte (cc/Byte) = "
             << (end_time - start_time) / ((double) (m_len * sizeof(block)))
             << endl;
 
