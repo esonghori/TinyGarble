@@ -58,12 +58,12 @@ int main(int argc, char* argv[]) {
   int port;
   string scd_file_address;
   string server_ip;
-  string init_str = "";
-  string input_str = "";
+  string init_str;
+  string input_str;
   uint64_t clock_cycles;
-  bool disable_OT = false;
+  string output_mask;
   int output_mode;
-  dump_prefix = "";
+  bool disable_OT = false;
   boost::format fmter(
       "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
   fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
@@ -87,10 +87,13 @@ int main(int argc, char* argv[]) {
    "Hexadecimal input, if not provided, it will be random.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
-  ("dump_directory", po::value<string>(&dump_prefix),
+  ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),
    "Directory for dumping memory hex files.")  //
   ("disable_OT", "Disable Oblivious Transfer (OT) for transferring labels. "
    "WARNING: OT is crucial for GC security.")  //
+  ("output_mask", po::value<string>(&output_mask)->default_value("0"),
+   "Hexadecimal mask for output. 0 indicates that output belongs to Alice, "
+   "and 1 belongs to Bob ")  //
   ("output_mode", po::value<int>(&output_mode)->default_value(0),
    "0: normal, 1:separated by clock 2:last clock.");
 
@@ -130,10 +133,13 @@ int main(int argc, char* argv[]) {
       LOG(ERROR) << "Cannot open the socket in port " << port << endl;
       return FAILURE;
     }
-    LOG(INFO) << "Open Alice server on port: " << port << endl;
+    LOG(INFO) << "Open Alice's server on port: " << port << endl;
 
-    GarbleStr(scd_file_address, init_str, input_str, clock_cycles, disable_OT,
-              connfd);
+    string output_str;
+    GarbleStr(scd_file_address, init_str, input_str, clock_cycles, output_mask,
+              output_mode, disable_OT, &output_str, connfd);
+    LOG(INFO) << "Alice's output = " << output_str << endl;
+    std::cout << output_str << endl;
 
     ServerClose(connfd);
   } else if (vm.count("bob")) {
@@ -153,13 +159,13 @@ int main(int argc, char* argv[]) {
       LOG(ERROR) << "Cannot connect to " << server_ip << ":" << port << endl;
       return FAILURE;
     }
-    LOG(INFO) << "Connect Bob client to Alice server on " << server_ip << ":"
-              << port << endl;
+    LOG(INFO) << "Connect Bob's client to Alice's server on " << server_ip
+              << ":" << port << endl;
 
     string output_str;
     EvaluateStr(scd_file_address, init_str, input_str, clock_cycles,
-                output_mode, disable_OT, &output_str, connfd);
-    LOG(INFO) << "output = " << output_str << endl;
+                output_mask, output_mode, disable_OT, &output_str, connfd);
+    LOG(INFO) << "Bob's output = " << output_str << endl;
     std::cout << output_str << endl;
 
     ClientClose(connfd);
