@@ -4,6 +4,9 @@ compiler:
   - gcc
 
 before_script:
-  - ./config.sh
+  - mkdir bin
+  - cd bin
+  - cmake ..
+
 
 script: cd bin && make && ctest
