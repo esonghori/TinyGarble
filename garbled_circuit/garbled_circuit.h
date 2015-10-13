@@ -166,10 +166,12 @@ typedef struct GarbledCircuit {
 } GarbledCircuit;
 
 int GarbleStr(const string& scd_file_address, const string& init_str,
-              const string& input_str, uint64_t clock_cycles, bool use_OT,
-              int connfd);
+              const string& input_str, uint64_t clock_cycles,
+              const string& output_mask, int output_mode, bool disable_OT,
+              string* output_str, int connfd);
 int EvaluateStr(const string& scd_file_address, const string& init_str,
-                const string& input_str, uint64_t clock_cycles, int output_mode,
-                bool use_OT, string* output_str, int connfd);
+                const string& input_str, uint64_t clock_cycles,
+                const string& output_mask, int output_mode, bool disable_OT,
+                string* output_str, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_ */

@@ -794,29 +794,65 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
 
 int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
                          block* output_labels, uint64_t clock_cycles,
-                         int connfd) {
+                         const string& output_mask, int output_mode,
+                         string* output_str, int connfd) {
+  BIGNUM* output_mask_bn = BN_new();
+  BN_hex2bn(&output_mask_bn, output_mask.c_str());
+
+  BIGNUM* output_bn = BN_new();
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
     for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
-      short outputType = get_LSB(
+      short garble_output_type = get_LSB(
           output_labels[(cid * garbled_circuit.output_size + i) * 2 + 0]);
-      CHECK(SendData(connfd, &outputType, sizeof(short)));
+      short eval_output_type;
+      if (cid * garbled_circuit.output_size + i
+          >= (uint64_t) BN_num_bits(output_mask_bn)
+          || !BN_is_bit_set(output_mask_bn,
+                            cid * garbled_circuit.output_size + i)) {
+        CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
+        BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
+      } else {
+        CHECK(RecvData(connfd, &eval_output_type, sizeof(short)));
+        if (eval_output_type != garble_output_type) {
+          BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
+        } else {
+          BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
+        }
+      }
     }
   }
+  *output_str = OutputBN2Str(output_bn, clock_cycles,
+                             garbled_circuit.output_size, output_mode);
+
+  BN_free(output_mask_bn);
+  BN_free(output_bn);
   return SUCCESS;
 }
 int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
                            block* output_labels, uint64_t clock_cycles,
-                           int output_mode, string* output_str, int connfd) {
+                           const string& output_mask, int output_mode,
+                           string* output_str, int connfd) {
+  BIGNUM* output_mask_bn = BN_new();
+  BN_hex2bn(&output_mask_bn, output_mask.c_str());
+
   BIGNUM* output_bn = BN_new();
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
     for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
-      short myOutputType = get_LSB(
+      short garble_output_type;
+      short eval_output_type = get_LSB(
           output_labels[cid * garbled_circuit.output_size + i]);
-      short outputType;
-      CHECK(RecvData(connfd, &outputType, sizeof(short)));
-      if (myOutputType != outputType) {  // myOutputType XOR outputType
-        BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
+      if (cid * garbled_circuit.output_size + i
+          >= (uint64_t) BN_num_bits(output_mask_bn)
+          || !BN_is_bit_set(output_mask_bn,
+                            cid * garbled_circuit.output_size + i)) {
+        CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
+        if (eval_output_type != garble_output_type) {
+          BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
+        } else {
+          BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
+        }
       } else {
+        CHECK(SendData(connfd, &eval_output_type, sizeof(short)));
         BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
       }
     }
@@ -825,6 +861,7 @@ int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
   *output_str = OutputBN2Str(output_bn, clock_cycles,
                              garbled_circuit.output_size, output_mode);
 
+  BN_free(output_mask_bn);
   BN_free(output_bn);
   return SUCCESS;
 }
@@ -877,8 +914,9 @@ int EvaluateDeallocate(GarbledCircuit* garbled_circuit, short* e_init,
 }
 
 int GarbleStr(const string& scd_file_address, const string& init_str,
-              const string& input_str, uint64_t clock_cycles, bool disable_OT,
-              int connfd) {
+              const string& input_str, uint64_t clock_cycles,
+              const string& output_mask, int output_mode, bool disable_OT,
+              string* output_str, int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -928,7 +966,7 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 
   CHECK(
       GarbleTransferOutput(garbled_circuit, output_labels, clock_cycles,
-                           connfd));
+                           output_mask, output_mode, output_str, connfd));
 
   ServerClose(connfd);
   CHECK(
@@ -939,8 +977,9 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 }
 
 int EvaluateStr(const string& scd_file_address, const string& init_str,
-                const string& input_str, uint64_t clock_cycles, int output_mode,
-                bool disable_OT, string* output_str, int connfd) {
+                const string& input_str, uint64_t clock_cycles,
+                const string& output_mask, int output_mode, bool disable_OT,
+                string* output_str, int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -989,7 +1028,7 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
 
   CHECK(
       EvaluateTransferOutput(garbled_circuit, output_labels, clock_cycles,
-                             output_mode, output_str, connfd));
+                             output_mask, output_mode, output_str, connfd));
 
   ClientClose(connfd);
   CHECK(
