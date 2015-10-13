@@ -73,7 +73,7 @@ In `bin` directory call `ctest`:
 
 ### Binaries
 #### Main binary
-1. `V2SCD`: Translating netlist Verilog (`.v`) file to simple circuit 
+* `V2SCD`: Translating netlist Verilog (`.v`) file to simple circuit 
 description (`.scd`) file. 
 ```
   -h [ --help ]                         produce help message.
@@ -85,7 +85,7 @@ description (`.scd`) file.
                                         file address.
 
 ```
-2. `garbled_circuit/TinyGarble`: TinyGarble main binary:
+* `garbled_circuit/TinyGarble`: TinyGarble main binary:
 ```
   -h [ --help ]                         produce help message
   -a [ --alice ]                        Run as Alice (server).
@@ -106,11 +106,15 @@ description (`.scd`) file.
   --disable_OT                          Disable Oblivious Transfer (OT) for 
                                         transferring labels. WARNING: OT is 
                                         crucial for GC security.
+  --output_mask arg (=0)                Hexadecimal mask for output. 0 
+                                        indicates that output belongs to Alice,
+                                        and 1 belongs to Bob 
   --output_mode arg (=0)                0: normal, 1:separated by clock 2:last 
                                         clock.
+
 ```
 #### Other binary
-1. `scd/SCD_Evaluator_Main`: Evaluating a simple circuit description (`.scd`) file:
+* `scd/SCD_Evaluator_Main`: Evaluating a simple circuit description (`.scd`) file:
 ```
   -h [ --help ]                         produce help message
   -i [ --scd_file ] arg (=../scd/netlists/test4.scd)
@@ -124,7 +128,7 @@ description (`.scd`) file.
   --output_mode arg (=0)                0: normal, 1:separated by clock 2:last 
                                         clock.
 ``` 
-2. `crypto/OT_Main`: Oblivious Transfer binary:
+* `crypto/OT_Main`: Oblivious Transfer binary:
 ```
   -h [ --help ]                         produce help message
   -a [ --alice ]                        Run as Alice (server).
