@@ -1,11 +1,14 @@
 `timescale 1ns / 1ps
-// synopsys template
 
-module SUB #( parameter N=8 )(
-	input [N-1:0] A, B,
+module SUB #( parameter N = 8, M = N)( // N >= M
+	input [N-1:0] A,
+	input [M-1:0] B,
 	output CO,
 	output [N-1:0] S
 );
+
+	wire [N-1:0] BB;
+	assign BB = {{(N-M){1'b0}}, B};
 
 	wire C[N:0];
 
@@ -23,7 +26,7 @@ module SUB #( parameter N=8 )(
 		begin:FAINST
 			FA FA_ (
 				.A(A[g]), 
-				.B(~B[g]), 
+				.B(~BB[g]), 
 				.CI(C[g]), 
 				.S(S[g]), 
 				.CO(C[g+1])
@@ -38,7 +41,7 @@ module SUB #( parameter N=8 )(
 			begin:FA_INST_1
 				FA FA_ (
 					.A(A[h*MAX_LOOP + g]), 
-					.B(~B[h*MAX_LOOP + g]), 
+					.B(~BB[h*MAX_LOOP + g]), 
 					.CI(C[h*MAX_LOOP + g]), 
 					.S(S[h*MAX_LOOP + g]), 
 					.CO(C[h*MAX_LOOP + g +1])
@@ -49,7 +52,7 @@ module SUB #( parameter N=8 )(
 		begin:FA_INST_1
 			FA FA_ (
 				.A(A[g]), 
-				.B(~B[g]), 
+				.B(~BB[g]), 
 				.CI(C[g]), 
 				.S(S[g]), 
 				.CO(C[g+1])

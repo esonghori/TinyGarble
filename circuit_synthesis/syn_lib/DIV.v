@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module DIV #( parameter N = 8, M = 8 )( 
+module DIV #( parameter N = 8, M = N )( 
 	input  [N-1:0] A,
 	input  [M-1:0] B,
 	output [N-1:0] O
@@ -16,9 +16,18 @@ module DIV #( parameter N = 8, M = 8 )(
 	generate
 	for(g = N-1; g >= 0;g = g - 1)
 	begin:DIV_UNIT
+		if (g > 0)
 		ADD #(.N(N+M)) SUB(
 			.A(A_[g+1]),
 			.B({{(N-g){1'b1}}, ~B, {g{1'b1}}}),
+			.CI(1'b1),
+			.S(D[g]), 
+			.CO(O[g])
+		);
+		else 
+		ADD #(.N(N+M)) SUB(
+			.A(A_[g+1]),
+			.B({{(N-g){1'b1}}, ~B}),
 			.CI(1'b1),
 			.S(D[g]), 
 			.CO(O[g])

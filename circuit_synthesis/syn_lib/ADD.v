@@ -1,12 +1,21 @@
 `timescale 1ns / 1ps
 
-module ADD #(parameter N = 8)(
+module ADD #(parameter N = 8, M = N)( // N >= M
 	input [N-1:0] A,
-	input [N-1:0] B,
+	input [M-1:0] B,
 	input CI,
 	output CO,
 	output [N-1:0] S
 );
+
+	wire [N-1:0] BB;
+	generate
+		if (N > M)
+			assign BB = {{(N-M){1'b0}}, B};
+		else
+			assign BB = B;
+	endgenerate
+	
 
 	wire C[N:0];
 
@@ -25,7 +34,7 @@ module ADD #(parameter N = 8)(
 		begin:FAINST
 			FA FA_ (
 				.A(A[g]), 
-				.B(B[g]), 
+				.B(BB[g]), 
 				.CI(C[g]), 
 				.S(S[g]), 
 				.CO(C[g+1])
@@ -40,7 +49,7 @@ module ADD #(parameter N = 8)(
 			begin:FA_INST_1
 				FA FA_ (
 					.A(A[h*MAX_LOOP + g]), 
-					.B(B[h*MAX_LOOP + g]), 
+					.B(BB[h*MAX_LOOP + g]), 
 					.CI(C[h*MAX_LOOP + g]), 
 					.S(S[h*MAX_LOOP + g]), 
 					.CO(C[h*MAX_LOOP + g +1])
@@ -51,7 +60,7 @@ module ADD #(parameter N = 8)(
 		begin:FA_INST_1
 			FA FA_ (
 				.A(A[g]), 
-				.B(B[g]), 
+				.B(BB[g]), 
 				.CI(C[g]), 
 				.S(S[g]), 
 				.CO(C[g+1])
