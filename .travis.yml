@@ -18,6 +18,6 @@ install:
   - cd ..
 
 before_script:
-  - ./config.sh
+  - ./configure
 
 script: cd bin && make && ctest
