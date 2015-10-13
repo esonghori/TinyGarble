@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/esonghori/TinyGarble.svg?branch=develop)](https://travis-ci.org/esonghori/TinyGarble)
+
 TinyGarble
 =======
 TinyGarble is a full implementation of Yao's Garbled Circuit (GC) protocol for 
@@ -58,7 +60,7 @@ Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
 ### Compile
 Confing TinyGarble and then compile it in `bin` directory:
 ```
-  $ ./config
+  $ ./configure
   $ cd bin
   $ make
 ```
