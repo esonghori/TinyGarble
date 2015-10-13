@@ -1,0 +1,23 @@
+sudo: required
+
+language: cpp
+
+compiler:
+  - gcc
+
+install:
+  - sudo apt-get install build-essential
+  - sudo apt-get install libssl-dev
+  - sudo apt-get install libboost-all-dev
+  - wget http://www.cmake.org/files/v3.3/cmake-3.3.2.tar.gz
+  - tar xf cmake-3.3.2.tar.gz
+  - cd cmake-3.3.2
+  - ./configure --parallel=8
+  - make -j 8
+  - sudo make install
+  - cd ..
+
+before_script:
+  - ./configure
+
+script: cd bin && make && ctest
