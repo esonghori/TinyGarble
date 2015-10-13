@@ -22,24 +22,27 @@ module sha3_comb
 (
 	clk,
 	rst, 
-	in,
-	out
+	g_input,
+  e_input,
+	o
 );
 
-    input               clk;
-    input 				rst;
-    input	[575:0]		in;
-    output  [1599:0]	out;
-	wire	[63:0]			rc[24/CC-1:0]; /* round constant */
-	
-	
-    wire	[1599:0]		round_in[24/CC-1:0];
-    wire 	[1599:0]		round_out[24/CC-1:0];
+  input             clk;
+  input 				    rst;
+  input	  [287:0]		g_input;
+  input   [287:0]   e_input;
+  output  [1599:0]	o;
+  wire	  [63:0]		rc [24/CC-1:0]; /* round constant */
+  wire    [575:0]   in;
+  wire	  [1599:0]	round_in [24/CC-1:0];
+  wire 	  [1599:0]	round_out [24/CC-1:0];
     
 
+  assign in[287:0] = g_input;
+  assign in[575:288] = e_input;
 	
-    assign round_in[0] = in;
-	assign out = round_out[24/CC-1];
+  assign round_in[0] = in;
+	assign o = round_out[24/CC-1];
 
 	genvar q;
 	

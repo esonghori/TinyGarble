@@ -9,7 +9,7 @@ module aes_seq
 	e_input,
 	o
 );
-	localparam				NR = 10;
+	localparam		NR = 10;
 	input					clk;
 	input					rst;
   input   [128*NR/CC-1:0] g_input;

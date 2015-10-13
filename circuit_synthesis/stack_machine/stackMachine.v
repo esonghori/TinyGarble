@@ -8,14 +8,14 @@ module stackMachine
 (
 	clk,
 	rst,
-	x,
-	opcode,
+	g_input,
+	e_input,
 	o
 );
-	input						clk;
-	input						rst;
-	input signed		[N-1:0]	x;
-	input				[2:0] 	opcode;
+	input						          clk;
+	input						          rst;
+	input signed		  [N-1:0]	g_input;
+	input				      [2:0] 	e_input;
 	output reg signed	[N-1:0]	o;
 
 	reg signed			[N-1:0]	alu;
@@ -32,7 +32,7 @@ module stackMachine
 		op1 <= 0;
 		op2 <= 0;
 		alu <= stack[0];
-		case(opcode)
+		case(e_input)
 		3'd0://nop
 		begin
 		 	alu <= stack[0];
@@ -84,7 +84,7 @@ module stackMachine
 	begin
 		if(push)
 		begin
-			o <= x; 
+			o <= g_input; 
 		end
 		else
 		begin
@@ -105,7 +105,7 @@ module stackMachine
 		begin
 			if(push)
 			begin
-				stack[0] <= x; 
+				stack[0] <= g_input; 
 				for(j=1;j<S;j=j+1)
 				begin
 					stack[j] <= stack[j-1];
