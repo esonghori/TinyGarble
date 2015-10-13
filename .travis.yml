@@ -13,7 +13,7 @@ install:
   - tar xf cmake-3.3.2.tar.gz
   - cd cmake-3.3.2
   - ./configure
-  - make -j 3
+  - make -j 8
   - sudo make install
   - cd ..
 
