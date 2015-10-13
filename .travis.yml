@@ -5,6 +5,5 @@ compiler:
 
 before_script:
   - ./config.sh
-  - cd bin
 
-script: make && ctest
+script: cd bin && make && ctest
