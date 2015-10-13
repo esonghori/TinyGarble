@@ -90,7 +90,7 @@ description (`.scd`) file.
   -h [ --help ]                         produce help message
   -a [ --alice ]                        Run as Alice (server).
   -b [ --bob ]                          Run as Bob (client).
-  -i [ --scd_file ] arg (=../read_netlist/netlists/test.scd)
+  -i [ --scd_file ] arg (=../scd/netlists/hamming_32bit_1cc.scd)
                                         Simple circuit description (.scd) file 
                                         address.
   -p [ --port ] arg (=1234)             socket port
@@ -111,7 +111,6 @@ description (`.scd`) file.
                                         and 1 belongs to Bob 
   --output_mode arg (=0)                0: normal, 1:separated by clock 2:last 
                                         clock.
-
 ```
 #### Other binary
 * `scd/SCD_Evaluator_Main`: Evaluating a simple circuit description (`.scd`) file:
