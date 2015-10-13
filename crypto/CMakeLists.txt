@@ -20,6 +20,7 @@ endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(BN_Test ${Boost_LIBRARIES})
 endif (Boost_FOUND)
+target_link_libraries(BN_Test -lrt)
 
 add_test (Crypto_BN_Test 
   BN_Test --log2std)
@@ -43,6 +44,7 @@ endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(OT_Test ${Boost_LIBRARIES})
 endif (Boost_FOUND)
+target_link_libraries(OT_Test -lrt)
 
 add_test (Crypto_OT_Test 
   OT_Test --log2std)
@@ -67,6 +69,7 @@ endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(OT_Extension_Test ${Boost_LIBRARIES})
 endif (Boost_FOUND)
+target_link_libraries(OT_Extension_Test -lrt)
 
 add_test (Crypto_OT_Extension_Test 
   OT_Extension_Test --log2std)
@@ -90,3 +93,4 @@ endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(OT_Main ${Boost_LIBRARIES})
 endif (Boost_FOUND)
+target_link_libraries(OT_Main -lrt)
