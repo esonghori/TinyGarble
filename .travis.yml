@@ -15,10 +15,9 @@ install:
   - ./configure
   - make
   - sudo make install
+  - cd ..
 
 before_script:
-  - mkdir bin
-  - cd bin
-  - cmake ..
+  - ./config
 
 script: cd bin && make && ctest
