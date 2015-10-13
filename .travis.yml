@@ -1,0 +1,10 @@
+language: cpp
+
+compiler:
+  - gcc
+
+before_script:
+  - ./config
+  - cd bin
+
+script: make && ctest
