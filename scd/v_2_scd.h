@@ -20,18 +20,10 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 using std::vector;
+using std::pair;
 using std::string;
-
-#define MAX_NO_OF_INPUTS 20000
-#define MAX_NO_OF_OUTPUTS 20000
-#define MAX_NO_OF_GATES 100000
-#define DEBUG_PARSER 0
-#define DEBUG_SCHEDULER 0
-
-#ifdef DEBUG
-#define VERBOSE
-#endif
 
 class ReadGateString {
  public:
@@ -45,11 +37,14 @@ class ReadCircuitString {
  public:
   vector<ReadGateString> gate_list_string;
   vector<ReadGateString> dff_list_string;
+  vector<pair<string,string>> assignment_list_string;
   uint64_t g_init_size;
   uint64_t e_init_size;
   uint64_t g_input_size;
   uint64_t e_input_size;
   uint64_t output_size;
+
+
 
   ReadCircuitString()
       : gate_list_string(0),
@@ -60,7 +55,6 @@ class ReadCircuitString {
     e_input_size = 0;
     output_size = 0;
   }
-  ;
 };
 
 class ReadGate {
