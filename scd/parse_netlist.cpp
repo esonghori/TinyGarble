@@ -65,34 +65,35 @@ string Type2StrGate(short itype) {
 
 int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
 
-  ifstream fin(filename.c_str(), std::ios::in);
-  if (!fin.good()) {
-    LOG(ERROR) << "file not found:" << filename << endl;
-    return -1;
-  }
-
-  uint64_t no_of_bits = 0;
-  bool is_inport = 0;
-  bool is_outport = 0;
-  bool store_input0 = 0;
-  bool store_input1 = 0;
-  bool store_output = 0;
-  bool store_d = 0;
-  bool store_i = 0;
-  bool store_q = 0;
-
   enum Block {
     MUX,
     FADDER,
     HADDER
   };
 
+  ifstream fin(filename.c_str(), std::ios::in);
+  if (!fin.good()) {
+    LOG(ERROR) << "file not found:" << filename << endl;
+    return -1;
+  }
+
+  bool is_right_assignmnet = false;
+  bool is_left_assignmnet = false;
+  uint64_t no_of_bits = false;
+  bool is_inport = false;
+  bool is_outport = false;
+  bool store_input0 = false;
+  bool store_input1 = false;
+  bool store_output = false;
+  bool store_d = false;
+  bool store_i = false;
+  bool store_q = false;
   enum Block block_type = MUX;
-  bool store_in0 = 0;
-  bool store_in1 = 0;
-  bool store_sel_cin = 0;
-  bool store_cout = 0;
-  bool store_f_sum = 0;
+  bool store_in0 = false;
+  bool store_in1 = false;
+  bool store_sel_cin = false;
+  bool store_cout = false;
+  bool store_f_sum = false;
 
   string buf("_");
   bool endoffile = false;
@@ -117,6 +118,10 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       is_outport = 0;
       is_inport = 0;
       no_of_bits = 0;
+    } else if(!str.compare("assign")) {
+      is_left_assignmnet = true;
+    } else if(!str.compare("=")) {
+      is_right_assignmnet = true;
     } else if(!str.compare("AND")) {
       is_outport = 0;
       is_inport = 0;
@@ -238,6 +243,16 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       readCircuitString.gate_list_string.push_back(g3);
       readCircuitString.gate_list_string.push_back(g4);
       readCircuitString.gate_list_string.push_back(g5);
+    } else if(is_left_assignmnet) {
+      readCircuitString.assignment_list_string.push_back(
+          std::make_pair(str, ""));
+      is_left_assignmnet = false;
+    } else if(is_right_assignmnet) {
+      const auto assign_pair = readCircuitString.assignment_list_string.back();
+      readCircuitString.assignment_list_string.pop_back();
+      readCircuitString.assignment_list_string.push_back(
+          std::make_pair(assign_pair.first, str));
+      is_right_assignmnet = false;
     } else if(is_inport) {
       if (str.at(0) =='[') {
         tokenizer<> bits(str);
@@ -388,11 +403,10 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
   }
 }
 
-  LOG(INFO) << "string name" << endl;
-  LOG(INFO) << "g_init:" << readCircuitString.g_init_size << endl;
-  LOG(INFO) << "e_init:" << readCircuitString.e_init_size << endl;
-  LOG(INFO) << "g_input:" << readCircuitString.g_input_size << endl;
-  LOG(INFO) << "e_input:" << readCircuitString.e_input_size << endl;
+  LOG(INFO) << "g_init:" << readCircuitString.g_init_size << " e_init:"
+            << readCircuitString.e_init_size << " g_input:"
+            << readCircuitString.g_input_size << " e_input:"
+            << readCircuitString.e_input_size << endl;
 
   LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (uint64_t i = 0; i < readCircuitString.dff_list_string.size(); i++) {
@@ -402,7 +416,6 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
               << readCircuitString.dff_list_string[i].input[1] << "\t"
               << readCircuitString.dff_list_string[i].output << endl;
   }
-  LOG(INFO) << endl;
 
   LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
   for (uint64_t i = 0; i < readCircuitString.gate_list_string.size(); i++) {
@@ -412,13 +425,19 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
               << readCircuitString.gate_list_string[i].input[1] << "\t"
               << readCircuitString.gate_list_string[i].output << endl;
   }
-  LOG(INFO) << endl;
 
   LOG(INFO) << "outputs:" << endl;
   for (uint64_t i = 0; i < readCircuitString.output_size; i++) {
     LOG(INFO) << "o[" << i << "]" << " " << i << endl;
   }
-  LOG(INFO) << endl;
+
+  LOG(INFO) << "assignments:" << endl;
+  for (uint64_t i = 0; i < readCircuitString.assignment_list_string.size();
+      i++) {
+    LOG(INFO) << readCircuitString.assignment_list_string[i].first << " = "
+              << readCircuitString.assignment_list_string[i].second << endl;
+  }
+
   return 0;
 }
 
@@ -471,6 +490,20 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
   wire_name_table.insert(pair<string, int64_t>("", ((uint64_t) -1)));
   wire_name_table.insert(pair<string, int64_t>("1'b0", CONST_ZERO));
   wire_name_table.insert(pair<string, int64_t>("1'b1", CONST_ONE));
+
+  for (uint64_t i = 0; i < readCircuitString.assignment_list_string.size();
+      i++) {
+    const auto assign_pair = readCircuitString.assignment_list_string[i];
+    if (wire_name_table.count(assign_pair.first)) {
+      wire_name_table[assign_pair.second] = wire_name_table[assign_pair.first];
+    } else if (wire_name_table.count(assign_pair.second)) {
+      wire_name_table[assign_pair.first] = wire_name_table[assign_pair.second];
+    } else {
+      LOG(ERROR) << "Can not find wire " << assign_pair.first << " or "
+                 << assign_pair.second
+                 << " which were mentioned in an assignment statement" << endl;
+    }
+  }
 
   readCircuit.gate_list.resize(readCircuit.gate_size);
   readCircuit.output_list.resize(readCircuit.output_size);
@@ -538,8 +571,6 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
           + "]"];
     }
   }
-
-  LOG(INFO) << "ID assignment" << endl;
 
   LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
