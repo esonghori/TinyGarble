@@ -116,10 +116,10 @@ int Bob(const void *data, int connfd) {
 
 MU_TEST(Mux8Bit) {
 
-  LOG(INFO) << "Test Mux8Bit" << endl;
+  LOG(INFO) << "Test Mux 8-bit 1cc" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/mux_8bit.scd";
+      + "/scd/netlists/mux_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
@@ -135,7 +135,7 @@ MU_TEST(Mux8Bit) {
     string e_input_str = std::to_string(select);
     string output_str = "";
 
-    LOG(INFO) << "mux (8bit 1cc): " << e_input_str << " from {0:"
+    LOG(INFO) << "mux (8-bit 1cc): " << e_input_str << " from {0:"
               << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2)
               << "}. " << g_input_str << endl;
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
@@ -159,10 +159,10 @@ MU_TEST(Mux8Bit) {
 
 MU_TEST(Sum1Bit) {
 
-  LOG(INFO) << "Test Sum1Bit" << endl;
+  LOG(INFO) << "Test Sum 8-bit 8cc" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/sum_1bit.scd";
+      + "/scd/netlists/sum_nbit_ncc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 8;
@@ -177,7 +177,7 @@ MU_TEST(Sum1Bit) {
     string e_input_str = to_string_hex(x[1], 2);
     string output_str = "";
 
-    LOG(INFO) << "sum (1bit 8cc): " << g_input_str << " + " << e_input_str
+    LOG(INFO) << "sum (1-bit 8cc): " << g_input_str << " + " << e_input_str
               << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
@@ -202,10 +202,10 @@ MU_TEST(Sum1Bit) {
 
 MU_TEST(Sum8Bit) {
 
-  LOG(INFO) << "Test Sum8Bit" << endl;
+  LOG(INFO) << "Test Sum 8-Bit 1cc" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/sum_8bit.scd";
+      + "/scd/netlists/sum_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
@@ -220,7 +220,7 @@ MU_TEST(Sum8Bit) {
     string e_input_str = to_string_hex(x[1], 2);
     string output_str = "";
 
-    LOG(INFO) << "sum (8bit 1cc): " << g_input_str << " + " << e_input_str
+    LOG(INFO) << "sum (8-bit 1cc): " << g_input_str << " + " << e_input_str
               << endl;
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
@@ -243,7 +243,7 @@ MU_TEST(Sum8Bit) {
 
 MU_TEST(Hamming32Bit1cc) {
 
-  LOG(INFO) << "Test Hamming32Bit1cc" << endl;
+  LOG(INFO) << "Test Hamming 32-bit 1cc" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_1cc.scd";
@@ -261,7 +261,7 @@ MU_TEST(Hamming32Bit1cc) {
     string e_input_str = to_string_hex(x[1], 8);
     string output_str = "";
 
-    LOG(INFO) << "Hamming (32bit 1cc) distance between " << g_input_str
+    LOG(INFO) << "Hamming (32-bit 1cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
@@ -285,7 +285,7 @@ MU_TEST(Hamming32Bit1cc) {
 
 MU_TEST(Hamming32Bit8cc) {
 
-  LOG(INFO) << "Test Hamming32Bit8cc" << endl;
+  LOG(INFO) << "Test Hamming 32-bit 8cc" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
@@ -303,7 +303,7 @@ MU_TEST(Hamming32Bit8cc) {
     string e_input_str = to_string_hex(x[1], 8);
     string output_str = "";
 
-    LOG(INFO) << "Hamming (32bit 8cc) distance between " << g_input_str
+    LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
@@ -328,7 +328,7 @@ MU_TEST(Hamming32Bit8cc) {
 
 MU_TEST(Hamming32Bit8ccDisabledOT) {
 
-  LOG(INFO) << "Test Hamming32Bit8ccDisabledOT" << endl;
+  LOG(INFO) << "Test Hamming 32-bit 8cc Disabled OT" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
@@ -346,7 +346,7 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
     string e_input_str = to_string_hex(x[1], 8);
     string output_str = "";
 
-    LOG(INFO) << "Hamming (32bit 8cc) distance between " << g_input_str
+    LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
@@ -370,7 +370,7 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
 }
 
 MU_TEST(Hamming32Bit8ccWithMask) {
-  LOG(INFO) << "Test Hamming32Bit8ccWithMask" << endl;
+  LOG(INFO) << "Test Hamming 32-bit 8cc with output mask" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
@@ -389,7 +389,7 @@ MU_TEST(Hamming32Bit8ccWithMask) {
     string e_input_str = to_string_hex(x[1], 8);
     string output_str = "";
 
-    LOG(INFO) << "Hamming (32bit 8cc) distance between " << g_input_str
+    LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
