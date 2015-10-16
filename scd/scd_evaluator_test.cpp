@@ -43,7 +43,7 @@ uint32_t HammingDistance(uint32_t x, uint32_t y) {
 
 MU_TEST(Sum1Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/sum_1bit.scd";
+      + "/scd/netlists/sum_nbit_ncc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 8;
@@ -73,7 +73,7 @@ MU_TEST(Sum1Bit) {
 
 MU_TEST(Mux8Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/mux_8bit.scd";
+      + "/scd/netlists/mux_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
@@ -104,7 +104,7 @@ MU_TEST(Mux8Bit) {
 
 MU_TEST(Sum8Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/sum_8bit.scd";
+      + "/scd/netlists/sum_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
