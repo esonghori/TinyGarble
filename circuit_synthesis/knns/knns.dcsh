@@ -9,54 +9,30 @@ analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../s
 
 analyze -format verilog {first_nns_comb.v first_nns_seq.v k_nns_seq.v}
 
+#foreach n {512} {
+#foreach w {15 31} {
+#elaborate first_nns_comb -architecture verilog -library DEFAULT -update -parameters $w,$n
+#set_max_area -ignore_tns 0 
+#set_flatten false -design *
+#set_structure -design * false
+#set_resource_allocation area_only
+#report_compile_options
+#compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
+#write -hierarchy -format verilog -output syn/first_nns_comb_$w\_$n.v
+#}
+#}
 
-#foreach n {128 256 512} {
-foreach n {512} {
-#foreach w {7 15 31} {
-foreach w {15 31} {
-elaborate first_nns_comb -architecture verilog -library DEFAULT -update -parameters $w,$n
+foreach k {4} {
+foreach w {31} {
+elaborate k_nns_seq -architecture verilog -library DEFAULT -update -parameters $w,$k
 set_max_area -ignore_tns 0 
 set_flatten false -design *
 set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
-write -hierarchy -format verilog -output syn/first_nns_comb_$w\_$n.v
+write -hierarchy -format verilog -output syn/k_nns_seq_$w\_$k.v
 }
 }
-
-
-
-#foreach w {7 15 31} {
-#elaborate first_nns_seq -architecture verilog -library DEFAULT -update -parameters $w
-#set_max_area -ignore_tns 0 
-#set_flatten false -design *
-#set_structure -design * false
-#set_resource_allocation area_only
-#report_compile_options
-#compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
-#write -hierarchy -format verilog -output syn/first_nns_seq_$w.v
-#}
-
-
-
-#foreach k {2 4 8} {
-#foreach w {7 15 31} {
-#elaborate k_nns_seq -architecture verilog -library DEFAULT -update -parameters $w,$k
-#set_max_area -ignore_tns 0 
-#set_flatten false -design *
-#set_structure -design * false
-#set_resource_allocation area_only
-#report_compile_options
-#compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
-#write -hierarchy -format verilog -output syn/k_nns_seq_$w\_$k.v
-#}
-#}
-
-
-
-
-
-
 
 exit

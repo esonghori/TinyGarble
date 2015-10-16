@@ -9,7 +9,7 @@ analyze -format verilog SubBytes.v
 analyze -format verilog ShiftRows.v 
 analyze -format verilog MixColumns.v 
 
-foreach cc {10 5 2} {
+foreach cc {10} {
 elaborate aes_seq -architecture verilog -library DEFAULT -update -parameters $cc
 set_max_area -ignore_tns 0 
 set_flatten false -design *
@@ -28,3 +28,6 @@ write -hierarchy -format verilog -output syn_non_large/aes_syn_$cc.v
 #report_compile_options
 #compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
 #write -hierarchy -format verilog -output syn_non_large_real/aes_syn_1.v
+
+
+exit

@@ -35,3 +35,5 @@ write -hierarchy -format verilog -output syn/sha3_syn_$cc.v
 #report_compile_options
 #compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
 #write -hierarchy -format verilog -output syn/sha3_syn_1.v
+
+exit

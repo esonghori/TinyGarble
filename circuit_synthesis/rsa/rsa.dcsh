@@ -86,3 +86,6 @@ write -hierarchy -format verilog -output syn/modexp_syn_1024_$cc.v
 #write -hierarchy -format verilog -output syn/modexp_syn_8192_$cc.v
 #}
 
+
+exit
+

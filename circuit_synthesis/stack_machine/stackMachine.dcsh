@@ -20,3 +20,5 @@ report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
 write -hierarchy -format verilog -output syn/stackMachine_syn_$N.v
 }
+
+exit

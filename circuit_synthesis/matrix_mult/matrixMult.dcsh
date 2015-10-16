@@ -24,3 +24,4 @@ write -hierarchy -format verilog -output syn/matrixMult_syn_$n\_32_$cc.v
 }
 }
 
+exit
