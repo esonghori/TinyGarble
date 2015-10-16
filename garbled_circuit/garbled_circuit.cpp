@@ -75,7 +75,7 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
           wires[dff_bias + i].label0 = const_labels[1 * 2 + 0];
           wires[dff_bias + i].label1 = const_labels[1 * 2 + 1];
         } else if (wire_index >= 0
-            && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
+            && wire_index < (int64_t) garbled_circuit.get_init_size()) {
           wires[dff_bias + i].label0 = init_labels[wire_index * 2 + 0];
           wires[dff_bias + i].label1 = init_labels[wire_index * 2 + 1];
         } else {
@@ -301,7 +301,7 @@ uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
         } else if (wire_index == CONST_ONE) {
           wires[dff_bias + i] = const_labels[1];
         } else if (wire_index >= 0
-            && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
+            && wire_index < (int64_t) garbled_circuit.get_init_size()) {
           wires[dff_bias + i] = init_labels[wire_index];
         } else {
           LOG(ERROR) << "Invalid I: " << wire_index << endl;
@@ -503,7 +503,8 @@ int EvalauteOTExt(const GarbledCircuit& garbled_circuit, short* e_init,
   CHECK(OTExtRecv(sel, m_len, connfd, m));
   uint64_t end_time = RDTSC;
 
-  LOG(INFO) << "Total OT Extension receive time (cc) = " << end_time - start_time
+  LOG(INFO) << "Total OT Extension receive time (cc) = "
+            << end_time - start_time
             << "\tOT Extension receive time per byte (cc/Byte) = "
             << (end_time - start_time) / ((double) (m_len * sizeof(block)))
             << endl;

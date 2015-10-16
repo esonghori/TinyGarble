@@ -42,7 +42,6 @@ ostream* log_map[2];  // ERROR, INFO
 DummyLog dummy_log;
 bool __dummy_expr__;
 
-
 DummyLog& DummyLogStream() {
   return dummy_log;
 }
@@ -87,10 +86,13 @@ void LogInitial(int argc, char *argv[]) {
     log_map[ERROR] = &std::cerr;
     log_map[INFO] = &std::cout;
   } else {
-    string file_addresss_error = string(argv[0]) + "-error.log";
+    string timestamp = std::to_string(time(nullptr));
+
+    string file_addresss_error = string(argv[0]) + "-" + timestamp
+        + "-error.log";
     log_map[ERROR] = new std::ofstream(file_addresss_error.c_str(),
                                        std::ios::out);
-    string file_addresss_info = string(argv[0]) + "-error.log";
+    string file_addresss_info = string(argv[0]) + "-" + timestamp + "-info.log";
     log_map[INFO] = new std::ofstream(file_addresss_info.c_str(),
                                       std::ios::out);
   }
@@ -116,7 +118,7 @@ void LogFinish() {
 
 // dump_file : { "dff", "input", "output", "table", "r_key" }
 ostream& Dump(const string& dump_file) {
-  if(dump_prefix == "") {
+  if (dump_prefix == "") {
     return *dev_null;
   }
   if (dump_map.count(dump_file)) {
