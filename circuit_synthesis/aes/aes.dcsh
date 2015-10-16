@@ -17,7 +17,7 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn_non_large/aes_syn_$cc.v
+write -hierarchy -format verilog -output syn/aes_syn_$cc.v
 }
 
 #elaborate aes_comb -architecture verilog -library DEFAULT -update
@@ -27,7 +27,7 @@ write -hierarchy -format verilog -output syn_non_large/aes_syn_$cc.v
 #set_resource_allocation area_only
 #report_compile_options
 #compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn_non_large_real/aes_syn_1.v
+#write -hierarchy -format verilog -output syn/aes_syn_1.v
 
 
 exit

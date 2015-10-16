@@ -1,44 +1,57 @@
 `timescale 1ns / 1ps
-// synopsys template
 
-module MULT
+module mult
 #(
-	parameter N=8
+  parameter N=128,
+  parameter CC=1
 )
 ( 
-	g_input,
-	e_input,
-	o
+  clk,
+  rst,
+  g_input,
+  e_input,
+  o
 );
-	input  [N-1:0] g_input;
-	input  [N-1:0] e_input;
-	output [N-1:0] o;
-	
+  input  clk;
+  input  rst;
+  input  [N-1:0] g_input;
+  input  [N/CC-1:0] e_input;
+  output [2*N-1:0] o;
+  
+  reg [2*N-1:0] sreg;
+  wire [2*N-1:0] swire;
 
-	wire [N-1:0] w[N-1:0];
+  wire [N+N/CC-1:0] clocal;
 
-	
-	assign w[0] = (g_input[0])?e_input:0;
-	assign o = w[N-1];
-	
-	genvar g,h;
-	
-	generate
-	for(g=1;g<N;g=g+1)
-	begin:FAINST
-			ADD 
-			#(
-				.N(N)
-			) 
-			ADD_
-			(
-				.g_input(((g_input[g])?{e_input[N-1-g:0], {g{1'b0}}}:{N{1'b0}})),
-				.e_input(w[g-1]), 
-				.CI(1'b0), 
-				.S(w[g]), 
-				.CO()
-			);
-	end
-	endgenerate
-	
+  assign clocal = g_input*e_input;
+  //MULT
+
+
+
+  generate
+  if(CC>1)
+    assign swire  = sreg + {clocal,{(N-N/CC){1'b0}}};
+  endgenerate
+
+  generate
+  if(CC>1)
+    always@(posedge clk or posedge rst)
+    begin
+      if(rst)
+      begin
+        sreg <= 'b0;
+      end
+      else
+      begin
+        sreg <= {{N/CC{1'b0}},swire[2*N-1:N/CC]};     
+      end
+    end
+  endgenerate
+
+  generate 
+  if(CC>1)
+    assign o = swire;
+  else
+    assign o = clocal;
+  endgenerate
 endmodule

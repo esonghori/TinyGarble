@@ -9,7 +9,7 @@ analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v}
 analyze -format verilog mult.v
 
 ##n = 32
-foreach cc {32} {
+foreach cc {32 1} {
 elaborate mult -architecture verilog -library DEFAULT -update -parameters 32,$cc
 set_max_area -ignore_tns 0 
 set_flatten false -design *
@@ -19,5 +19,4 @@ report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
 write -hierarchy -format verilog -output syn/mult_syn_32_$cc.v
 }
-
 exit

@@ -18,7 +18,7 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all  -map_effort low -area_effort low -no_design_rule
-write -hierarchy -format verilog -output syn/knns_seq_$w\_$k.v
+write -hierarchy -format verilog -output syn/knns_td_seq_$w\_$k.v
 }
 }
 
