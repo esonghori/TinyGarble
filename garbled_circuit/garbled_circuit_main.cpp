@@ -80,10 +80,10 @@ int main(int argc, char* argv[]) {
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
-  ("init", po::value<string>(&init_str),
-   "Hexadecimal init for initializing DFFs, if not provided, it will be 0.")  //
-  ("input", po::value<string>(&input_str),
-   "Hexadecimal input, if not provided, it will be 0.")  //
+  ("init", po::value<string>(&init_str)->default_value("0"),
+   "Hexadecimal init for initializing DFFs.")  //
+  ("input", po::value<string>(&input_str)->default_value("0"),
+   "Hexadecimal input.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),

@@ -48,7 +48,7 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
         } else if (wire_index == CONST_ONE) {
           b = true;
         } else if (wire_index >= 0
-            && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
+            && wire_index < (int64_t) garbled_circuit.get_init_size()) {
           if (wire_index < (int64_t) garbled_circuit.g_init_size) {
             b = BN_is_bit_set(g_init, wire_index);
           } else {
