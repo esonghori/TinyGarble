@@ -1,7 +1,7 @@
 
-module aes_seq_CC10 ( clk, rst, g_input, e_input, o );
+module aes_seq_CC10 ( clk, rst, e_init, g_input, o );
+  input [127:0] e_init;
   input [127:0] g_input;
-  input [127:0] e_input;
   output [127:0] o;
   input clk, rst;
   wire   n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16,
@@ -245,233 +245,261 @@ module aes_seq_CC10 ( clk, rst, g_input, e_input, o );
          n2493, n2494, n2495, n2496, n2497, n2498, n2499, n2500, n2501;
   wire   [127:0] state;
 
-  DFF \state_reg[127]  ( .D(state[127]), .CLK(clk), .RST(rst), .I(e_input[127]), .Q(state[127]) );
-  DFF \state_reg[126]  ( .D(state[126]), .CLK(clk), .RST(rst), .I(e_input[126]), .Q(state[126]) );
-  DFF \state_reg[125]  ( .D(state[125]), .CLK(clk), .RST(rst), .I(e_input[125]), .Q(state[125]) );
-  DFF \state_reg[124]  ( .D(state[124]), .CLK(clk), .RST(rst), .I(e_input[124]), .Q(state[124]) );
-  DFF \state_reg[123]  ( .D(state[123]), .CLK(clk), .RST(rst), .I(e_input[123]), .Q(state[123]) );
-  DFF \state_reg[122]  ( .D(state[122]), .CLK(clk), .RST(rst), .I(e_input[122]), .Q(state[122]) );
-  DFF \state_reg[121]  ( .D(state[121]), .CLK(clk), .RST(rst), .I(e_input[121]), .Q(state[121]) );
-  DFF \state_reg[120]  ( .D(state[120]), .CLK(clk), .RST(rst), .I(e_input[120]), .Q(state[120]) );
-  DFF \state_reg[119]  ( .D(state[119]), .CLK(clk), .RST(rst), .I(e_input[119]), .Q(state[119]) );
-  DFF \state_reg[118]  ( .D(state[118]), .CLK(clk), .RST(rst), .I(e_input[118]), .Q(state[118]) );
-  DFF \state_reg[117]  ( .D(state[117]), .CLK(clk), .RST(rst), .I(e_input[117]), .Q(state[117]) );
-  DFF \state_reg[116]  ( .D(state[116]), .CLK(clk), .RST(rst), .I(e_input[116]), .Q(state[116]) );
-  DFF \state_reg[115]  ( .D(state[115]), .CLK(clk), .RST(rst), .I(e_input[115]), .Q(state[115]) );
-  DFF \state_reg[114]  ( .D(state[114]), .CLK(clk), .RST(rst), .I(e_input[114]), .Q(state[114]) );
-  DFF \state_reg[113]  ( .D(state[113]), .CLK(clk), .RST(rst), .I(e_input[113]), .Q(state[113]) );
-  DFF \state_reg[112]  ( .D(state[112]), .CLK(clk), .RST(rst), .I(e_input[112]), .Q(state[112]) );
-  DFF \state_reg[111]  ( .D(state[111]), .CLK(clk), .RST(rst), .I(e_input[111]), .Q(state[111]) );
-  DFF \state_reg[110]  ( .D(state[110]), .CLK(clk), .RST(rst), .I(e_input[110]), .Q(state[110]) );
-  DFF \state_reg[109]  ( .D(state[109]), .CLK(clk), .RST(rst), .I(e_input[109]), .Q(state[109]) );
-  DFF \state_reg[108]  ( .D(state[108]), .CLK(clk), .RST(rst), .I(e_input[108]), .Q(state[108]) );
-  DFF \state_reg[107]  ( .D(state[107]), .CLK(clk), .RST(rst), .I(e_input[107]), .Q(state[107]) );
-  DFF \state_reg[106]  ( .D(state[106]), .CLK(clk), .RST(rst), .I(e_input[106]), .Q(state[106]) );
-  DFF \state_reg[105]  ( .D(state[105]), .CLK(clk), .RST(rst), .I(e_input[105]), .Q(state[105]) );
-  DFF \state_reg[104]  ( .D(state[104]), .CLK(clk), .RST(rst), .I(e_input[104]), .Q(state[104]) );
-  DFF \state_reg[103]  ( .D(state[103]), .CLK(clk), .RST(rst), .I(e_input[103]), .Q(state[103]) );
-  DFF \state_reg[102]  ( .D(state[102]), .CLK(clk), .RST(rst), .I(e_input[102]), .Q(state[102]) );
-  DFF \state_reg[101]  ( .D(state[101]), .CLK(clk), .RST(rst), .I(e_input[101]), .Q(state[101]) );
-  DFF \state_reg[100]  ( .D(state[100]), .CLK(clk), .RST(rst), .I(e_input[100]), .Q(state[100]) );
-  DFF \state_reg[99]  ( .D(state[99]), .CLK(clk), .RST(rst), .I(e_input[99]), 
+  DFF \state_reg[127]  ( .D(state[127]), .CLK(clk), .RST(rst), .I(e_init[127]), 
+        .Q(state[127]) );
+  DFF \state_reg[126]  ( .D(state[126]), .CLK(clk), .RST(rst), .I(e_init[126]), 
+        .Q(state[126]) );
+  DFF \state_reg[125]  ( .D(state[125]), .CLK(clk), .RST(rst), .I(e_init[125]), 
+        .Q(state[125]) );
+  DFF \state_reg[124]  ( .D(state[124]), .CLK(clk), .RST(rst), .I(e_init[124]), 
+        .Q(state[124]) );
+  DFF \state_reg[123]  ( .D(state[123]), .CLK(clk), .RST(rst), .I(e_init[123]), 
+        .Q(state[123]) );
+  DFF \state_reg[122]  ( .D(state[122]), .CLK(clk), .RST(rst), .I(e_init[122]), 
+        .Q(state[122]) );
+  DFF \state_reg[121]  ( .D(state[121]), .CLK(clk), .RST(rst), .I(e_init[121]), 
+        .Q(state[121]) );
+  DFF \state_reg[120]  ( .D(state[120]), .CLK(clk), .RST(rst), .I(e_init[120]), 
+        .Q(state[120]) );
+  DFF \state_reg[119]  ( .D(state[119]), .CLK(clk), .RST(rst), .I(e_init[119]), 
+        .Q(state[119]) );
+  DFF \state_reg[118]  ( .D(state[118]), .CLK(clk), .RST(rst), .I(e_init[118]), 
+        .Q(state[118]) );
+  DFF \state_reg[117]  ( .D(state[117]), .CLK(clk), .RST(rst), .I(e_init[117]), 
+        .Q(state[117]) );
+  DFF \state_reg[116]  ( .D(state[116]), .CLK(clk), .RST(rst), .I(e_init[116]), 
+        .Q(state[116]) );
+  DFF \state_reg[115]  ( .D(state[115]), .CLK(clk), .RST(rst), .I(e_init[115]), 
+        .Q(state[115]) );
+  DFF \state_reg[114]  ( .D(state[114]), .CLK(clk), .RST(rst), .I(e_init[114]), 
+        .Q(state[114]) );
+  DFF \state_reg[113]  ( .D(state[113]), .CLK(clk), .RST(rst), .I(e_init[113]), 
+        .Q(state[113]) );
+  DFF \state_reg[112]  ( .D(state[112]), .CLK(clk), .RST(rst), .I(e_init[112]), 
+        .Q(state[112]) );
+  DFF \state_reg[111]  ( .D(state[111]), .CLK(clk), .RST(rst), .I(e_init[111]), 
+        .Q(state[111]) );
+  DFF \state_reg[110]  ( .D(state[110]), .CLK(clk), .RST(rst), .I(e_init[110]), 
+        .Q(state[110]) );
+  DFF \state_reg[109]  ( .D(state[109]), .CLK(clk), .RST(rst), .I(e_init[109]), 
+        .Q(state[109]) );
+  DFF \state_reg[108]  ( .D(state[108]), .CLK(clk), .RST(rst), .I(e_init[108]), 
+        .Q(state[108]) );
+  DFF \state_reg[107]  ( .D(state[107]), .CLK(clk), .RST(rst), .I(e_init[107]), 
+        .Q(state[107]) );
+  DFF \state_reg[106]  ( .D(state[106]), .CLK(clk), .RST(rst), .I(e_init[106]), 
+        .Q(state[106]) );
+  DFF \state_reg[105]  ( .D(state[105]), .CLK(clk), .RST(rst), .I(e_init[105]), 
+        .Q(state[105]) );
+  DFF \state_reg[104]  ( .D(state[104]), .CLK(clk), .RST(rst), .I(e_init[104]), 
+        .Q(state[104]) );
+  DFF \state_reg[103]  ( .D(state[103]), .CLK(clk), .RST(rst), .I(e_init[103]), 
+        .Q(state[103]) );
+  DFF \state_reg[102]  ( .D(state[102]), .CLK(clk), .RST(rst), .I(e_init[102]), 
+        .Q(state[102]) );
+  DFF \state_reg[101]  ( .D(state[101]), .CLK(clk), .RST(rst), .I(e_init[101]), 
+        .Q(state[101]) );
+  DFF \state_reg[100]  ( .D(state[100]), .CLK(clk), .RST(rst), .I(e_init[100]), 
+        .Q(state[100]) );
+  DFF \state_reg[99]  ( .D(state[99]), .CLK(clk), .RST(rst), .I(e_init[99]), 
         .Q(state[99]) );
-  DFF \state_reg[98]  ( .D(state[98]), .CLK(clk), .RST(rst), .I(e_input[98]), 
+  DFF \state_reg[98]  ( .D(state[98]), .CLK(clk), .RST(rst), .I(e_init[98]), 
         .Q(state[98]) );
-  DFF \state_reg[97]  ( .D(state[97]), .CLK(clk), .RST(rst), .I(e_input[97]), 
+  DFF \state_reg[97]  ( .D(state[97]), .CLK(clk), .RST(rst), .I(e_init[97]), 
         .Q(state[97]) );
-  DFF \state_reg[96]  ( .D(state[96]), .CLK(clk), .RST(rst), .I(e_input[96]), 
+  DFF \state_reg[96]  ( .D(state[96]), .CLK(clk), .RST(rst), .I(e_init[96]), 
         .Q(state[96]) );
-  DFF \state_reg[95]  ( .D(state[95]), .CLK(clk), .RST(rst), .I(e_input[95]), 
+  DFF \state_reg[95]  ( .D(state[95]), .CLK(clk), .RST(rst), .I(e_init[95]), 
         .Q(state[95]) );
-  DFF \state_reg[94]  ( .D(state[94]), .CLK(clk), .RST(rst), .I(e_input[94]), 
+  DFF \state_reg[94]  ( .D(state[94]), .CLK(clk), .RST(rst), .I(e_init[94]), 
         .Q(state[94]) );
-  DFF \state_reg[93]  ( .D(state[93]), .CLK(clk), .RST(rst), .I(e_input[93]), 
+  DFF \state_reg[93]  ( .D(state[93]), .CLK(clk), .RST(rst), .I(e_init[93]), 
         .Q(state[93]) );
-  DFF \state_reg[92]  ( .D(state[92]), .CLK(clk), .RST(rst), .I(e_input[92]), 
+  DFF \state_reg[92]  ( .D(state[92]), .CLK(clk), .RST(rst), .I(e_init[92]), 
         .Q(state[92]) );
-  DFF \state_reg[91]  ( .D(state[91]), .CLK(clk), .RST(rst), .I(e_input[91]), 
+  DFF \state_reg[91]  ( .D(state[91]), .CLK(clk), .RST(rst), .I(e_init[91]), 
         .Q(state[91]) );
-  DFF \state_reg[90]  ( .D(state[90]), .CLK(clk), .RST(rst), .I(e_input[90]), 
+  DFF \state_reg[90]  ( .D(state[90]), .CLK(clk), .RST(rst), .I(e_init[90]), 
         .Q(state[90]) );
-  DFF \state_reg[89]  ( .D(state[89]), .CLK(clk), .RST(rst), .I(e_input[89]), 
+  DFF \state_reg[89]  ( .D(state[89]), .CLK(clk), .RST(rst), .I(e_init[89]), 
         .Q(state[89]) );
-  DFF \state_reg[88]  ( .D(state[88]), .CLK(clk), .RST(rst), .I(e_input[88]), 
+  DFF \state_reg[88]  ( .D(state[88]), .CLK(clk), .RST(rst), .I(e_init[88]), 
         .Q(state[88]) );
-  DFF \state_reg[87]  ( .D(state[87]), .CLK(clk), .RST(rst), .I(e_input[87]), 
+  DFF \state_reg[87]  ( .D(state[87]), .CLK(clk), .RST(rst), .I(e_init[87]), 
         .Q(state[87]) );
-  DFF \state_reg[86]  ( .D(state[86]), .CLK(clk), .RST(rst), .I(e_input[86]), 
+  DFF \state_reg[86]  ( .D(state[86]), .CLK(clk), .RST(rst), .I(e_init[86]), 
         .Q(state[86]) );
-  DFF \state_reg[85]  ( .D(state[85]), .CLK(clk), .RST(rst), .I(e_input[85]), 
+  DFF \state_reg[85]  ( .D(state[85]), .CLK(clk), .RST(rst), .I(e_init[85]), 
         .Q(state[85]) );
-  DFF \state_reg[84]  ( .D(state[84]), .CLK(clk), .RST(rst), .I(e_input[84]), 
+  DFF \state_reg[84]  ( .D(state[84]), .CLK(clk), .RST(rst), .I(e_init[84]), 
         .Q(state[84]) );
-  DFF \state_reg[83]  ( .D(state[83]), .CLK(clk), .RST(rst), .I(e_input[83]), 
+  DFF \state_reg[83]  ( .D(state[83]), .CLK(clk), .RST(rst), .I(e_init[83]), 
         .Q(state[83]) );
-  DFF \state_reg[82]  ( .D(state[82]), .CLK(clk), .RST(rst), .I(e_input[82]), 
+  DFF \state_reg[82]  ( .D(state[82]), .CLK(clk), .RST(rst), .I(e_init[82]), 
         .Q(state[82]) );
-  DFF \state_reg[81]  ( .D(state[81]), .CLK(clk), .RST(rst), .I(e_input[81]), 
+  DFF \state_reg[81]  ( .D(state[81]), .CLK(clk), .RST(rst), .I(e_init[81]), 
         .Q(state[81]) );
-  DFF \state_reg[80]  ( .D(state[80]), .CLK(clk), .RST(rst), .I(e_input[80]), 
+  DFF \state_reg[80]  ( .D(state[80]), .CLK(clk), .RST(rst), .I(e_init[80]), 
         .Q(state[80]) );
-  DFF \state_reg[79]  ( .D(state[79]), .CLK(clk), .RST(rst), .I(e_input[79]), 
+  DFF \state_reg[79]  ( .D(state[79]), .CLK(clk), .RST(rst), .I(e_init[79]), 
         .Q(state[79]) );
-  DFF \state_reg[78]  ( .D(state[78]), .CLK(clk), .RST(rst), .I(e_input[78]), 
+  DFF \state_reg[78]  ( .D(state[78]), .CLK(clk), .RST(rst), .I(e_init[78]), 
         .Q(state[78]) );
-  DFF \state_reg[77]  ( .D(state[77]), .CLK(clk), .RST(rst), .I(e_input[77]), 
+  DFF \state_reg[77]  ( .D(state[77]), .CLK(clk), .RST(rst), .I(e_init[77]), 
         .Q(state[77]) );
-  DFF \state_reg[76]  ( .D(state[76]), .CLK(clk), .RST(rst), .I(e_input[76]), 
+  DFF \state_reg[76]  ( .D(state[76]), .CLK(clk), .RST(rst), .I(e_init[76]), 
         .Q(state[76]) );
-  DFF \state_reg[75]  ( .D(state[75]), .CLK(clk), .RST(rst), .I(e_input[75]), 
+  DFF \state_reg[75]  ( .D(state[75]), .CLK(clk), .RST(rst), .I(e_init[75]), 
         .Q(state[75]) );
-  DFF \state_reg[74]  ( .D(state[74]), .CLK(clk), .RST(rst), .I(e_input[74]), 
+  DFF \state_reg[74]  ( .D(state[74]), .CLK(clk), .RST(rst), .I(e_init[74]), 
         .Q(state[74]) );
-  DFF \state_reg[73]  ( .D(state[73]), .CLK(clk), .RST(rst), .I(e_input[73]), 
+  DFF \state_reg[73]  ( .D(state[73]), .CLK(clk), .RST(rst), .I(e_init[73]), 
         .Q(state[73]) );
-  DFF \state_reg[72]  ( .D(state[72]), .CLK(clk), .RST(rst), .I(e_input[72]), 
+  DFF \state_reg[72]  ( .D(state[72]), .CLK(clk), .RST(rst), .I(e_init[72]), 
         .Q(state[72]) );
-  DFF \state_reg[71]  ( .D(state[71]), .CLK(clk), .RST(rst), .I(e_input[71]), 
+  DFF \state_reg[71]  ( .D(state[71]), .CLK(clk), .RST(rst), .I(e_init[71]), 
         .Q(state[71]) );
-  DFF \state_reg[70]  ( .D(state[70]), .CLK(clk), .RST(rst), .I(e_input[70]), 
+  DFF \state_reg[70]  ( .D(state[70]), .CLK(clk), .RST(rst), .I(e_init[70]), 
         .Q(state[70]) );
-  DFF \state_reg[69]  ( .D(state[69]), .CLK(clk), .RST(rst), .I(e_input[69]), 
+  DFF \state_reg[69]  ( .D(state[69]), .CLK(clk), .RST(rst), .I(e_init[69]), 
         .Q(state[69]) );
-  DFF \state_reg[68]  ( .D(state[68]), .CLK(clk), .RST(rst), .I(e_input[68]), 
+  DFF \state_reg[68]  ( .D(state[68]), .CLK(clk), .RST(rst), .I(e_init[68]), 
         .Q(state[68]) );
-  DFF \state_reg[67]  ( .D(state[67]), .CLK(clk), .RST(rst), .I(e_input[67]), 
+  DFF \state_reg[67]  ( .D(state[67]), .CLK(clk), .RST(rst), .I(e_init[67]), 
         .Q(state[67]) );
-  DFF \state_reg[66]  ( .D(state[66]), .CLK(clk), .RST(rst), .I(e_input[66]), 
+  DFF \state_reg[66]  ( .D(state[66]), .CLK(clk), .RST(rst), .I(e_init[66]), 
         .Q(state[66]) );
-  DFF \state_reg[65]  ( .D(state[65]), .CLK(clk), .RST(rst), .I(e_input[65]), 
+  DFF \state_reg[65]  ( .D(state[65]), .CLK(clk), .RST(rst), .I(e_init[65]), 
         .Q(state[65]) );
-  DFF \state_reg[64]  ( .D(state[64]), .CLK(clk), .RST(rst), .I(e_input[64]), 
+  DFF \state_reg[64]  ( .D(state[64]), .CLK(clk), .RST(rst), .I(e_init[64]), 
         .Q(state[64]) );
-  DFF \state_reg[63]  ( .D(state[63]), .CLK(clk), .RST(rst), .I(e_input[63]), 
+  DFF \state_reg[63]  ( .D(state[63]), .CLK(clk), .RST(rst), .I(e_init[63]), 
         .Q(state[63]) );
-  DFF \state_reg[62]  ( .D(state[62]), .CLK(clk), .RST(rst), .I(e_input[62]), 
+  DFF \state_reg[62]  ( .D(state[62]), .CLK(clk), .RST(rst), .I(e_init[62]), 
         .Q(state[62]) );
-  DFF \state_reg[61]  ( .D(state[61]), .CLK(clk), .RST(rst), .I(e_input[61]), 
+  DFF \state_reg[61]  ( .D(state[61]), .CLK(clk), .RST(rst), .I(e_init[61]), 
         .Q(state[61]) );
-  DFF \state_reg[60]  ( .D(state[60]), .CLK(clk), .RST(rst), .I(e_input[60]), 
+  DFF \state_reg[60]  ( .D(state[60]), .CLK(clk), .RST(rst), .I(e_init[60]), 
         .Q(state[60]) );
-  DFF \state_reg[59]  ( .D(state[59]), .CLK(clk), .RST(rst), .I(e_input[59]), 
+  DFF \state_reg[59]  ( .D(state[59]), .CLK(clk), .RST(rst), .I(e_init[59]), 
         .Q(state[59]) );
-  DFF \state_reg[58]  ( .D(state[58]), .CLK(clk), .RST(rst), .I(e_input[58]), 
+  DFF \state_reg[58]  ( .D(state[58]), .CLK(clk), .RST(rst), .I(e_init[58]), 
         .Q(state[58]) );
-  DFF \state_reg[57]  ( .D(state[57]), .CLK(clk), .RST(rst), .I(e_input[57]), 
+  DFF \state_reg[57]  ( .D(state[57]), .CLK(clk), .RST(rst), .I(e_init[57]), 
         .Q(state[57]) );
-  DFF \state_reg[56]  ( .D(state[56]), .CLK(clk), .RST(rst), .I(e_input[56]), 
+  DFF \state_reg[56]  ( .D(state[56]), .CLK(clk), .RST(rst), .I(e_init[56]), 
         .Q(state[56]) );
-  DFF \state_reg[55]  ( .D(state[55]), .CLK(clk), .RST(rst), .I(e_input[55]), 
+  DFF \state_reg[55]  ( .D(state[55]), .CLK(clk), .RST(rst), .I(e_init[55]), 
         .Q(state[55]) );
-  DFF \state_reg[54]  ( .D(state[54]), .CLK(clk), .RST(rst), .I(e_input[54]), 
+  DFF \state_reg[54]  ( .D(state[54]), .CLK(clk), .RST(rst), .I(e_init[54]), 
         .Q(state[54]) );
-  DFF \state_reg[53]  ( .D(state[53]), .CLK(clk), .RST(rst), .I(e_input[53]), 
+  DFF \state_reg[53]  ( .D(state[53]), .CLK(clk), .RST(rst), .I(e_init[53]), 
         .Q(state[53]) );
-  DFF \state_reg[52]  ( .D(state[52]), .CLK(clk), .RST(rst), .I(e_input[52]), 
+  DFF \state_reg[52]  ( .D(state[52]), .CLK(clk), .RST(rst), .I(e_init[52]), 
         .Q(state[52]) );
-  DFF \state_reg[51]  ( .D(state[51]), .CLK(clk), .RST(rst), .I(e_input[51]), 
+  DFF \state_reg[51]  ( .D(state[51]), .CLK(clk), .RST(rst), .I(e_init[51]), 
         .Q(state[51]) );
-  DFF \state_reg[50]  ( .D(state[50]), .CLK(clk), .RST(rst), .I(e_input[50]), 
+  DFF \state_reg[50]  ( .D(state[50]), .CLK(clk), .RST(rst), .I(e_init[50]), 
         .Q(state[50]) );
-  DFF \state_reg[49]  ( .D(state[49]), .CLK(clk), .RST(rst), .I(e_input[49]), 
+  DFF \state_reg[49]  ( .D(state[49]), .CLK(clk), .RST(rst), .I(e_init[49]), 
         .Q(state[49]) );
-  DFF \state_reg[48]  ( .D(state[48]), .CLK(clk), .RST(rst), .I(e_input[48]), 
+  DFF \state_reg[48]  ( .D(state[48]), .CLK(clk), .RST(rst), .I(e_init[48]), 
         .Q(state[48]) );
-  DFF \state_reg[47]  ( .D(state[47]), .CLK(clk), .RST(rst), .I(e_input[47]), 
+  DFF \state_reg[47]  ( .D(state[47]), .CLK(clk), .RST(rst), .I(e_init[47]), 
         .Q(state[47]) );
-  DFF \state_reg[46]  ( .D(state[46]), .CLK(clk), .RST(rst), .I(e_input[46]), 
+  DFF \state_reg[46]  ( .D(state[46]), .CLK(clk), .RST(rst), .I(e_init[46]), 
         .Q(state[46]) );
-  DFF \state_reg[45]  ( .D(state[45]), .CLK(clk), .RST(rst), .I(e_input[45]), 
+  DFF \state_reg[45]  ( .D(state[45]), .CLK(clk), .RST(rst), .I(e_init[45]), 
         .Q(state[45]) );
-  DFF \state_reg[44]  ( .D(state[44]), .CLK(clk), .RST(rst), .I(e_input[44]), 
+  DFF \state_reg[44]  ( .D(state[44]), .CLK(clk), .RST(rst), .I(e_init[44]), 
         .Q(state[44]) );
-  DFF \state_reg[43]  ( .D(state[43]), .CLK(clk), .RST(rst), .I(e_input[43]), 
+  DFF \state_reg[43]  ( .D(state[43]), .CLK(clk), .RST(rst), .I(e_init[43]), 
         .Q(state[43]) );
-  DFF \state_reg[42]  ( .D(state[42]), .CLK(clk), .RST(rst), .I(e_input[42]), 
+  DFF \state_reg[42]  ( .D(state[42]), .CLK(clk), .RST(rst), .I(e_init[42]), 
         .Q(state[42]) );
-  DFF \state_reg[41]  ( .D(state[41]), .CLK(clk), .RST(rst), .I(e_input[41]), 
+  DFF \state_reg[41]  ( .D(state[41]), .CLK(clk), .RST(rst), .I(e_init[41]), 
         .Q(state[41]) );
-  DFF \state_reg[40]  ( .D(state[40]), .CLK(clk), .RST(rst), .I(e_input[40]), 
+  DFF \state_reg[40]  ( .D(state[40]), .CLK(clk), .RST(rst), .I(e_init[40]), 
         .Q(state[40]) );
-  DFF \state_reg[39]  ( .D(state[39]), .CLK(clk), .RST(rst), .I(e_input[39]), 
+  DFF \state_reg[39]  ( .D(state[39]), .CLK(clk), .RST(rst), .I(e_init[39]), 
         .Q(state[39]) );
-  DFF \state_reg[38]  ( .D(state[38]), .CLK(clk), .RST(rst), .I(e_input[38]), 
+  DFF \state_reg[38]  ( .D(state[38]), .CLK(clk), .RST(rst), .I(e_init[38]), 
         .Q(state[38]) );
-  DFF \state_reg[37]  ( .D(state[37]), .CLK(clk), .RST(rst), .I(e_input[37]), 
+  DFF \state_reg[37]  ( .D(state[37]), .CLK(clk), .RST(rst), .I(e_init[37]), 
         .Q(state[37]) );
-  DFF \state_reg[36]  ( .D(state[36]), .CLK(clk), .RST(rst), .I(e_input[36]), 
+  DFF \state_reg[36]  ( .D(state[36]), .CLK(clk), .RST(rst), .I(e_init[36]), 
         .Q(state[36]) );
-  DFF \state_reg[35]  ( .D(state[35]), .CLK(clk), .RST(rst), .I(e_input[35]), 
+  DFF \state_reg[35]  ( .D(state[35]), .CLK(clk), .RST(rst), .I(e_init[35]), 
         .Q(state[35]) );
-  DFF \state_reg[34]  ( .D(state[34]), .CLK(clk), .RST(rst), .I(e_input[34]), 
+  DFF \state_reg[34]  ( .D(state[34]), .CLK(clk), .RST(rst), .I(e_init[34]), 
         .Q(state[34]) );
-  DFF \state_reg[33]  ( .D(state[33]), .CLK(clk), .RST(rst), .I(e_input[33]), 
+  DFF \state_reg[33]  ( .D(state[33]), .CLK(clk), .RST(rst), .I(e_init[33]), 
         .Q(state[33]) );
-  DFF \state_reg[32]  ( .D(state[32]), .CLK(clk), .RST(rst), .I(e_input[32]), 
+  DFF \state_reg[32]  ( .D(state[32]), .CLK(clk), .RST(rst), .I(e_init[32]), 
         .Q(state[32]) );
-  DFF \state_reg[31]  ( .D(state[31]), .CLK(clk), .RST(rst), .I(e_input[31]), 
+  DFF \state_reg[31]  ( .D(state[31]), .CLK(clk), .RST(rst), .I(e_init[31]), 
         .Q(state[31]) );
-  DFF \state_reg[30]  ( .D(state[30]), .CLK(clk), .RST(rst), .I(e_input[30]), 
+  DFF \state_reg[30]  ( .D(state[30]), .CLK(clk), .RST(rst), .I(e_init[30]), 
         .Q(state[30]) );
-  DFF \state_reg[29]  ( .D(state[29]), .CLK(clk), .RST(rst), .I(e_input[29]), 
+  DFF \state_reg[29]  ( .D(state[29]), .CLK(clk), .RST(rst), .I(e_init[29]), 
         .Q(state[29]) );
-  DFF \state_reg[28]  ( .D(state[28]), .CLK(clk), .RST(rst), .I(e_input[28]), 
+  DFF \state_reg[28]  ( .D(state[28]), .CLK(clk), .RST(rst), .I(e_init[28]), 
         .Q(state[28]) );
-  DFF \state_reg[27]  ( .D(state[27]), .CLK(clk), .RST(rst), .I(e_input[27]), 
+  DFF \state_reg[27]  ( .D(state[27]), .CLK(clk), .RST(rst), .I(e_init[27]), 
         .Q(state[27]) );
-  DFF \state_reg[26]  ( .D(state[26]), .CLK(clk), .RST(rst), .I(e_input[26]), 
+  DFF \state_reg[26]  ( .D(state[26]), .CLK(clk), .RST(rst), .I(e_init[26]), 
         .Q(state[26]) );
-  DFF \state_reg[25]  ( .D(state[25]), .CLK(clk), .RST(rst), .I(e_input[25]), 
+  DFF \state_reg[25]  ( .D(state[25]), .CLK(clk), .RST(rst), .I(e_init[25]), 
         .Q(state[25]) );
-  DFF \state_reg[24]  ( .D(state[24]), .CLK(clk), .RST(rst), .I(e_input[24]), 
+  DFF \state_reg[24]  ( .D(state[24]), .CLK(clk), .RST(rst), .I(e_init[24]), 
         .Q(state[24]) );
-  DFF \state_reg[23]  ( .D(state[23]), .CLK(clk), .RST(rst), .I(e_input[23]), 
+  DFF \state_reg[23]  ( .D(state[23]), .CLK(clk), .RST(rst), .I(e_init[23]), 
         .Q(state[23]) );
-  DFF \state_reg[22]  ( .D(state[22]), .CLK(clk), .RST(rst), .I(e_input[22]), 
+  DFF \state_reg[22]  ( .D(state[22]), .CLK(clk), .RST(rst), .I(e_init[22]), 
         .Q(state[22]) );
-  DFF \state_reg[21]  ( .D(state[21]), .CLK(clk), .RST(rst), .I(e_input[21]), 
+  DFF \state_reg[21]  ( .D(state[21]), .CLK(clk), .RST(rst), .I(e_init[21]), 
         .Q(state[21]) );
-  DFF \state_reg[20]  ( .D(state[20]), .CLK(clk), .RST(rst), .I(e_input[20]), 
+  DFF \state_reg[20]  ( .D(state[20]), .CLK(clk), .RST(rst), .I(e_init[20]), 
         .Q(state[20]) );
-  DFF \state_reg[19]  ( .D(state[19]), .CLK(clk), .RST(rst), .I(e_input[19]), 
+  DFF \state_reg[19]  ( .D(state[19]), .CLK(clk), .RST(rst), .I(e_init[19]), 
         .Q(state[19]) );
-  DFF \state_reg[18]  ( .D(state[18]), .CLK(clk), .RST(rst), .I(e_input[18]), 
+  DFF \state_reg[18]  ( .D(state[18]), .CLK(clk), .RST(rst), .I(e_init[18]), 
         .Q(state[18]) );
-  DFF \state_reg[17]  ( .D(state[17]), .CLK(clk), .RST(rst), .I(e_input[17]), 
+  DFF \state_reg[17]  ( .D(state[17]), .CLK(clk), .RST(rst), .I(e_init[17]), 
         .Q(state[17]) );
-  DFF \state_reg[16]  ( .D(state[16]), .CLK(clk), .RST(rst), .I(e_input[16]), 
+  DFF \state_reg[16]  ( .D(state[16]), .CLK(clk), .RST(rst), .I(e_init[16]), 
         .Q(state[16]) );
-  DFF \state_reg[15]  ( .D(state[15]), .CLK(clk), .RST(rst), .I(e_input[15]), 
+  DFF \state_reg[15]  ( .D(state[15]), .CLK(clk), .RST(rst), .I(e_init[15]), 
         .Q(state[15]) );
-  DFF \state_reg[14]  ( .D(state[14]), .CLK(clk), .RST(rst), .I(e_input[14]), 
+  DFF \state_reg[14]  ( .D(state[14]), .CLK(clk), .RST(rst), .I(e_init[14]), 
         .Q(state[14]) );
-  DFF \state_reg[13]  ( .D(state[13]), .CLK(clk), .RST(rst), .I(e_input[13]), 
+  DFF \state_reg[13]  ( .D(state[13]), .CLK(clk), .RST(rst), .I(e_init[13]), 
         .Q(state[13]) );
-  DFF \state_reg[12]  ( .D(state[12]), .CLK(clk), .RST(rst), .I(e_input[12]), 
+  DFF \state_reg[12]  ( .D(state[12]), .CLK(clk), .RST(rst), .I(e_init[12]), 
         .Q(state[12]) );
-  DFF \state_reg[11]  ( .D(state[11]), .CLK(clk), .RST(rst), .I(e_input[11]), 
+  DFF \state_reg[11]  ( .D(state[11]), .CLK(clk), .RST(rst), .I(e_init[11]), 
         .Q(state[11]) );
-  DFF \state_reg[10]  ( .D(state[10]), .CLK(clk), .RST(rst), .I(e_input[10]), 
+  DFF \state_reg[10]  ( .D(state[10]), .CLK(clk), .RST(rst), .I(e_init[10]), 
         .Q(state[10]) );
-  DFF \state_reg[9]  ( .D(state[9]), .CLK(clk), .RST(rst), .I(e_input[9]), .Q(
+  DFF \state_reg[9]  ( .D(state[9]), .CLK(clk), .RST(rst), .I(e_init[9]), .Q(
         state[9]) );
-  DFF \state_reg[8]  ( .D(state[8]), .CLK(clk), .RST(rst), .I(e_input[8]), .Q(
+  DFF \state_reg[8]  ( .D(state[8]), .CLK(clk), .RST(rst), .I(e_init[8]), .Q(
         state[8]) );
-  DFF \state_reg[7]  ( .D(state[7]), .CLK(clk), .RST(rst), .I(e_input[7]), .Q(
+  DFF \state_reg[7]  ( .D(state[7]), .CLK(clk), .RST(rst), .I(e_init[7]), .Q(
         state[7]) );
-  DFF \state_reg[6]  ( .D(state[6]), .CLK(clk), .RST(rst), .I(e_input[6]), .Q(
+  DFF \state_reg[6]  ( .D(state[6]), .CLK(clk), .RST(rst), .I(e_init[6]), .Q(
         state[6]) );
-  DFF \state_reg[5]  ( .D(state[5]), .CLK(clk), .RST(rst), .I(e_input[5]), .Q(
+  DFF \state_reg[5]  ( .D(state[5]), .CLK(clk), .RST(rst), .I(e_init[5]), .Q(
         state[5]) );
-  DFF \state_reg[4]  ( .D(state[4]), .CLK(clk), .RST(rst), .I(e_input[4]), .Q(
+  DFF \state_reg[4]  ( .D(state[4]), .CLK(clk), .RST(rst), .I(e_init[4]), .Q(
         state[4]) );
-  DFF \state_reg[3]  ( .D(state[3]), .CLK(clk), .RST(rst), .I(e_input[3]), .Q(
+  DFF \state_reg[3]  ( .D(state[3]), .CLK(clk), .RST(rst), .I(e_init[3]), .Q(
         state[3]) );
-  DFF \state_reg[2]  ( .D(state[2]), .CLK(clk), .RST(rst), .I(e_input[2]), .Q(
+  DFF \state_reg[2]  ( .D(state[2]), .CLK(clk), .RST(rst), .I(e_init[2]), .Q(
         state[2]) );
-  DFF \state_reg[1]  ( .D(state[1]), .CLK(clk), .RST(rst), .I(e_input[1]), .Q(
+  DFF \state_reg[1]  ( .D(state[1]), .CLK(clk), .RST(rst), .I(e_init[1]), .Q(
         state[1]) );
-  DFF \state_reg[0]  ( .D(state[0]), .CLK(clk), .RST(rst), .I(e_input[0]), .Q(
+  DFF \state_reg[0]  ( .D(state[0]), .CLK(clk), .RST(rst), .I(e_init[0]), .Q(
         state[0]) );
   ANDN U4 ( .A(n566), .B(n584), .Z(n575) );
   NOR U5 ( .A(n2301), .B(n2331), .Z(n2378) );

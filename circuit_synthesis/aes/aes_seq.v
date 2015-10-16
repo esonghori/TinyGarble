@@ -5,15 +5,15 @@ module aes_seq
 (
 	clk,
 	rst,
-	g_input,
-	e_input,
+	e_init,
+  g_input,
 	o
 );
 	localparam		NR = 10;
 	input					clk;
 	input					rst;
+  input   [127:0]         e_init;
   input   [128*NR/CC-1:0] g_input;
-  input   [127:0]     e_input;
   output  [127:0]     o;
 
   wire  [128*NR/CC-1:0] key;
@@ -26,8 +26,8 @@ module aes_seq
   wire 	[127:0] 		w3[NR/CC-1:0];
 
 
+  assign  msg = e_init;
   assign  key = g_input;   
-  assign  msg = e_input;
   assign  o = out;
 
     reg		init;
