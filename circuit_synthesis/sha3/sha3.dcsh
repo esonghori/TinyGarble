@@ -15,7 +15,7 @@ analyze -format verilog round.v
 
 
 #seq
-foreach cc {2 3 6 12 24} {
+foreach cc {24} {
 elaborate sha3_seq -architecture verilog -library DEFAULT -update -parameters $cc
 set_max_area -ignore_tns 0 
 set_flatten false -design *

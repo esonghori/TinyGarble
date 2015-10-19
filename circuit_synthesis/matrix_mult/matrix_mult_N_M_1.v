@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 // synopsys template
-module matrixMult_N_M_1
+module matrix_mult_N_M_1
 #(
 	parameter N=3,
 	parameter M=32
@@ -21,7 +21,7 @@ module matrixMult_N_M_1
 	wire [M-1:0] yij[N-1:0][N-1:0];
 	reg [M-1:0] oi[N-1:0];
 
-	wire [M-1:0] xyij[N-1:0][N-1:0];
+	wire [2*M-1:0] xyij[N-1:0][N-1:0];
 
 	wire [M-1:0] oij[N-1:0][N:0];
 
@@ -81,7 +81,7 @@ module matrixMult_N_M_1
 			)
 			ADD_
 			(
-				.A(xyij[i][k]),
+				.A(xyij[i][k][M-1:0]),
 				.B(oij[i][k]),
 				.CI(1'b0),
 				.S(oij[i][k+1]),

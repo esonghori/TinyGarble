@@ -9,7 +9,7 @@ analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../s
 
 analyze -format verilog {knns_seq_td.v taxicab_distance.v}
 
-foreach k {4} {
+foreach k {8} {
 foreach w {32} {
 elaborate knns_seq -architecture verilog -library DEFAULT -update -parameters $w,$k
 set_max_area -ignore_tns 0 

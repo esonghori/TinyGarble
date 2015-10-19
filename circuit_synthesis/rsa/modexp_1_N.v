@@ -6,9 +6,9 @@ module modexp_1_N
 (
   clk,
   rst,
-  g_input,
-  e_input,
-  o   // o = g_input^e mode n 
+  g_input, // {m}
+  e_input, // {n, e}  
+  o   // o = m^e mode n 
 );
 
   input     clk;
@@ -97,7 +97,7 @@ module modexp_1_N
 				end
 				else
 				begin
-					creg <= m;
+					creg <= g_input;
 				end
 			
 				ereg <= {ein[N-N/CC:0], {N/CC{1'b0}}};
@@ -109,7 +109,7 @@ module modexp_1_N
 		always@(*)
 		begin
 			init <= 1;
-			creg <= m;
+			creg <= g_input;
 			ereg  <= e;	
 			first_one <= 0;
 		end
@@ -120,7 +120,7 @@ module modexp_1_N
 	generate 
 	for(i=1;i<N/CC;i=i+1)
 	begin:ASSCIN
-		assign cin[i] = (keep_2[i-1])?cout2[i-1]:(keep_1[i-1])?cout1[i-1]:m;
+		assign cin[i] = (keep_2[i-1])?cout2[i-1]:(keep_1[i-1])?cout1[i-1]:g_input;
 	end
 	endgenerate
 	
@@ -159,7 +159,7 @@ module modexp_1_N
 			.rst(rst),
 			.x(cout1[i]),
 			.start(1'b1),
-			.y(m),
+			.y(g_input),
 			.n(n),
 			.o(cout2[i])
 		);

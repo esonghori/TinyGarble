@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 // synopsys template
-module matrixMult_N_M_3
+module matrix_mult_N_M_3
 #(
 	parameter N=3,
 	parameter M=32
@@ -17,7 +17,7 @@ module matrixMult_N_M_3
 	input[M-1:0] e_input;
 	output reg[M-1:0] o;
 
-	wire [M-1:0] xy;
+	wire [2*M-1:0] xy;
 	wire [M-1:0] oi;
 	
 	//assign xy = g_input*e_input;
@@ -31,15 +31,15 @@ module matrixMult_N_M_3
 		.B(e_input), 
 		.O(xy)
 	);
-	
-	
+
+
 	ADD 
 	#(
 		.N(M)
 	) 
 	ADD_ 
 	(
-		.A(xy), 
+		.A(xy[M-1:0]), 
 		.B(o), 
 		.CI(1'b0), 
 		.S(oi), 

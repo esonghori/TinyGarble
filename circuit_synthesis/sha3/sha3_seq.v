@@ -21,15 +21,16 @@ module sha3_seq
 )
 (
 	clk,
-	g_input,
-  e_input,
+  rst,
+	g_init,
+  e_init,
 	o
 );
 
   input             clk;
   input 						rst;
-  input	  [287:0]		g_input;
-  input   [287:0]   e_input;
+  input	  [287:0]		g_init;
+  input   [287:0]   e_init;
   output  [1599:0]	o;
   
 	reg 							init;
@@ -39,11 +40,6 @@ module sha3_seq
   wire	[1599:0]		round_in[24/CC-1:0];
   wire 	[1599:0]		round_out[24/CC-1:0];
 	reg 	[1599:0]		round_reg;   
-  wire    [575:0]   in;
-
-  assign in[287:0] = g_input;
-  assign in[575:288] = e_input;
-
 
     
 	always @ (posedge clk or posedge rst)
@@ -52,7 +48,7 @@ module sha3_seq
 		begin
 			init <= 0;
 			rc_i <= 0;
-			round_reg <= in;
+			round_reg <= {e_init, g_init};
 		end
 		else     
 		begin
