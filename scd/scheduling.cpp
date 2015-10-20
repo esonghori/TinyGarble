@@ -19,6 +19,7 @@
 
 #include <cstring>
 #include "util/common.h"
+#include "util/log.h"
 
 int TopSort(const vector<ReadGate>& G, int64_t no_task, int64_t *index) {
 
@@ -79,13 +80,11 @@ int Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
   int64_t scheduled = 0;
   while (scheduled < no_task) {
     for (int64_t i = 0; i < no_task; i++) {
-      if (p0[index[i]] == ((int64_t)-1))  // not assigned yet
-          {
+      if (p0[index[i]] == -1) {  // not assigned yet
         if (((G[index[i]].input[0] - no_of_input_dff < 0)
-            || (p0[G[index[i]].input[0] - no_of_input_dff] != int64_t(-1)))) {
+            || (p0[G[index[i]].input[0] - no_of_input_dff] != -1))) {
           if ((G[index[i]].input[1] - no_of_input_dff < 0)
-              || (p0[G[index[i]].input[1] - no_of_input_dff] != int64_t(-1)))  //ready
-              {
+              || (p0[G[index[i]].input[1] - no_of_input_dff] != -1)) {  //ready
             p1[index[i]] = GetMinIndex(core_busy, no_core);
             core[p1[index[i]]][core_index[p1[index[i]]]] = index[i];
             core_index[p1[index[i]]]++;
