@@ -6,7 +6,7 @@ project (TinyGarble
 
 enable_testing()
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-include_directories("${PROJECT_BINARY_DIR}")
+include_directories(${PROJECT_BINARY_DIR})
 
 ##############
 # build type 
@@ -67,7 +67,6 @@ endif (CMAKE_BUILD_TYPE MATCHES Debug)
 configure_file (
   "util/tinygarble_config.h.in"
   "util/tinygarble_config.h")
- 
 ###############
 # Subdirectory
 add_subdirectory ("crypto")
