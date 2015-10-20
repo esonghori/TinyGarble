@@ -57,6 +57,7 @@ Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
   $ sudo apt-get upgrade
   $ sudo apt-get install cmake
 ```
+
 ### Compile
 Confing TinyGarble and then compile it in `bin` directory:
 ```
@@ -65,10 +66,25 @@ Confing TinyGarble and then compile it in `bin` directory:
   $ make
 ```
 
+### Run an example
+For finding Hamming distance between two 32-bit private inputs (e.g.,
+Alice: FF55AA77, Bob: 12345678), on Alice's terminal, run:
+```
+  $ bin/garbled_circuit/TinyGarble --alice --scd_file scd/netlists/hamming_32bit_1cc.scd --input FF55AA77
+```
+And on Bob's terminal, run:
+```
+  $ bin/garbled_circuit/TinyGarble --bob --scd_file scd/netlists/hamming_32bit_1cc.scd --input 12345678 --server_ip 127.0.0.1
+```
+Note that, it is supposed that Alice and Bob are in a same mahcine 
+(server_ip = 127.0.0.1) in this example. 
+The expected output is 13 in hexadecimal which is the hamming distance between 
+the two numbers. For showing more detailes, you may use `--log2std` option.
+
 ### Test
 In `bin` directory call `ctest`:
 ```
-	$ ctest
+	$ ctest -V
 ```
 
 ### Binaries
