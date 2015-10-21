@@ -91,8 +91,8 @@ int main(int argc, char* argv[]) {
   ("disable_OT", "Disable Oblivious Transfer (OT) for transferring labels. "
    "WARNING: OT is crucial for GC security.")  //
   ("output_mask", po::value<string>(&output_mask)->default_value("0"),
-   "Hexadecimal mask for output. 0 indicates that output belongs to Alice, "
-   "and 1 belongs to Bob ")  //
+   "Hexadecimal mask for output. 0 indicates that output belongs to Bob, "
+   "and 1 belongs to Alice.")  //
   ("output_mode", po::value<int>(&output_mode)->default_value(0),
    "0: normal, 1:separated by clock 2:last clock.");
 
