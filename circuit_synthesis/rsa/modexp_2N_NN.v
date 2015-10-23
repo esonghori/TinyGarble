@@ -7,18 +7,14 @@ module modexp_2N_NN
   clk,
   rst,
   g_init,  // {m}
-  e_init,  // {e}
-  g_input, // {m} == g_input
-  e_input, // {n}
+  e_init,  // {e, n}
   o   // o = m^e mode n 
 );
 
   input      clk;
   input      rst;
   input   [N-1:0]    g_init;
-  input   [N-1:0]    e_init;
-  input   [N-1:0]    g_input;
-  input   [N-1:0]    e_input;
+  input   [2*N-1:0]  e_init;
   output  [N-1:0]    o;
 
   reg   first_one;
@@ -26,8 +22,10 @@ module modexp_2N_NN
   
   reg   [CC/(2*N)-1:0] start_reg; 
   reg   [N-1:0] ereg; 
-  reg   [N-1:0] creg; 
-  
+  reg   [N-1:0] creg;
+  reg   [N-1:0] mreg;
+  reg   [N-1:0] nreg;
+
   wire  [CC/(2*N)-1:0] start_in;
   wire  [CC/(2*N)-1:0] start_in_shift;
   wire  [N-1:0] ein; 
@@ -88,15 +86,19 @@ module modexp_2N_NN
   begin
     if(rst)
     begin
+      mreg <= g_init;
       creg <= g_init;
-      ereg  <= e_init;
+      nreg <= e_init[N-1:0];
+      ereg <= e_init[2*N-1:N];
       first_one <= 0;
       mul_pow <= 0;
       start_reg <= 1'b1;
     end
     else
     begin
-    
+      mreg <= mreg;
+      nreg <= nreg;
+
       start_reg <= start_in_shift;
     
       if(start_in[CC/(2*N)-1])
@@ -124,7 +126,7 @@ module modexp_2N_NN
   )
   MUX_9
   (
-    .A(g_input),
+    .A(mreg),
     .B(w3),
     .S(mul_pow),
     .O(y)
@@ -144,7 +146,7 @@ module modexp_2N_NN
     .start(start_in[0]),
     .x(x),
     .y(y),
-    .n(e_input),
+    .n(nreg),
     .o(mod_mult_o)
   );
 
