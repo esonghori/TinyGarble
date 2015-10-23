@@ -151,5 +151,3 @@ module modexp_2N_NN
   );
 
 endmodule
-
-endmodule
