@@ -40,6 +40,7 @@
 #include "scd/scd_evaluator.h"
 #include "util/log.h"
 #include "crypto/aes.h"
+#include "crypto/BN.h"
 #include "crypto/OT_extension.h"
 #include "tcpip/tcpip.h"
 #include "util/common.h"
@@ -477,22 +478,22 @@ int GarbleOTExt(const GarbledCircuit& garbled_circuit, block* init_labels,
   return SUCCESS;
 }
 
-int EvalauteOTExt(const GarbledCircuit& garbled_circuit, short* e_init,
-                  block* init_labels, short* e_input, block* input_labels,
+int EvalauteOTExt(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
+                  block* init_labels, BIGNUM* e_input, block* input_labels,
                   uint64_t clock_cycles, int connfd) {
   uint32_t m_len = garbled_circuit.e_init_size
       + clock_cycles * garbled_circuit.e_input_size;
   bool *sel = nullptr;
   CHECK_ALLOC(sel = new bool[m_len]);
-  //TODO(ebi): simplify this loop
   for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
-    sel[i] = e_init[i];
+    sel[i] = BN_is_bit_set(e_init, i);
   }
   for (uint cid = 0; cid < clock_cycles; cid++) {
     for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
       uint indx = garbled_circuit.e_init_size
           + cid * garbled_circuit.e_input_size + i;
-      sel[indx] = e_input[cid * garbled_circuit.e_input_size + i];
+      sel[indx] = BN_is_bit_set(e_input,
+                                cid * garbled_circuit.e_input_size + i);
     }
   }
 
@@ -528,16 +529,17 @@ int EvalauteOTExt(const GarbledCircuit& garbled_circuit, short* e_init,
 }
 
 int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
-                         block* const_labels, short* g_init, block* init_labels,
-                         short* g_input, block* input_labels,
-                         uint64_t clock_cycles, bool disable_OT, int connfd) {
+                         block* const_labels, BIGNUM* g_init,
+                         block* init_labels, BIGNUM* g_input,
+                         block* input_labels, uint64_t clock_cycles,
+                         bool disable_OT, int connfd) {
   // constant
   CHECK(SendData(connfd, &const_labels[0 * 2 + 0], sizeof(block)));
   CHECK(SendData(connfd, &const_labels[1 * 2 + 1], sizeof(block)));
 
   // g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
-    if (g_init[i] == 0) {
+    if (i >= (uint) BN_num_bits(g_init) || BN_is_bit_set(g_init, i) == 0) {
       CHECK(SendData(connfd, &init_labels[i * 2 + 0], sizeof(block)));
     } else {
       CHECK(SendData(connfd, &init_labels[i * 2 + 1], sizeof(block)));
@@ -546,7 +548,9 @@ int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
   // g_input
   for (uint cid = 0; cid < clock_cycles; cid++) {
     for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
-      if (g_input[cid * garbled_circuit.g_input_size + i] == 0) {
+      if (cid * garbled_circuit.g_input_size + i >= (uint) BN_num_bits(g_input)
+          || BN_is_bit_set(g_input, cid * garbled_circuit.g_input_size + i)
+              == 0) {
         CHECK(
             SendData(
                 connfd,
@@ -566,55 +570,49 @@ int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
 
   if (disable_OT) {
     // e_init
-    short* e_init = nullptr;
-    if (garbled_circuit.e_init_size > 0) {
-      CHECK_ALLOC(e_init = new short[garbled_circuit.e_init_size]);
-      CHECK(
-          RecvData(connfd, e_init, garbled_circuit.e_init_size * sizeof(short)));
-      for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
-        if (e_init[i] == 0) {
-          CHECK(
-              SendData(connfd,
-                       &init_labels[(i + garbled_circuit.g_init_size) * 2 + 0],
-                       sizeof(block)));
-        } else {
-          CHECK(
-              SendData(connfd,
-                       &init_labels[(i + garbled_circuit.g_init_size) * 2 + 1],
-                       sizeof(block)));
-        }
+    BIGNUM* e_init = BN_new();
+    CHECK(RecvBN(connfd, e_init));
+    for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
+      if (i >= (uint) BN_num_bits(e_init) || BN_is_bit_set(e_init, i) == 0) {
+        CHECK(
+            SendData(connfd,
+                     &init_labels[(i + garbled_circuit.g_init_size) * 2 + 0],
+                     sizeof(block)));
+      } else {
+        CHECK(
+            SendData(connfd,
+                     &init_labels[(i + garbled_circuit.g_init_size) * 2 + 1],
+                     sizeof(block)));
       }
     }
     // e_input
-    short* e_input = nullptr;
-    if (garbled_circuit.e_input_size > 0) {
-      CHECK_ALLOC(
-          e_input = new short[clock_cycles * garbled_circuit.e_input_size]);
-      RecvData(connfd, e_input,
-               clock_cycles * garbled_circuit.e_input_size * sizeof(short));
-      for (uint cid = 0; cid < clock_cycles; cid++) {
-        for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
-          if (e_input[cid * garbled_circuit.e_input_size + i] == 0) {
-            CHECK(
-                SendData(
-                    connfd,
-                    &input_labels[(cid * garbled_circuit.get_input_size() + i
-                        + garbled_circuit.g_input_size) * 2 + 0],
-                    sizeof(block)));
-          } else {
-            CHECK(
-                SendData(
-                    connfd,
-                    &input_labels[(cid * garbled_circuit.get_input_size() + i
-                        + garbled_circuit.g_input_size) * 2 + 1],
-                    sizeof(block)));
-          }
+    BIGNUM* e_input = BN_new();
+    CHECK(RecvBN(connfd, e_input));
+    for (uint cid = 0; cid < clock_cycles; cid++) {
+      for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
+        if (cid * garbled_circuit.e_input_size + i
+            >= (uint) BN_num_bits(e_input)
+            || BN_is_bit_set(e_input, cid * garbled_circuit.e_input_size + i)
+                == 0) {
+          CHECK(
+              SendData(
+                  connfd,
+                  &input_labels[(cid * garbled_circuit.get_input_size() + i
+                      + garbled_circuit.g_input_size) * 2 + 0],
+                  sizeof(block)));
+        } else {
+          CHECK(
+              SendData(
+                  connfd,
+                  &input_labels[(cid * garbled_circuit.get_input_size() + i
+                      + garbled_circuit.g_input_size) * 2 + 1],
+                  sizeof(block)));
         }
       }
     }
 
-    delete[] e_init;
-    delete[] e_input;
+    BN_free(e_init);
+    BN_free(e_input);
 
   } else {
     CHECK(
@@ -625,8 +623,8 @@ int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
 }
 
 int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
-                           block* const_labels, short* e_init,
-                           block* init_labels, short* e_input,
+                           block* const_labels, BIGNUM* e_init,
+                           block* init_labels, BIGNUM* e_input,
                            block* input_labels, uint64_t clock_cycles,
                            bool disable_OT, int connfd) {
   // constant
@@ -649,16 +647,14 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
 
   if (disable_OT) {
     // e_init
-    CHECK(SendData(connfd, e_init, garbled_circuit.e_init_size * sizeof(short)));
+    CHECK(SendBN(connfd, e_init));
     for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
       CHECK(
           RecvData(connfd, &init_labels[i + garbled_circuit.g_init_size],
                    sizeof(block)));
     }
     // e_input
-    CHECK(
-        SendData(connfd, e_input,
-                 clock_cycles * garbled_circuit.e_input_size * sizeof(short)));
+    CHECK(SendBN(connfd, e_input));
     for (uint cid = 0; cid < clock_cycles; cid++) {
       for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
         CHECK(
@@ -679,38 +675,10 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
 
 int ParseInitInputStr(const string& init_str, const string&input_str,
                       uint64_t init_size, uint64_t input_size,
-                      uint64_t clock_cycles, short** init, short** input) {
-  BIGNUM* temp_bn = BN_new();
-  *init = nullptr;
-  if (init_size > 0) {
-    BN_hex2bn(&temp_bn, init_str.c_str());
-    CHECK_ALLOC(*init = new short[init_size]);
-    for (uint i = 0; i < init_size; i++) {
-      if (i >= (uint) BN_num_bits(temp_bn) || !BN_is_bit_set(temp_bn, i)) {
-        (*init)[i] = 0;
-      } else {
-        (*init)[i] = 1;
-      }
-    }
-  }
+                      uint64_t clock_cycles, BIGNUM** init, BIGNUM** input) {
+  BN_hex2bn(init, init_str.c_str());
+  BN_hex2bn(input, input_str.c_str());
 
-  BN_hex2bn(&temp_bn, input_str.c_str());
-  (*input) = nullptr;
-  if (input_size > 0) {
-    CHECK_ALLOC((*input) = new short[clock_cycles * input_size]);
-    for (uint cid = 0; cid < clock_cycles; cid++) {
-      for (uint i = 0; i < input_size; i++) {
-        if (cid * input_size + i >= (uint) BN_num_bits(temp_bn)
-            || !BN_is_bit_set(temp_bn, cid * input_size + i)) {
-          (*input)[cid * input_size + i] = 0;
-        } else {
-          (*input)[cid * input_size + i] = 1;
-        }
-      }
-    }
-  }
-
-  BN_free(temp_bn);
   return SUCCESS;
 }
 
@@ -808,8 +776,8 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
       short eval_output_type;
       if (cid * garbled_circuit.output_size + i
           >= (uint64_t) BN_num_bits(output_mask_bn)
-          || !BN_is_bit_set(output_mask_bn,
-                            cid * garbled_circuit.output_size + i)) {
+          || BN_is_bit_set(output_mask_bn,
+                           cid * garbled_circuit.output_size + i) == 0) {
         CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
         BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
       } else {
@@ -844,8 +812,8 @@ int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
           output_labels[cid * garbled_circuit.output_size + i]);
       if (cid * garbled_circuit.output_size + i
           >= (uint64_t) BN_num_bits(output_mask_bn)
-          || !BN_is_bit_set(output_mask_bn,
-                            cid * garbled_circuit.output_size + i)) {
+          || BN_is_bit_set(output_mask_bn,
+                           cid * garbled_circuit.output_size + i) == 0) {
         CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
         if (eval_output_type != garble_output_type) {
           BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
@@ -880,13 +848,13 @@ void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit) {
   }
 }
 
-int GarbleDeallocate(GarbledCircuit* garbled_circuit, short* g_init,
-                     short* g_input, block* const_labels, block* init_labels,
+int GarbleDeallocate(GarbledCircuit* garbled_circuit, BIGNUM* g_init,
+                     BIGNUM* g_input, block* const_labels, block* init_labels,
                      block* input_labels, block* output_labels,
                      uint64_t clock_cycles) {
 
-  delete[] g_init;
-  delete[] g_input;
+  BN_free(g_init);
+  BN_free(g_input);
 
   delete[] const_labels;
   delete[] init_labels;
@@ -897,13 +865,13 @@ int GarbleDeallocate(GarbledCircuit* garbled_circuit, short* g_init,
   return SUCCESS;
 }
 
-int EvaluateDeallocate(GarbledCircuit* garbled_circuit, short* e_init,
-                       short* e_input, block* const_labels, block* init_labels,
+int EvaluateDeallocate(GarbledCircuit* garbled_circuit, BIGNUM* e_init,
+                       BIGNUM* e_input, block* const_labels, block* init_labels,
                        block* input_labels, block* output_labels,
                        uint64_t clock_cycles) {
 
-  delete[] e_init;
-  delete[] e_input;
+  BN_free(e_init);
+  BN_free(e_input);
 
   delete[] const_labels;
   delete[] init_labels;
@@ -917,7 +885,7 @@ int EvaluateDeallocate(GarbledCircuit* garbled_circuit, short* e_init,
 int GarbleStr(const string& scd_file_address, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
               const string& output_mask, int output_mode, bool disable_OT,
-              string* output_str, int connfd) {
+              bool low_mem_foot, string* output_str, int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -932,8 +900,8 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   *((short *) (&R)) |= 1;
 
 // parse init and input
-  short* g_init;
-  short* g_input;
+  BIGNUM* g_init = BN_new();
+  BIGNUM* g_input = BN_new();
   CHECK(
       ParseInitInputStr(init_str, input_str, garbled_circuit.g_init_size,
                         garbled_circuit.g_input_size, clock_cycles, &g_init,
@@ -980,7 +948,7 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 int EvaluateStr(const string& scd_file_address, const string& init_str,
                 const string& input_str, uint64_t clock_cycles,
                 const string& output_mask, int output_mode, bool disable_OT,
-                string* output_str, int connfd) {
+                bool low_mem_foot, string* output_str, int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -992,8 +960,8 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
   }
 
 // allocate init and input values and translate form string
-  short* e_init;
-  short* e_input;
+  BIGNUM* e_init = BN_new();
+  BIGNUM* e_input = BN_new();
   CHECK(
       ParseInitInputStr(init_str, input_str, garbled_circuit.e_init_size,
                         garbled_circuit.e_input_size, clock_cycles, &e_init,
