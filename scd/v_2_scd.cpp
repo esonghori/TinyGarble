@@ -18,6 +18,7 @@
 #include "scd/v_2_scd.h"
 
 #include <boost/program_options.hpp>
+#include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
 #include "scd/scd.h"
@@ -46,7 +47,7 @@ int Verilog2SCD(const string &infilename, const string &outfilename) {
     return -1;
   }
 
-  if (WriteSCD(readCircuit,outfilename) == -1) {
+  if (WriteSCD(readCircuit, outfilename) == -1) {
     LOG(ERROR) << "write result to SCD file failed." << endl;
     return -1;
   }
@@ -60,15 +61,16 @@ int main(int argc, char** argv) {
   string input_netlist_file;
   string output_scd_file;
 
-  po::options_description desc(
-      "Read Netlist, TinyGarble version 0.1\nAllowed options");
+  boost::format fmter(
+      "Read Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
+  fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
+      % TinyGarble_VERSION_PATCH;
+  po::options_description desc(fmter.str());
   desc.add_options()  //
   ("help,h", "produce help message.")  //
-  ("netlist,i",
-   po::value<string>(&input_netlist_file)->default_value("scd/netlists/test.v"),
+  ("netlist,i", po::value<string>(&input_netlist_file),
    "Input netlist (verilog .v) file address.")  //
-  ("scd,o",
-   po::value<string>(&output_scd_file)->default_value("scd/netlists/test.scd"),
+  ("scd,o", po::value<string>(&output_scd_file),
    "Output simple circuit description (scd) file address.");
 
   po::variables_map vm;
@@ -85,6 +87,15 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
     std::cout << desc << endl;
     return -1;
+  }
+
+  if (vm.count("netlist") == 0 || vm.count("scd") == 0) {
+    std::cerr
+        << "ERROR: "
+        << "Both input netlist(-i) and output scd(-o) options must be indicated."
+        << endl;
+    std::cout << desc << endl;
+    return 0;
   }
 
   if (Verilog2SCD(input_netlist_file, output_scd_file) == -1) {
