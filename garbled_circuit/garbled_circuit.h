@@ -38,6 +38,7 @@
 
 #include <cstdint>
 #include <string>
+#include <openssl/bn.h>
 #include "crypto/block.h"
 
 using std::string;
@@ -164,6 +165,9 @@ typedef struct GarbledCircuit {
   }
 
 } GarbledCircuit;
+
+int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                 uint64_t clock_cycles, int output_mode, string *output_str);
 
 int GarbleStr(const string& scd_file_address, const string& init_str,
               const string& input_str, uint64_t clock_cycles,

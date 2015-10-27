@@ -19,6 +19,7 @@
 #ifndef UTIL_UTIL_H_
 #define UTIL_UTIL_H_
 
+#include "garbled_circuit/garbled_circuit.h"
 #include "crypto/block.h"
 #include <openssl/bn.h>
 #include <ostream>
@@ -32,7 +33,10 @@ unsigned short Type2V(int gateType);
 bool GateOperator(int gateType, bool input0, bool input1 = false);
 int Str2Block(const string &s, block* v);
 string to_string_hex(uint64_t v, int pad = 0);
-string OutputBN2Str(BIGNUM* outputs, uint64_t clock_cycles,
-                    uint64_t output_size, int output_mode);
 
+int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                 uint64_t clock_cycles, int output_mode, string *output_str);
+int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                       uint64_t clock_cycles, int output_mode,
+                       string* output_str);
 #endif /* UTIL_UTIL_H_ */

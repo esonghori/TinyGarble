@@ -177,11 +177,8 @@ int WriteSCD(const ReadCircuit& readCircuit, const string &fileName) {
    * I[i] == CONST_ONE (== -3) : it means the initial value of the DFF is one.
    * At the first cycle, Garbler should send token[1] to Evaluator.
    * I[i] > 0 : it means the initial value of the DFF is value of actual
-   * circuit input (wire I[i]). At the first cycle, Evaluator should received
-   * the tokens from the Garbler (using OT or directly).
+   * circuit init port.
    */
-// TODO(ebi): some of the input wires are only connected to initial signal.
-// Those wires do not require communication in cycles c > 1.
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     f << (int64_t) readCircuit.dff_list[i].input[1] << " ";  //I
   }
