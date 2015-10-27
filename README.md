@@ -120,6 +120,10 @@ description (`.scd`) file.
   --disable_OT                          Disable Oblivious Transfer (OT) for 
                                         transferring labels. WARNING: OT is 
                                         crucial for GC security.
+  --low_mem_foot                        Enables low memory footprint mode for 
+                                        circuits with multiple clock cycles. In
+                                        this mode, OT is called at each clock 
+                                        cycle which degrades the performance.
   --output_mask arg (=0)                Hexadecimal mask for output. 0 
                                         indicates that output belongs to Bob, 
                                         and 1 belongs to Alice.
