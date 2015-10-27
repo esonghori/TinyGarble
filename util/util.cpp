@@ -189,7 +189,6 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
   return ret;
 }
 
-
 string OutputBN2Str(BIGNUM* outputs, uint64_t clock_cycles,
                     uint64_t output_size, int output_mode) {
   string outputs_str = "";
