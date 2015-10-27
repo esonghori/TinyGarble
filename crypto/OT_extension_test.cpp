@@ -76,8 +76,8 @@ int Bob(const void *data, int connfd) {
 }
 
 int main(int argc, char* argv[]) {
-
   LogInitial(argc, argv);
+  HashInit();
 
   srand(time(NULL));
   SrandSSE(time(NULL));
@@ -111,6 +111,7 @@ int main(int argc, char* argv[]) {
   delete[] select;
 
   LogFinish();
+  HashFinish();
   return SUCCESS;
 }
 

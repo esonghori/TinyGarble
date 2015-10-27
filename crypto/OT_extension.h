@@ -23,6 +23,10 @@
 #include <openssl/rsa.h>
 #include "crypto/block.h"
 
+//const EVP_MD *md = nullptr;
+int HashInit();
+void HashFinish();
+
 int SwitchRowColumnBN(const BIGNUM* const * v, uint32_t v_len,
                       uint32_t v_bit_len, BIGNUM*** w);
 int SwitchRowColumnBNPair(const BIGNUM* const * const * v, uint32_t v_len,

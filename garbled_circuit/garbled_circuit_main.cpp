@@ -38,8 +38,9 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "scd/scd.h"
+#include "crypto/OT_extension.h"
 #include "garbled_circuit/garbled_circuit.h"
+#include "scd/scd.h"
 #include "tcpip/tcpip.h"
 #include "util/util.h"
 #include "util/tinygarble_config.h"
@@ -55,13 +56,17 @@ int CheckOptionsAlice(const string& scd_file_address, uint64_t clock_cycles,
 
   int size = scd_file_address.length();
   SendData(connfd, &size, sizeof(int));
-  SendData(connfd, scd_file_address.c_str(), size);
+  if (size > 0) {
+    SendData(connfd, scd_file_address.c_str(), size);
+  }
 
   SendData(connfd, &clock_cycles, sizeof(uint64_t));
 
   size = output_mask.length();
   SendData(connfd, &size, sizeof(int));
-  SendData(connfd, output_mask.c_str(), size);
+  if (size > 0) {
+    SendData(connfd, output_mask.c_str(), size);
+  }
 
   SendData(connfd, &disable_OT, sizeof(bool));
   SendData(connfd, &low_mem_foot, sizeof(bool));
@@ -88,18 +93,26 @@ int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
   int size;
 
   RecvData(connfd, &size, sizeof(int));
-  buff = new char[size];
-  RecvData(connfd, buff, size);
-  scd_file_address_ = string(buff);
-  delete[] buff;
+  if (size <= 0) {
+    scd_file_address_ = "";
+  } else {
+    buff = new char[size];
+    RecvData(connfd, buff, size);
+    scd_file_address_ = string(buff);
+    delete[] buff;
+  }
 
   RecvData(connfd, &clock_cycles_, sizeof(uint64_t));
 
   RecvData(connfd, &size, sizeof(int));
-  buff = new char[size];
-  RecvData(connfd, buff, size);
-  output_mask_ = string(buff);
-  delete[] buff;
+  if (size <= 0) {
+    output_mask_ = "";
+  } else {
+    buff = new char[size];
+    RecvData(connfd, buff, size);
+    output_mask_ = string(buff);
+    delete[] buff;
+  }
 
   RecvData(connfd, &disable_OT_, sizeof(bool));
   RecvData(connfd, &low_mem_foot_, sizeof(bool));
@@ -122,6 +135,7 @@ int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
 int main(int argc, char* argv[]) {
 
   LogInitial(argc, argv);
+  HashInit();
   srand(time(0));  // srand(1);
   SrandSSE(time(0));  // SrandSSE(1111);
 
@@ -213,9 +227,9 @@ int main(int argc, char* argv[]) {
     }
     LOG(INFO) << "Open Alice's server on port: " << port << endl;
 
-    CHECK(
-        CheckOptionsAlice(scd_file_address, clock_cycles, output_mask,
-                          disable_OT, low_mem_foot, connfd));
+    //CHECK(
+    //    CheckOptionsAlice("", clock_cycles, output_mask, disable_OT,
+    //                      low_mem_foot, connfd));
 
     string output_str;
     uint64_t delta_time = RDTSC;
@@ -250,9 +264,9 @@ int main(int argc, char* argv[]) {
     LOG(INFO) << "Connect Bob's client to Alice's server on " << server_ip
               << ":" << port << endl;
 
-    CHECK(
-        CheckOptionsBob(scd_file_address, clock_cycles, output_mask, disable_OT,
-                        low_mem_foot, connfd));
+    //CHECK(
+    //    CheckOptionsBob("", clock_cycles, output_mask, disable_OT, low_mem_foot,
+    //                    connfd));
 
     string output_str;
     uint64_t delta_time = RDTSC;
@@ -270,6 +284,7 @@ int main(int argc, char* argv[]) {
   }
 
   LogFinish();
+  HashFinish();
   return SUCCESS;
 }
 
