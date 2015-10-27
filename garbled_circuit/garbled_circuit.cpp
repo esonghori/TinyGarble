@@ -676,7 +676,7 @@ int ParseInitInputStr(const string& init_str, const string&input_str,
 int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
                      block** const_labels, block** init_labels,
                      block** input_labels, block** output_labels, block R,
-                     uint64_t clock_cycles, bool low_mem_foot) {
+                     uint64_t clock_cycles) {
 
   (*const_labels) = nullptr;
   CHECK_ALLOC((*const_labels) = new block[2 * 2]);
@@ -697,41 +697,27 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
 
   (*input_labels) = nullptr;
   (*output_labels) = nullptr;
-  if (low_mem_foot) {
-    if (garbled_circuit.get_input_size() > 0) {
-      CHECK_ALLOC(
-          (*input_labels) = new block[garbled_circuit.get_input_size() * 2]);
+
+  if (garbled_circuit.get_input_size() > 0) {
+    CHECK_ALLOC(
+        (*input_labels) = new block[clock_cycles
+            * garbled_circuit.get_input_size() * 2]);
+    for (uint cid = 0; cid < clock_cycles; cid++) {
       for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
-        (*input_labels)[(i) * 2 + 0] = RandomBlock();
-        (*input_labels)[(i) * 2 + 1] = XorBlock(R,
-                                                (*input_labels)[(i) * 2 + 0]);
+        (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 0] =
+            RandomBlock();
+        (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 1] =
+            XorBlock(
+                R,
+                (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2
+                    + 0]);
       }
     }
-    if (garbled_circuit.output_size > 0) {
-      CHECK_ALLOC((*output_labels) = new block[garbled_circuit.output_size * 2]);
-    }
-  } else {
-    if (garbled_circuit.get_input_size() > 0) {
-      CHECK_ALLOC(
-          (*input_labels) = new block[clock_cycles
-              * garbled_circuit.get_input_size() * 2]);
-      for (uint cid = 0; cid < clock_cycles; cid++) {
-        for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
-          (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 0] =
-              RandomBlock();
-          (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 1] =
-              XorBlock(
-                  R,
-                  (*input_labels)[(cid * garbled_circuit.get_input_size() + i)
-                      * 2 + 0]);
-        }
-      }
-    }
-    if (garbled_circuit.output_size > 0) {
-      CHECK_ALLOC(
-          (*output_labels) = new block[clock_cycles
-              * garbled_circuit.output_size * 2]);
-    }
+  }
+  if (garbled_circuit.output_size > 0) {
+    CHECK_ALLOC(
+        (*output_labels) = new block[clock_cycles * garbled_circuit.output_size
+            * 2]);
   }
 
   return SUCCESS;
@@ -740,7 +726,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
 int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
                        block** const_labels, block** init_labels,
                        block** input_labels, block** output_labels,
-                       uint64_t clock_cycles, bool low_mem_foot) {
+                       uint64_t clock_cycles) {
   (*const_labels) = nullptr;
   CHECK_ALLOC((*const_labels) = new block[2]);
 
@@ -751,25 +737,15 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
 
   (*input_labels) = nullptr;
   (*output_labels) = nullptr;
-  if (low_mem_foot) {
-    if (garbled_circuit.get_input_size() > 0) {
-      CHECK_ALLOC((*input_labels) = new block[garbled_circuit.get_input_size()]);
-    }
-
-    if (garbled_circuit.output_size > 0) {
-      CHECK_ALLOC((*output_labels) = new block[garbled_circuit.output_size]);
-    }
-  } else {
-    if (garbled_circuit.get_input_size() > 0) {
-      CHECK_ALLOC(
-          (*input_labels) = new block[clock_cycles
-              * garbled_circuit.get_input_size()]);
-    }
-    if (garbled_circuit.output_size > 0) {
-      CHECK_ALLOC(
-          (*output_labels) = new block[clock_cycles
-              * garbled_circuit.output_size]);
-    }
+  if (garbled_circuit.get_input_size() > 0) {
+    CHECK_ALLOC(
+        (*input_labels) = new block[clock_cycles
+            * garbled_circuit.get_input_size()]);
+  }
+  if (garbled_circuit.output_size > 0) {
+    CHECK_ALLOC(
+        (*output_labels) =
+            new block[clock_cycles * garbled_circuit.output_size]);
   }
   return SUCCESS;
 }
@@ -879,30 +855,29 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   block R = RandomBlock();  // secret label
   *((short *) (&R)) |= 1;
 
-// parse init and input
+  // parse init and input
   BIGNUM* g_init = BN_new();
   BIGNUM* g_input = BN_new();
   CHECK(
       ParseInitInputStr(init_str, input_str, garbled_circuit.g_init_size,
                         garbled_circuit.g_input_size, clock_cycles, &g_init,
                         &g_input));
-// allocate init and input values and translate form string
-  block* const_labels;
-  block* init_labels;
-  block* input_labels;
-  block* output_labels;
-  CHECK(
-      GarbleMakeLabels(garbled_circuit, &const_labels, &init_labels,
-                       &input_labels, &output_labels, R, clock_cycles,
-                       low_mem_foot));
-// global key
+
+  block* const_labels = nullptr;
+  block* init_labels = nullptr;
+  block* input_labels = nullptr;
+  block* output_labels = nullptr;
+
+  // global key
   block global_key = RandomBlock();
   CHECK(SendData(connfd, &global_key, sizeof(block)));  // send global key
 
   uint64_t g_time = 0;
   if (low_mem_foot && clock_cycles > 1) {
 
-    //TODO(ebi): generates random inputs here.
+    CHECK(
+        GarbleMakeInitLabels(garbled_circuit, &const_labels, &init_labels,
+                             &input_labels, &output_labels, R));
 
     (*output_str) = "";
     BlockPair *wires = nullptr;
@@ -917,6 +892,8 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
     DUMP("r_key") << R << endl;
     DUMP("r_key") << global_key << endl;
     for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+      CHECK(GarbleGenInputLabels(garbled_circuit, &input_labels, R));
+
       CHECK(
           GarbleTransferInputLabels(garbled_circuit, g_input, input_labels, cid,
                                     disable_OT, connfd));
@@ -942,7 +919,10 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
     delete[] wires;
 
   } else {
-
+    // allocate init and input values and translate form string
+    CHECK(
+        GarbleMakeLabels(garbled_circuit, &const_labels, &init_labels,
+                         &input_labels, &output_labels, R, clock_cycles));
     CHECK(
         GarbleTransferLabels(garbled_circuit, const_labels, g_init, init_labels,
                              g_input, input_labels, clock_cycles, disable_OT,
@@ -993,15 +973,11 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
                         garbled_circuit.e_input_size, clock_cycles, &e_init,
                         &e_input));
 
-// allocate labels
-  block* const_labels;
-  block* init_labels;
-  block* input_labels;
-  block* output_labels;
-  CHECK(
-      EvaluateMakeLabels(garbled_circuit, &const_labels, &init_labels,
-                         &input_labels, &output_labels, clock_cycles,
-                         low_mem_foot));
+  block* const_labels = nullptr;
+  block* init_labels = nullptr;
+  block* input_labels = nullptr;
+  block* output_labels = nullptr;
+
 // global key
   block global_key = RandomBlock();
   CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
@@ -1013,6 +989,10 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
     CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
 
     CHECK(
+        EvaluateMakeInitLabels(garbled_circuit, &const_labels, &init_labels,
+                               &input_labels, &output_labels));
+
+    CHECK(
         EvaluateTransferInitLabels(garbled_circuit, const_labels, e_init,
                                    init_labels, disable_OT, connfd));
 
@@ -1020,6 +1000,7 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
     AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
     DUMP("r_key") << global_key << endl;
     for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+
       CHECK(
           EvaluateTransferInputLabels(garbled_circuit, e_input, input_labels,
                                       cid, disable_OT, connfd));
@@ -1044,7 +1025,9 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
     }
     delete[] wires;
   } else {
-
+    CHECK(
+        EvaluateMakeLabels(garbled_circuit, &const_labels, &init_labels,
+                           &input_labels, &output_labels, clock_cycles));
     // transfer labels
     CHECK(
         EvaluateTransferLabels(garbled_circuit, const_labels, e_init,
