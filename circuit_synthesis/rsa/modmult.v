@@ -94,9 +94,14 @@ module modmult
 
 	generate
 	if(CC>1)
-		always@(posedge clk or posedge start)
+		always@(posedge clk or posedge rst)
 		begin
-			if(start)
+			if(rst)
+			begin
+				zreg <= 0;
+				xreg <= 0;
+			end
+			else if(start)
 			begin
 				zreg <= 0;
 				xreg <= x;
