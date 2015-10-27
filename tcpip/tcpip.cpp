@@ -135,11 +135,10 @@ int SendData(int sock, const void *var, int len) {
   if (len_ret == FAILURE) {
     LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
-  } else if (len_ret == 0) {
+  } else if (len_ret == 0 || len_ret < len) {
     LOG(ERROR) << "connection is possibly closed" << endl;
     return FAILURE;
   }
-  // TODO(ebi): check 0 < len_ret < len
   return SUCCESS;
 }
 
@@ -151,10 +150,9 @@ int RecvData(int sock, void* var, int len) {
   if (len_ret == FAILURE) {
     LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
-  } else if (len_ret == 0) {
+  } else if (len_ret == 0 || len_ret < len) {
     LOG(ERROR) << "connection is possibly closed" << endl;
     return FAILURE;
   }
-  // TODO(ebi): check 0 < len_ret < len
   return SUCCESS;
 }

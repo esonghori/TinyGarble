@@ -390,9 +390,9 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
   return (end_time - start_time);
 }
 
-int GarbleMakeInitLabels(const GarbledCircuit& garbled_circuit,
-                         block** const_labels, block** init_labels,
-                         block** input_labels, block** output_labels, block R) {
+int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
+                      block** const_labels, block** init_labels,
+                      block** input_labels, block** output_labels, block R) {
 
   (*const_labels) = nullptr;
   CHECK_ALLOC((*const_labels) = new block[2 * 2]);
@@ -425,20 +425,36 @@ int GarbleMakeInitLabels(const GarbledCircuit& garbled_circuit,
   return SUCCESS;
 }
 
+int GarbleGneInitLabels(const GarbledCircuit& garbled_circuit,
+                        block* const_labels, block* init_labels, block R) {
+
+  for (uint i = 0; i < 2; i++) {
+    const_labels[i * 2 + 0] = RandomBlock();
+    const_labels[i * 2 + 1] = XorBlock(R, const_labels[i * 2 + 0]);
+  }
+
+  for (uint i = 0; i < garbled_circuit.get_init_size(); i++) {
+    init_labels[i * 2 + 0] = RandomBlock();
+    init_labels[i * 2 + 1] = XorBlock(R, init_labels[i * 2 + 0]);
+  }
+
+  return SUCCESS;
+}
+
 int GarbleGenInputLabels(const GarbledCircuit& garbled_circuit,
-                         block** input_labels, block R) {
+                         block* input_labels, block R) {
   if (garbled_circuit.get_input_size() > 0) {
     for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
-      (*input_labels)[i * 2 + 0] = RandomBlock();
-      (*input_labels)[i * 2 + 1] = XorBlock(R, (*input_labels)[i * 2 + 0]);
+      input_labels[i * 2 + 0] = RandomBlock();
+      input_labels[i * 2 + 1] = XorBlock(R, input_labels[i * 2 + 0]);
     }
   }
   return SUCCESS;
 }
 
-int EvaluateMakeInitLabels(const GarbledCircuit& garbled_circuit,
-                           block** const_labels, block** init_labels,
-                           block** input_labels, block** output_labels) {
+int EvaluateAllocLabels(const GarbledCircuit& garbled_circuit,
+                        block** const_labels, block** init_labels,
+                        block** input_labels, block** output_labels) {
   (*const_labels) = nullptr;
   CHECK_ALLOC((*const_labels) = new block[2]);
 
@@ -742,12 +758,20 @@ int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
 
 int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                block* output_labels, uint64_t cid,
-                               const string& output_mask, string* output_str,
-                               int connfd) {
+                               int output_mode, const string& output_mask,
+                               BIGNUM* output_bn, int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
-  BIGNUM* output_bn = BN_new();
+  uint64_t output_bit_offset = 0;
+  if (output_mode == 0) {  // normal mode, keep all the bits.
+    output_bit_offset = cid * garbled_circuit.output_size;
+  } else if (output_mode == 1) {  // Separated by clock mode, keep all the bits.
+    output_bit_offset = cid * garbled_circuit.output_size;
+  } else if (output_mode == 2) {  // keep the last cycle, overwrite the bits.
+    output_bit_offset = 0;
+  }
+
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
     short garble_output_type = get_LSB(output_labels[(i) * 2 + 0]);
     short eval_output_type;
@@ -756,33 +780,37 @@ int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
         || BN_is_bit_set(output_mask_bn, cid * garbled_circuit.output_size + i)
             == 0) {
       CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
-      BN_clear_bit(output_bn, i);
+      BN_clear_bit(output_bn, output_bit_offset + i);
     } else {
       CHECK(RecvData(connfd, &eval_output_type, sizeof(short)));
       if (eval_output_type != garble_output_type) {
-        BN_set_bit(output_bn, i);
+        BN_set_bit(output_bn, output_bit_offset + i);
       } else {
-        BN_clear_bit(output_bn, i);
+        BN_clear_bit(output_bn, output_bit_offset + i);
       }
     }
   }
 
-  const char* output_c = BN_bn2hex(output_bn);
-  *output_str = output_c;
-
   BN_free(output_mask_bn);
-  BN_free(output_bn);
   return SUCCESS;
 }
 
 int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                  block* output_labels, uint64_t cid,
-                                 const string& output_mask, string* output_str,
-                                 int connfd) {
+                                 int output_mode, const string& output_mask,
+                                 BIGNUM* output_bn, int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
-  BIGNUM* output_bn = BN_new();
+  uint64_t output_bit_offset = 0;
+  if (output_mode == 0) {  // normal mode, keep all the bits.
+    output_bit_offset = cid * garbled_circuit.output_size;
+  } else if (output_mode == 1) {  // Separated by clock mode, keep all the bits.
+    output_bit_offset = cid * garbled_circuit.output_size;
+  } else if (output_mode == 2) {  // keep the last cycle, overwrite the bits.
+    output_bit_offset = 0;
+  }
+
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
     short garble_output_type;
     short eval_output_type = get_LSB(output_labels[i]);
@@ -792,21 +820,17 @@ int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
             == 0) {
       CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
       if (eval_output_type != garble_output_type) {
-        BN_set_bit(output_bn, i);
+        BN_set_bit(output_bn, output_bit_offset + i);
       } else {
-        BN_clear_bit(output_bn, i);
+        BN_clear_bit(output_bn, output_bit_offset + i);
       }
     } else {
       CHECK(SendData(connfd, &eval_output_type, sizeof(short)));
-      BN_clear_bit(output_bn, i);
+      BN_clear_bit(output_bn, output_bit_offset + i);
     }
   }
 
-  const char* output_c = BN_bn2hex(output_bn);
-  *output_str = output_c;
-
   BN_free(output_mask_bn);
-  BN_free(output_bn);
   return SUCCESS;
 }
 
