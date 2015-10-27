@@ -42,6 +42,7 @@
 #include "crypto/aes.h"
 #include "crypto/BN.h"
 #include "crypto/OT_extension.h"
+#include "garbled_circuit/garbled_circuit_low_mem.h"
 #include "tcpip/tcpip.h"
 #include "util/common.h"
 #include "util/util.h"
@@ -114,12 +115,9 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
           * garbled_circuit.get_input_size() + i) * 2 + 0];
       wires[input_bias + i].label1 = input_labels[(cid
           * garbled_circuit.get_input_size() + i) * 2 + 1];
-
-      if (cid == 0) {
-        DUMP("input")
-            << input_labels[(cid * garbled_circuit.get_input_size() + i) * 2 + 0]
-            << endl;
-      }
+      DUMP("input")
+          << input_labels[(cid * garbled_circuit.get_input_size() + i) * 2 + 0]
+          << endl;
     }
 
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  //for each gates
@@ -265,10 +263,7 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
           wires[garbled_circuit.outputs[i]].label0;
       output_labels[(cid * garbled_circuit.output_size + i) * 2 + 1] =
           wires[garbled_circuit.outputs[i]].label1;
-
-      if (cid == clock_cycles - 1) {
-        DUMP("output") << wires[garbled_circuit.outputs[i]].label0 << endl;
-      }
+      DUMP("output") << wires[garbled_circuit.outputs[i]].label0 << endl;
     }
   }
   uint64_t end_time = RDTSC;
@@ -331,10 +326,8 @@ uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
     for (uint64_t i = 0; i < garbled_circuit.get_input_size(); i++) {
       wires[input_bias + i] = input_labels[cid
           * garbled_circuit.get_input_size() + i];
-      if (cid == 0) {
-        DUMP("input")
-            << input_labels[cid * garbled_circuit.get_input_size() + i] << endl;
-      }
+      DUMP("input") << input_labels[cid * garbled_circuit.get_input_size() + i]
+          << endl;
     }
 
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  // for each gates
@@ -423,10 +416,8 @@ uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
     for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
       output_labels[cid * garbled_circuit.output_size + i] =
           wires[garbled_circuit.outputs[i]];
-      if (cid == clock_cycles - 1) {
-        DUMP("output") << output_labels[cid * garbled_circuit.output_size + i]
-            << endl;
-      }
+      DUMP("output") << output_labels[cid * garbled_circuit.output_size + i]
+          << endl;
     }
   }
   uint64_t end_time = RDTSC;
@@ -533,11 +524,11 @@ int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
                          block* init_labels, BIGNUM* g_input,
                          block* input_labels, uint64_t clock_cycles,
                          bool disable_OT, int connfd) {
-  // constant
+// constant
   CHECK(SendData(connfd, &const_labels[0 * 2 + 0], sizeof(block)));
   CHECK(SendData(connfd, &const_labels[1 * 2 + 1], sizeof(block)));
 
-  // g_init
+// g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
     if (i >= (uint) BN_num_bits(g_init) || BN_is_bit_set(g_init, i) == 0) {
       CHECK(SendData(connfd, &init_labels[i * 2 + 0], sizeof(block)));
@@ -545,7 +536,7 @@ int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
       CHECK(SendData(connfd, &init_labels[i * 2 + 1], sizeof(block)));
     }
   }
-  // g_input
+// g_input
   for (uint cid = 0; cid < clock_cycles; cid++) {
     for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
       if (cid * garbled_circuit.g_input_size + i >= (uint) BN_num_bits(g_input)
@@ -627,15 +618,15 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
                            block* init_labels, BIGNUM* e_input,
                            block* input_labels, uint64_t clock_cycles,
                            bool disable_OT, int connfd) {
-  // constant
+// constant
   CHECK(RecvData(connfd, &const_labels[0], sizeof(block)));
   CHECK(RecvData(connfd, &const_labels[1], sizeof(block)));
 
-  // g_init
+// g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
     CHECK(RecvData(connfd, &init_labels[i], sizeof(block)));
   }
-  // g_input
+// g_input
   for (uint cid = 0; cid < clock_cycles; cid++) {
     for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
       CHECK(
@@ -685,7 +676,7 @@ int ParseInitInputStr(const string& init_str, const string&input_str,
 int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
                      block** const_labels, block** init_labels,
                      block** input_labels, block** output_labels, block R,
-                     uint64_t clock_cycles) {
+                     uint64_t clock_cycles, bool low_mem_foot) {
 
   (*const_labels) = nullptr;
   CHECK_ALLOC((*const_labels) = new block[2 * 2]);
@@ -705,28 +696,42 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
   }
 
   (*input_labels) = nullptr;
-  if (garbled_circuit.get_input_size() > 0) {
-    CHECK_ALLOC(
-        (*input_labels) = new block[clock_cycles
-            * garbled_circuit.get_input_size() * 2]);
-    for (uint cid = 0; cid < clock_cycles; cid++) {
+  (*output_labels) = nullptr;
+  if (low_mem_foot) {
+    if (garbled_circuit.get_input_size() > 0) {
+      CHECK_ALLOC(
+          (*input_labels) = new block[garbled_circuit.get_input_size() * 2]);
       for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
-        (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 0] =
-            RandomBlock();
-        (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 1] =
-            XorBlock(
-                R,
-                (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2
-                    + 0]);
+        (*input_labels)[(i) * 2 + 0] = RandomBlock();
+        (*input_labels)[(i) * 2 + 1] = XorBlock(R,
+                                                (*input_labels)[(i) * 2 + 0]);
       }
     }
-  }
-
-  (*output_labels) = nullptr;
-  if (garbled_circuit.output_size > 0) {
-    CHECK_ALLOC(
-        (*output_labels) = new block[clock_cycles * garbled_circuit.output_size
-            * 2]);
+    if (garbled_circuit.output_size > 0) {
+      CHECK_ALLOC((*output_labels) = new block[garbled_circuit.output_size * 2]);
+    }
+  } else {
+    if (garbled_circuit.get_input_size() > 0) {
+      CHECK_ALLOC(
+          (*input_labels) = new block[clock_cycles
+              * garbled_circuit.get_input_size() * 2]);
+      for (uint cid = 0; cid < clock_cycles; cid++) {
+        for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
+          (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 0] =
+              RandomBlock();
+          (*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2 + 1] =
+              XorBlock(
+                  R,
+                  (*input_labels)[(cid * garbled_circuit.get_input_size() + i)
+                      * 2 + 0]);
+        }
+      }
+    }
+    if (garbled_circuit.output_size > 0) {
+      CHECK_ALLOC(
+          (*output_labels) = new block[clock_cycles
+              * garbled_circuit.output_size * 2]);
+    }
   }
 
   return SUCCESS;
@@ -735,7 +740,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
 int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
                        block** const_labels, block** init_labels,
                        block** input_labels, block** output_labels,
-                       uint64_t clock_cycles) {
+                       uint64_t clock_cycles, bool low_mem_foot) {
   (*const_labels) = nullptr;
   CHECK_ALLOC((*const_labels) = new block[2]);
 
@@ -745,19 +750,27 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
   }
 
   (*input_labels) = nullptr;
-  if (garbled_circuit.get_input_size() > 0) {
-    CHECK_ALLOC(
-        (*input_labels) = new block[clock_cycles
-            * garbled_circuit.get_input_size()]);
-  }
-
   (*output_labels) = nullptr;
-  if (garbled_circuit.output_size > 0) {
-    CHECK_ALLOC(
-        (*output_labels) =
-            new block[clock_cycles * garbled_circuit.output_size]);
-  }
+  if (low_mem_foot) {
+    if (garbled_circuit.get_input_size() > 0) {
+      CHECK_ALLOC((*input_labels) = new block[garbled_circuit.get_input_size()]);
+    }
 
+    if (garbled_circuit.output_size > 0) {
+      CHECK_ALLOC((*output_labels) = new block[garbled_circuit.output_size]);
+    }
+  } else {
+    if (garbled_circuit.get_input_size() > 0) {
+      CHECK_ALLOC(
+          (*input_labels) = new block[clock_cycles
+              * garbled_circuit.get_input_size()]);
+    }
+    if (garbled_circuit.output_size > 0) {
+      CHECK_ALLOC(
+          (*output_labels) = new block[clock_cycles
+              * garbled_circuit.output_size]);
+    }
+  }
   return SUCCESS;
 }
 
@@ -797,6 +810,7 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
   BN_free(output_bn);
   return SUCCESS;
 }
+
 int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
                            block* output_labels, uint64_t clock_cycles,
                            const string& output_mask, int output_mode,
@@ -848,40 +862,6 @@ void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit) {
   }
 }
 
-int GarbleDeallocate(GarbledCircuit* garbled_circuit, BIGNUM* g_init,
-                     BIGNUM* g_input, block* const_labels, block* init_labels,
-                     block* input_labels, block* output_labels,
-                     uint64_t clock_cycles) {
-
-  BN_free(g_init);
-  BN_free(g_input);
-
-  delete[] const_labels;
-  delete[] init_labels;
-  delete[] input_labels;
-  delete[] output_labels;
-
-  RemoveGarbledCircuit(garbled_circuit);
-  return SUCCESS;
-}
-
-int EvaluateDeallocate(GarbledCircuit* garbled_circuit, BIGNUM* e_init,
-                       BIGNUM* e_input, block* const_labels, block* init_labels,
-                       block* input_labels, block* output_labels,
-                       uint64_t clock_cycles) {
-
-  BN_free(e_init);
-  BN_free(e_input);
-
-  delete[] const_labels;
-  delete[] init_labels;
-  delete[] input_labels;
-  delete[] output_labels;
-
-  RemoveGarbledCircuit(garbled_circuit);
-  return SUCCESS;
-}
-
 int GarbleStr(const string& scd_file_address, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
               const string& output_mask, int output_mode, bool disable_OT,
@@ -906,7 +886,6 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
       ParseInitInputStr(init_str, input_str, garbled_circuit.g_init_size,
                         garbled_circuit.g_input_size, clock_cycles, &g_init,
                         &g_input));
-
 // allocate init and input values and translate form string
   block* const_labels;
   block* init_labels;
@@ -914,33 +893,80 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   block* output_labels;
   CHECK(
       GarbleMakeLabels(garbled_circuit, &const_labels, &init_labels,
-                       &input_labels, &output_labels, R, clock_cycles));
-
-  CHECK(
-      GarbleTransferLabels(garbled_circuit, const_labels, g_init, init_labels,
-                           g_input, input_labels, clock_cycles, disable_OT,
-                           connfd));
-
+                       &input_labels, &output_labels, R, clock_cycles,
+                       low_mem_foot));
 // global key
   block global_key = RandomBlock();
   CHECK(SendData(connfd, &global_key, sizeof(block)));  // send global key
 
-  uint64_t g_time = Garble(garbled_circuit, const_labels, init_labels,
-                           input_labels, global_key, R, clock_cycles, connfd,
-                           output_labels);
+  uint64_t g_time = 0;
+  if (low_mem_foot && clock_cycles > 1) {
+
+    //TODO(ebi): generates random inputs here.
+
+    (*output_str) = "";
+    BlockPair *wires = nullptr;
+    CHECK_ALLOC(wires = new BlockPair[garbled_circuit.get_wire_size()]);
+
+    CHECK(
+        GarbleTransferInitLabels(garbled_circuit, const_labels, g_init,
+                                 init_labels, disable_OT, connfd));
+
+    AES_KEY AES_Key;
+    AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
+    DUMP("r_key") << R << endl;
+    DUMP("r_key") << global_key << endl;
+    for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+      CHECK(
+          GarbleTransferInputLabels(garbled_circuit, g_input, input_labels, cid,
+                                    disable_OT, connfd));
+
+      g_time += GarbleLowMem(garbled_circuit, const_labels, init_labels,
+                             input_labels, R, AES_Key, cid, connfd, wires,
+                             output_labels);
+
+      string output_str_cid = "";
+      CHECK(
+          GarbleTransferOutputLowMem(garbled_circuit, output_labels, cid,
+                                     output_mask, &output_str_cid, connfd));
+      if (output_mode == 0) {
+        (*output_str) += output_str_cid;
+      } else if (output_mode == 1) {
+        (*output_str) += output_str_cid + "\n";
+      } else if (output_mode == 2) {
+        if (cid == clock_cycles - 1) {
+          (*output_str) = output_str_cid;
+        }
+      }
+    }
+    delete[] wires;
+
+  } else {
+
+    CHECK(
+        GarbleTransferLabels(garbled_circuit, const_labels, g_init, init_labels,
+                             g_input, input_labels, clock_cycles, disable_OT,
+                             connfd));
+
+    g_time = Garble(garbled_circuit, const_labels, init_labels, input_labels,
+                    global_key, R, clock_cycles, connfd, output_labels);
+    CHECK(
+        GarbleTransferOutput(garbled_circuit, output_labels, clock_cycles,
+                             output_mask, output_mode, output_str, connfd));
+  }
+  BN_free(g_init);
+  BN_free(g_input);
+  delete[] const_labels;
+  delete[] init_labels;
+  delete[] input_labels;
+  delete[] output_labels;
+
   LOG(INFO) << "Total Garbling time (cc) = " << g_time
             << "\tGarbling time per gate (cc/gate) = "
             << (g_time) / ((double) garbled_circuit.gate_size * clock_cycles)
             << endl;
-
-  CHECK(
-      GarbleTransferOutput(garbled_circuit, output_labels, clock_cycles,
-                           output_mask, output_mode, output_str, connfd));
-
+  RemoveGarbledCircuit(&garbled_circuit);
   ServerClose(connfd);
-  CHECK(
-      GarbleDeallocate(&garbled_circuit, g_init, g_input, const_labels,
-                       init_labels, input_labels, output_labels, clock_cycles));
 
   return SUCCESS;
 }
@@ -974,36 +1000,79 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
   block* output_labels;
   CHECK(
       EvaluateMakeLabels(garbled_circuit, &const_labels, &init_labels,
-                         &input_labels, &output_labels, clock_cycles));
-
-// transfer labels
-  CHECK(
-      EvaluateTransferLabels(garbled_circuit, const_labels, e_init, init_labels,
-                             e_input, input_labels, clock_cycles, disable_OT,
-                             connfd));
-
+                         &input_labels, &output_labels, clock_cycles,
+                         low_mem_foot));
 // global key
   block global_key = RandomBlock();
-  CHECK(RecvData(connfd, &global_key, sizeof(block)));  // send global key
+  CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
 
-  uint64_t e_time = Evaluate(garbled_circuit, const_labels, init_labels,
-                             input_labels, global_key, clock_cycles, connfd,
-                             output_labels);
+  uint64_t e_time = 0;
+  if (low_mem_foot && clock_cycles > 1) {
+    (*output_str) = "";
+    block *wires = nullptr;
+    CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
 
+    CHECK(
+        EvaluateTransferInitLabels(garbled_circuit, const_labels, e_init,
+                                   init_labels, disable_OT, connfd));
+
+    AES_KEY AES_Key;
+    AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
+    DUMP("r_key") << global_key << endl;
+    for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+      CHECK(
+          EvaluateTransferInputLabels(garbled_circuit, e_input, input_labels,
+                                      cid, disable_OT, connfd));
+
+      e_time += EvaluateLowMem(garbled_circuit, const_labels, init_labels,
+                               input_labels, AES_Key, cid, connfd, wires,
+                               output_labels);
+
+      string output_str_cid = "";
+      CHECK(
+          EvaluateTransferOutputLowMem(garbled_circuit, output_labels, cid,
+                                       output_mask, &output_str_cid, connfd));
+      if (output_mode == 0) {
+        (*output_str) += output_str_cid;
+      } else if (output_mode == 1) {
+        (*output_str) += output_str_cid + "\n";
+      } else if (output_mode == 2) {
+        if (cid == clock_cycles - 1) {
+          (*output_str) = output_str_cid;
+        }
+      }
+    }
+    delete[] wires;
+  } else {
+
+    // transfer labels
+    CHECK(
+        EvaluateTransferLabels(garbled_circuit, const_labels, e_init,
+                               init_labels, e_input, input_labels, clock_cycles,
+                               disable_OT, connfd));
+
+    e_time = Evaluate(garbled_circuit, const_labels, init_labels, input_labels,
+                      global_key, clock_cycles, connfd, output_labels);
+
+    CHECK(
+        EvaluateTransferOutput(garbled_circuit, output_labels, clock_cycles,
+                               output_mask, output_mode, output_str, connfd));
+
+  }
+  BN_free(e_init);
+  BN_free(e_input);
+
+  delete[] const_labels;
+  delete[] init_labels;
+  delete[] input_labels;
+  delete[] output_labels;
   LOG(INFO) << "Total Evaluating time (cc) = " << e_time
             << "\tEvaluate time per gate (cc/gate) = "
             << (e_time) / ((double) garbled_circuit.gate_size * clock_cycles)
             << endl;
-
-  CHECK(
-      EvaluateTransferOutput(garbled_circuit, output_labels, clock_cycles,
-                             output_mask, output_mode, output_str, connfd));
-
+  RemoveGarbledCircuit(&garbled_circuit);
   ClientClose(connfd);
-  CHECK(
-      EvaluateDeallocate(&garbled_circuit, e_init, e_input, const_labels,
-                         init_labels, input_labels, output_labels,
-                         clock_cycles));
+
   return SUCCESS;
 }
 

@@ -31,17 +31,19 @@ using std::endl;
 
 #define SEC_K_BIT ((uint32_t)128)
 
-const EVP_MD *md;
-int InitialHash() {
-  OpenSSL_add_all_digests();
-  md = EVP_sha256();
+const EVP_MD *md = nullptr;
+int HashInit() {
   if (md == nullptr) {
-    return FAILURE;
+    OpenSSL_add_all_digests();
+    md = EVP_sha256();
+    if (md == nullptr) {
+      return FAILURE;
+    }
   }
   return SUCCESS;
 }
 
-void FinishHash() {
+void HashFinish() {
   EVP_cleanup();
 }
 
@@ -124,8 +126,6 @@ int SwitchRowColumnBNPair(const BIGNUM* const * const * v, uint32_t v_len,
 int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_bitlen,
                 uint32_t m_len, int connfd) {
 
-  CHECK(InitialHash());
-
   // 0. generate random k-bit s
   BIGNUM* S = BN_new();
   BN_rand(S, SEC_K_BIT, -1, 0);
@@ -171,13 +171,10 @@ int OTExtSendBN(const BIGNUM* const * const * m, uint32_t m_bitlen,
   }
   delete[] Q;
   BN_free(S);
-  FinishHash();
   return SUCCESS;
 }
 int OTExtRecvBN(const BIGNUM *sel, uint32_t m_bitlen, uint32_t m_len,
                 int connfd, BIGNUM** m) {
-
-  CHECK(InitialHash());
 
   // 0.generate m_len random k-bits T ([0]) and T^r ([1])
   BIGNUM*** T = new BIGNUM**[m_len];
@@ -237,7 +234,6 @@ int OTExtRecvBN(const BIGNUM *sel, uint32_t m_bitlen, uint32_t m_len,
     delete[] T[i];
   }
   delete[] T;
-  FinishHash();
   return SUCCESS;
 }
 
