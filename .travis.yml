@@ -12,7 +12,7 @@ install:
   - wget http://www.cmake.org/files/v3.3/cmake-3.3.2.tar.gz
   - tar xf cmake-3.3.2.tar.gz
   - cd cmake-3.3.2
-  - ./configure --parallel=8
+  - ./configure --parallel=$(getconf _NPROCESSORS_ONLN)
   - make -j $(getconf _NPROCESSORS_ONLN)
   - sudo make install
   - cd ..
