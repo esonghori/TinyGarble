@@ -29,15 +29,15 @@
 using std::ostream;
 using std::string;
 
-class DummyLog {
+class DummyLog : public ostream {
   typedef ostream& (*ostreamManipulator)(ostream&);
  public:
   template<class T>
-  DummyLog& operator <<(const T& v) {
+  inline DummyLog& operator <<(const T& v) {
     return *this;
   }
 
-  DummyLog& operator<<(ostreamManipulator manip) {
+  inline DummyLog& operator<<(ostreamManipulator manip) {
     return *this;
   }
 
@@ -48,13 +48,16 @@ class DummyLog {
 // Error: red, info:green
 #define LOG_COLOR(X) (((X)==ERROR)?31:32)
 
-#ifdef ENABLE_LOG
+#ifdef ENABLE_DUMP
+#define DUMP(X) Dump(X)
+#else
+#define DUMP(X) DummyLogStream()
+#endif
 
+#ifdef ENABLE_LOG
 #define CHECK_ALLOC(X) try { X; } catch (std::bad_alloc& e) { \
     LOG(ERROR) << e.what() << std::endl; \
-    return FAILURE; } \
-
-#define DUMP(X) Dump(X)
+    return FAILURE; }
 #define LOG(X) LogStream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" \
   << LOG_COLOR(X) << "m" << #X << "\033[0m: "
 #define CHECK_EXPR(X) if((X)==false) { LOG(ERROR) << #X << " failed" \
@@ -65,19 +68,14 @@ class DummyLog {
   << std::endl; return FAILURE; }
 #define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
-
 #else /* ENABLE_LOG */
-
 extern bool __dummy_expr__;
-
 #define CHECK_ALLOC(X) X
-#define DUMP(X) DummyLogStream()
 #define LOG(X) DummyLogStream()
 #define CHECK_EXPR(X) __dummy_expr__ = X
 #define CHECK_EXPR_MSG(X, Y) __dummy_expr__ = X
 #define CHECK(X) X
 #define BN_CHECK(X) X
-
 #endif /* ENABLE_LOG */
 
 void LogInitial(int argc, char *argv[]);
