@@ -46,10 +46,21 @@
 #include "util/common.h"
 #include "util/util.h"
 
-uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
-                block* init_labels, block* input_labels, block global_key,
-                block R, uint64_t clock_cycles, int connfd,
-                block* output_labels) {
+uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui) {
+  uint64_t num_of_non_xor = 0;
+  for (uint64_t i = 0; i < garbled_circui.gate_size; i++) {
+    if (garbled_circui.garbledGates[i].type != XORGATE
+        && garbled_circui.garbledGates[i].type != XNORGATE
+        && garbled_circui.garbledGates[i].type != NOTGATE) {
+      num_of_non_xor++;
+    }
+  }
+  return num_of_non_xor;
+}
+
+int Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
+           block* init_labels, block* input_labels, block global_key, block R,
+           uint64_t clock_cycles, int connfd, block* output_labels) {
 
   DUMP("r_key") << R << endl;
   DUMP("r_key") << global_key << endl;
@@ -57,13 +68,19 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
   BlockPair *wires = nullptr;
   CHECK_ALLOC(wires = new BlockPair[garbled_circuit.get_wire_size()]);
 
-  uint64_t start_time = RDTSC;
+  uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
+  block* garbled_tables = nullptr;
+  CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+
+  uint64_t comm_time = 0;
+  uint64_t garble_time = 0;
 
   AES_KEY AES_Key;
   AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
 
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
-
+    uint64_t garbled_table_ind = 0;
+    uint64_t garble_start_time = RDTSC;
     // init
     uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
     if (cid == 0) {
@@ -106,7 +123,6 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
         }
       }
     }
-
     // inputs
     uint64_t input_bias = garbled_circuit.get_input_lo_index();
     for (uint64_t i = 0; i < garbled_circuit.get_input_size(); i++) {
@@ -118,7 +134,6 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
           << input_labels[(cid * garbled_circuit.get_input_size() + i) * 2 + 0]
           << endl;
     }
-
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  //for each gates
       GarbledGate& garbledGate = garbled_circuit.garbledGates[i];
 
@@ -252,7 +267,7 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
       wires[garbledGate.output].label1 = C1;
 
       for (uint64_t j = 0; j < 2; j++) {
-        CHECK(SendData(connfd, &table[j], sizeof(block)));
+        garbled_tables[garbled_table_ind++] = table[j];
         DUMP("table") << table[j] << endl;
       }
     }
@@ -264,28 +279,57 @@ uint64_t Garble(const GarbledCircuit& garbled_circuit, block* const_labels,
           wires[garbled_circuit.outputs[i]].label1;
       DUMP("output") << wires[garbled_circuit.outputs[i]].label0 << endl;
     }
+    garble_time += RDTSC - garble_start_time;
+
+    uint64_t comm_start_time = RDTSC;
+    CHECK(SendData(connfd, garbled_tables, 2 * num_of_non_xor * sizeof(block)));
+    comm_time += RDTSC - comm_start_time;
+
   }
-  uint64_t end_time = RDTSC;
+
+  LOG(INFO) << "Total Communication time (cc) = " << comm_time
+            << "\tCommunication time per gate (cc/gate) = "
+            << (comm_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+            << endl;
+
+  LOG(INFO)
+      << "Total Garbling time (cc) = " << garble_time
+      << "\tGarbling time per gate (cc/gate) = "
+      << (garble_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+      << endl;
+
   delete[] wires;
-  return (end_time - start_time);
+  delete[] garbled_tables;
+  return SUCCESS;
 }
 
-uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
-                  block* init_labels, block* input_labels, block global_key,
-                  uint64_t clock_cycles, int connfd, block* output_labels) {
+int Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
+             block* init_labels, block* input_labels, block global_key,
+             uint64_t clock_cycles, int connfd, block* output_labels) {
 
   DUMP("r_key") << global_key << endl;
 
   block *wires = nullptr;
-
   CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
 
-  uint64_t start_time = RDTSC;
+  uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
+  block* garbled_tables = nullptr;
+  CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+
+  uint64_t comm_time = 0;
+  uint64_t eval_time = 0;
 
   AES_KEY AES_Key;
   AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
 
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+    uint64_t garbled_table_ind = 0;
+
+    uint64_t comm_start_time = RDTSC;
+    CHECK(RecvData(connfd, garbled_tables, 2 * num_of_non_xor * sizeof(block)));
+    comm_time += RDTSC - comm_start_time;
+
+    uint64_t eval_start_time = RDTSC;
     // init
     uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
     if (cid == 0) {
@@ -326,7 +370,7 @@ uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
       wires[input_bias + i] = input_labels[cid
           * garbled_circuit.get_input_size() + i];
       DUMP("input") << input_labels[cid * garbled_circuit.get_input_size() + i]
-          << endl;
+                    << endl;
     }
 
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  // for each gates
@@ -378,7 +422,8 @@ uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
 
         block table[2];
         for (uint64_t j = 0; j < 2; j++) {
-          CHECK(RecvData(connfd, &(table[j]), sizeof(block)));
+          table[j] = garbled_tables[garbled_table_ind++];
+          //CHECK(RecvData(connfd, &(table[j]), sizeof(block)));
           DUMP("table") << table[j] << endl;
         }
 
@@ -416,12 +461,24 @@ uint64_t Evaluate(const GarbledCircuit& garbled_circuit, block* const_labels,
       output_labels[cid * garbled_circuit.output_size + i] =
           wires[garbled_circuit.outputs[i]];
       DUMP("output") << output_labels[cid * garbled_circuit.output_size + i]
-          << endl;
+                     << endl;
     }
+    eval_time += RDTSC - eval_start_time;
   }
-  uint64_t end_time = RDTSC;
+
+  LOG(INFO) << "Total Communication time (cc) = " << comm_time
+            << "\tCommunication time per gate (cc/gate) = "
+            << (comm_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+            << endl;
+
+  LOG(INFO) << "Total Evaluateing time (cc) = " << eval_time
+            << "\tEvaluating time per gate (cc/gate) = "
+            << (eval_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+            << endl;
+
   delete[] wires;
-  return (end_time - start_time);
+  delete[] garbled_tables;
+  return SUCCESS;
 }
 
 int GarbleOTExt(const GarbledCircuit& garbled_circuit, block* init_labels,
@@ -449,14 +506,7 @@ int GarbleOTExt(const GarbledCircuit& garbled_circuit, block* init_labels,
     }
   }
 
-  uint64_t start_time = RDTSC;
   CHECK(OTExtSend(m, m_len, connfd));
-  uint64_t end_time = RDTSC;
-
-  LOG(INFO) << "Total OT Extension send time (cc) = " << end_time - start_time
-            << "\tOT Extension send time per byte (cc/Byte) = "
-            << (end_time - start_time) / ((double) (m_len * sizeof(block)))
-            << endl;
 
   if (m != nullptr) {
     for (uint i = 0; i < m_len; i++) {
@@ -490,15 +540,7 @@ int EvalauteOTExt(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
   block* m = nullptr;
   CHECK_ALLOC(m = new block[m_len]);
 
-  uint64_t start_time = RDTSC;
   CHECK(OTExtRecv(sel, m_len, connfd, m));
-  uint64_t end_time = RDTSC;
-
-  LOG(INFO) << "Total OT Extension receive time (cc) = "
-            << end_time - start_time
-            << "\tOT Extension receive time per byte (cc/Byte) = "
-            << (end_time - start_time) / ((double) (m_len * sizeof(block)))
-            << endl;
 
   for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
     init_labels[i + garbled_circuit.g_init_size] = m[i];
@@ -523,11 +565,11 @@ int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
                          block* init_labels, BIGNUM* g_input,
                          block* input_labels, uint64_t clock_cycles,
                          bool disable_OT, int connfd) {
-// constant
+  // constant
   CHECK(SendData(connfd, &const_labels[0 * 2 + 0], sizeof(block)));
   CHECK(SendData(connfd, &const_labels[1 * 2 + 1], sizeof(block)));
 
-// g_init
+  // g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
     if (i >= (uint) BN_num_bits(g_init) || BN_is_bit_set(g_init, i) == 0) {
       CHECK(SendData(connfd, &init_labels[i * 2 + 0], sizeof(block)));
@@ -535,7 +577,7 @@ int GarbleTransferLabels(const GarbledCircuit& garbled_circuit,
       CHECK(SendData(connfd, &init_labels[i * 2 + 1], sizeof(block)));
     }
   }
-// g_input
+  // g_input
   for (uint cid = 0; cid < clock_cycles; cid++) {
     for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
       if (cid * garbled_circuit.g_input_size + i >= (uint) BN_num_bits(g_input)
@@ -617,15 +659,15 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
                            block* init_labels, BIGNUM* e_input,
                            block* input_labels, uint64_t clock_cycles,
                            bool disable_OT, int connfd) {
-// constant
+  // constant
   CHECK(RecvData(connfd, &const_labels[0], sizeof(block)));
   CHECK(RecvData(connfd, &const_labels[1], sizeof(block)));
 
-// g_init
+  // g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
     CHECK(RecvData(connfd, &init_labels[i], sizeof(block)));
   }
-// g_input
+  // g_input
   for (uint cid = 0; cid < clock_cycles; cid++) {
     for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
       CHECK(
@@ -684,7 +726,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit,
     (*const_labels)[i * 2 + 1] = XorBlock(R, (*const_labels)[i * 2 + 0]);
   }
 
-// allocate and generate random init and inputs label pairs
+  // allocate and generate random init and inputs label pairs
   (*init_labels) = nullptr;
   if (garbled_circuit.get_init_size() > 0) {
     CHECK_ALLOC((*init_labels) = new block[garbled_circuit.get_init_size() * 2]);
@@ -871,10 +913,19 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   block global_key = RandomBlock();
   CHECK(SendData(connfd, &global_key, sizeof(block)));  // send global key
 
-  uint64_t garbling_time = 0;
+  uint64_t ot_time = 0;
   if (low_mem_foot && clock_cycles > 1) {
+
+    LOG(INFO) << "low_mem_foot" << endl;
+
+    uint64_t garble_time = 0;
+    uint64_t comm_time = 0;
     BlockPair *wires = nullptr;
     CHECK_ALLOC(wires = new BlockPair[garbled_circuit.get_wire_size()]);
+    uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
+    block* garbled_tables = nullptr;
+    CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+
     BIGNUM* output_bn = BN_new();
 
     CHECK(
@@ -883,9 +934,13 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 
     CHECK(GarbleGneInitLabels(garbled_circuit, const_labels, init_labels, R));
 
-    CHECK(
-        GarbleTransferInitLabels(garbled_circuit, const_labels, g_init,
-                                 init_labels, disable_OT, connfd));
+    uint64_t ot_start_time = RDTSC;
+    {
+      CHECK(
+          GarbleTransferInitLabels(garbled_circuit, const_labels, g_init,
+                                   init_labels, disable_OT, connfd));
+    }
+    ot_time += RDTSC - ot_start_time;
 
     AES_KEY AES_Key;
     AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
@@ -896,13 +951,29 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 
       CHECK(GarbleGenInputLabels(garbled_circuit, input_labels, R));
 
-      CHECK(
-          GarbleTransferInputLabels(garbled_circuit, g_input, input_labels, cid,
-                                    disable_OT, connfd));
+      ot_start_time = RDTSC;
+      {
+        CHECK(
+            GarbleTransferInputLabels(garbled_circuit, g_input, input_labels,
+                                      cid, disable_OT, connfd));
+      }
+      ot_time += RDTSC - ot_start_time;
 
-      garbling_time += GarbleLowMem(garbled_circuit, const_labels, init_labels,
-                                    input_labels, R, AES_Key, cid, connfd,
-                                    wires, output_labels);
+      uint64_t garble_start_time = RDTSC;
+      {
+        GarbleLowMem(garbled_circuit, const_labels, init_labels, input_labels,
+                     garbled_tables, R, AES_Key, cid, connfd, wires,
+                     output_labels);
+      }
+      garble_time += RDTSC - garble_start_time;
+
+      uint64_t comm_start_time = RDTSC;
+      {
+        CHECK(
+            SendData(connfd, garbled_tables,
+                     2 * num_of_non_xor * sizeof(block)));
+      }
+      comm_time += RDTSC - comm_start_time;
       CHECK(
           GarbleTransferOutputLowMem(garbled_circuit, output_labels, cid,
                                      output_mode, output_mask, output_bn,
@@ -912,22 +983,54 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
     OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles, output_mode,
                        output_str);
     BN_free(output_bn);
+    LOG(INFO)
+        << "Total Garble Transfer Labels time (cc) = "
+        << ot_time
+        << "\tGarble Transfer Labels time per byte (cc/Byte) = "
+        << ot_time
+            / ((double) ((garbled_circuit.e_init_size
+                + clock_cycles * garbled_circuit.e_input_size) * sizeof(block)))
+        << endl;
+    LOG(INFO)
+        << "Total Communication time (cc) = " << comm_time
+        << "\tCommunication time per gate (cc/gate) = "
+        << (comm_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+        << endl;
 
+    LOG(INFO)
+        << "Total Garbling time (cc) = " << garble_time
+        << "\tGarbling time per gate (cc/gate) = "
+        << (garble_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+        << endl;
     delete[] wires;
+    delete[] garbled_tables;
 
   } else {
     // allocate init and input values and translate form string
     CHECK(
         GarbleMakeLabels(garbled_circuit, &const_labels, &init_labels,
                          &input_labels, &output_labels, R, clock_cycles));
-    CHECK(
-        GarbleTransferLabels(garbled_circuit, const_labels, g_init, init_labels,
-                             g_input, input_labels, clock_cycles, disable_OT,
-                             connfd));
 
-    garbling_time = Garble(garbled_circuit, const_labels, init_labels,
-                           input_labels, global_key, R, clock_cycles, connfd,
-                           output_labels);
+    uint64_t ot_start_time = RDTSC;
+    {
+      CHECK(
+          GarbleTransferLabels(garbled_circuit, const_labels, g_init,
+                               init_labels, g_input, input_labels, clock_cycles,
+                               disable_OT, connfd));
+    }
+    ot_time = RDTSC - ot_start_time;
+
+    LOG(INFO)
+        << "Total Garble Transfer Labels time (cc) = "
+        << ot_time
+        << "\tGarble Transfer Labels time per byte (cc/Byte) = "
+        << ot_time
+            / ((double) ((garbled_circuit.e_init_size
+                + clock_cycles * garbled_circuit.e_input_size) * sizeof(block)))
+        << endl;
+
+    Garble(garbled_circuit, const_labels, init_labels, input_labels, global_key,
+           R, clock_cycles, connfd, output_labels);
     CHECK(
         GarbleTransferOutput(garbled_circuit, output_labels, clock_cycles,
                              output_mask, output_mode, output_str, connfd));
@@ -939,11 +1042,6 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   delete[] input_labels;
   delete[] output_labels;
 
-  LOG(INFO)
-      << "Total Garbling time (cc) = " << garbling_time
-      << "\tGarbling time per gate (cc/gate) = "
-      << (garbling_time) / ((double) garbled_circuit.gate_size * clock_cycles)
-      << endl;
   RemoveGarbledCircuit(&garbled_circuit);
   ServerClose(connfd);
 
@@ -964,7 +1062,7 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
     return FAILURE;
   }
 
-// allocate init and input values and translate form string
+  // allocate init and input values and translate form string
   BIGNUM* e_init = BN_new();
   BIGNUM* e_input = BN_new();
   CHECK(
@@ -977,61 +1075,116 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
   block* input_labels = nullptr;
   block* output_labels = nullptr;
 
-// global key
+  // global key
   block global_key = RandomBlock();
   CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
 
-  uint64_t evaluation_time = 0;
+  uint64_t ot_time = 0;
   if (low_mem_foot && clock_cycles > 1) {
+    uint64_t eval_time = 0;
+    uint64_t comm_time = 0;
     block *wires = nullptr;
     CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
+    uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
+    block* garbled_tables = nullptr;
+    CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
     BIGNUM* output_bn = BN_new();
 
     CHECK(
         EvaluateAllocLabels(garbled_circuit, &const_labels, &init_labels,
                             &input_labels, &output_labels));
-
-    CHECK(
-        EvaluateTransferInitLabels(garbled_circuit, const_labels, e_init,
-                                   init_labels, disable_OT, connfd));
+    uint64_t ot_start_time = RDTSC;
+    {
+      CHECK(
+          EvaluateTransferInitLabels(garbled_circuit, const_labels, e_init,
+                                     init_labels, disable_OT, connfd));
+    }
+    ot_time += RDTSC - ot_start_time;
 
     AES_KEY AES_Key;
     AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
     DUMP("r_key") << global_key << endl;
 
     for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+      ot_start_time = RDTSC;
+      {
+        CHECK(
+            EvaluateTransferInputLabels(garbled_circuit, e_input, input_labels,
+                                        cid, disable_OT, connfd));
+      }
+      ot_time += RDTSC - ot_start_time;
 
-      CHECK(
-          EvaluateTransferInputLabels(garbled_circuit, e_input, input_labels,
-                                      cid, disable_OT, connfd));
+      uint64_t comm_start_time = RDTSC;
+      {
+        CHECK(
+            RecvData(connfd, garbled_tables,
+                     2 * num_of_non_xor * sizeof(block)));
+      }
+      comm_time += RDTSC - comm_start_time;
 
-      evaluation_time += EvaluateLowMem(garbled_circuit, const_labels,
-                                        init_labels, input_labels, AES_Key, cid,
-                                        connfd, wires, output_labels);
+      uint64_t eval_start_time = RDTSC;
+      {
+        eval_time += EvaluateLowMem(garbled_circuit, const_labels, init_labels,
+                                    input_labels, garbled_tables, AES_Key, cid,
+                                    connfd, wires, output_labels);
+      }
+      eval_time += RDTSC - eval_start_time;
 
       CHECK(
           EvaluateTransferOutputLowMem(garbled_circuit, output_labels, cid,
                                        output_mode, output_mask, output_bn,
                                        connfd));
+
     }
     OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles, output_mode,
                        output_str);
     BN_free(output_bn);
+    LOG(INFO)
+        << "Total Evaluate Transfer Labels time (cc) = "
+        << ot_time
+        << "\tEvaluate Transfer Labels time per byte (cc/Byte) = "
+        << ot_time
+            / ((double) ((garbled_circuit.e_init_size
+                + clock_cycles * garbled_circuit.e_input_size) * sizeof(block)))
+        << endl;
+    LOG(INFO)
+        << "Total Communication time (cc) = " << comm_time
+        << "\tCommunication time per gate (cc/gate) = "
+        << (comm_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+        << endl;
+
+    LOG(INFO)
+        << "Total Evaluateing time (cc) = " << eval_time
+        << "\tEvaluating time per gate (cc/gate) = "
+        << (eval_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+        << endl;
 
     delete[] wires;
+    delete[] garbled_tables;
   } else {
     CHECK(
         EvaluateMakeLabels(garbled_circuit, &const_labels, &init_labels,
                            &input_labels, &output_labels, clock_cycles));
+
     // transfer labels
+    uint64_t ot_start_time = RDTSC;
     CHECK(
         EvaluateTransferLabels(garbled_circuit, const_labels, e_init,
                                init_labels, e_input, input_labels, clock_cycles,
                                disable_OT, connfd));
+    ot_time = RDTSC - ot_start_time;
 
-    evaluation_time = Evaluate(garbled_circuit, const_labels, init_labels,
-                               input_labels, global_key, clock_cycles, connfd,
-                               output_labels);
+    LOG(INFO)
+        << "Total Evaluate Transfer Labels time (cc) = "
+        << ot_time
+        << "\tEvaluate Transfer Labels time per byte (cc/Byte) = "
+        << ot_time
+            / ((double) ((garbled_circuit.e_init_size
+                + clock_cycles * garbled_circuit.e_input_size) * sizeof(block)))
+        << endl;
+
+    Evaluate(garbled_circuit, const_labels, init_labels, input_labels,
+             global_key, clock_cycles, connfd, output_labels);
 
     CHECK(
         EvaluateTransferOutput(garbled_circuit, output_labels, clock_cycles,
@@ -1045,11 +1198,7 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
   delete[] init_labels;
   delete[] input_labels;
   delete[] output_labels;
-  LOG(INFO)
-      << "Total Evaluating time (cc) = " << evaluation_time
-      << "\tEvaluate time per gate (cc/gate) = "
-      << (evaluation_time) / ((double) garbled_circuit.gate_size * clock_cycles)
-      << endl;
+
   RemoveGarbledCircuit(&garbled_circuit);
   ClientClose(connfd);
 

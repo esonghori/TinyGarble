@@ -14,13 +14,14 @@
 
 uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit,
                       block* const_labels, block* init_labels,
-                      block* input_labels, block R, AES_KEY& AES_Key,
-                      uint64_t cid, int connfd, BlockPair *wires,
-                      block* output_labels);
+                      block* input_labels, block* garbled_tables, block R,
+                      AES_KEY& AES_Key, uint64_t cid, int connfd,
+                      BlockPair *wires, block* output_labels);
 uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
                         block* const_labels, block* init_labels,
-                        block* input_labels, AES_KEY& AES_Key, uint64_t cid,
-                        int connfd, block *wires, block* output_labels);
+                        block* input_labels, block* garbled_tables,
+                        AES_KEY& AES_Key, uint64_t cid, int connfd,
+                        block *wires, block* output_labels);
 
 int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
                       block** const_labels, block** init_labels,
@@ -48,9 +49,9 @@ int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
                                 BIGNUM* e_input, block* input_labels,
                                 uint64_t cid, bool disable_OT, int connfd);
 
-int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit,
-                          BIGNUM* outputs, uint64_t clock_cycles,
-                          int output_mode, string* output_str);
+int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                       uint64_t clock_cycles, int output_mode,
+                       string* output_str);
 int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                block* output_labels, uint64_t cid,
                                int output_mode, const string& output_mask,

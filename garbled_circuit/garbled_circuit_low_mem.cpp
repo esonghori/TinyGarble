@@ -46,9 +46,11 @@
 
 uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit,
                       block* const_labels, block* init_labels,
-                      block* input_labels, block R, AES_KEY& AES_Key,
-                      uint64_t cid, int connfd, BlockPair *wires,
-                      block* output_labels) {
+                      block* input_labels, block* garbled_tables, block R,
+                      AES_KEY& AES_Key, uint64_t cid, int connfd,
+                      BlockPair *wires, block* output_labels) {
+  uint64_t garbled_table_ind = 0;
+
   uint64_t start_time = RDTSC;
 
   // init
@@ -236,7 +238,8 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit,
     wires[garbledGate.output].label1 = C1;
 
     for (uint64_t j = 0; j < 2; j++) {
-      CHECK(SendData(connfd, &table[j], sizeof(block)));
+      garbled_tables[garbled_table_ind++] = table[j];
+      //CHECK(SendData(connfd, &table[j], sizeof(block)));
       DUMP(
           "table") << table[j] << endl;
     }
@@ -252,9 +255,10 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit,
 
 uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
                         block* const_labels, block* init_labels,
-                        block* input_labels, AES_KEY& AES_Key, uint64_t cid,
-                        int connfd, block *wires, block* output_labels) {
-
+                        block* input_labels, block* garbled_tables,
+                        AES_KEY& AES_Key, uint64_t cid, int connfd,
+                        block *wires, block* output_labels) {
+  uint64_t garbled_table_ind = 0;
   uint64_t start_time = RDTSC;
 
   // init
@@ -347,7 +351,8 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
 
       block table[2];
       for (uint64_t j = 0; j < 2; j++) {
-        CHECK(RecvData(connfd, &(table[j]), sizeof(block)));
+        table[j] = garbled_tables[garbled_table_ind++];
+        //CHECK(RecvData(connfd, &(table[j]), sizeof(block)));
         DUMP("table") << table[j] << endl;
       }
 
@@ -530,15 +535,7 @@ int GarbleOTExtInputLowMem(const GarbledCircuit& garbled_circuit,
     }
   }
 
-  uint64_t start_time = RDTSC;
   CHECK(OTExtSend(m, m_len, connfd));
-  uint64_t end_time = RDTSC;
-
-  LOG(INFO) << "Total OT Extension send Input time (cc) = "
-            << end_time - start_time
-            << "\tOT Extension send time per byte (cc/Byte) = "
-            << (end_time - start_time) / ((double) (m_len * sizeof(block)))
-            << endl;
 
   if (m != nullptr) {
     for (uint i = 0; i < m_len; i++) {
@@ -565,19 +562,11 @@ int EvalauteOTExtInitLowMem(const GarbledCircuit& garbled_circuit,
   block* m = nullptr;
   CHECK_ALLOC(m = new block[m_len]);
 
-  uint64_t start_time = RDTSC;
   CHECK(OTExtRecv(sel, m_len, connfd, m));
-  uint64_t end_time = RDTSC;
 
   for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
     init_labels[i + garbled_circuit.g_init_size] = m[i];
   }
-
-  LOG(INFO) << "Total OT Extension receive Init time (cc) = "
-            << end_time - start_time
-            << "\tOT Extension receive time per byte (cc/Byte) = "
-            << (end_time - start_time) / ((double) (m_len * sizeof(block)))
-            << endl;
 
   delete[] sel;
   delete[] m;
@@ -601,19 +590,11 @@ int EvalauteOTExtInputLowMem(const GarbledCircuit& garbled_circuit,
   block* m = nullptr;
   CHECK_ALLOC(m = new block[m_len]);
 
-  uint64_t start_time = RDTSC;
   CHECK(OTExtRecv(sel, m_len, connfd, m));
-  uint64_t end_time = RDTSC;
 
   for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
     input_labels[i + garbled_circuit.g_input_size] = m[i];
   }
-
-  LOG(INFO) << "Total OT Extension receive Input time (cc) = "
-            << end_time - start_time
-            << "\tOT Extension receive time per byte (cc/Byte) = "
-            << (end_time - start_time) / ((double) (m_len * sizeof(block)))
-            << endl;
 
   delete[] sel;
 
@@ -735,13 +716,13 @@ int EvaluateTransferInitLabels(const GarbledCircuit& garbled_circuit,
 int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
                                 BIGNUM* e_input, block* input_labels,
                                 uint64_t cid, bool disable_OT, int connfd) {
-// g_input
+  // g_input
   for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
     CHECK(RecvData(connfd, &input_labels[i], sizeof(block)));
   }
 
   if (disable_OT) {
-// e_input
+    // e_input
     CHECK(SendBN(connfd, e_input));
     for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
       CHECK(
