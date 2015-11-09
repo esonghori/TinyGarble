@@ -36,8 +36,8 @@ using std::endl;
 using std::vector;
 
 string dump_prefix = "";
+bool dump_enabled = false;
 map<string, ofstream*> dump_map;
-ostream* dev_null;
 ostream* log_map[2];  // ERROR, INFO
 DummyLog dummy_log;
 bool __dummy_expr__;
@@ -78,8 +78,6 @@ void LogInitial(int argc, char *argv[]) {
     for (const string& f : dumps) {
       dump_map[f] = new ofstream();
     }
-  } else {
-    dev_null = new ofstream("/dev/null", std::ios::out);
   }
 
   if (to_std) {
@@ -119,7 +117,7 @@ void LogFinish() {
 // dump_file : { "dff", "input", "output", "table", "r_key" }
 ostream& Dump(const string& dump_file) {
   if (dump_prefix == "") {
-    return *dev_null;
+    return dummy_log;
   }
   if (dump_map.count(dump_file)) {
     if (!dump_map[dump_file]->is_open()) {

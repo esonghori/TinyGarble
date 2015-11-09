@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.1.0 FATAL_ERROR)
 project (TinyGarble 
-  VERSION 1.0.2
+  VERSION 1.0.3
   LANGUAGES CXX)
 
 
@@ -55,8 +55,8 @@ endif (OPENSSL_FOUND)
 
 ###############
 # Options
-option (ENABLE_LOG "Enable dump hex feature" OFF)
-
+option (ENABLE_DUMP "Enable dump hex feature" OFF)
+option (ENABLE_LOG "Enable log feature" OFF)
 if (CMAKE_BUILD_TYPE MATCHES Debug)
 	message("Turn Log on.")
 	SET(ENABLE_LOG ON BOOL "Turn on logs in debug mode.")
