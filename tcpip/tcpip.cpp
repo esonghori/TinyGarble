@@ -35,6 +35,8 @@ using std::endl;
 
 int listenfd = 0;
 
+int kSocketBuffSize = (1 << 15);
+
 int ServerOpenSocket(int port) {
   struct sockaddr_in serv_addr;
   listenfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -131,28 +133,40 @@ int SendData(int sock, const void *var, int len) {
   if (len <= 0)
     return SUCCESS;
 
-  int len_ret = write(sock, var, len);
-  if (len_ret == FAILURE) {
-    LOG(ERROR) << strerror(errno) << endl;
-    return FAILURE;
-  } else if (len_ret == 0 || len_ret < len) {
-    LOG(ERROR) << "connection is possibly closed" << endl;
-    return FAILURE;
-  }
+  int remain_len = 0;
+  do {
+    int len_ret = write(sock, (const char *) var + remain_len,
+                        len - remain_len);
+    if (len_ret == FAILURE) {
+      LOG(ERROR) << strerror(errno) << endl;
+      return FAILURE;
+    } else if (len_ret == 0) {
+      LOG(ERROR) << "connection is possibly closed" << endl;
+      return FAILURE;
+    }
+    remain_len += len_ret;
+  } while (remain_len < len);
+
   return SUCCESS;
 }
 
 int RecvData(int sock, void* var, int len) {
+
   if (len <= 0)
     return SUCCESS;
 
-  int len_ret = read(sock, var, len);
-  if (len_ret == FAILURE) {
-    LOG(ERROR) << strerror(errno) << endl;
-    return FAILURE;
-  } else if (len_ret == 0 || len_ret < len) {
-    LOG(ERROR) << "connection is possibly closed" << endl;
-    return FAILURE;
-  }
+  int remain_len = 0;
+  do {
+    int len_ret = read(sock, (char *) var + remain_len, len - remain_len);
+    if (len_ret == FAILURE) {
+      LOG(ERROR) << strerror(errno) << endl;
+      return FAILURE;
+    } else if (len_ret == 0) {
+      LOG(ERROR) << len_ret << " connection is possibly closed" << endl;
+      return FAILURE;
+    }
+    remain_len += len_ret;
+  } while (remain_len < len);
+
   return SUCCESS;
 }
