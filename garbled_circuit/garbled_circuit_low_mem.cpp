@@ -646,7 +646,7 @@ int GarbleTransferInputLabels(const GarbledCircuit& garbled_circuit,
                               BIGNUM* g_input, block* input_labels,
                               uint64_t cid, bool disable_OT, int connfd) {
 
-// g_input
+  // g_input
   for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
     if (cid * garbled_circuit.g_input_size + i >= (uint) BN_num_bits(g_input)
         || BN_is_bit_set(g_input, cid * garbled_circuit.g_input_size + i)
