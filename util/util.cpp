@@ -239,4 +239,3 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
 
   return SUCCESS;
 }
-

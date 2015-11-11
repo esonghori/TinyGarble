@@ -915,9 +915,6 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 
   uint64_t ot_time = 0;
   if (low_mem_foot && clock_cycles > 1) {
-
-    LOG(INFO) << "low_mem_foot" << endl;
-
     uint64_t garble_time = 0;
     uint64_t comm_time = 0;
     BlockPair *wires = nullptr;
