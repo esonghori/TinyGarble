@@ -12,15 +12,12 @@ module MUX #(parameter N=8)(
 	localparam MAX_LOOP = 512;
 	
 	generate
-	if(N < MAX_LOOP)
-	begin
+	if(N < MAX_LOOP)	begin : IF1
 		for(g=0;g<N;g=g+1)
 		begin:FAINST
 			assign O[g] = (((A[g]^B[g])&S)^A[g]);
 		end
-	end
-	else
-	begin
+	end	else	begin : IF1_N
 		for(h=0;h<N/MAX_LOOP;h=h+1)
 		begin:FA_INST_0
 			for(g=0;g<MAX_LOOP;g=g+1)

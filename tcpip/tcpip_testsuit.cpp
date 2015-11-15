@@ -87,8 +87,9 @@ int TcpipTestRun(const function<int(const void *, int)>& server_func,
       }
       int client_returnStatus;
       waitpid(childPID, &client_returnStatus, 0);
-      if (client_returnStatus == FAILURE) {
-        LOG(ERROR) << "client failed." << endl;
+      if (((char) WEXITSTATUS(client_returnStatus)) != SUCCESS
+          || WIFEXITED(client_returnStatus) == false) {
+        LOG(ERROR) << "client child failed." << endl;
         return FAILURE;
       }
     }

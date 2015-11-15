@@ -38,8 +38,9 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "scd/scd.h"
+#include "crypto/OT_extension.h"
 #include "garbled_circuit/garbled_circuit.h"
+#include "scd/scd.h"
 #include "tcpip/tcpip.h"
 #include "util/util.h"
 #include "util/tinygarble_config.h"
@@ -49,9 +50,92 @@ namespace po = boost::program_options;
 using std::string;
 using std::vector;
 
+int CheckOptionsAlice(const string& scd_file_address, uint64_t clock_cycles,
+                      const string& output_mask, bool disable_OT,
+                      bool low_mem_foot, int connfd) {
+
+  int size = scd_file_address.length();
+  SendData(connfd, &size, sizeof(int));
+  if (size > 0) {
+    SendData(connfd, scd_file_address.c_str(), size);
+  }
+
+  SendData(connfd, &clock_cycles, sizeof(uint64_t));
+
+  size = output_mask.length();
+  SendData(connfd, &size, sizeof(int));
+  if (size > 0) {
+    SendData(connfd, output_mask.c_str(), size);
+  }
+
+  SendData(connfd, &disable_OT, sizeof(bool));
+  SendData(connfd, &low_mem_foot, sizeof(bool));
+
+  int status;
+  RecvData(connfd, &status, sizeof(int));
+
+  LOG(INFO) << "status is " << status << endl;
+
+  return status;
+}
+
+int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
+                    const string& output_mask, bool disable_OT,
+                    bool low_mem_foot, int connfd) {
+
+  string scd_file_address_;
+  uint64_t clock_cycles_;
+  string output_mask_;
+  bool disable_OT_;
+  bool low_mem_foot_;
+
+  char *buff;
+  int size;
+
+  RecvData(connfd, &size, sizeof(int));
+  if (size <= 0) {
+    scd_file_address_ = "";
+  } else {
+    buff = new char[size];
+    RecvData(connfd, buff, size);
+    scd_file_address_ = string(buff);
+    delete[] buff;
+  }
+
+  RecvData(connfd, &clock_cycles_, sizeof(uint64_t));
+
+  RecvData(connfd, &size, sizeof(int));
+  if (size <= 0) {
+    output_mask_ = "";
+  } else {
+    buff = new char[size];
+    RecvData(connfd, buff, size);
+    output_mask_ = string(buff);
+    delete[] buff;
+  }
+
+  RecvData(connfd, &disable_OT_, sizeof(bool));
+  RecvData(connfd, &low_mem_foot_, sizeof(bool));
+
+  int status;
+  if (scd_file_address_ != scd_file_address || clock_cycles_ != clock_cycles
+      || output_mask_ != output_mask || disable_OT_ != disable_OT
+      || low_mem_foot_ != low_mem_foot) {
+    LOG(ERROR) << "Alice's and Bob's options are not same." << endl;
+    status = FAILURE;
+    SendData(connfd, &status, sizeof(int));
+  } else {
+    status = SUCCESS;
+    SendData(connfd, &status, sizeof(int));
+  }
+
+  return status;
+}
+
 int main(int argc, char* argv[]) {
 
   LogInitial(argc, argv);
+  HashInit();
   srand(time(0));  // srand(1);
   SrandSSE(time(0));  // SrandSSE(1111);
 
@@ -64,6 +148,7 @@ int main(int argc, char* argv[]) {
   string output_mask;
   int output_mode;
   bool disable_OT = false;
+  bool low_mem_foot = false;
   boost::format fmter(
       "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
   fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
@@ -88,11 +173,14 @@ int main(int argc, char* argv[]) {
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),
    "Directory for dumping memory hex files.")  //
-  ("disable_OT", "Disable Oblivious Transfer (OT) for transferring labels. "
+  ("disable_OT", "Disables Oblivious Transfer (OT) for transferring labels. "
    "WARNING: OT is crucial for GC security.")  //
+  ("low_mem_foot", "Enables low memory footprint mode for circuits with "
+   "multiple clock cycles. In this mode, OT is called at each clock cycle "
+   "which degrades the performance.")  //
   ("output_mask", po::value<string>(&output_mask)->default_value("0"),
-   "Hexadecimal mask for output. 0 indicates that output belongs to Alice, "
-   "and 1 belongs to Bob ")  //
+   "Hexadecimal mask for output. 0 indicates that output belongs to Bob, "
+   "and 1 belongs to Alice.")  //
   ("output_mode", po::value<int>(&output_mode)->default_value(0),
    "0: normal, 1:separated by clock 2:last clock.");
 
@@ -118,6 +206,11 @@ int main(int argc, char* argv[]) {
               << endl;
   }
 
+  if (vm.count("low_mem_foot")) {
+    low_mem_foot = true;
+    LOG(INFO) << "Low memory footprint mode is on." << endl;
+  }
+
   if (vm.count("alice") == 0 && vm.count("bob") == 0) {
     LOG(ERROR) << "One of --alice or --bob mode flag should be used." << endl
                << endl;
@@ -134,11 +227,16 @@ int main(int argc, char* argv[]) {
     }
     LOG(INFO) << "Open Alice's server on port: " << port << endl;
 
+    //CHECK(
+    //    CheckOptionsAlice("", clock_cycles, output_mask, disable_OT,
+    //                      low_mem_foot, connfd));
+
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
         GarbleStr(scd_file_address, init_str, input_str, clock_cycles,
-                  output_mask, output_mode, disable_OT, &output_str, connfd));
+                  output_mask, output_mode, disable_OT, low_mem_foot,
+                  &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Alice's output = " << output_str << endl;
@@ -166,11 +264,16 @@ int main(int argc, char* argv[]) {
     LOG(INFO) << "Connect Bob's client to Alice's server on " << server_ip
               << ":" << port << endl;
 
+    //CHECK(
+    //    CheckOptionsBob("", clock_cycles, output_mask, disable_OT, low_mem_foot,
+    //                    connfd));
+
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
         EvaluateStr(scd_file_address, init_str, input_str, clock_cycles,
-                    output_mask, output_mode, disable_OT, &output_str, connfd));
+                    output_mask, output_mode, disable_OT, low_mem_foot,
+                    &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Bob's output = " << output_str << endl;
@@ -181,6 +284,7 @@ int main(int argc, char* argv[]) {
   }
 
   LogFinish();
+  HashFinish();
   return SUCCESS;
 }
 

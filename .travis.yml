@@ -9,15 +9,15 @@ install:
   - sudo apt-get install build-essential
   - sudo apt-get install libssl-dev
   - sudo apt-get install libboost-all-dev
-  - wget http://www.cmake.org/files/v3.3/cmake-3.3.2.tar.gz
+  - wget --no-check-certificate https://cmake.org/files/v3.3/cmake-3.3.2.tar.gz
   - tar xf cmake-3.3.2.tar.gz
   - cd cmake-3.3.2
-  - ./configure --parallel=8
-  - make -j 8
+  - ./configure --parallel=$(getconf _NPROCESSORS_ONLN)
+  - make -j $(getconf _NPROCESSORS_ONLN)
   - sudo make install
   - cd ..
 
 before_script:
   - ./configure
 
-script: cd bin && make && ctest
+script: cd bin && make -j $(getconf _NPROCESSORS_ONLN) && ctest
