@@ -71,6 +71,7 @@ configure_file (
 # Subdirectory
 add_subdirectory ("crypto")
 add_subdirectory ("garbled_circuit")
+add_subdirectory ("tri_loc")
 add_subdirectory ("scd")
 add_subdirectory ("tcpip")
 add_subdirectory ("util")
