@@ -7,9 +7,22 @@
 #include <cmath>
 #include "tri_loc/tri_loc.h"
 
+#include "crypto/OT_extension.h"
+#include "garbled_circuit/garbled_circuit.h"
+#include "scd/scd.h"
+#include "tcpip/tcpip.h"
+#include "util/util.h"
+#include "util/tinygarble_config.h"
+#include "util/log.h"
+
 using namespace std;
 
 int main(int argc, char* argv[]){
+	
+	LogInitial(argc, argv);
+	HashInit();
+	srand(time(0));  // srand(1);
+	SrandSSE(time(0));  // SrandSSE(1111);
 	
 	cout << "Usage: " << argv[0] << "0[lost] <port_0> <port_1> <port_2> or " << argv[0] << "1[helper] <port> <h_port[1]> PRV" << endl;	
 	

@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <unistd.h>
 #include <cmath>
+#include <sys/time.h>
 #include "tri_loc/tri_loc.h"
 
 #include <boost/program_options.hpp>
@@ -99,7 +100,6 @@ bool inside (rect D, rect A, double rA){
 int lost_car(vector<int> &port){
 	
 	int id;
-	
 	//establish connection with three helping cars 
 	vector<int> connfd(3);
 	for (id = 0; id < 3; id++)
@@ -107,7 +107,12 @@ int lost_car(vector<int> &port){
 			cout << "Cannot open the socket in port " << port[id] << " with Car " << id << endl;
 			return -1;
 		}
-		
+	
+	timeval tim;
+	gettimeofday(&tim, NULL);
+	double t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
+	uint64_t delta_time = RDTSC;
+	
 	//provide each car an id and get the port numbers they use to establish server with other cars
 	vector<int> h_port(3);	
 	for (id = 0; id < 3; id++){
@@ -152,6 +157,12 @@ int lost_car(vector<int> &port){
 	
 	for (id = 0; id < 3; id++)
 		ServerClose(connfd[id]);
+	
+	gettimeofday(&tim, NULL);
+	double t2 = tim.tv_sec + (tim.tv_usec/1000000.0);	
+	delta_time = RDTSC - delta_time;	
+	cout << "total time(cc): " << delta_time << " approx: " << (double)delta_time/(3.4e9) << "s" << endl; 
+	cout << "total time: " << (t2 - t1) << "s" << endl;
 	
 	return 0;
 	
@@ -208,86 +219,111 @@ int helping_car(vector<int> &port, bool PRV){
 	vector <int> in(2);
 	R[0] = get_loc(id);
 	D[0] = get_dist(id);
-	
+#if PRIVACY	
 	int N = 8;
 	uint64_t input = ((((uint16_t)R[0].x) & 0xFF) << (2*N+1)) | ((((uint16_t)R[0].y) & 0xFF) << (N+1)) | (((uint16_t)D[0]) & 0x1FF); 
 	string input_str = to_string_hex(input, ceil((3*N+1)/4));
-	cout << input_str << endl;
 	const string scd_file_address = "../../../Netlist/syn/intersections.scd";
 	const string output_mask = "1ffffffffffffffffff000000000000000000";
 	string output_str;
-	
+#endif	
 	rect S;
 	S.x = 0;
 	S.y = 0;
 	
 	//set sequence of operation according to id
-	vector <int> op(3);
-	for (int i = 0; i < 3; i++){
-		op[i] = (id+3-i)%3;
-	}	
+	vector <int> op(2);
+	if (id == 0){
+		op[0] = 0;
+		op[1] = 1;
+	}
+	else{
+		op[0] = 1;
+		op[1] = 0;
+	}
 	
-	for (int i = 0; i < 3; i++){
-		
-		if (op[i] == 0){// initialize computation of one pair of intersections
-			if (PRV == 0){				
-				write(h_connfd[0], &(R[0].x), sizeof(double));
-				write(h_connfd[0], &(R[0].y), sizeof(double));
-				write(h_connfd[0], &D[0], sizeof(double));
-				
-				read(h_connfd[0], &(M[1].x), sizeof(double));
-				read(h_connfd[0], &(M[1].y), sizeof(double));
-							
-				read(h_connfd[0], &in[1], sizeof(int));			
-				if(!in[1]){
-					S.x = S.x + M[1].x;
-					S.y = S.y + M[1].y;
-				}
-			}
+	for (int i = 0; i < 2; i++){		
+		if (op[i] == 0){// initialize computation of one pair of intersections				
+			write(h_connfd[0], &(R[0].x), sizeof(double));
+			write(h_connfd[0], &(R[0].y), sizeof(double));
+			write(h_connfd[0], &D[0], sizeof(double));
+			
+			read(h_connfd[0], &(M[1].x), sizeof(double));
+			read(h_connfd[0], &(M[1].y), sizeof(double));
+#if PRIVACY				
+			cout << "Start GC" << endl;
+			cout << scd_file_address << endl;
+			cout << input_str << endl;
+			cout << output_mask << endl;
+			cout << h_connfd[0] << endl;
 			CHECK(
 				GarbleStr(scd_file_address, "", input_str, 1,
 					output_mask, 0, 0, 0,
 					&output_str, h_connfd[0]));
+			cout << "End GC" << endl;
 			cout << output_str << endl;
+#endif
 		}
-		else if (op[i] == 1){ // compute intersections and check which one is valid	
-			if (PRV == 0){	
-				read(h_connfd[1], &(R[1].x), sizeof(double));
-				read(h_connfd[1], &(R[1].y), sizeof(double));
-				read(h_connfd[1], &D[1], sizeof(double)); 
-				
-				M_1 = intersection(R[0], D[0], R[1], D[1]);
-				set_rect(M[0], M_1[0]);			
-				write(h_connfd[1], &(M_1[1].x), sizeof(double));
-				write(h_connfd[1], &(M_1[1].y), sizeof(double));
-						
-				read(h_connfd[0], &(R[1].x), sizeof(double));
-				read(h_connfd[0], &(R[1].y), sizeof(double));
-				read(h_connfd[0], &(D[1]), sizeof(double));
-				
-				in[0] = (int)(inside(M[0], R[1], D[1]));			
-				if(in[0]){
-					S.x = S.x + M[0].x;
-					S.y = S.y + M[0].y;
-				}				
-				write(h_connfd[1], &in[0], sizeof(int));
-			}
+		else if (op[i] == 1){ // compute intersections
+			read(h_connfd[1], &(R[1].x), sizeof(double));
+			read(h_connfd[1], &(R[1].y), sizeof(double));
+			read(h_connfd[1], &D[1], sizeof(double)); 
+			
+			M_1 = intersection(R[0], D[0], R[1], D[1]);
+			set_rect(M[0], M_1[0]);			
+			write(h_connfd[1], &(M_1[1].x), sizeof(double));
+			write(h_connfd[1], &(M_1[1].y), sizeof(double));
+#if PRIVACY				
+			cout << "Start GC" << endl;
+			cout << scd_file_address << endl;
+			cout << input_str << endl;
+			cout << output_mask << endl;
+			cout << h_connfd[1] << endl;
 			CHECK(
 				EvaluateStr(scd_file_address, "", input_str, 1,
                     output_mask, 0, 0, 0,
                     &output_str, h_connfd[1]));	
-			cout << output_str << endl;			
+			cout << "End GC" << endl;
+			cout << output_str << endl;	
+#endif			
 		}
-		else if (op[i] == 2){ // help check validity of the intersections
-			if (PRV == 0){		
-				write(h_connfd[1], &(R[0].x), sizeof(double));
-				write(h_connfd[1], &(R[0].y), sizeof(double));
-				write(h_connfd[1], &(D[0]), sizeof(double));
-			}
+	}
+
+	for (int i = 0; i < 2; i++){		
+		if (op[i] == 0){// check which one is valid			
+			read(h_connfd[0], &(R[1].x), sizeof(double));
+			read(h_connfd[0], &(R[1].y), sizeof(double));
+			read(h_connfd[0], &(D[1]), sizeof(double));
+			
+			in[0] = (int)(inside(M[0], R[1], D[1]));
 		}
-	}	
-	
+		else if (op[i] == 1){ // help check validity of the intersections
+			write(h_connfd[1], &(R[0].x), sizeof(double));
+			write(h_connfd[1], &(R[0].y), sizeof(double));
+			write(h_connfd[1], &(D[0]), sizeof(double));
+		}
+	}
+
+	for (int i = 0; i < 2; i++){		
+		if (op[i] == 0){ // receive validity info									
+			read(h_connfd[0], &in[1], sizeof(int));
+		}
+		else if (op[i] == 1){ // send validity info	
+			write(h_connfd[1], &in[0], sizeof(int));
+		}
+	}		
+							
 	//secure sum protocol
+	
+	if(in[0]){
+		S.x = S.x + M[0].x;
+		S.y = S.y + M[0].y;
+	}				
+	if(!in[1]){
+		S.x = S.x + M[1].x;
+		S.y = S.y + M[1].y;
+	}
+	
 	rect T;
 	
 	if (id == 0){

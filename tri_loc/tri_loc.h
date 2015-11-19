@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#define PRIVACY 1
+
 using namespace std;
 
 typedef struct rect{
