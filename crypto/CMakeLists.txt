@@ -1,9 +1,9 @@
 add_library (Crypto_BN OBJECT
   "BN.cpp")
-  
+
 add_library (Crypto_OT OBJECT
   "OT.cpp")
-  
+
 add_library (Crypto_OT_Extension OBJECT
   "OT_extension.cpp")
 
@@ -22,13 +22,13 @@ if (Boost_FOUND)
 endif (Boost_FOUND)
 target_link_libraries(BN_Test -lrt)
 
-add_test (Crypto_BN_Test 
+add_test (Crypto_BN_Test
   BN_Test --log2std)
-  
+
 set_tests_properties (Crypto_BN_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
-	
+
 add_executable(OT_Test
   "OT_test.cpp"
   "$<TARGET_OBJECTS:Crypto_BN>"
@@ -46,13 +46,13 @@ if (Boost_FOUND)
 endif (Boost_FOUND)
 target_link_libraries(OT_Test -lrt)
 
-add_test (Crypto_OT_Test 
+add_test (Crypto_OT_Test
   OT_Test --log2std)
-  
+
 set_tests_properties (Crypto_OT_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
-	
+
 add_executable(OT_Extension_Test
   "OT_extension_test.cpp"
   "$<TARGET_OBJECTS:Crypto_BN>"
@@ -71,13 +71,13 @@ if (Boost_FOUND)
 endif (Boost_FOUND)
 target_link_libraries(OT_Extension_Test -lrt)
 
-add_test (Crypto_OT_Extension_Test 
+add_test (Crypto_OT_Extension_Test
   OT_Extension_Test --log2std)
-  
+
 set_tests_properties (Crypto_OT_Extension_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
-	
+
 add_executable(OT_Main
   "OT_main.cpp"
   "$<TARGET_OBJECTS:Crypto_BN>"
