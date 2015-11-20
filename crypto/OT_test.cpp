@@ -48,8 +48,8 @@ int Alice(const void* data, int connfd) {
   }
   transfer_time = RDTSC - transfer_time;
 
-  LOG(INFO) << "OT total send time (ccx1E6) = " << transfer_time / 1E6 << endl;
-  LOG(INFO) << "OT send time (cc/B) = " << (1.0 * transfer_time) / len << endl;
+  LOG(INFO) << "OT total send time (cc) = " << transfer_time << "\t(cc/bit) = "
+            << (1.0 * transfer_time) / len << endl;
 
   return SUCCESS;
 }
@@ -77,8 +77,8 @@ int Bob(const void *data, int connfd) {
     }
   }
 
-  LOG(INFO) << "OT total recv time (ccx1E6) = " << transfer_time / 1E6 << endl;
-  LOG(INFO) << "OT recv time (cc/B) = " << (1.0 * transfer_time) / len << endl;
+  LOG(INFO) << "OT total recv time (cc) = " << transfer_time << "\t(cc/bit) = "
+            << (1.0 * transfer_time) / len << endl;
 
   delete[] message_recv;
   if (!test_passed) {
