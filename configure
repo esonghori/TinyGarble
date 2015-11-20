@@ -2,7 +2,7 @@
 
 mkdir -p bin
 cd bin
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_LOG=ON ..
 echo "Config is done. Now call '$ cd bin' and then '$ make' to compile TinyGarble."
 
 
