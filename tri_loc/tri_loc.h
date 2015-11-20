@@ -4,6 +4,11 @@
 #include <vector>
 
 #define PRIVACY 1
+#define BIT_LEN 8
+#define INTERSECTION_OUTPUT_MASK "3FFFFFFFFFFFFFFFFFE000000000000000000"  // (7*BIT_LEN+17 '1's)||(7*BIT_LEN+17 '0's)
+	
+#define INTERSECTION_SCD "../../../Netlist/syn/intersections.scd"
+#define INSIDE_SCD "../../../Netlist/syn/inside.scd"
 
 using namespace std;
 

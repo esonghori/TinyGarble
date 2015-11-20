@@ -18,10 +18,9 @@
 #include "tcpip/tcpip.h"
 #include "util/util.h"
 #include "util/tinygarble_config.h"
-#include "util/log.h"
+#include "util/log.h" 
 
 using namespace std;
-
 
 void print_rect(rect R){	
 	cout << "<" << R.x << "," << R.y << ">\t\t";
@@ -116,21 +115,21 @@ int lost_car(vector<int> &port){
 	//provide each car an id and get the port numbers they use to establish server with other cars
 	vector<int> h_port(3);	
 	for (id = 0; id < 3; id++){
-		write(connfd[id], &id, sizeof(int));
-		read(connfd[id], &h_port[id], sizeof(int));
+		SendData(connfd[id], &id, sizeof(int));
+		RecvData(connfd[id], &h_port[id], sizeof(int));
 	}
 	
 	//provide each car the port number of its server car
 	for (id = 0; id < 3; id++){
-		write(connfd[id], &h_port[(id+2)%3], sizeof(int));
+		SendData(connfd[id], &h_port[(id+2)%3], sizeof(int));
 	}
 	
 	//manage connection establishment of the helping cars
 	int done, ser = 0, cli = 1; 
 	for (id = 0; id < 3; id++){
-		write(connfd[id], &ser, sizeof(int));
-		write(connfd[(id+1)%3], &cli, sizeof(int));
-		read(connfd[(id+1)%3], &done, sizeof(int));
+		SendData(connfd[id], &ser, sizeof(int));
+		SendData(connfd[(id+1)%3], &cli, sizeof(int));
+		RecvData(connfd[(id+1)%3], &done, sizeof(int));
 	}
 	
 	//compute median through secure sum protocol
@@ -139,21 +138,20 @@ int lost_car(vector<int> &port){
 	M.x = rand()%255 + rand()/255;
 	M.y = rand()%255 + rand()/255;
 	
-	write(connfd[0], &M.x, sizeof(double));
-	write(connfd[0], &M.y, sizeof(double));
+	SendData(connfd[0], &M.x, sizeof(double));
+	SendData(connfd[0], &M.y, sizeof(double));
 	
-	read(connfd[2], &Q.x, sizeof(double));
-	read(connfd[2], &Q.y, sizeof(double));
+	RecvData(connfd[2], &Q.x, sizeof(double));
+	RecvData(connfd[2], &Q.y, sizeof(double));
 	
 	Q.x = (Q.x - M.x)/3;
 	Q.y = (Q.y - M.y)/3;
 	
 	print_rect(Q);	
 	
-	int N = 8;
-	uint64_t output = (((uint8_t)Q.x) << N) | (((uint8_t)Q.y));
-	string output_str = to_string_hex(output, ceil((2*N)/4));
-	cout << output_str << endl;
+	uint64_t output = (((uint8_t)Q.x) << BIT_LEN) | (((uint8_t)Q.y));
+	string output_str_int = to_string_hex(output, ceil((2*BIT_LEN)/4));
+	cout << output_str_int << endl;
 	
 	for (id = 0; id < 3; id++)
 		ServerClose(connfd[id]);
@@ -183,22 +181,22 @@ int helping_car(vector<int> &port, bool PRV){
 	vector<int> h_port(2);
 	h_port[0] = port[1];	
 	int id;
-	read(connfd, &id, sizeof(int));
-	write(connfd, &h_port[0], sizeof(int));	
-	read(connfd, &h_port[1], sizeof(int));
+	RecvData(connfd, &id, sizeof(int));
+	SendData(connfd, &h_port[0], sizeof(int));	
+	RecvData(connfd, &h_port[1], sizeof(int));
 	
 	//establish connection with the two other helping cars
 	int ser_cli, done = 1;
 	vector<int> h_connfd(2);
 	
 	for (int i = 0; i < 2; i++){
-		read(connfd, &ser_cli, sizeof(int));
+		RecvData(connfd, &ser_cli, sizeof(int));
 		if (ser_cli == 0){
 			if ((h_connfd[0] = ServerInit(h_port[0])) == -1) {
 				cout << "Cannot open the socket in port " << h_port[0] << " with Car " << (id+1)%3 << endl;
 				return -1;
 			}
-			write(h_connfd[0], &id, sizeof(int));
+			SendData(h_connfd[0], &id, sizeof(int));
 		}
 		else{
 			if ((h_connfd[1] = ClientInit(server_ip.c_str(), h_port[1])) == -1) {
@@ -206,9 +204,9 @@ int helping_car(vector<int> &port, bool PRV){
 					return -1;
 				}
 			int other_id;
-			read(h_connfd[1], &other_id, sizeof(int));
+			RecvData(h_connfd[1], &other_id, sizeof(int));
 			cout << "car " << id << " established connection with car " << other_id << endl;
-			write(connfd, &done, sizeof(int));
+			SendData(connfd, &done, sizeof(int));
 		}
 	}
 	
@@ -220,12 +218,10 @@ int helping_car(vector<int> &port, bool PRV){
 	R[0] = get_loc(id);
 	D[0] = get_dist(id);
 #if PRIVACY	
-	int N = 8;
-	uint64_t input = ((((uint16_t)R[0].x) & 0xFF) << (2*N+1)) | ((((uint16_t)R[0].y) & 0xFF) << (N+1)) | (((uint16_t)D[0]) & 0x1FF); 
-	string input_str = to_string_hex(input, ceil((3*N+1)/4));
-	const string scd_file_address = "../../../Netlist/syn/intersections.scd";
-	const string output_mask = "1ffffffffffffffffff000000000000000000";
-	string output_str;
+	uint64_t input = ((((uint16_t)R[0].x) & 0xFF) << (2*BIT_LEN+1)) | ((((uint16_t)R[0].y) & 0xFF) << (BIT_LEN+1)) | (((uint16_t)D[0]) & 0x1FF); 
+	string input_str = to_string_hex(input, ceil((3*BIT_LEN+1)/4));
+	vector <string> output_str_int(2);
+	string in_range, in_range_dummy;
 #endif	
 	rect S;
 	S.x = 0;
@@ -244,72 +240,67 @@ int helping_car(vector<int> &port, bool PRV){
 	
 	for (int i = 0; i < 2; i++){		
 		if (op[i] == 0){// initialize computation of one pair of intersections				
-			write(h_connfd[0], &(R[0].x), sizeof(double));
-			write(h_connfd[0], &(R[0].y), sizeof(double));
-			write(h_connfd[0], &D[0], sizeof(double));
+			SendData(h_connfd[0], &(R[0].x), sizeof(double));
+			SendData(h_connfd[0], &(R[0].y), sizeof(double));
+			SendData(h_connfd[0], &D[0], sizeof(double));
 			
-			read(h_connfd[0], &(M[1].x), sizeof(double));
-			read(h_connfd[0], &(M[1].y), sizeof(double));
+			RecvData(h_connfd[0], &(M[1].x), sizeof(double));
+			RecvData(h_connfd[0], &(M[1].y), sizeof(double));
 #if PRIVACY				
-			cout << "Start GC" << endl;
-			cout << scd_file_address << endl;
-			cout << input_str << endl;
-			cout << output_mask << endl;
-			cout << h_connfd[0] << endl;
-			CHECK(
-				GarbleStr(scd_file_address, "", input_str, 1,
-					output_mask, 0, 0, 0,
-					&output_str, h_connfd[0]));
-			cout << "End GC" << endl;
-			cout << output_str << endl;
+			cout << "Garbler input: " << input_str << endl;
+			CHECK(GarbleStr(INTERSECTION_SCD, "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &output_str_int[0], h_connfd[0]));
+			cout << "Garbler output: " << output_str_int[0] << endl;
 #endif
 		}
 		else if (op[i] == 1){ // compute intersections
-			read(h_connfd[1], &(R[1].x), sizeof(double));
-			read(h_connfd[1], &(R[1].y), sizeof(double));
-			read(h_connfd[1], &D[1], sizeof(double)); 
+			RecvData(h_connfd[1], &(R[1].x), sizeof(double));
+			RecvData(h_connfd[1], &(R[1].y), sizeof(double));
+			RecvData(h_connfd[1], &D[1], sizeof(double)); 
 			
 			M_1 = intersection(R[0], D[0], R[1], D[1]);
 			set_rect(M[0], M_1[0]);			
-			write(h_connfd[1], &(M_1[1].x), sizeof(double));
-			write(h_connfd[1], &(M_1[1].y), sizeof(double));
+			SendData(h_connfd[1], &(M_1[1].x), sizeof(double));
+			SendData(h_connfd[1], &(M_1[1].y), sizeof(double));		
+			
 #if PRIVACY				
-			cout << "Start GC" << endl;
-			cout << scd_file_address << endl;
-			cout << input_str << endl;
-			cout << output_mask << endl;
-			cout << h_connfd[1] << endl;
-			CHECK(
-				EvaluateStr(scd_file_address, "", input_str, 1,
-                    output_mask, 0, 0, 0,
-                    &output_str, h_connfd[1]));	
-			cout << "End GC" << endl;
-			cout << output_str << endl;	
+			cout << "Evaluator input: " << input_str << endl;
+			CHECK(EvaluateStr(INTERSECTION_SCD, "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &output_str_int[1], h_connfd[1]));	
+			cout << "Evaluator output: " << output_str_int[1] << endl;
 #endif			
 		}
 	}
-
+	
 	for (int i = 0; i < 2; i++){		
 		if (op[i] == 0){// check which one is valid			
-			read(h_connfd[0], &(R[1].x), sizeof(double));
-			read(h_connfd[0], &(R[1].y), sizeof(double));
-			read(h_connfd[0], &(D[1]), sizeof(double));
+			RecvData(h_connfd[0], &(R[1].x), sizeof(double));
+			RecvData(h_connfd[0], &(R[1].y), sizeof(double));
+			RecvData(h_connfd[0], &(D[1]), sizeof(double));
 			
 			in[0] = (int)(inside(M[0], R[1], D[1]));
+#if PRIVACY				
+			cout << "Garbler input: " << output_str_int[1] << endl;
+			CHECK(GarbleStr(INSIDE_SCD, "", output_str_int[1], 1, "1", 0, 0, 0, &in_range, h_connfd[0]));
+			cout << "Garbler output: " << in_range << endl;
+#endif			
 		}
 		else if (op[i] == 1){ // help check validity of the intersections
-			write(h_connfd[1], &(R[0].x), sizeof(double));
-			write(h_connfd[1], &(R[0].y), sizeof(double));
-			write(h_connfd[1], &(D[0]), sizeof(double));
+			SendData(h_connfd[1], &(R[0].x), sizeof(double));
+			SendData(h_connfd[1], &(R[0].y), sizeof(double));
+			SendData(h_connfd[1], &(D[0]), sizeof(double));
+#if PRIVACY				
+			cout << "Evaluator input: " << input_str << endl;
+			CHECK(EvaluateStr(INSIDE_SCD, "", input_str, 1, "1", 0, 0, 0, &in_range_dummy, h_connfd[1]));	
+			cout << "Evaluator output: " << endl;
+#endif	
 		}
 	}
 
 	for (int i = 0; i < 2; i++){		
 		if (op[i] == 0){ // receive validity info									
-			read(h_connfd[0], &in[1], sizeof(int));
+			RecvData(h_connfd[0], &in[1], sizeof(int));
 		}
 		else if (op[i] == 1){ // send validity info	
-			write(h_connfd[1], &in[0], sizeof(int));
+			SendData(h_connfd[1], &in[0], sizeof(int));
 		}
 	}		
 							
@@ -327,24 +318,24 @@ int helping_car(vector<int> &port, bool PRV){
 	rect T;
 	
 	if (id == 0){
-		read(connfd, &T.x, sizeof(double));
-		read(connfd, &T.y, sizeof(double));
+		RecvData(connfd, &T.x, sizeof(double));
+		RecvData(connfd, &T.y, sizeof(double));
 	}
 	else{
-		read(h_connfd[1], &T.x, sizeof(double));
-		read(h_connfd[1], &T.y, sizeof(double));
+		RecvData(h_connfd[1], &T.x, sizeof(double));
+		RecvData(h_connfd[1], &T.y, sizeof(double));
 	}
 		
 	T.x = T.x + S.x;
 	T.y = T.y + S.y;		
 		
 	if (id == 2){
-		write(connfd, &T.x, sizeof(double));
-		write(connfd, &T.y, sizeof(double));
+		SendData(connfd, &T.x, sizeof(double));
+		SendData(connfd, &T.y, sizeof(double));
 	}
 	else{
-		write(h_connfd[0], &T.x, sizeof(double));
-		write(h_connfd[0], &T.y, sizeof(double));
+		SendData(h_connfd[0], &T.x, sizeof(double));
+		SendData(h_connfd[0], &T.y, sizeof(double));
 	}
 	
 	ClientClose(connfd);
