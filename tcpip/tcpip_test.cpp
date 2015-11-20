@@ -50,7 +50,7 @@ int ClientFunc(const void *data, int connfd) {
     LOG(ERROR) << "send failed, client side. Test failed" << endl;
     return FAILURE;
   }
-  char *data_recv = new char[len]; 
+  char *data_recv = new char[len];
   if (RecvData(connfd, data_recv, len) == FAILURE) {
     LOG(ERROR) << "recv failed, client side. Test failed" << endl;
     return FAILURE;
