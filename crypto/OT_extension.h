@@ -23,7 +23,8 @@
 #include <openssl/rsa.h>
 #include "crypto/block.h"
 
-//const EVP_MD *md = nullptr;
+#define OT_EXT_LEN (8*sizeof(block))
+
 int HashInit();
 void HashFinish();
 
