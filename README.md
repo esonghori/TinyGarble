@@ -59,7 +59,7 @@ Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
 ```
 
 ### Compile
-Confing TinyGarble and then compile it in `bin` directory:
+Confing TinyGarble and then compile it in `bin` directory (for debug mode, use `cmake ..` inside `bin` directory before `make`):
 ```
   $ ./configure
   $ cd bin
