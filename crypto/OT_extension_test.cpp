@@ -18,6 +18,7 @@
 
 #include "crypto/OT_extension.h"
 
+#include <boost/program_options.hpp>
 #include <openssl/rand.h>
 #include <iostream>
 #include "tcpip/tcpip.h"
@@ -27,6 +28,7 @@
 #include "util/log.h"
 
 using std::endl;
+namespace po = boost::program_options;
 
 struct OTTestStruct {
   block** message;
@@ -38,10 +40,17 @@ int Alice(const void* data, int connfd) {
   OTTestStruct* OT_test_str = (OTTestStruct*) data;
   block **message = OT_test_str->message;
   uint len = OT_test_str->len;
+
+  uint64_t transfer_time = RDTSC;
   if (OTExtSend(message, len, connfd) == FAILURE) {
     LOG(ERROR) << "OTsend failed." << endl;
     return FAILURE;
   }
+  transfer_time = RDTSC - transfer_time;
+
+  LOG(INFO) << "OT Extension send total time (cc) = " << transfer_time
+            << "\t(cc/bit) = " << (1.0 * transfer_time) / len << endl;
+
   return SUCCESS;
 }
 
@@ -52,10 +61,12 @@ int Bob(const void *data, int connfd) {
   uint len = OT_test_str->len;
   block* message_recv = new block[len];
 
+  uint64_t transfer_time = RDTSC;
   if (OTExtRecv(select, len, connfd, message_recv) == FAILURE) {
     LOG(ERROR) << "OTsend failed." << endl;
     return FAILURE;
   }
+  transfer_time = RDTSC - transfer_time;
 
   bool test_passed = true;
   for (uint i = 0; i < len; i++) {
@@ -65,6 +76,9 @@ int Bob(const void *data, int connfd) {
       test_passed = false;
     }
   }
+
+  LOG(INFO) << "OT Extension total recv time (cc) = " << transfer_time
+            << "\t(cc/bit) = " << (1.0 * transfer_time) / len << endl;
 
   delete[] message_recv;
   if (!test_passed) {
@@ -78,11 +92,37 @@ int Bob(const void *data, int connfd) {
 int main(int argc, char* argv[]) {
   LogInitial(argc, argv);
   HashInit();
-
   srand(time(NULL));
   SrandSSE(time(NULL));
-  uint len = rand() % 500 + 1000;
-  LOG(INFO) << "Run OT 1 from 2 on a vector with size " << len << endl;
+
+  uint len = 0;
+
+  po::options_description desc("Oblivious Transfer Extension Test.");
+  desc.add_options()  //
+  ("help,h", "produce help message")  //
+  ("len,l", po::value<uint>(&len), "length of messages. Default is random.");
+
+  po::variables_map vm;
+  try {
+    po::parsed_options parsed = po::command_line_parser(argc, argv).options(
+        desc).allow_unregistered().run();
+    po::store(parsed, vm);
+    if (vm.count("help")) {
+      std::cout << desc << endl;
+      return SUCCESS;
+    }
+    po::notify(vm);
+  } catch (po::error& e) {
+    LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
+    std::cout << desc << endl;
+    return FAILURE;
+  }
+  if (vm.count("len") == 0) {
+    len = rand() % 500 + 1000;
+  }
+
+  LOG(INFO) << "Run OT extension 1 from 2 on a message with length " << len
+            << endl;
   block** message = new block*[len];
   bool* select = new bool[len];
   for (uint i = 0; i < len; i++) {
@@ -100,7 +140,7 @@ int main(int argc, char* argv[]) {
 
   if (TcpipTestRun(Alice, (void *) &OT_test_str, Bob,
                    (void *) &OT_test_str) == FAILURE) {
-    LOG(ERROR) << "tcpip test run failed." << endl;
+    LOG(ERROR) << "tcpip test run failed for second run." << endl;
     return FAILURE;
   }
 

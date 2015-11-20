@@ -39,6 +39,7 @@
 #include "scd/scd_evaluator.h"
 #include "util/log.h"
 #include "crypto/BN.h"
+#include "crypto/OT.h"
 #include "crypto/OT_extension.h"
 #include "tcpip/tcpip.h"
 #include "util/common.h"
@@ -481,122 +482,130 @@ int EvaluateAllocLabels(const GarbledCircuit& garbled_circuit,
   return SUCCESS;
 }
 
-int GarbleOTExtInitLowMem(const GarbledCircuit& garbled_circuit,
-                          block* init_labels, int connfd) {
+int GarbleOTInitLowMem(const GarbledCircuit& garbled_circuit,
+                       block* init_labels, int connfd) {
 
-  uint32_t m_len = garbled_circuit.e_init_size;
-  if (m_len == 0) {
+  uint32_t message_len = garbled_circuit.e_init_size;
+  if (message_len == 0) {
     return SUCCESS;
   }
-  block **m = nullptr;
-  CHECK_ALLOC(m = new block*[m_len]);
+  block **message = nullptr;
+  CHECK_ALLOC(message = new block*[message_len]);
 
   for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
-    CHECK_ALLOC(m[i] = new block[2]);
+    CHECK_ALLOC(message[i] = new block[2]);
     for (uint j = 0; j < 2; j++) {
-      m[i][j] = init_labels[(i + garbled_circuit.g_init_size) * 2 + j];
+      message[i][j] = init_labels[(i + garbled_circuit.g_init_size) * 2 + j];
     }
   }
 
-  uint64_t start_time = RDTSC;
-  CHECK(OTExtSend(m, m_len, connfd));
-  uint64_t end_time = RDTSC;
+  if (message_len > OT_EXT_LEN) {
+    CHECK(OTExtSend(message, message_len, connfd));
+  } else {
+    CHECK(OTSend(message, message_len, connfd));
+  }
 
-  LOG(INFO) << "Total OT Extension send Init time (cc) = "
-            << end_time - start_time
-            << "\tOT Extension send time per byte (cc/Byte) = "
-            << (end_time - start_time) / ((double) (m_len * sizeof(block)))
-            << endl;
-
-  if (m != nullptr) {
-    for (uint i = 0; i < m_len; i++) {
-      delete[] m[i];
+  if (message != nullptr) {
+    for (uint i = 0; i < message_len; i++) {
+      delete[] message[i];
     }
-    delete[] m;
+    delete[] message;
   }
 
   return SUCCESS;
 }
 
-int GarbleOTExtInputLowMem(const GarbledCircuit& garbled_circuit,
-                           block* input_labels, uint64_t cid, int connfd) {
+int GarbleOTInputLowMem(const GarbledCircuit& garbled_circuit,
+                        block* input_labels, uint64_t cid, int connfd) {
 
-  uint32_t m_len = garbled_circuit.e_input_size;
-  if (m_len == 0) {
+  uint32_t message_len = garbled_circuit.e_input_size;
+  if (message_len == 0) {
     return SUCCESS;
   }
-  block **m = nullptr;
-  CHECK_ALLOC(m = new block*[m_len]);
+  block **message = nullptr;
+  CHECK_ALLOC(message = new block*[message_len]);
 
   for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
-    CHECK_ALLOC(m[i] = new block[2]);
+    CHECK_ALLOC(message[i] = new block[2]);
     for (uint j = 0; j < 2; j++) {
-      m[i][j] = input_labels[(i + garbled_circuit.g_input_size) * 2 + j];
+      message[i][j] = input_labels[(i + garbled_circuit.g_input_size) * 2 + j];
     }
   }
 
-  CHECK(OTExtSend(m, m_len, connfd));
+  if (message_len > OT_EXT_LEN) {
+    CHECK(OTExtSend(message, message_len, connfd));
+  } else {
+    CHECK(OTSend(message, message_len, connfd));
+  }
 
-  if (m != nullptr) {
-    for (uint i = 0; i < m_len; i++) {
-      delete[] m[i];
+  if (message != nullptr) {
+    for (uint i = 0; i < message_len; i++) {
+      delete[] message[i];
     }
-    delete[] m;
+    delete[] message;
   }
 
   return SUCCESS;
 }
 
-int EvalauteOTExtInitLowMem(const GarbledCircuit& garbled_circuit,
-                            BIGNUM* e_init, block* init_labels, int connfd) {
-  uint32_t m_len = garbled_circuit.e_init_size;
-  if (m_len == 0) {
+int EvalauteOTInitLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
+                         block* init_labels, int connfd) {
+  uint32_t message_len = garbled_circuit.e_init_size;
+  if (message_len == 0) {
     return SUCCESS;
   }
-  bool *sel = nullptr;
-  CHECK_ALLOC(sel = new bool[m_len]);
+  bool *select = nullptr;
+  CHECK_ALLOC(select = new bool[message_len]);
   for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
-    sel[i] = BN_is_bit_set(e_init, i);
+    select[i] = BN_is_bit_set(e_init, i);
   }
 
-  block* m = nullptr;
-  CHECK_ALLOC(m = new block[m_len]);
+  block* message = nullptr;
+  CHECK_ALLOC(message = new block[message_len]);
 
-  CHECK(OTExtRecv(sel, m_len, connfd, m));
-
-  for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
-    init_labels[i + garbled_circuit.g_init_size] = m[i];
+  if (message_len > OT_EXT_LEN) {
+    CHECK(OTExtRecv(select, message_len, connfd, message));
+  } else {
+    CHECK(OTRecv(select, message_len, connfd, message));
   }
 
-  delete[] sel;
-  delete[] m;
+  for (uint i = 0; i < garbled_circuit.e_init_size; i++) {
+    init_labels[i + garbled_circuit.g_init_size] = message[i];
+  }
+
+  delete[] select;
+  delete[] message;
 
   return SUCCESS;
 }
 
-int EvalauteOTExtInputLowMem(const GarbledCircuit& garbled_circuit,
-                             BIGNUM* e_input, block* input_labels, uint64_t cid,
-                             int connfd) {
-  uint32_t m_len = garbled_circuit.e_input_size;
-  if (m_len == 0) {
+int EvalauteOTInputLowMem(const GarbledCircuit& garbled_circuit,
+                          BIGNUM* e_input, block* input_labels, uint64_t cid,
+                          int connfd) {
+  uint32_t message_len = garbled_circuit.e_input_size;
+  if (message_len == 0) {
     return SUCCESS;
   }
-  bool *sel = nullptr;
-  CHECK_ALLOC(sel = new bool[m_len]);
+  bool *select = nullptr;
+  CHECK_ALLOC(select = new bool[message_len]);
   for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
-    sel[i] = BN_is_bit_set(e_input, cid * garbled_circuit.e_input_size + i);
+    select[i] = BN_is_bit_set(e_input, cid * garbled_circuit.e_input_size + i);
   }
 
-  block* m = nullptr;
-  CHECK_ALLOC(m = new block[m_len]);
+  block* message = nullptr;
+  CHECK_ALLOC(message = new block[message_len]);
 
-  CHECK(OTExtRecv(sel, m_len, connfd, m));
-
-  for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
-    input_labels[i + garbled_circuit.g_input_size] = m[i];
+  if (message_len > OT_EXT_LEN) {
+    CHECK(OTExtRecv(select, message_len, connfd, message));
+  } else {
+    CHECK(OTRecv(select, message_len, connfd, message));
   }
 
-  delete[] sel;
+  for (uint i = 0; i < garbled_circuit.e_input_size; i++) {
+    input_labels[i + garbled_circuit.g_input_size] = message[i];
+  }
+
+  delete[] select;
 
   return SUCCESS;
 }
@@ -637,7 +646,7 @@ int GarbleTransferInitLabels(const GarbledCircuit& garbled_circuit,
     BN_free(e_init);
 
   } else {
-    CHECK(GarbleOTExtInitLowMem(garbled_circuit, init_labels, connfd));
+    CHECK(GarbleOTInitLowMem(garbled_circuit, init_labels, connfd));
   }
   return SUCCESS;
 }
@@ -680,7 +689,7 @@ int GarbleTransferInputLabels(const GarbledCircuit& garbled_circuit,
     BN_free(e_input);
 
   } else {
-    CHECK(GarbleOTExtInputLowMem(garbled_circuit, input_labels, cid, connfd));
+    CHECK(GarbleOTInputLowMem(garbled_circuit, input_labels, cid, connfd));
   }
   return SUCCESS;
 }
@@ -708,7 +717,7 @@ int EvaluateTransferInitLabels(const GarbledCircuit& garbled_circuit,
     }
 
   } else {
-    CHECK(EvalauteOTExtInitLowMem(garbled_circuit, e_init, init_labels, connfd));
+    CHECK(EvalauteOTInitLowMem(garbled_circuit, e_init, init_labels, connfd));
   }
   return SUCCESS;
 }
@@ -731,8 +740,8 @@ int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
     }
   } else {
     CHECK(
-        EvalauteOTExtInputLowMem(garbled_circuit, e_input, input_labels, cid,
-                                 connfd));
+        EvalauteOTInputLowMem(garbled_circuit, e_input, input_labels, cid,
+                              connfd));
   }
   return SUCCESS;
 }
