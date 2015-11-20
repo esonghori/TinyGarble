@@ -63,7 +63,7 @@ block RandomBlock() {
   static const unsigned int mult[4] = { 214013, 17405, 214013, 69069 };
   static const unsigned int gadd[4] = { 2531011, 10395331, 13737667, 1 };
   static const unsigned int mask[4] = { 0xFFFFFFFF, 0, 0xFFFFFFFF, 0 };
-  //static const unsigned int masklo[4] = { 0x00007FFF, 0x00007FFF, 0x00007FFF, 
+  //static const unsigned int masklo[4] = { 0x00007FFF, 0x00007FFF, 0x00007FFF,
   //  0x00007FFF };
 
   adder = _mm_load_si128((block *) gadd);
