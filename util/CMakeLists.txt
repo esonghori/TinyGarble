@@ -18,7 +18,7 @@ target_link_libraries(Util_Test -lrt)
 
 add_test (Util_Util_Test
   Util_Test --log2std)
- 
+
 set_tests_properties (Util_Util_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Error;ERROR;Failed;failed")
