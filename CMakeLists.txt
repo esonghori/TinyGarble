@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.1.0 FATAL_ERROR)
 project (TinyGarble 
   VERSION 1.0.3
-  LANGUAGES CXX)
+  LANGUAGES C CXX)
 
 
 enable_testing()
@@ -33,6 +33,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
 
 ###############
 # Library
+
+## Thread
+find_package (Threads)
 
 ## Boost 
 set (Boost_USE_STATIC_LIBS OFF)

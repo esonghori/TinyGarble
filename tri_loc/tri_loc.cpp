@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <cmath>
 #include <sys/time.h>
+#include <pthread.h>
 #include "tri_loc/tri_loc.h"
 
 #include <boost/program_options.hpp>
@@ -22,13 +23,16 @@
 
 using namespace std;
 
+pthread_mutex_t running_mutex = PTHREAD_MUTEX_INITIALIZER;
+volatile int running_threads  = 0;
+
 void print_rect(rect R){	
 	cout << "<" << R.x << "," << R.y << ">\t\t";
 	cout << "\n";
 }
 
 void print_rect(vector<rect> R){
-	for (int i = 0; i < R.size(); i++)
+	for (uint i = 0; i < R.size(); i++)
 		cout << "<" << R[i].x << "," << R[i].y << ">\t\t";
 	cout << "\n";
 }
@@ -107,9 +111,6 @@ int lost_car(vector<int> &port){
 			return -1;
 		}
 	
-	timeval tim;
-	gettimeofday(&tim, NULL);
-	double t1 = tim.tv_sec+(tim.tv_usec/1000000.0);
 	uint64_t delta_time = RDTSC;
 	
 	//provide each car an id and get the port numbers they use to establish server with other cars
@@ -156,11 +157,8 @@ int lost_car(vector<int> &port){
 	for (id = 0; id < 3; id++)
 		ServerClose(connfd[id]);
 	
-	gettimeofday(&tim, NULL);
-	double t2 = tim.tv_sec + (tim.tv_usec/1000000.0);	
 	delta_time = RDTSC - delta_time;	
-	cout << "total time(cc): " << delta_time << " approx: " << (double)delta_time/(3.4e9) << "s" << endl; 
-	cout << "total time: " << (t2 - t1) << "s" << endl;
+	cout << "total time(cc): " << delta_time << " second: " << (double)delta_time/(3.4e9) << endl; 
 	
 	return 0;
 	
@@ -169,6 +167,7 @@ int lost_car(vector<int> &port){
 int helping_car(vector<int> &port, bool PRV){
 	
 	string server_ip = "127.0.0.1";
+	int i;
 	
 	//connect to lost car
 	int connfd;
@@ -189,7 +188,7 @@ int helping_car(vector<int> &port, bool PRV){
 	int ser_cli, done = 1;
 	vector<int> h_connfd(2);
 	
-	for (int i = 0; i < 2; i++){
+	for (i = 0; i < 2; i++){
 		RecvData(connfd, &ser_cli, sizeof(int));
 		if (ser_cli == 0){
 			if ((h_connfd[0] = ServerInit(h_port[0])) == -1) {
@@ -217,15 +216,12 @@ int helping_car(vector<int> &port, bool PRV){
 	vector <int> in(2);
 	R[0] = get_loc(id);
 	D[0] = get_dist(id);
-#if PRIVACY	
+//#if PRIVACY	
 	uint64_t input = ((((uint16_t)R[0].x) & 0xFF) << (2*BIT_LEN+1)) | ((((uint16_t)R[0].y) & 0xFF) << (BIT_LEN+1)) | (((uint16_t)D[0]) & 0x1FF); 
 	string input_str = to_string_hex(input, ceil((3*BIT_LEN+1)/4));
 	vector <string> output_str_int(2);
 	string in_range, in_range_dummy;
-#endif	
-	rect S;
-	S.x = 0;
-	S.y = 0;
+//#endif	
 	
 	//set sequence of operation according to id
 	vector <int> op(2);
@@ -238,79 +234,124 @@ int helping_car(vector<int> &port, bool PRV){
 		op[1] = 0;
 	}
 	
-	for (int i = 0; i < 2; i++){		
-		if (op[i] == 0){// initialize computation of one pair of intersections				
-			SendData(h_connfd[0], &(R[0].x), sizeof(double));
-			SendData(h_connfd[0], &(R[0].y), sizeof(double));
-			SendData(h_connfd[0], &D[0], sizeof(double));
-			
-			RecvData(h_connfd[0], &(M[1].x), sizeof(double));
-			RecvData(h_connfd[0], &(M[1].y), sizeof(double));
+	
+	
+	for (i = 0; i < 2; i++){		
+		if (op[i] == 0){// initialize computation of one pair of intersections
 #if PRIVACY				
 			cout << "Garbler input: " << input_str << endl;
 			CHECK(GarbleStr(INTERSECTION_SCD, "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &output_str_int[0], h_connfd[0]));
 			cout << "Garbler output: " << output_str_int[0] << endl;
-#endif
+#else				
+			SendData(h_connfd[0], &(R[0].x), sizeof(double));
+			SendData(h_connfd[0], &(R[0].y), sizeof(double));
+			SendData(h_connfd[0], &D[0], sizeof(double));			
+			RecvData(h_connfd[0], &(M[0].x), sizeof(double));
+			RecvData(h_connfd[0], &(M[0].y), sizeof(double));
+#endif	
 		}
-		else if (op[i] == 1){ // compute intersections
-			RecvData(h_connfd[1], &(R[1].x), sizeof(double));
-			RecvData(h_connfd[1], &(R[1].y), sizeof(double));
-			RecvData(h_connfd[1], &D[1], sizeof(double)); 
-			
-			M_1 = intersection(R[0], D[0], R[1], D[1]);
-			set_rect(M[0], M_1[0]);			
-			SendData(h_connfd[1], &(M_1[1].x), sizeof(double));
-			SendData(h_connfd[1], &(M_1[1].y), sizeof(double));		
-			
+		else if (op[i] == 1){ // compute intersections		
 #if PRIVACY				
 			cout << "Evaluator input: " << input_str << endl;
 			CHECK(EvaluateStr(INTERSECTION_SCD, "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &output_str_int[1], h_connfd[1]));	
 			cout << "Evaluator output: " << output_str_int[1] << endl;
-#endif			
+#else	
+			RecvData(h_connfd[1], &(R[1].x), sizeof(double));
+			RecvData(h_connfd[1], &(R[1].y), sizeof(double));
+			RecvData(h_connfd[1], &D[1], sizeof(double)); 			
+			M_1 = intersection(R[0], D[0], R[1], D[1]);
+			set_rect(M[1], M_1[1]);			
+			SendData(h_connfd[1], &(M_1[0].x), sizeof(double));
+			SendData(h_connfd[1], &(M_1[0].y), sizeof(double));	
+#endif					
 		}
 	}
 	
-	for (int i = 0; i < 2; i++){		
-		if (op[i] == 0){// check which one is valid			
-			RecvData(h_connfd[0], &(R[1].x), sizeof(double));
-			RecvData(h_connfd[0], &(R[1].y), sizeof(double));
-			RecvData(h_connfd[0], &(D[1]), sizeof(double));
-			
-			in[0] = (int)(inside(M[0], R[1], D[1]));
+	for (i = 0; i < 2; i++){		
+		if (op[i] == 0){// check which one is valid	
 #if PRIVACY				
-			cout << "Garbler input: " << output_str_int[1] << endl;
+			cout << "Garbler input: " << output_str_int[0] << endl;
 			CHECK(GarbleStr(INSIDE_SCD, "", output_str_int[1], 1, "1", 0, 0, 0, &in_range, h_connfd[0]));
 			cout << "Garbler output: " << in_range << endl;
-#endif			
+#else			
+			RecvData(h_connfd[0], &(R[1].x), sizeof(double));
+			RecvData(h_connfd[0], &(R[1].y), sizeof(double));
+			RecvData(h_connfd[0], &(D[1]), sizeof(double));			
+			in[1] = (int)(inside(M[1], R[1], D[1]));
+#endif				
 		}
 		else if (op[i] == 1){ // help check validity of the intersections
-			SendData(h_connfd[1], &(R[0].x), sizeof(double));
-			SendData(h_connfd[1], &(R[0].y), sizeof(double));
-			SendData(h_connfd[1], &(D[0]), sizeof(double));
 #if PRIVACY				
 			cout << "Evaluator input: " << input_str << endl;
 			CHECK(EvaluateStr(INSIDE_SCD, "", input_str, 1, "1", 0, 0, 0, &in_range_dummy, h_connfd[1]));	
 			cout << "Evaluator output: " << endl;
+#else	
+			SendData(h_connfd[1], &(R[0].x), sizeof(double));
+			SendData(h_connfd[1], &(R[0].y), sizeof(double));
+			SendData(h_connfd[1], &(D[0]), sizeof(double));	
 #endif	
 		}
 	}
 
-	for (int i = 0; i < 2; i++){		
+	for (i = 0; i < 2; i++){		
 		if (op[i] == 0){ // receive validity info									
-			RecvData(h_connfd[0], &in[1], sizeof(int));
+			RecvData(h_connfd[0], &in[0], sizeof(int));
 		}
 		else if (op[i] == 1){ // send validity info	
-			SendData(h_connfd[1], &in[0], sizeof(int));
+			SendData(h_connfd[1], &in[1], sizeof(int));
 		}
 	}		
-							
+	
+	print_rect(M[0]);
+	print_rect(M[1]);
+	cout << !in[0] << " " << in[1] << endl;
+
+#if PRIVACY
+#else
+	int_data *I_data = new int_data[2];	
+	pthread_t *threads = new pthread_t[2];
+
+	for (i = 0; i < 2; i++){
+		I_data[i].id = i;
+		I_data[i].input_str = input_str;
+		I_data[i].h_connfd = h_connfd[i];
+	}
+	
+	for (i = 0; i < 2; i++){
+		pthread_mutex_lock(&running_mutex);
+		running_threads++;
+		pthread_mutex_unlock(&running_mutex);
+		pthread_create(&threads[i], NULL, int_GC, (void *)&I_data[i]);
+	}
+	
+	while (running_threads > 0);
+	
+	for (i = 0; i < 2; i++){
+		I_data[i].input_str_1 = I_data[1].output_str;
+		I_data[i].h_connfd = h_connfd[1-i];
+	}
+	
+	for (i = 0; i < 2; i++){
+		pthread_mutex_lock(&running_mutex);
+		running_threads++;
+		pthread_mutex_unlock(&running_mutex);
+		pthread_create(&threads[i], NULL, rng_GC, (void *)&I_data[i]);
+	}
+	
+	while (running_threads > 0);
+	
+#endif
+		
 	//secure sum protocol
 	
-	if(in[0]){
+	rect S;
+	S.x = 0;
+	S.y = 0;
+	if(!in[0]){
 		S.x = S.x + M[0].x;
 		S.y = S.y + M[0].y;
 	}				
-	if(!in[1]){
+	if(in[1]){
 		S.x = S.x + M[1].x;
 		S.y = S.y + M[1].y;
 	}
@@ -343,4 +384,41 @@ int helping_car(vector<int> &port, bool PRV){
 	ClientClose(h_connfd[1]);
 	
 	return 0;
+}
+
+void *int_GC(void* I){
+	int_data *I_data;
+	I_data = (int_data*)I;
+	
+	if (I_data->id == 0){
+		GarbleStr(INTERSECTION_SCD, "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+	}
+	else {
+		EvaluateStr(INTERSECTION_SCD, "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &(I_data->output_str), I_data->h_connfd);	
+	}
+	cout << "core " << I_data->id << ":\t" << I_data->output_str << endl;
+	
+	pthread_mutex_lock(&running_mutex);
+		running_threads--;
+	pthread_mutex_unlock(&running_mutex);
+}
+
+void *rng_GC(void* I){
+	int_data *I_data;
+	I_data = (int_data*)I;
+	string in_range_dummy;
+	
+	if (I_data->id == 0){
+		cout << "core " << I_data->id << "input:\t" << I_data->input_str_1 << endl;
+		GarbleStr(INSIDE_SCD, "", I_data->input_str_1, 1, "1", 0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		cout << "core " << I_data->id << "output:\t" << I_data->output_str << endl;
+	}
+	else {
+		cout << "core " << I_data->id << "input:\t" << I_data->input_str << endl;
+		EvaluateStr(INSIDE_SCD, "", I_data->input_str, 1, "1", 0, 0, 0, &in_range_dummy, I_data->h_connfd);
+	}
+	
+	pthread_mutex_lock(&running_mutex);
+		running_threads--;
+	pthread_mutex_unlock(&running_mutex);
 }
