@@ -48,7 +48,7 @@ target_link_libraries(Garbled_Circuit_Test -lrt)
 
 add_test (Garbled_Circuit_Garbled_Circuit_Test
   Garbled_Circuit_Test --log2std)
-  
+
 set_tests_properties (Garbled_Circuit_Garbled_Circuit_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")

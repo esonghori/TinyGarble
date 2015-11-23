@@ -56,9 +56,9 @@ if (OPENSSL_FOUND)
 endif (OPENSSL_FOUND)
 target_link_libraries(SCD_Evaluator_Test -lrt)
 
-add_test (SCD_SCD_Evaluator_Test 
+add_test (SCD_SCD_Evaluator_Test
   SCD_Evaluator_Test --log2std)
-  
+
 set_tests_properties (SCD_SCD_Evaluator_Test
 	PROPERTIES
 	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
