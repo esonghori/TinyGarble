@@ -84,12 +84,12 @@ int Alice(const void* data, int connfd) {
 
   if (output_str != gc_data->output) {
     LOG(ERROR) << "Alice-side equality test failed "
-        "(plain-text's != garble circuit's): " << output_str << " != "
-        << gc_data->output << endl;
+               "(plain-text's != garble circuit's): "
+               << output_str << " != " << gc_data->output << endl;
     return FAILURE;
   }
   LOG(INFO) << "Equality passed: " << output_str << " == " << gc_data->output
-      << endl;
+            << endl;
   return SUCCESS;
 }
 
@@ -108,12 +108,12 @@ int Bob(const void *data, int connfd) {
 
   if (output_str != gc_data->output) {
     LOG(ERROR) << "Bob's side equality test failed "
-        "(plain-text's != garble circuit's): " << output_str << " != "
-        << gc_data->output << endl;
+               "(plain-text's != garble circuit's): "
+               << output_str << " != " << gc_data->output << endl;
     return FAILURE;
   }
   LOG(INFO) << "Equality passed: " << output_str << " == " << gc_data->output
-      << endl;
+            << endl;
 
   return SUCCESS;
 }
@@ -141,8 +141,8 @@ MU_TEST(Mux8Bit) {
     string output_str = "";
 
     LOG(INFO) << "mux (8-bit 1cc): " << e_input_str << " from {0:"
-        << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2) << "}. "
-        << g_input_str << endl;
+              << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2)
+              << "}. " << g_input_str << endl;
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
                                     output_mode, &output_str);
@@ -184,7 +184,7 @@ MU_TEST(Sum1Bit) {
     string output_str = "";
 
     LOG(INFO) << "sum (1-bit 8cc): " << g_input_str << " + " << e_input_str
-        << endl;
+              << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
@@ -228,7 +228,7 @@ MU_TEST(Sum8Bit) {
     string output_str = "";
 
     LOG(INFO) << "sum (8-bit 1cc): " << g_input_str << " + " << e_input_str
-        << endl;
+              << endl;
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
                                     output_mode, &output_str);
@@ -270,7 +270,7 @@ MU_TEST(Hamming32Bit1cc) {
     string output_str = "";
 
     LOG(INFO) << "Hamming (32-bit 1cc) distance between " << g_input_str
-        << " and " << e_input_str << endl;
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
@@ -313,7 +313,7 @@ MU_TEST(Hamming32Bit8cc) {
     string output_str = "";
 
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
-        << " and " << e_input_str << endl;
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
@@ -357,7 +357,7 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
     string output_str = "";
 
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
-        << " and " << e_input_str << endl;
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
@@ -401,7 +401,7 @@ MU_TEST(Hamming32Bit8ccWithMask) {
     string output_str = "";
 
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
-        << " and " << e_input_str << endl;
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
@@ -451,7 +451,7 @@ MU_TEST(Hamming32Bit8ccDisabledOTLowMem) {
     string output_str = "";
 
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
-        << " and " << e_input_str << endl;
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
@@ -496,7 +496,7 @@ MU_TEST(Hamming32Bit8ccLowMem) {
     string output_str = "";
 
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
-        << " and " << e_input_str << endl;
+              << " and " << e_input_str << endl;
 
     int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
                                     g_input_str, e_input_str, clock_cycles,
