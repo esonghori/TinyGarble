@@ -45,149 +45,108 @@
 #include "util/common.h"
 #include "util/util.h"
 
-uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit,
-                      block* const_labels, block* init_labels,
-                      block* input_labels, block* garbled_tables, block R,
-                      AES_KEY& AES_Key, uint64_t cid, int connfd,
-                      BlockPair *wires, block* output_labels) {
-  uint64_t garbled_table_ind = 0;
+void Half0GarbleGate(int type, short input0_value, BlockPair input1_labels,
+                     BlockPair* output_labels, short* output_value) {
 
-  uint64_t start_time = RDTSC;
+  bool x0 = GateOperator(type, input0_value, 0);
+  bool x1 = GateOperator(type, input0_value, 1);
 
-  // init
-  uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
-  if (cid == 0) {
-    for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
-      int64_t wire_index = garbled_circuit.I[i];
-      if (wire_index == CONST_ZERO) {
-        wires[dff_bias + i].label0 = const_labels[0 * 2 + 0];
-        wires[dff_bias + i].label1 = const_labels[0 * 2 + 1];
-      } else if (wire_index == CONST_ONE) {
-        wires[dff_bias + i].label0 = const_labels[1 * 2 + 0];
-        wires[dff_bias + i].label1 = const_labels[1 * 2 + 1];
-      } else if (wire_index >= 0
-          && wire_index < (int64_t) garbled_circuit.get_init_size()) {
-        wires[dff_bias + i].label0 = init_labels[wire_index * 2 + 0];
-        wires[dff_bias + i].label1 = init_labels[wire_index * 2 + 1];
-      } else {
-        LOG(ERROR) << "Invalid I: " << wire_index << endl;
-        wires[dff_bias + i].label0 = const_labels[0 * 2 + 0];
-        wires[dff_bias + i].label1 = const_labels[0 * 2 + 1];
-      }
-      DUMP("dff") << wires[dff_bias + i].label0 << endl;
-    }
-  } else {  //copy latched labels
-    for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
-      int64_t wire_index = garbled_circuit.D[i];
-      if (wire_index == CONST_ZERO) {
-        wires[dff_bias + i].label0 = const_labels[0 * 2 + 0];
-        wires[dff_bias + i].label1 = const_labels[0 * 2 + 1];
-      } else if (wire_index == CONST_ONE) {
-        wires[dff_bias + i].label0 = const_labels[1 * 2 + 0];
-        wires[dff_bias + i].label1 = const_labels[1 * 2 + 1];
-      } else if (wire_index >= 0
-          && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
-        wires[dff_bias + i].label0 = wires[wire_index].label0;
-        wires[dff_bias + i].label1 = wires[wire_index].label1;
-      } else {
-        LOG(ERROR) << "Invalid D: " << wire_index << endl;
-        wires[dff_bias + i].label0 = const_labels[0 * 2 + 0];
-        wires[dff_bias + i].label1 = const_labels[0 * 2 + 1];
-      }
-    }
-  }
-
-  // inputs
-  uint64_t input_bias = garbled_circuit.get_input_lo_index();
-  for (uint64_t i = 0; i < garbled_circuit.get_input_size(); i++) {
-    wires[input_bias + i].label0 = input_labels[i * 2 + 0];
-    wires[input_bias + i].label1 = input_labels[i * 2 + 1];
-    DUMP("input") << input_labels[i * 2 + 0] << endl;
-  }
-
-  for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  //for each gates
-    GarbledGate& garbledGate = garbled_circuit.garbledGates[i];
-
-    int64_t input0 = garbledGate.input0;
-    int64_t input1 = garbledGate.input1;
-    int64_t output = garbledGate.output;
-    int type = garbledGate.type;
-
-    block input0_labels[2];
-    if (input0 == CONST_ZERO) {
-      input0_labels[0] = const_labels[0 * 2 + 0];
-      input0_labels[1] = const_labels[0 * 2 + 1];
-    } else if (input0 == CONST_ONE) {
-      input0_labels[0] = const_labels[1 * 2 + 0];
-      input0_labels[1] = const_labels[1 * 2 + 1];
-    } else if (input0 >= 0
-        && input0 < (int64_t) garbled_circuit.get_wire_size()) {
-      input0_labels[0] = wires[input0].label0;
-      input0_labels[1] = wires[input0].label1;
+  if (x0 == x1) {
+    if (x0 == 0) {
+      *output_value = 0;
     } else {
-      LOG(ERROR) << "Invalid input0 index: " << input0 << endl;
-      input0_labels[0] = const_labels[0 * 2 + 0];
-      input0_labels[1] = const_labels[0 * 2 + 1];
+      *output_value = 1;
     }
+  } else if (x0 == 0 && x1 == 1) {
+    *output_labels = input1_labels;
+    *output_value = -1;
+  } else /*if(x0 == 1 && x1 == 0)*/{
+    output_labels->label0 = input1_labels.label1;
+    output_labels->label1 = input1_labels.label0;
+    *output_value = -1;
+  }
+}
 
-    block input1_labels[2];
-    if (input1 == CONST_ZERO) {
-      input1_labels[0] = const_labels[0 * 2 + 0];
-      input1_labels[1] = const_labels[0 * 2 + 1];
-    } else if (input1 == CONST_ONE) {
-      input1_labels[0] = const_labels[1 * 2 + 0];
-      input1_labels[1] = const_labels[1 * 2 + 1];
-    } else if (input1 >= 0
-        && input1 < (int64_t) garbled_circuit.get_wire_size()) {
-      input1_labels[0] = wires[input1].label0;
-      input1_labels[1] = wires[input1].label1;
-    } else if (type != NOTGATE) {
-      LOG(
-          ERROR) << "Invalid input1 index: " << input1 << endl;
-      input1_labels[0] = const_labels[0 * 2 + 0];
-      input1_labels[1] = const_labels[0 * 2 + 1];
-    }
+void Half1GarbleGate(int type, short input1_value, BlockPair input0_labels,
+                     BlockPair* output_labels, short* output_value) {
+  bool x0 = GateOperator(type, 0, input1_value);
+  bool x1 = GateOperator(type, 1, input1_value);
 
-    if (type == XORGATE) {
-      wires[output].label0 = XorBlock(input0_labels[0], input1_labels[0]);
-      wires[output].label1 = XorBlock(input0_labels[1], input1_labels[0]);
-      continue;
-    } else if (type == XNORGATE) {
-      wires[output].label0 = XorBlock(input0_labels[1], input1_labels[0]);
-      wires[output].label1 = XorBlock(input0_labels[0], input1_labels[0]);
-      continue;
-    } else if (type == NOTGATE) {
-      wires[output].label0 = input0_labels[1];
-      wires[output].label1 = input0_labels[0];
-      continue;
+  if (x0 == x1) {
+    if (x0 == 0) {
+      *output_value = 0;
+    } else {
+      *output_value = 1;
     }
+  } else if (x0 == 0 && x1 == 1) {
+    *output_labels = input0_labels;
+    *output_value = -1;
+  } else /*if(x0 == 1 && x1 == 0)*/{
+    output_labels->label0 = input0_labels.label1;
+    output_labels->label1 = input0_labels.label0;
+    *output_value = -1;
+  }
+}
+
+void GarbleGate(BlockPair input0_labels, short input0_value,
+                BlockPair input1_labels, short input1_value, int type,
+                uint64_t cid, uint64_t gid, block* garbled_tables,
+                uint64_t* garbled_table_ind, block R, AES_KEY AES_Key,
+                BlockPair* output_labels, short* output_value) {
+
+  if (input0_value != -1 && input1_value != -1) {
+    *output_value = GateOperator(type, input0_value, input1_value);
+  } else if (input0_value != -1) {
+    Half0GarbleGate(type, input0_value, input1_labels, output_labels,
+                    output_value);
+
+  } else if (input1_value != -1) {
+    Half1GarbleGate(type, input1_value, input0_labels, output_labels,
+                    output_value);
+  } else if (type == XORGATE) {
+    output_labels->label0 = XorBlock(input0_labels.label0,
+                                     input1_labels.label0);
+    output_labels->label1 = XorBlock(input0_labels.label1,
+                                     input1_labels.label0);
+    *output_value = -1;
+  } else if (type == XNORGATE) {
+    output_labels->label0 = XorBlock(input0_labels.label1,
+                                     input1_labels.label0);
+    output_labels->label1 = XorBlock(input0_labels.label0,
+                                     input1_labels.label0);
+    *output_value = -1;
+  } else if (type == NOTGATE) {
+    output_labels->label0 = input0_labels.label1;
+    output_labels->label1 = input0_labels.label0;
+    *output_value = -1;
+  } else {
 
     block A1;
     block A0;
     unsigned short v = Type2V(type);
     if (v & 1) {
-      A1 = (input0_labels[0]);
-      A0 = (input0_labels[1]);
+      A1 = (input0_labels.label0);
+      A0 = (input0_labels.label1);
     } else {
-      A0 = (input0_labels[0]);
-      A1 = (input0_labels[1]);
+      A0 = (input0_labels.label0);
+      A1 = (input0_labels.label1);
     }
 
     block B1;
     block B0;
     if (v & 2) {
-      B1 = (input1_labels[0]);
-      B0 = (input1_labels[1]);
+      B1 = (input1_labels.label0);
+      B0 = (input1_labels.label1);
     } else {
-      B0 = (input1_labels[0]);
-      B1 = (input1_labels[1]);
+      B0 = (input1_labels.label0);
+      B1 = (input1_labels.label1);
     }
 
     unsigned short pa = get_LSB(A0);
     unsigned short pb = get_LSB(B0);
 
-    block tweak0 = MakeBlock(cid, 2 * i + 0);
-    block tweak1 = MakeBlock(cid, 2 * i + 1);
+    block tweak0 = MakeBlock(cid, 2 * gid + 0);
+    block tweak1 = MakeBlock(cid, 2 * gid + 1);
 
     block keys[4];
     keys[0] = XorBlock(A0, tweak0);
@@ -235,30 +194,230 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit,
       C1 = XorBlock(R, C0);
     }
 
-    wires[garbledGate.output].label0 = C0;
-    wires[garbledGate.output].label1 = C1;
+    output_labels->label0 = C0;
+    output_labels->label1 = C1;
+    *output_value = -1;
 
     for (uint64_t j = 0; j < 2; j++) {
-      garbled_tables[garbled_table_ind++] = table[j];
-      //CHECK(SendData(connfd, &table[j], sizeof(block)));
-      DUMP(
-          "table") << table[j] << endl;
+      garbled_tables[(*garbled_table_ind)++] = table[j];
+      DUMP("table") << table[j] << endl;
     }
+  }
+}
+
+uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
+                      block* input_labels, block* garbled_tables, block R,
+                      AES_KEY& AES_Key, uint64_t cid, int connfd,
+                      BlockPair *wires, short* wires_val, block* output_labels,
+                      short* output_vals) {
+  uint64_t garbled_table_ind = 0;
+
+  uint64_t start_time = RDTSC;
+
+  // init
+  uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
+  if (cid == 0) {
+    for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+      int64_t wire_index = garbled_circuit.I[i];
+      if (wire_index == CONST_ZERO) {
+        wires_val[dff_bias + i] = 0;
+      } else if (wire_index == CONST_ONE) {
+        wires_val[dff_bias + i] = 1;
+      } else if (wire_index >= 0
+          && wire_index < (int64_t) garbled_circuit.get_init_size()) {
+        wires[dff_bias + i].label0 = init_labels[wire_index * 2 + 0];
+        wires[dff_bias + i].label1 = init_labels[wire_index * 2 + 1];
+        wires_val[dff_bias + i] = -1;
+      } else {
+        LOG(ERROR) << "Invalid I: " << wire_index << endl;
+        wires_val[dff_bias + i] = 0;
+      }
+      DUMP("dff") << wires[dff_bias + i].label0 << endl;
+    }
+  } else {  //copy latched labels
+    for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+      int64_t wire_index = garbled_circuit.D[i];
+      if (wire_index == CONST_ZERO) {
+        wires_val[dff_bias + i] = 0;
+      } else if (wire_index == CONST_ONE) {
+        wires_val[dff_bias + i] = 1;
+      } else if (wire_index >= 0
+          && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
+        wires[dff_bias + i] = wires[wire_index];
+        wires_val[dff_bias + i] = wires_val[wire_index];
+      } else {
+        LOG(ERROR) << "Invalid D: " << wire_index << endl;
+        wires_val[dff_bias + i] = 0;
+      }
+    }
+  }
+
+  // inputs
+  uint64_t input_bias = garbled_circuit.get_input_lo_index();
+  for (uint64_t i = 0; i < garbled_circuit.get_input_size(); i++) {
+    wires[input_bias + i].label0 = input_labels[i * 2 + 0];
+    wires[input_bias + i].label1 = input_labels[i * 2 + 1];
+    DUMP("input") << input_labels[i * 2 + 0] << endl;
+  }
+
+  for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  //for each gates
+    GarbledGate& garbledGate = garbled_circuit.garbledGates[i];
+
+    int64_t input0 = garbledGate.input0;
+    int64_t input1 = garbledGate.input1;
+    int64_t output = garbledGate.output;
+    int type = garbledGate.type;
+
+    BlockPair input0_labels = { ZeroBlock(), ZeroBlock() };
+    short input0_value = -1;
+    if (input0 == CONST_ZERO) {
+      input0_value = 0;
+    } else if (input0 == CONST_ONE) {
+      input0_value = -1;
+    } else if (input0 >= 0
+        && input0 < (int64_t) garbled_circuit.get_wire_size()) {
+      input0_labels = wires[input0];
+      input0_value = wires_val[input0];
+    } else {
+      LOG(ERROR) << "Invalid input0 index: " << input0 << endl;
+      input0_value = 0;
+    }
+
+    BlockPair input1_labels = { ZeroBlock(), ZeroBlock() };
+    short input1_value = -1;
+    if (input1 == CONST_ZERO) {
+      input1_value = 0;
+    } else if (input1 == CONST_ONE) {
+      input1_value = 1;
+    } else if (input1 >= 0
+        && input1 < (int64_t) garbled_circuit.get_wire_size()) {
+      input1_labels = wires[input1];
+      input1_value = wires_val[input1];
+    } else if (type != NOTGATE) {
+      LOG(ERROR) << "Invalid input1 index: " << input1 << endl;
+      input1_value = 0;
+    }
+
+    GarbleGate(input0_labels, input0_value, input1_labels, input1_value, type,
+               cid, i, garbled_tables, &garbled_table_ind, R, AES_Key,
+               &wires[output], &wires_val[output]);
   }
 
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
     output_labels[(i) * 2 + 0] = wires[garbled_circuit.outputs[i]].label0;
     output_labels[(i) * 2 + 1] = wires[garbled_circuit.outputs[i]].label1;
+    output_vals[i] = wires_val[garbled_circuit.outputs[i]];
   }
   uint64_t end_time = RDTSC;
   return (end_time - start_time);
 }
 
+void Half0EvalGate(int type, short input0_value, block input1_labels,
+                   block* output_labels, short* output_value) {
+
+  bool x0 = GateOperator(type, input0_value, 0);
+  bool x1 = GateOperator(type, input0_value, 1);
+
+  if (x0 == x1) {
+    if (x0 == 0) {
+      *output_value = 0;
+    } else {
+      *output_value = 1;
+    }
+  } else {
+    *output_labels = input1_labels;
+    *output_value = -1;
+  }
+}
+
+void Half1EvalGate(int type, short input1_value, block input0_labels,
+                   block* output_labels, short* output_value) {
+  bool x0 = GateOperator(type, 0, input1_value);
+  bool x1 = GateOperator(type, 1, input1_value);
+
+  if (x0 == x1) {
+    if (x0 == 0) {
+      *output_value = 0;
+    } else {
+      *output_value = 1;
+    }
+  } else {
+    *output_labels = input0_labels;
+    *output_value = -1;
+  }
+}
+
+void EvalGate(block input0_labels, short input0_value, block input1_labels,
+              short input1_value, int type, uint64_t cid, uint64_t gid,
+              block* garbled_tables, uint64_t* garbled_table_ind,
+              AES_KEY AES_Key, block* output_labels, short* output_value) {
+  if (input0_value != -1 && input1_value != -1) {
+    *output_value = GateOperator(type, input0_value, input1_value);
+  } else if (input0_value != -1) {
+    Half0EvalGate(type, input0_value, input1_labels, output_labels,
+                  output_value);
+  } else if (input1_value != -1) {
+    Half1EvalGate(type, input1_value, input0_labels, output_labels,
+                  output_value);
+  } else if (type == XORGATE || type == XNORGATE) {
+    *output_labels = XorBlock(input0_labels, input1_labels);
+    *output_value = -1;
+  } else if (type == NOTGATE) {
+    *output_labels = input0_labels;
+    *output_value = -1;
+  } else {
+    block A = (input0_labels);
+    block B = (input1_labels);
+
+    unsigned short sa = get_LSB(A);
+    unsigned short sb = get_LSB(B);
+
+    block tweak0 = MakeBlock(cid, 2 * gid + 0);
+    block tweak1 = MakeBlock(cid, 2 * gid + 1);
+
+    block table[2];
+    for (uint64_t j = 0; j < 2; j++) {
+      table[j] = garbled_tables[(*garbled_table_ind)++];
+      //CHECK(RecvData(connfd, &(table[j]), sizeof(block)));
+      DUMP("table") << table[j] << endl;
+    }
+
+    block keys[2];
+    keys[0] = XorBlock(A, tweak0);
+    keys[1] = XorBlock(B, tweak1);
+
+    block mask[2];
+    mask[0] = keys[0];
+    mask[1] = keys[1];
+    AESEcbEncryptBlks(keys, 2, &(AES_Key));
+
+    mask[0] = XorBlock(mask[0], keys[0]);
+    mask[1] = XorBlock(mask[1], keys[1]);
+
+    block G = mask[0];
+    if (sa) {
+      G = XorBlock(G, table[0]);
+    }
+
+    block E = mask[1];
+    if (sb) {
+      E = XorBlock(E, table[1]);
+      E = XorBlock(E, A);
+    }
+
+    block C = XorBlock(E, G);
+
+    *output_labels = C;
+    *output_value = -1;
+  }
+
+}
+
 uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
-                        block* const_labels, block* init_labels,
-                        block* input_labels, block* garbled_tables,
-                        AES_KEY& AES_Key, uint64_t cid, int connfd,
-                        block *wires, block* output_labels) {
+                        block* init_labels, block* input_labels,
+                        block* garbled_tables, AES_KEY& AES_Key, uint64_t cid,
+                        int connfd, block *wires, short* wires_val,
+                        block* output_labels, short* output_vals) {
   uint64_t garbled_table_ind = 0;
   uint64_t start_time = RDTSC;
 
@@ -268,15 +427,16 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
     for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
       int64_t wire_index = garbled_circuit.I[i];
       if (wire_index == CONST_ZERO) {
-        wires[dff_bias + i] = const_labels[0];
+        wires_val[dff_bias + i] = 0;
       } else if (wire_index == CONST_ONE) {
-        wires[dff_bias + i] = const_labels[1];
+        wires_val[dff_bias + i] = 1;
       } else if (wire_index >= 0
           && wire_index < (int64_t) garbled_circuit.get_init_size()) {
         wires[dff_bias + i] = init_labels[wire_index];
+        wires_val[dff_bias + i] = -1;
       } else {
         LOG(ERROR) << "Invalid I: " << wire_index << endl;
-        wires[dff_bias + i] = const_labels[0];
+        wires_val[dff_bias + i] = 0;
       }
       DUMP("dff") << wires[dff_bias + i] << endl;
     }
@@ -284,15 +444,16 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
     for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
       int64_t wire_index = garbled_circuit.D[i];
       if (wire_index == CONST_ZERO) {
-        wires[dff_bias + i] = const_labels[0];
+        wires_val[dff_bias + i] = 0;
       } else if (wire_index == CONST_ONE) {
-        wires[dff_bias + i] = const_labels[1];
+        wires_val[dff_bias + i] = 1;
       } else if (wire_index >= 0
           && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
         wires[dff_bias + i] = wires[wire_index];
+        wires_val[dff_bias + i] = wires_val[wire_index];
       } else {
         LOG(ERROR) << "Invalid D: " << wire_index << endl;
-        wires[dff_bias + i] = const_labels[0];
+        wires_val[dff_bias + i] = 0;
       }
     }
   }
@@ -310,85 +471,43 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
     int64_t output = garbledGate.output;
     int type = garbledGate.type;
 
-    block input0_labels;
+    block input0_labels = ZeroBlock();
+    short input0_value = -1;
     if (input0 == CONST_ZERO) {
-      input0_labels = const_labels[0];
+      input0_value = 0;
     } else if (input0 == CONST_ONE) {
-      input0_labels = const_labels[1];
+      input0_value = 1;
     } else if (input0 >= 0
         && input0 < (int64_t) garbled_circuit.get_wire_size()) {
       input0_labels = wires[input0];
+      input0_value = wires_val[input0];
     } else {
       LOG(ERROR) << "Invalid input0 index: " << input0 << endl;
-      input0_labels = const_labels[0];
+      input0_value = 0;
     }
 
-    block input1_labels;
+    block input1_labels = ZeroBlock();
+    short input1_value = -1;
     if (input1 == CONST_ZERO) {
-      input1_labels = const_labels[0];
+      input1_value = 0;
     } else if (input1 == CONST_ONE) {
-      input1_labels = const_labels[1];
+      input1_value = 1;
     } else if (input1 >= 0
         && input1 < (int64_t) garbled_circuit.get_wire_size()) {
       input1_labels = wires[input1];
+      input1_value = wires_val[input1];
     } else if (type != NOTGATE) {
       LOG(ERROR) << "Invalid input1 index: " << input1 << endl;
-      input1_labels = const_labels[0];
+      input1_value = 0;
     }
-
-    if (type == XORGATE || type == XNORGATE) {
-      wires[output] = XorBlock(input0_labels, input1_labels);
-    } else if (type == NOTGATE) {
-      wires[output] = input0_labels;
-    } else {
-      block A = (input0_labels);
-      block B = (input1_labels);
-
-      unsigned short sa = get_LSB(A);
-      unsigned short sb = get_LSB(B);
-
-      block tweak0 = MakeBlock(cid, 2 * i + 0);
-      block tweak1 = MakeBlock(cid, 2 * i + 1);
-
-      block table[2];
-      for (uint64_t j = 0; j < 2; j++) {
-        table[j] = garbled_tables[garbled_table_ind++];
-        //CHECK(RecvData(connfd, &(table[j]), sizeof(block)));
-        DUMP("table") << table[j] << endl;
-      }
-
-      block keys[2];
-      keys[0] = XorBlock(A, tweak0);
-      keys[1] = XorBlock(B, tweak1);
-
-      block mask[2];
-      mask[0] = keys[0];
-      mask[1] = keys[1];
-      AESEcbEncryptBlks(keys, 2, &(AES_Key));
-
-      mask[0] = XorBlock(mask[0], keys[0]);
-      mask[1] = XorBlock(mask[1], keys[1]);
-
-      block G = mask[0];
-      if (sa) {
-        G = XorBlock(G, table[0]);
-      }
-
-      block E = mask[1];
-      if (sb) {
-        E = XorBlock(E, table[1]);
-        E = XorBlock(E, A);
-      }
-
-      block C = XorBlock(E, G);
-
-      wires[output] = C;
-
-    }
+    EvalGate(input0_labels, input0_value, input1_labels, input1_value, type,
+             cid, i, garbled_tables, &garbled_table_ind, AES_Key,
+             &wires[output], &wires_val[output]);
   }
 
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
     output_labels[i] = wires[garbled_circuit.outputs[i]];
+    output_vals[i] = wires_val[garbled_circuit.outputs[i]];
     DUMP("output") << wires[garbled_circuit.outputs[i]] << endl;
   }
 
@@ -397,17 +516,10 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
 }
 
 int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
-                      block** const_labels, block** init_labels,
-                      block** input_labels, block** output_labels, block R) {
+                      block** init_labels, block** input_labels,
+                      block** output_labels, short** output_vals, block R) {
 
-  (*const_labels) = nullptr;
-  CHECK_ALLOC((*const_labels) = new block[2 * 2]);
-  for (uint i = 0; i < 2; i++) {
-    (*const_labels)[i * 2 + 0] = RandomBlock();
-    (*const_labels)[i * 2 + 1] = XorBlock(R, (*const_labels)[i * 2 + 0]);
-  }
-
-// allocate and generate random init and inputs label pairs
+  // allocate and generate random init and inputs label pairs
   (*init_labels) = nullptr;
   if (garbled_circuit.get_init_size() > 0) {
     CHECK_ALLOC((*init_labels) = new block[garbled_circuit.get_init_size() * 2]);
@@ -428,16 +540,16 @@ int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
     CHECK_ALLOC((*output_labels) = new block[garbled_circuit.output_size * 2]);
   }
 
+  (*output_vals) = nullptr;
+  if (garbled_circuit.output_size > 0) {
+    CHECK_ALLOC((*output_vals) = new short[garbled_circuit.output_size]);
+  }
+
   return SUCCESS;
 }
 
 int GarbleGneInitLabels(const GarbledCircuit& garbled_circuit,
-                        block* const_labels, block* init_labels, block R) {
-
-  for (uint i = 0; i < 2; i++) {
-    const_labels[i * 2 + 0] = RandomBlock();
-    const_labels[i * 2 + 1] = XorBlock(R, const_labels[i * 2 + 0]);
-  }
+                        block* init_labels, block R) {
 
   for (uint i = 0; i < garbled_circuit.get_init_size(); i++) {
     init_labels[i * 2 + 0] = RandomBlock();
@@ -459,10 +571,8 @@ int GarbleGenInputLabels(const GarbledCircuit& garbled_circuit,
 }
 
 int EvaluateAllocLabels(const GarbledCircuit& garbled_circuit,
-                        block** const_labels, block** init_labels,
-                        block** input_labels, block** output_labels) {
-  (*const_labels) = nullptr;
-  CHECK_ALLOC((*const_labels) = new block[2]);
+                        block** init_labels, block** input_labels,
+                        block** output_labels, short** output_vals) {
 
   (*init_labels) = nullptr;
   if (garbled_circuit.get_init_size() > 0) {
@@ -477,6 +587,11 @@ int EvaluateAllocLabels(const GarbledCircuit& garbled_circuit,
   (*output_labels) = nullptr;
   if (garbled_circuit.output_size > 0) {
     CHECK_ALLOC((*output_labels) = new block[garbled_circuit.output_size]);
+  }
+
+  (*output_vals) = nullptr;
+  if (garbled_circuit.output_size > 0) {
+    CHECK_ALLOC((*output_vals) = new short[garbled_circuit.output_size]);
   }
 
   return SUCCESS;
@@ -611,11 +726,8 @@ int EvalauteOTInputLowMem(const GarbledCircuit& garbled_circuit,
 }
 
 int GarbleTransferInitLabels(const GarbledCircuit& garbled_circuit,
-                             block* const_labels, BIGNUM* g_init,
-                             block* init_labels, bool disable_OT, int connfd) {
-// constant
-  CHECK(SendData(connfd, &const_labels[0 * 2 + 0], sizeof(block)));
-  CHECK(SendData(connfd, &const_labels[1 * 2 + 1], sizeof(block)));
+                             BIGNUM* g_init, block* init_labels,
+                             bool disable_OT, int connfd) {
 
 // g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
@@ -695,13 +807,8 @@ int GarbleTransferInputLabels(const GarbledCircuit& garbled_circuit,
 }
 
 int EvaluateTransferInitLabels(const GarbledCircuit& garbled_circuit,
-                               block* const_labels, BIGNUM* e_init,
-                               block* init_labels, bool disable_OT,
-                               int connfd) {
-// constant
-  CHECK(RecvData(connfd, &const_labels[0], sizeof(block)));
-  CHECK(RecvData(connfd, &const_labels[1], sizeof(block)));
-
+                               BIGNUM* e_init, block* init_labels,
+                               bool disable_OT, int connfd) {
 // g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
     CHECK(RecvData(connfd, &init_labels[i], sizeof(block)));
@@ -747,9 +854,10 @@ int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
 }
 
 int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
-                               block* output_labels, uint64_t cid,
-                               int output_mode, const string& output_mask,
-                               BIGNUM* output_bn, int connfd) {
+                               block* output_labels, short* output_vals,
+                               uint64_t cid, int output_mode,
+                               const string& output_mask, BIGNUM* output_bn,
+                               int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
@@ -763,20 +871,26 @@ int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
   }
 
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
-    short garble_output_type = get_LSB(output_labels[(i) * 2 + 0]);
-    short eval_output_type;
-    if (cid * garbled_circuit.output_size + i
-        >= (uint64_t) BN_num_bits(output_mask_bn)
-        || BN_is_bit_set(output_mask_bn, cid * garbled_circuit.output_size + i)
-            == 0) {
-      CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
+    if (output_vals[i] == 0) {
       BN_clear_bit(output_bn, output_bit_offset + i);
+    } else if (output_vals[i] == 1) {
+      BN_set_bit(output_bn, output_bit_offset + i);
     } else {
-      CHECK(RecvData(connfd, &eval_output_type, sizeof(short)));
-      if (eval_output_type != garble_output_type) {
-        BN_set_bit(output_bn, output_bit_offset + i);
-      } else {
+      short garble_output_type = get_LSB(output_labels[(i) * 2 + 0]);
+      short eval_output_type;
+      if (cid * garbled_circuit.output_size + i
+          >= (uint64_t) BN_num_bits(output_mask_bn)
+          || BN_is_bit_set(output_mask_bn,
+                           cid * garbled_circuit.output_size + i) == 0) {
+        CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
         BN_clear_bit(output_bn, output_bit_offset + i);
+      } else {
+        CHECK(RecvData(connfd, &eval_output_type, sizeof(short)));
+        if (eval_output_type != garble_output_type) {
+          BN_set_bit(output_bn, output_bit_offset + i);
+        } else {
+          BN_clear_bit(output_bn, output_bit_offset + i);
+        }
       }
     }
   }
@@ -786,9 +900,10 @@ int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
 }
 
 int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
-                                 block* output_labels, uint64_t cid,
-                                 int output_mode, const string& output_mask,
-                                 BIGNUM* output_bn, int connfd) {
+                                 block* output_labels, short* output_vals,
+                                 uint64_t cid, int output_mode,
+                                 const string& output_mask, BIGNUM* output_bn,
+                                 int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
@@ -802,21 +917,27 @@ int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
   }
 
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
-    short garble_output_type;
-    short eval_output_type = get_LSB(output_labels[i]);
-    if (cid * garbled_circuit.output_size + i
-        >= (uint64_t) BN_num_bits(output_mask_bn)
-        || BN_is_bit_set(output_mask_bn, cid * garbled_circuit.output_size + i)
-            == 0) {
-      CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
-      if (eval_output_type != garble_output_type) {
-        BN_set_bit(output_bn, output_bit_offset + i);
+    if (output_vals[i] == 0) {
+      BN_clear_bit(output_bn, output_bit_offset + i);
+    } else if (output_vals[i] == 1) {
+      BN_set_bit(output_bn, output_bit_offset + i);
+    } else {
+      short garble_output_type;
+      short eval_output_type = get_LSB(output_labels[i]);
+      if (cid * garbled_circuit.output_size + i
+          >= (uint64_t) BN_num_bits(output_mask_bn)
+          || BN_is_bit_set(output_mask_bn,
+                           cid * garbled_circuit.output_size + i) == 0) {
+        CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
+        if (eval_output_type != garble_output_type) {
+          BN_set_bit(output_bn, output_bit_offset + i);
+        } else {
+          BN_clear_bit(output_bn, output_bit_offset + i);
+        }
       } else {
+        CHECK(SendData(connfd, &eval_output_type, sizeof(short)));
         BN_clear_bit(output_bn, output_bit_offset + i);
       }
-    } else {
-      CHECK(SendData(connfd, &eval_output_type, sizeof(short)));
-      BN_clear_bit(output_bn, output_bit_offset + i);
     }
   }
 
