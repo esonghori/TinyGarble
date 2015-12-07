@@ -45,32 +45,18 @@
 #include "util/common.h"
 #include "util/util.h"
 
-void Half0GarbleGate(int type, short input0_value, BlockPair input1_labels,
-                     BlockPair* output_labels, short* output_value) {
+inline void HalfGarbleGate(int type, int knwon_wire_ind, short input_value,
+                           BlockPair input_labels, BlockPair* output_labels,
+                           short* output_value) {
 
-  bool x0 = GateOperator(type, input0_value, 0);
-  bool x1 = GateOperator(type, input0_value, 1);
-
-  if (x0 == x1) {
-    if (x0 == 0) {
-      *output_value = 0;
-    } else {
-      *output_value = 1;
-    }
-  } else if (x0 == 0 && x1 == 1) {
-    *output_labels = input1_labels;
-    *output_value = -1;
-  } else /*if(x0 == 1 && x1 == 0)*/{
-    output_labels->label0 = input1_labels.label1;
-    output_labels->label1 = input1_labels.label0;
-    *output_value = -1;
+  bool x0, x1;
+  if (knwon_wire_ind == 0) {
+    x0 = GateOperator(type, input_value, 0);
+    x1 = GateOperator(type, input_value, 1);
+  } else {
+    x0 = GateOperator(type, 0, input_value);
+    x1 = GateOperator(type, 1, input_value);
   }
-}
-
-void Half1GarbleGate(int type, short input1_value, BlockPair input0_labels,
-                     BlockPair* output_labels, short* output_value) {
-  bool x0 = GateOperator(type, 0, input1_value);
-  bool x1 = GateOperator(type, 1, input1_value);
 
   if (x0 == x1) {
     if (x0 == 0) {
@@ -79,30 +65,30 @@ void Half1GarbleGate(int type, short input1_value, BlockPair input0_labels,
       *output_value = 1;
     }
   } else if (x0 == 0 && x1 == 1) {
-    *output_labels = input0_labels;
+    *output_labels = input_labels;
     *output_value = -1;
   } else /*if(x0 == 1 && x1 == 0)*/{
-    output_labels->label0 = input0_labels.label1;
-    output_labels->label1 = input0_labels.label0;
+    output_labels->label0 = input_labels.label1;
+    output_labels->label1 = input_labels.label0;
     *output_value = -1;
   }
 }
 
 void GarbleGate(BlockPair input0_labels, short input0_value,
-                BlockPair input1_labels, short input1_value, int type,
-                uint64_t cid, uint64_t gid, block* garbled_tables,
-                uint64_t* garbled_table_ind, block R, AES_KEY AES_Key,
-                BlockPair* output_labels, short* output_value) {
+                       BlockPair input1_labels, short input1_value, int type,
+                       uint64_t cid, uint64_t gid, block* garbled_tables,
+                       uint64_t* garbled_table_ind, block R, AES_KEY AES_Key,
+                       BlockPair* output_labels, short* output_value) {
 
   if (input0_value != -1 && input1_value != -1) {
     *output_value = GateOperator(type, input0_value, input1_value);
   } else if (input0_value != -1) {
-    Half0GarbleGate(type, input0_value, input1_labels, output_labels,
-                    output_value);
+    HalfGarbleGate(type, 0, input0_value, input1_labels, output_labels,
+                   output_value);
 
   } else if (input1_value != -1) {
-    Half1GarbleGate(type, input1_value, input0_labels, output_labels,
-                    output_value);
+    HalfGarbleGate(type, 1, input1_value, input0_labels, output_labels,
+                   output_value);
   } else if (type == XORGATE) {
     output_labels->label0 = XorBlock(input0_labels.label0,
                                      input1_labels.label0);
@@ -312,11 +298,18 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
   return (end_time - start_time);
 }
 
-void Half0EvalGate(int type, short input0_value, block input1_labels,
-                   block* output_labels, short* output_value) {
+inline void HalfEvalGate(int type, int knwon_wire_ind, short input_value,
+                          block input_labels, block* output_labels,
+                          short* output_value) {
 
-  bool x0 = GateOperator(type, input0_value, 0);
-  bool x1 = GateOperator(type, input0_value, 1);
+  bool x0, x1;
+  if (knwon_wire_ind == 0) {
+    x0 = GateOperator(type, input_value, 0);
+    x1 = GateOperator(type, input_value, 1);
+  } else {
+    x0 = GateOperator(type, 0, input_value);
+    x1 = GateOperator(type, 1, input_value);
+  }
 
   if (x0 == x1) {
     if (x0 == 0) {
@@ -325,39 +318,23 @@ void Half0EvalGate(int type, short input0_value, block input1_labels,
       *output_value = 1;
     }
   } else {
-    *output_labels = input1_labels;
+    *output_labels = input_labels;
     *output_value = -1;
   }
 }
 
-void Half1EvalGate(int type, short input1_value, block input0_labels,
-                   block* output_labels, short* output_value) {
-  bool x0 = GateOperator(type, 0, input1_value);
-  bool x1 = GateOperator(type, 1, input1_value);
-
-  if (x0 == x1) {
-    if (x0 == 0) {
-      *output_value = 0;
-    } else {
-      *output_value = 1;
-    }
-  } else {
-    *output_labels = input0_labels;
-    *output_value = -1;
-  }
-}
-
-void EvalGate(block input0_labels, short input0_value, block input1_labels,
-              short input1_value, int type, uint64_t cid, uint64_t gid,
-              block* garbled_tables, uint64_t* garbled_table_ind,
-              AES_KEY AES_Key, block* output_labels, short* output_value) {
+void EvalGate(block input0_labels, short input0_value,
+                     block input1_labels, short input1_value, int type,
+                     uint64_t cid, uint64_t gid, block* garbled_tables,
+                     uint64_t* garbled_table_ind, AES_KEY AES_Key,
+                     block* output_labels, short* output_value) {
   if (input0_value != -1 && input1_value != -1) {
     *output_value = GateOperator(type, input0_value, input1_value);
   } else if (input0_value != -1) {
-    Half0EvalGate(type, input0_value, input1_labels, output_labels,
+    HalfEvalGate(type, 0, input0_value, input1_labels, output_labels,
                   output_value);
   } else if (input1_value != -1) {
-    Half1EvalGate(type, input1_value, input0_labels, output_labels,
+    HalfEvalGate(type, 1, input1_value, input0_labels, output_labels,
                   output_value);
   } else if (type == XORGATE || type == XNORGATE) {
     *output_labels = XorBlock(input0_labels, input1_labels);
