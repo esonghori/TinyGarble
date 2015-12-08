@@ -1,12 +1,17 @@
-add_library (Garbled_Circuit_Garbled_Circuit OBJECT
-  "garbled_circuit.cpp")
-
+add_library (Garbled_Circuit_Garbled_Circuit_Util OBJECT
+  "garbled_circuit_util.cpp")
+add_library (Garbled_Circuit_Garbled_Circuit_High_Mem OBJECT
+  "garbled_circuit_high_mem.cpp")  
 add_library (Garbled_Circuit_Garbled_Circuit_Low_Mem OBJECT
   "garbled_circuit_low_mem.cpp")
+add_library (Garbled_Circuit_Garbled_Circuit OBJECT
+  "garbled_circuit.cpp")
 
 add_executable(TinyGarble
   "garbled_circuit_main.cpp"
   "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit>"
+  "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_Util>"
+  "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_High_Mem>"
   "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_Low_Mem>"
   "$<TARGET_OBJECTS:Crypto_BN>"
   "$<TARGET_OBJECTS:Crypto_OT>"
@@ -27,6 +32,8 @@ target_link_libraries(TinyGarble -lrt)
 add_executable(Garbled_Circuit_Test
   "garbled_circuit_test.cpp"
   "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit>"
+  "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_Util>"
+  "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_High_Mem>"
   "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_Low_Mem>"
   "$<TARGET_OBJECTS:SCD_SCD>"
   "$<TARGET_OBJECTS:SCD_SCD_Evaluator>"
