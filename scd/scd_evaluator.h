@@ -21,7 +21,7 @@
 
 #include <openssl/bn.h>
 #include <string>
-#include "garbled_circuit/garbled_circuit.h"
+#include "garbled_circuit/garbled_circuit_util.h"
 
 using std::string;
 
