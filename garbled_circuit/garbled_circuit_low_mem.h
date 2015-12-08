@@ -9,7 +9,7 @@
 #define GARBLED_CIRCUIT_GARBLED_CIRCUIT_LOW_MEM_H_
 
 #include <openssl/bn.h>
-#include "garbled_circuit/garbled_circuit.h"
+#include "garbled_circuit/garbled_circuit_util.h"
 #include "crypto/aes.h"
 
 void GarbleGate(BlockPair input0_labels, short input0_value,

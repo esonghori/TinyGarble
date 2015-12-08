@@ -21,7 +21,7 @@
 
 #include "util/common.h"
 #include "scd/v_2_scd.h"
-#include "garbled_circuit/garbled_circuit.h"
+#include "garbled_circuit/garbled_circuit_util.h"
 
 /**
  * @brief Read SCD file and initialize garbledCircuit

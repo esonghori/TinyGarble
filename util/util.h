@@ -19,7 +19,7 @@
 #ifndef UTIL_UTIL_H_
 #define UTIL_UTIL_H_
 
-#include "garbled_circuit/garbled_circuit.h"
+#include "garbled_circuit/garbled_circuit_util.h"
 #include "crypto/block.h"
 #include <openssl/bn.h>
 #include <ostream>
