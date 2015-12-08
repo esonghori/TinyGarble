@@ -118,7 +118,7 @@ int Bob(const void *data, int connfd) {
   return SUCCESS;
 }
 
-MU_TEST(Mux8Bit) {
+MU_TEST(Mux8Bit1cc) {
 
   LOG(INFO) << "Test Mux 8-bit 1cc" << endl;
 
@@ -162,7 +162,7 @@ MU_TEST(Mux8Bit) {
   }
 }
 
-MU_TEST(Sum1Bit) {
+MU_TEST(Sum1Bit8cc) {
 
   LOG(INFO) << "Test Sum 8-bit 8cc" << endl;
 
@@ -206,7 +206,7 @@ MU_TEST(Sum1Bit) {
   }
 }
 
-MU_TEST(Sum8Bit) {
+MU_TEST(Sum8Bit1cc) {
 
   LOG(INFO) << "Test Sum 8-Bit 1cc" << endl;
 
@@ -521,15 +521,15 @@ MU_TEST(Hamming32Bit8ccLowMem) {
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
-  MU_RUN_TEST(Mux8Bit);
-  MU_RUN_TEST(Sum1Bit);
-  MU_RUN_TEST(Sum8Bit);
-  MU_RUN_TEST(Hamming32Bit1cc);
-  MU_RUN_TEST(Hamming32Bit8cc);
-  MU_RUN_TEST(Hamming32Bit8ccDisabledOT);
-  MU_RUN_TEST(Hamming32Bit8ccWithMask);
-  MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
-  MU_RUN_TEST(Hamming32Bit8ccLowMem);
+//  MU_RUN_TEST(Mux8Bit1cc);
+//  MU_RUN_TEST(Sum1Bit8cc);
+  MU_RUN_TEST(Sum8Bit1cc);
+//  MU_RUN_TEST(Hamming32Bit1cc);
+//  MU_RUN_TEST(Hamming32Bit8cc);
+//  MU_RUN_TEST(Hamming32Bit8ccDisabledOT);
+//  MU_RUN_TEST(Hamming32Bit8ccWithMask);
+//  MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
+//  MU_RUN_TEST(Hamming32Bit8ccLowMem);
 
 }
 
