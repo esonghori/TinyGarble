@@ -12,20 +12,11 @@
 #include "garbled_circuit/garbled_circuit_util.h"
 #include "crypto/aes.h"
 
-void GarbleGate(BlockPair input0_labels, short input0_value,
-                BlockPair input1_labels, short input1_value, int type,
-                uint64_t cid, uint64_t gid, block* garbled_tables,
-                uint64_t* garbled_table_ind, block R, AES_KEY AES_Key,
-                BlockPair* output_labels, short* output_value);
 uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
                       block* input_labels, block* garbled_tables, block R,
                       AES_KEY& AES_Key, uint64_t cid, int connfd,
                       BlockPair *wires, short* wires_val, block* output_labels,
                       short* output_vals);
-void EvalGate(block input0_labels, short input0_value, block input1_labels,
-              short input1_value, int type, uint64_t cid, uint64_t gid,
-              block* garbled_tables, uint64_t* garbled_table_ind,
-              AES_KEY AES_Key, block* output_labels, short* output_value);
 uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
                         block* init_labels, block* input_labels,
                         block* garbled_tables, AES_KEY& AES_Key, uint64_t cid,
