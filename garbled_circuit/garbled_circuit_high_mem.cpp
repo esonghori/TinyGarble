@@ -168,14 +168,14 @@ int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
         input1_value = 0;
       }
 
-      GarbleGateKnownValue(input0_value, input1_value, type,
-                           &wires_val[output]);
+      GarbleEvalGateKnownValue(input0_value, input1_value, type,
+                               &wires_val[output]);
 
       if (wires_val[output] != UNKOWN) {
-        if (input0_value == UNKOWN && input0 >= gate_bias) {
-          fanout[input0 - gate_bias]--;
-        } else if (input1_value == UNKOWN && input1 >= gate_bias) {
-          fanout[input1 - gate_bias]--;
+        if (input0_value == UNKOWN) {
+          ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
+        } else if (input1_value == UNKOWN) {
+          ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
     }
@@ -187,7 +187,7 @@ int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      if (fanout[i] > 0 && wires_val[output] == -1) {
+      if (fanout[i] > 0 && wires_val[output] == UNKOWN) {
         BlockPair input0_labels = { ZeroBlock(), ZeroBlock() };
         short input0_value = -1;
         if (input0 == CONST_ZERO) {
@@ -375,12 +375,13 @@ int Evaluate(const GarbledCircuit& garbled_circuit, block* init_labels,
         input1_value = 0;
       }
 
-      EvalGateKnownValue(input0_value, input1_value, type, &wires_val[output]);
+      GarbleEvalGateKnownValue(input0_value, input1_value, type,
+                               &wires_val[output]);
       if (wires_val[output] != UNKOWN) {
-        if (input0_value == UNKOWN && input0 >= gate_bias) {
-          fanout[input0 - gate_bias]--;
-        } else if (input1_value == UNKOWN && input1 >= gate_bias) {
-          fanout[input1 - gate_bias]--;
+        if (input0_value == UNKOWN) {
+          ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
+        } else if (input1_value == UNKOWN) {
+          ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
 
@@ -393,7 +394,7 @@ int Evaluate(const GarbledCircuit& garbled_circuit, block* init_labels,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      if (fanout[i] > 0 && wires_val[output] == -1) {
+      if (fanout[i] > 0 && wires_val[output] == UNKOWN) {
         block input0_labels = ZeroBlock();
         short input0_value = -1;
         if (input0 == CONST_ZERO) {

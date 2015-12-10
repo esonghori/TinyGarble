@@ -15,12 +15,12 @@
 uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
                       block* input_labels, block* garbled_tables, block R,
                       AES_KEY& AES_Key, uint64_t cid, int connfd,
-                      BlockPair *wires, short* wires_val, block* output_labels,
+                      BlockPair *wires, short* wires_val, int* fanout, block* output_labels,
                       short* output_vals);
 uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
                         block* init_labels, block* input_labels,
                         block* garbled_tables, AES_KEY& AES_Key, uint64_t cid,
-                        int connfd, block *wires, short* wires_val,
+                        int connfd, block *wires, short* wires_val, int* fanout,
                         block* output_labels, short* output_vals);
 int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
                       block** init_labels, block** input_labels,
