@@ -2,39 +2,39 @@
 
 TinyGarble
 =======
-TinyGarble is a full implementation of Yao's Garbled Circuit (GC) protocol for 
-two-party Secure Function Evaluation (SFE) in which the parties are able to 
-execute any function on their private inputs and learn the output without 
+TinyGarble is a full implementation of Yao's Garbled Circuit (GC) protocol for
+two-party Secure Function Evaluation (SFE) in which the parties are able to
+execute any function on their private inputs and learn the output without
 leaking any information about their inputs.
-The project consists of two main parts: (1) circuit synthesis 
-(`circuit_synthesis`) and (2) secure function evaluation. 
-Circuit synthesis is partially described in TinyGarble paper in IEEE S&P'15 (see 
-References). It is based on upon hardware synthesis and sequential circuit 
-concept and outputs a netlist Verilog (`.v`) file. The other part of TinyGarble, 
-hereafter called "TinyGarble", is implemented 
-based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/) 
-project developed in UCSD. Beside Free-XOR, Row-reduction, OT extension, and 
-Fixed-key block cipher, TinyGarble includes Half Gates which is the most recent 
-optimization on GC protocol and reduces the communication by 33%. 
-TinyGarble also includes communication and Oblivious Transfer (OT) which were 
+The project consists of two main parts: (1) circuit synthesis
+(`circuit_synthesis`) and (2) secure function evaluation.
+Circuit synthesis is partially described in TinyGarble paper in IEEE S&P'15 (see
+References). It is based on upon hardware synthesis and sequential circuit
+concept and outputs a netlist Verilog (`.v`) file. The other part of TinyGarble,
+hereafter called "TinyGarble", is implemented
+based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/)
+project developed in UCSD. Beside Free-XOR, Row-reduction, OT extension, and
+Fixed-key block cipher, TinyGarble includes Half Gates which is the most recent
+optimization on GC protocol and reduces the communication by 33%.
+TinyGarble also includes communication and Oblivious Transfer (OT) which were
 missing in JustGarble. OT is a crucial part for the security of the GC protocol.
 
 TinyGarble general flow:
-1. Write a Verilog file (`.v`) describing the function. 
-2. Synthesis the Verilog file using TinyGarble's *circuit synthesis* to generate 
+1. Write a Verilog file (`.v`) describing the function.
+2. Synthesis the Verilog file using TinyGarble's *circuit synthesis* to generate
 a netlist Verilog file (`.v`).
-3. Translate the netlist file (`.v`) to a simple circuit description file 
-(`.scd`) using TinyGarble's `V2SCD` and then provide both parties with the 
+3. Translate the netlist file (`.v`) to a simple circuit description file
+(`.scd`) using TinyGarble's `V2SCD` and then provide both parties with the
 file.
-4. Execute `TinyGarble` using `--alice` flag on one party and `--bob` flag 
+4. Execute `TinyGarble` using `--alice` flag on one party and `--bob` flag
 on the other plus other appropriate arguments.
 
 Any questions or comments: [Ebrahim Songhori](mailto:e.songhori@gmail.com)
 
-## TinyGarble 
+## TinyGarble
 
 ### Dependencies
-Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake 
+Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
 (3.1.0 <). on Ubuntu:
 
 * g++:
@@ -59,7 +59,7 @@ Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
 ```
 
 ### Compile
-Confing TinyGarble and then compile it in `bin` directory:
+Confing TinyGarble and then compile it in `bin` directory (for debug mode, use `cmake ..` inside `bin` directory before `make`):
 ```
   $ ./configure
   $ cd bin
@@ -76,9 +76,9 @@ And on Bob's terminal, run:
 ```
   $ bin/garbled_circuit/TinyGarble --bob --scd_file scd/netlists/hamming_32bit_1cc.scd --input 12345678 --server_ip 127.0.0.1
 ```
-Note that, it is supposed that Alice and Bob are in a same mahcine 
-(server_ip = 127.0.0.1) in this example. 
-The expected output is 13 in hexadecimal which is the hamming distance between 
+Note that, it is supposed that Alice and Bob are in a same mahcine
+(server_ip = 127.0.0.1) in this example.
+The expected output is 13 in hexadecimal which is the hamming distance between
 the two numbers. For showing more detailes, you may use `--log2std` option.
 
 ### Test
@@ -89,12 +89,12 @@ In `bin` directory call `ctest`:
 
 ### Binaries
 #### Main binary
-* `V2SCD`: Translating netlist Verilog (`.v`) file to simple circuit 
-description (`.scd`) file. 
+* `V2SCD`: Translating netlist Verilog (`.v`) file to simple circuit
+description (`.scd`) file.
 ```
   -h [ --help ]                         produce help message.
   -i [ --netlist ] arg (=scd/netlists/test.v)
-                                        Input netlist (verilog .v) file 
+                                        Input netlist (verilog .v) file
                                         address.
   -o [ --scd ] arg (=scd/netlists/test.scd)
                                         Output simple circuit description (scd)
@@ -107,27 +107,27 @@ description (`.scd`) file.
   -a [ --alice ]                        Run as Alice (server).
   -b [ --bob ]                          Run as Bob (client).
   -i [ --scd_file ] arg (=../scd/netlists/hamming_32bit_1cc.scd)
-                                        Simple circuit description (.scd) file 
+                                        Simple circuit description (.scd) file
                                         address.
   -p [ --port ] arg (=1234)             socket port
-  -s [ --server_ip ] arg (=127.0.0.1)   Server's (Alice's) IP, required when 
+  -s [ --server_ip ] arg (=127.0.0.1)   Server's (Alice's) IP, required when
                                         running as Bob.
   --init arg (=0)                       Hexadecimal init for initializing DFFs.
   --input arg (=0)                      Hexadecimal input.
-  --clock_cycles arg (=1)               Number of clock cycles to evaluate the 
+  --clock_cycles arg (=1)               Number of clock cycles to evaluate the
                                         circuit.
   --dump_directory arg                  Directory for dumping memory hex files.
-  --disable_OT                          Disable Oblivious Transfer (OT) for 
-                                        transferring labels. WARNING: OT is 
+  --disable_OT                          Disable Oblivious Transfer (OT) for
+                                        transferring labels. WARNING: OT is
                                         crucial for GC security.
-  --low_mem_foot                        Enables low memory footprint mode for 
+  --low_mem_foot                        Enables low memory footprint mode for
                                         circuits with multiple clock cycles. In
-                                        this mode, OT is called at each clock 
+                                        this mode, OT is called at each clock
                                         cycle which degrades the performance.
-  --output_mask arg (=0)                Hexadecimal mask for output. 0 
-                                        indicates that output belongs to Bob, 
+  --output_mask arg (=0)                Hexadecimal mask for output. 0
+                                        indicates that output belongs to Bob,
                                         and 1 belongs to Alice.
-  --output_mode arg (=0)                0: normal, 1:separated by clock 2:last 
+  --output_mode arg (=0)                0: normal, 1:separated by clock 2:last
                                         clock.
 ```
 #### Other binary
@@ -136,29 +136,29 @@ description (`.scd`) file.
   -h [ --help ]                         produce help message
   -i [ --scd_file ] arg (=../scd/netlists/test4.scd)
                                         scd address
-  --clock_cycles arg (=1)               Number of clock cycles to evaluate the 
+  --clock_cycles arg (=1)               Number of clock cycles to evaluate the
                                         circuit.
   --g_init arg (=0)                     g_init in hexadecimal.
   --e_init arg (=0)                     e_init in hexadecimal.
   --g_input arg (=5)                    g_input in hexadecimal.
   --e_input arg (=4)                    e_input in hexadecimal.
-  --output_mode arg (=0)                0: normal, 1:separated by clock 2:last 
+  --output_mode arg (=0)                0: normal, 1:separated by clock 2:last
                                         clock.
-``` 
+```
 * `crypto/OT_Main`: Oblivious Transfer binary:
 ```
   -h [ --help ]                         produce help message
   -a [ --alice ]                        Run as Alice (server).
   --message0 arg (=15141312_11100908_07060504_03020100)
-                                        Alice's 128-bit message 0 in 
+                                        Alice's 128-bit message 0 in
                                         hexadecimal w/o '0x'.
   --message1 arg (=00010203_04050607_08091011_12131415)
-                                        Alice's 128-bit message 1 in 
+                                        Alice's 128-bit message 1 in
                                         hexadecimal w/o '0x'.
   --select arg (=0)                     Bob's 1-bit selection (0/1).
   -b [ --bob ]                          Run as Bob (client).
   -p [ --port ] arg (=1234)             socket port
-  -s [ --server_ip ] arg (=127.0.0.1)   Server's (Alice's) IP, required when 
+  -s [ --server_ip ] arg (=127.0.0.1)   Server's (Alice's) IP, required when
                                         running as Bob.
 ```
 #### Test binary
@@ -177,7 +177,7 @@ Netlist generation requires Synopsys Design Compiler or Yosys-ABC synthesis
 tools.
 
 ### Manual for Synopsys Design Compiler
-#### Compile library 
+#### Compile library
 [This part is mentioned only for documentation and it is already done, please skip.]
 
 Go to `circuit_synthesis/lib/dff_full` and compile the library:
@@ -188,7 +188,7 @@ Go to `circuit_synthesis/lib/dff_full` and compile the library:
 _Advanced detailed_: Let's suppose that our\_lib.lib is located in
 /path/to/our\_lib.
 
-- Go inside /path/to/our\_lib and run: 
+- Go inside /path/to/our\_lib and run:
 ```
 	$ lc_shell
 	lc_shell> set search_path [concat /path/to/our_lib/]
@@ -201,7 +201,7 @@ Please ignore "lc_shell>" for them].
 
 #### Compile a benchmark
 Go inside `circuit_synthesis/benchmark`, where benchmark is the name of the function
-and compile the benchmark to generate the netlist:  
+and compile the benchmark to generate the netlist:
 ```
 	$ cd gen_netlist/benchmark
 	$ ./compile
@@ -209,13 +209,13 @@ and compile the benchmark to generate the netlist:
 You can edit `benchmark.dcsh` file to change synthesis parameters.
 
 _Advanced detailed_: Let's suppose that `our_lib.db` is compiled and located
-in `/path/to/our_lib` and benchmark.v is located in `/path/to/benchmark/`. 
+in `/path/to/our_lib` and benchmark.v is located in `/path/to/benchmark/`.
 
-- Go to `/path/to/benchmark/` and run: 
+- Go to `/path/to/benchmark/` and run:
 ```
 	$ design_vision
 	design_vision> elaborate benchmark -architecture verilog -library DEFAULT -update
-	design_vision> set_max_area -ignore_tns 0 
+	design_vision> set_max_area -ignore_tns 0
 	design_vision> set_flatten false -design *
 	design_vision> set_structure -design * false
 	design_vision> set_resource_allocation area_only
@@ -225,7 +225,7 @@ in `/path/to/our_lib` and benchmark.v is located in `/path/to/benchmark/`.
 	design_vision> exit
 ```
 It creates `benchmark_syn.v` in the current directory. [Note: commands
-starting with "design\_vision>" should be called inside `design_vision`. 
+starting with "design\_vision>" should be called inside `design_vision`.
 Please ignore "design\_vision>" for them.]
 
 #### Counting number of gates
@@ -239,14 +239,14 @@ the generated netlist file. For counting gates in
 
 Here is how to compile a verilog file named "benchmark.v" using the custom
 library "asic\_cell.lib". We assume that the files are inside a folder named
-"Synthesis\_yosys-abc" inside the "yosys" directory. The final output will be 
+"Synthesis\_yosys-abc" inside the "yosys" directory. The final output will be
 written in "benchmark\_syn.v"
 ```
 	$ cd ~/yosys
 	$ ./yosys
 	yosys> read_verilog Synthesis_yosys-abc/benchmark.v
 	yosys> hierarchy -check -top benchmark
-	yosys> proc; opt; memory; opt; fsm; opt; techmap; opt; 
+	yosys> proc; opt; memory; opt; fsm; opt; techmap; opt;
 	yosys> abc -liberty Synthesis_yosys-abc/asic_cell_extended.lib
 	yosys> opt
 	yosys> write_verilog Synthesis_yosys-abc/benchmark_syn.v
