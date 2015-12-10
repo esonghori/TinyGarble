@@ -44,7 +44,6 @@
 
 using std::string;
 
-
 #define UNKOWN (-1)
 
 /**
@@ -176,19 +175,18 @@ void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
 int ParseInitInputStr(const string& init_str, const string&input_str,
                       uint64_t init_size, uint64_t input_size,
                       uint64_t clock_cycles, BIGNUM** init, BIGNUM** input);
-void GarbleGateKnownValue(short input0_value, short input1_value, int type,
-                          short* output_value);
+void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type,
+                              short* output_value);
 void GarbleGate(BlockPair input0_labels, short input0_value,
                 BlockPair input1_labels, short input1_value, int type,
                 uint64_t cid, uint64_t gid, block* garbled_tables,
                 uint64_t* garbled_table_ind, block R, AES_KEY AES_Key,
                 BlockPair* output_labels, short* output_value);
-void EvalGateKnownValue(short input0_value, short input1_value, int type,
-                        short* output_value);
 void EvalGate(block input0_labels, short input0_value, block input1_labels,
               short input1_value, int type, uint64_t cid, uint64_t gid,
               block* garbled_tables, uint64_t* garbled_table_ind,
               AES_KEY AES_Key, block* output_labels, short* output_value);
 int FillFanout(GarbledCircuit* garbled_circuit);
-
+void ReduceFanout(const GarbledCircuit& garbled_circuit, int *fanout,
+                  int64_t wid, int64_t gate_bias);
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_UTIL_H_ */

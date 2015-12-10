@@ -95,6 +95,10 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
     for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
       wires_val[i] = -1;  // All wires are initialed with unknown.
     }
+
+    int *fanout = nullptr;
+    CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
+
     uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
     block* garbled_tables = nullptr;
     CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
@@ -135,8 +139,8 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
       uint64_t garble_start_time = RDTSC;
       {
         GarbleLowMem(garbled_circuit, init_labels, input_labels, garbled_tables,
-                     R, AES_Key, cid, connfd, wires, wires_val, output_labels,
-                     output_vals);
+                     R, AES_Key, cid, connfd, wires, wires_val, fanout,
+                     output_labels, output_vals);
       }
       garble_time += RDTSC - garble_start_time;
 
@@ -174,6 +178,8 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
         << (garble_time) / ((double) garbled_circuit.gate_size * clock_cycles)
         << endl;
     delete[] wires;
+    delete[] wires_val;
+    delete[] fanout;
     delete[] garbled_tables;
 
   } else {
@@ -261,6 +267,8 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
     for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
       wires_val[i] = -1;  // All wires are initialed with unknown.
     }
+    int *fanout = nullptr;
+    CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
     uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
     block* garbled_tables = nullptr;
     CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
@@ -302,7 +310,7 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
       {
         eval_time += EvaluateLowMem(garbled_circuit, init_labels, input_labels,
                                     garbled_tables, AES_Key, cid, connfd, wires,
-                                    wires_val, output_labels, output_vals);
+                                    wires_val, fanout, output_labels, output_vals);
       }
       eval_time += RDTSC - eval_start_time;
 
@@ -334,6 +342,8 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
         << endl;
 
     delete[] wires;
+    delete[] wires_val;
+    delete[] fanout;
     delete[] garbled_tables;
   } else {
     CHECK(
