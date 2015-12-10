@@ -46,11 +46,217 @@
 #include "util/common.h"
 #include "util/util.h"
 
+int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
+                    BIGNUM* g_input, uint64_t clock_cycles,
+                    const string& output_mask, int output_mode,
+                    block* init_labels, block* input_labels,
+                    block* output_labels, short* output_vals,
+                    BIGNUM* output_bn, block R, block global_key,
+                    bool disable_OT, int connfd) {
+  uint64_t ot_time = 0;
+  uint64_t garble_time = 0;
+  uint64_t comm_time = 0;
+  BlockPair *wires = nullptr;
+  CHECK_ALLOC(wires = new BlockPair[garbled_circuit.get_wire_size()]);
+  short *wires_val = nullptr;
+  CHECK_ALLOC(wires_val = new short[garbled_circuit.get_wire_size()]);
+  for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
+    wires_val[i] = -1;  // All wires are initialed with unknown.
+  }
+
+  int *fanout = nullptr;
+  CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
+
+  uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
+  block* garbled_tables = nullptr;
+  CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+
+  uint64_t num_skipped_gates = 0;
+
+  CHECK(
+      GarbleAllocLabels(garbled_circuit, &init_labels, &input_labels,
+                        &output_labels, &output_vals, R));
+
+  CHECK(GarbleGneInitLabels(garbled_circuit, init_labels, R));
+
+  uint64_t ot_start_time = RDTSC;
+  {
+    CHECK(
+        GarbleTransferInitLabels(garbled_circuit, g_init, init_labels,
+                                 disable_OT, connfd));
+  }
+  ot_time += RDTSC - ot_start_time;
+
+  AES_KEY AES_Key;
+  AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
+  DUMP("r_key") << R << endl;
+  DUMP("r_key") << global_key << endl;
+
+  for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+
+    CHECK(GarbleGenInputLabels(garbled_circuit, input_labels, R));
+
+    ot_start_time = RDTSC;
+    {
+      CHECK(
+          GarbleTransferInputLabels(garbled_circuit, g_input, input_labels, cid,
+                                    disable_OT, connfd));
+    }
+    ot_time += RDTSC - ot_start_time;
+
+    uint64_t garble_start_time = RDTSC;
+    {
+      GarbleLowMem(garbled_circuit, init_labels, input_labels, garbled_tables,
+                   R, AES_Key, cid, connfd, wires, wires_val, fanout,
+                   &num_skipped_gates, output_labels, output_vals);
+    }
+    garble_time += RDTSC - garble_start_time;
+
+    uint64_t comm_start_time = RDTSC;
+    {
+      CHECK(
+          SendData(connfd, garbled_tables, 2 * num_of_non_xor * sizeof(block)));
+    }
+    comm_time += RDTSC - comm_start_time;
+    CHECK(
+        GarbleTransferOutputLowMem(garbled_circuit, output_labels, output_vals,
+                                   cid, output_mode, output_mask, output_bn,
+                                   connfd));
+
+  }
+
+  LOG(INFO)
+      << "Non-secret skipped gates = "
+      << num_skipped_gates
+      << "\t ("
+      << (100.0 * num_skipped_gates)
+          / (garbled_circuit.gate_size * clock_cycles)
+      << "%)" << endl;
+
+  LOG(INFO)
+      << "Alice transfer labels time (cc) = "
+      << ot_time
+      << "\t(cc/bit) = "
+      << ot_time
+          / ((double) (garbled_circuit.e_init_size
+              + clock_cycles * garbled_circuit.e_input_size))
+      << endl;
+  LOG(INFO) << "Alice communication time (cc) = " << comm_time
+            << "\t(cc/gate) = "
+            << (comm_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+            << endl;
+
+  LOG(INFO)
+      << "Alice garbling time (cc) = " << garble_time << "\t(cc/gate) = "
+      << (garble_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+      << endl;
+  delete[] wires;
+  delete[] wires_val;
+  delete[] fanout;
+  delete[] garbled_tables;
+  return SUCCESS;
+}
+
+int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
+                      BIGNUM* e_input, uint64_t clock_cycles,
+                      const string& output_mask, int output_mode,
+                      block* init_labels, block* input_labels,
+                      block* output_labels, short* output_vals,
+                      BIGNUM* output_bn, block global_key, bool disable_OT,
+                      int connfd) {
+  uint64_t ot_time = 0;
+  uint64_t eval_time = 0;
+  uint64_t comm_time = 0;
+  block *wires = nullptr;
+  CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
+  short *wires_val = nullptr;
+  CHECK_ALLOC(wires_val = new short[garbled_circuit.get_wire_size()]);
+  for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
+    wires_val[i] = -1;  // All wires are initialed with unknown.
+  }
+  int *fanout = nullptr;
+  CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
+  uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
+  block* garbled_tables = nullptr;
+  CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+
+  CHECK(
+      EvaluateAllocLabels(garbled_circuit, &init_labels, &input_labels,
+                          &output_labels, &output_vals));
+  uint64_t ot_start_time = RDTSC;
+  {
+    CHECK(
+        EvaluateTransferInitLabels(garbled_circuit, e_init, init_labels,
+                                   disable_OT, connfd));
+  }
+  ot_time += RDTSC - ot_start_time;
+
+  AES_KEY AES_Key;
+  AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
+  DUMP("r_key") << global_key << endl;
+
+  for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+    ot_start_time = RDTSC;
+    {
+      CHECK(
+          EvaluateTransferInputLabels(garbled_circuit, e_input, input_labels,
+                                      cid, disable_OT, connfd));
+    }
+    ot_time += RDTSC - ot_start_time;
+
+    uint64_t comm_start_time = RDTSC;
+    {
+      CHECK(
+          RecvData(connfd, garbled_tables, 2 * num_of_non_xor * sizeof(block)));
+    }
+    comm_time += RDTSC - comm_start_time;
+
+    uint64_t eval_start_time = RDTSC;
+    {
+      eval_time += EvaluateLowMem(garbled_circuit, init_labels, input_labels,
+                                  garbled_tables, AES_Key, cid, connfd, wires,
+                                  wires_val, fanout, output_labels,
+                                  output_vals);
+    }
+    eval_time += RDTSC - eval_start_time;
+
+    CHECK(
+        EvaluateTransferOutputLowMem(garbled_circuit, output_labels,
+                                     output_vals, cid, output_mode, output_mask,
+                                     output_bn, connfd));
+
+  }
+
+  LOG(INFO)
+      << "Bob transfer labels time (cc) = "
+      << ot_time
+      << "\t(cc/bit) = "
+      << ot_time
+          / ((double) (garbled_circuit.e_init_size
+              + clock_cycles * garbled_circuit.e_input_size))
+      << endl;
+  LOG(INFO) << "Bob communication time (cc) = " << comm_time << "\t(cc/gate) = "
+            << (comm_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+            << endl;
+
+  LOG(INFO) << "Bob evaluation time (cc) = " << eval_time << "\t(cc/gate) = "
+            << (eval_time) / ((double) garbled_circuit.gate_size * clock_cycles)
+            << endl;
+
+  delete[] wires;
+  delete[] wires_val;
+  delete[] fanout;
+  delete[] garbled_tables;
+
+  return SUCCESS;
+}
+
 uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
                       block* input_labels, block* garbled_tables, block R,
                       AES_KEY& AES_Key, uint64_t cid, int connfd,
                       BlockPair *wires, short* wires_val, int* fanout,
-                      block* output_labels, short* output_vals) {
+                      uint64_t *num_skipped_gates, block* output_labels,
+                      short* output_vals) {
   uint64_t garbled_table_ind = 0;
 
   uint64_t start_time = RDTSC;
@@ -184,13 +390,16 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
         input1_labels = wires[input1];
         input1_value = wires_val[input1];
       } else if (type != NOTGATE) {
-        LOG(ERROR) << "Invalid input1 index: " << input1 << endl;
+        LOG(
+            ERROR) << "Invalid input1 index: " << input1 << endl;
         input1_value = 0;
       }
 
       GarbleGate(input0_labels, input0_value, input1_labels, input1_value, type,
                  cid, i, garbled_tables, &garbled_table_ind, R, AES_Key,
                  &wires[output], &wires_val[output]);
+    } else {
+      (*num_skipped_gates)++;
     }
   }
 
@@ -290,7 +499,8 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
       input1_value = 0;
     }
 
-    GarbleEvalGateKnownValue(input0_value, input1_value, type, &wires_val[output]);
+    GarbleEvalGateKnownValue(input0_value, input1_value, type,
+                             &wires_val[output]);
     if (wires_val[output] != UNKOWN) {
       if (input0_value == UNKOWN) {
         ReduceFanout(garbled_circuit, fanout, input0, gate_bias);

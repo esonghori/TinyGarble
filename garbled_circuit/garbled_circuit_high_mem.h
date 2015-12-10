@@ -40,11 +40,25 @@
 #include "garbled_circuit/garbled_circuit_util.h"
 #include "crypto/aes.h"
 
-int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
+int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
+                     BIGNUM* g_input, uint64_t clock_cycles,
+                     const string& output_mask, int output_mode,
+                     block* init_labels, block* input_labels,
+                     block* output_labels, short* output_vals,
+                     BIGNUM* output_bn, block R, block global_key,
+                     bool disable_OT, int connfd);
+int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
+                       BIGNUM* e_input, uint64_t clock_cycles,
+                       const string& output_mask, int output_mode,
+                       block* init_labels, block* input_labels,
+                       block* output_labels, short* output_vals,
+                       BIGNUM* output_bn, block global_key, bool disable_OT,
+                       int connfd);
+int GarbleHighMem(const GarbledCircuit& garbled_circuit, block* init_labels,
            block* input_labels, block global_key, block R,
            uint64_t clock_cycles, int connfd, block* output_labels,
            short* output_vals);
-int Evaluate(const GarbledCircuit& garbled_circuit, block* init_labels,
+int EvaluateHighMem(const GarbledCircuit& garbled_circuit, block* init_labels,
              block* input_labels, block global_key, uint64_t clock_cycles,
              int connfd, block* output_labels, short* output_vals);
 int GarbleOT(const GarbledCircuit& garbled_circuit, block* init_labels,
@@ -70,10 +84,10 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
 int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
                          block* output_labels, short * output_vals,
                          uint64_t clock_cycles, const string& output_mask,
-                         int output_mode, string* output_str, int connfd);
+                         int output_mode, BIGNUM* output_bn, int connfd);
 int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
                            block* output_labels, short* output_vals,
                            uint64_t clock_cycles, const string& output_mask,
-                           int output_mode, string* output_str, int connfd);
+                           int output_mode, BIGNUM* output_bn, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_HIGH_MEM_H_ */
