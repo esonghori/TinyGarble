@@ -188,7 +188,7 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
   return ret;
 }
 
-int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                  uint64_t clock_cycles, int output_mode, string *output_str) {
   (*output_str) = "";
   if (output_mode == 0) {  // normal

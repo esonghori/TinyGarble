@@ -183,7 +183,7 @@ int EvalauatePlaintextStr(const string& scd_file_address,
                      clock_cycles, &outputs);
 
   LOG(INFO) << "outputs = " << BN_bn2hex(outputs) << endl;
-  OutputBN2Str(garbled_circuit, outputs, clock_cycles, output_mode,
+  OutputBN2StrHighMem(garbled_circuit, outputs, clock_cycles, output_mode,
                outputs_str);
   return SUCCESS;
 }
