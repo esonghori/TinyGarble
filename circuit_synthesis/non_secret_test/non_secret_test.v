@@ -2,7 +2,7 @@
 // synopsys_ template
 module non_secret_test
 #(
-  parameter N=8,
+  parameter N=8
 )
 ( 
   clk,
