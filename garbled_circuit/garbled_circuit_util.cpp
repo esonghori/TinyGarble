@@ -75,8 +75,9 @@ int ParseInitInputStr(const string& init_str, const string&input_str,
   return SUCCESS;
 }
 
-inline void HalfGarbleGateKnownValue(int type, int knwon_wire_ind,
-                                     short input_value, short* output_value) {
+inline void HalfGarbleEvalGateKnownValue(int type, int knwon_wire_ind,
+                                         short input_value,
+                                         short* output_value) {
   bool x0, x1;
   if (knwon_wire_ind == 0) {
     x0 = GateOperator(type, input_value, 0);
@@ -125,15 +126,15 @@ inline void HalfGarbleGate(int type, int knwon_wire_ind, short input_value,
   }
 }
 
-void GarbleGateKnownValue(short input0_value, short input1_value, int type,
-                          short* output_value) {
+void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type,
+                              short* output_value) {
   if (input0_value != UNKOWN && input1_value != UNKOWN) {
     *output_value = GateOperator(type, input0_value, input1_value);
   } else if (input0_value != UNKOWN) {
-    HalfGarbleGateKnownValue(type, 0, input0_value, output_value);
+    HalfGarbleEvalGateKnownValue(type, 0, input0_value, output_value);
 
   } else if (input1_value != UNKOWN) {
-    HalfGarbleGateKnownValue(type, 1, input1_value, output_value);
+    HalfGarbleEvalGateKnownValue(type, 1, input1_value, output_value);
   } else {
     *output_value = UNKOWN;
   }
@@ -256,28 +257,6 @@ void GarbleGate(BlockPair input0_labels, short input0_value,
   }
 }
 
-inline void HalfEvalGateKnownValue(int type, int knwon_wire_ind,
-                                   short input_value, short* output_value) {
-  bool x0, x1;
-  if (knwon_wire_ind == 0) {
-    x0 = GateOperator(type, input_value, 0);
-    x1 = GateOperator(type, input_value, 1);
-  } else {
-    x0 = GateOperator(type, 0, input_value);
-    x1 = GateOperator(type, 1, input_value);
-  }
-
-  if (x0 == x1) {
-    if (x0 == 0) {
-      *output_value = 0;
-    } else {
-      *output_value = 1;
-    }
-  } else {
-    *output_value = UNKOWN;
-  }
-}
-
 inline void HalfEvalGate(int type, int knwon_wire_ind, short input_value,
                          block input_labels, block* output_labels,
                          short* output_value) {
@@ -299,19 +278,6 @@ inline void HalfEvalGate(int type, int knwon_wire_ind, short input_value,
     }
   } else {
     *output_labels = input_labels;
-    *output_value = UNKOWN;
-  }
-}
-
-void EvalGateKnownValue(short input0_value, short input1_value, int type,
-                        short* output_value) {
-  if (input0_value != UNKOWN && input1_value != UNKOWN) {
-    *output_value = GateOperator(type, input0_value, input1_value);
-  } else if (input0_value != UNKOWN) {
-    HalfEvalGateKnownValue(type, 0, input0_value, output_value);
-  } else if (input1_value != UNKOWN) {
-    HalfEvalGateKnownValue(type, 1, input1_value, output_value);
-  } else {
     *output_value = UNKOWN;
   }
 }
@@ -413,5 +379,19 @@ int FillFanout(GarbledCircuit* garbled_circuit) {
   }
 
   return SUCCESS;
+}
+
+void ReduceFanout(const GarbledCircuit& garbled_circuit, int *fanout,
+                  int64_t wid, int64_t gate_bias) {
+  int64_t gid = wid - gate_bias;
+  if (gid >= 0 && gid < (int64_t) garbled_circuit.gate_size) {
+    fanout[gid]--;
+    if (fanout[gid] == 0) {
+      ReduceFanout(garbled_circuit, fanout,
+                   garbled_circuit.garbledGates[gid].input0, gate_bias);
+      ReduceFanout(garbled_circuit, fanout,
+                   garbled_circuit.garbledGates[gid].input1, gate_bias);
+    }
+  }
 }
 
