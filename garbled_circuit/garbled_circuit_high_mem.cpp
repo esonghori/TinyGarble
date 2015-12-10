@@ -47,7 +47,82 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
+int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
+                     BIGNUM* g_input, uint64_t clock_cycles,
+                     const string& output_mask, int output_mode,
+                     block* init_labels, block* input_labels,
+                     block* output_labels, short* output_vals,
+                     BIGNUM* output_bn, block R, block global_key,
+                     bool disable_OT, int connfd) {
+  // allocate init and input values and translate form string
+  CHECK(
+      GarbleMakeLabels(garbled_circuit, &init_labels, &input_labels,
+                       &output_labels, &output_vals, R, clock_cycles));
+
+  uint64_t ot_start_time = RDTSC;
+  {
+    CHECK(
+        GarbleTransferLabels(garbled_circuit, g_init, init_labels, g_input,
+                             input_labels, clock_cycles, disable_OT, connfd));
+  }
+  uint64_t ot_time = RDTSC - ot_start_time;
+
+  LOG(INFO)
+      << "Alice transfer labels time (cc) = "
+      << ot_time
+      << "\t(cc/bit) = "
+      << ot_time
+          / ((double) (garbled_circuit.e_init_size
+              + clock_cycles * garbled_circuit.e_input_size))
+      << endl;
+
+  GarbleHighMem(garbled_circuit, init_labels, input_labels, global_key, R,
+         clock_cycles, connfd, output_labels, output_vals);
+  CHECK(
+      GarbleTransferOutput(garbled_circuit, output_labels, output_vals,
+                           clock_cycles, output_mask, output_mode, output_bn,
+                           connfd));
+  return SUCCESS;
+}
+
+int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
+                       BIGNUM* e_input, uint64_t clock_cycles,
+                       const string& output_mask, int output_mode,
+                       block* init_labels, block* input_labels,
+                       block* output_labels, short* output_vals,
+                       BIGNUM* output_bn, block global_key, bool disable_OT,
+                       int connfd) {
+  CHECK(
+      EvaluateMakeLabels(garbled_circuit, &init_labels, &input_labels,
+                         &output_labels, &output_vals, clock_cycles));
+
+  // transfer labels
+  uint64_t ot_start_time = RDTSC;
+  CHECK(
+      EvaluateTransferLabels(garbled_circuit, e_init, init_labels, e_input,
+                             input_labels, clock_cycles, disable_OT, connfd));
+  uint64_t ot_time = RDTSC - ot_start_time;
+
+  LOG(INFO)
+      << "Bob transfer labels time (cc) = "
+      << ot_time
+      << "\t(cc/bit) = "
+      << ot_time
+          / ((double) (garbled_circuit.e_init_size
+              + clock_cycles * garbled_circuit.e_input_size))
+      << endl;
+
+  EvaluateHighMem(garbled_circuit, init_labels, input_labels, global_key, clock_cycles,
+           connfd, output_labels, output_vals);
+
+  CHECK(
+      EvaluateTransferOutput(garbled_circuit, output_labels, output_vals,
+                             clock_cycles, output_mask, output_mode, output_bn,
+                             connfd));
+  return SUCCESS;
+}
+
+int GarbleHighMem(const GarbledCircuit& garbled_circuit, block* init_labels,
            block* input_labels, block global_key, block R,
            uint64_t clock_cycles, int connfd, block* output_labels,
            short* output_vals) {
@@ -73,6 +148,7 @@ int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
   uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
   block* garbled_tables = nullptr;
   CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+  uint64_t num_skipped_gates = 0;
 
   uint64_t comm_time = 0;
   uint64_t garble_time = 0;
@@ -221,6 +297,8 @@ int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
         GarbleGate(input0_labels, input0_value, input1_labels, input1_value,
                    type, cid, i, garbled_tables, &garbled_table_ind, R, AES_Key,
                    &wires[output], &wires_val[output]);
+      } else {
+        num_skipped_gates++;
       }
     }
 
@@ -241,6 +319,14 @@ int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
 
   }
 
+  LOG(INFO)
+      << "Non-secret skipped gates = "
+      << num_skipped_gates
+      << "\t ("
+      << (100.0 * num_skipped_gates)
+          / (garbled_circuit.gate_size * clock_cycles)
+      << "%)" << endl;
+
   LOG(INFO) << "Alice communication time (cc) = " << comm_time
             << "\t(cc/gate) = "
             << (comm_time) / ((double) garbled_circuit.gate_size * clock_cycles)
@@ -258,7 +344,7 @@ int Garble(const GarbledCircuit& garbled_circuit, block* init_labels,
   return SUCCESS;
 }
 
-int Evaluate(const GarbledCircuit& garbled_circuit, block* init_labels,
+int EvaluateHighMem(const GarbledCircuit& garbled_circuit, block* init_labels,
              block* input_labels, block global_key, uint64_t clock_cycles,
              int connfd, block* output_labels, short* output_vals) {
 
@@ -754,11 +840,10 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
 int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
                          block* output_labels, short * output_vals,
                          uint64_t clock_cycles, const string& output_mask,
-                         int output_mode, string* output_str, int connfd) {
+                         int output_mode, BIGNUM* output_bn, int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
-  BIGNUM* output_bn = BN_new();
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
     for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
       if (output_vals[cid * garbled_circuit.output_size + i] == 0) {
@@ -786,22 +871,18 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
       }
     }
   }
-  OutputBN2Str(garbled_circuit, output_bn, clock_cycles, output_mode,
-               output_str);
 
   BN_free(output_mask_bn);
-  BN_free(output_bn);
   return SUCCESS;
 }
 
 int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
                            block* output_labels, short* output_vals,
                            uint64_t clock_cycles, const string& output_mask,
-                           int output_mode, string* output_str, int connfd) {
+                           int output_mode, BIGNUM* output_bn, int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
-  BIGNUM* output_bn = BN_new();
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
     for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
       if (output_vals[cid * garbled_circuit.output_size + i] == 0) {
@@ -830,11 +911,7 @@ int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
     }
   }
 
-  OutputBN2Str(garbled_circuit, output_bn, clock_cycles, output_mode,
-               output_str);
-
   BN_free(output_mask_bn);
-  BN_free(output_bn);
   return SUCCESS;
 }
 
