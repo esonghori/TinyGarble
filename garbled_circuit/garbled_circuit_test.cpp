@@ -475,8 +475,7 @@ MU_TEST(Hamming32Bit8ccDisabledOTLowMem) {
 
 MU_TEST(Hamming32Bit8ccLowMem) {
 
-  LOG(INFO) << "Test Hamming 32-bit 8cc Disabled OT with Low Memory Footprint"
-            << endl;
+  LOG(INFO) << "Test Hamming 32-bit 8cc with Low Memory Footprint" << endl;
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
@@ -518,6 +517,58 @@ MU_TEST(Hamming32Bit8ccLowMem) {
   }
 }
 
+MU_TEST(NonSecret8bit3cc) {
+
+  LOG(INFO) << "Test Non-secret test 8-bit 3cc" << endl;
+
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/non_secret_test_8bit_ncc.scd";
+  string g_init_str = "0";
+  string e_init_str = "0";
+  uint64_t clock_cycles = 3;
+  int output_mode = 1;
+  bool disable_OT = false;
+  bool low_mem_foot = false;
+  for (int i = 0; i < TEST_REPEAT; i++) {
+    uint8_t x[2];
+    x[0] = (uint8_t) (rand() % 127);
+    x[1] = (uint8_t) (rand() % 127);
+
+    string g_input_str = "";
+    string e_input_str = "";
+    for (uint64_t j = 0; j < clock_cycles; j++) {
+      g_input_str += to_string_hex(x[0], 2);
+      e_input_str += to_string_hex(x[1], 2);
+    }
+
+    string g_output_str = "0\n0\n0";  // clock_cycles=3
+    string output_str = "";
+
+    LOG(INFO) << "Non-secret test (1-bit 8cc): " << g_input_str << " (+/-) "
+              << e_input_str << endl;
+
+    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
+                                    g_input_str, e_input_str, clock_cycles,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+
+    LOG(INFO) << "output_str = " << output_str << endl;
+
+    GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
+                                                 g_input_str, g_output_str, "0",
+                                                 output_mode, disable_OT,
+                                                 low_mem_foot, clock_cycles);
+    GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, e_init_str,
+                                              e_input_str, output_str, "0",
+                                              output_mode, disable_OT,
+                                              low_mem_foot, clock_cycles);
+
+    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+    mu_assert(ret == SUCCESS, "TcpipTestRun");
+
+  }
+}
+
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
@@ -530,6 +581,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(Hamming32Bit8ccWithMask);
   MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
   MU_RUN_TEST(Hamming32Bit8ccLowMem);
+  MU_RUN_TEST(NonSecret8bit3cc);
 
 }
 
