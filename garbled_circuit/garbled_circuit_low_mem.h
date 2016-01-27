@@ -13,29 +13,30 @@
 #include "crypto/aes.h"
 
 int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
-                    BIGNUM* g_input, uint64_t clock_cycles,
-                    const string& output_mask, int output_mode,
-                    block* init_labels, block* input_labels,
-                    block* output_labels, short* output_vals,
-                    BIGNUM* output_bn, block R, block global_key,
-                    bool disable_OT, int connfd);
+                   BIGNUM* g_input, uint64_t clock_cycles,
+                   const string& output_mask, int output_mode,
+                   block* init_labels, block* input_labels,
+                   block* output_labels, short* output_vals, BIGNUM* output_bn,
+                   block R, block global_key, bool disable_OT, int connfd);
 int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
-                      BIGNUM* e_input, uint64_t clock_cycles,
-                      const string& output_mask, int output_mode,
-                      block* init_labels, block* input_labels,
-                      block* output_labels, short* output_vals,
-                      BIGNUM* output_bn, block global_key, bool disable_OT,
-                      int connfd);
+                     BIGNUM* e_input, uint64_t clock_cycles,
+                     const string& output_mask, int output_mode,
+                     block* init_labels, block* input_labels,
+                     block* output_labels, short* output_vals,
+                     BIGNUM* output_bn, block global_key, bool disable_OT,
+                     int connfd);
 uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
-                      block* input_labels, block* garbled_tables, block R,
-                      AES_KEY& AES_Key, uint64_t cid, int connfd,
-                      BlockPair *wires, short* wires_val, int* fanout,
+                      block* input_labels, block* garbled_tables,
+                      uint64_t *garbled_table_ind, block R, AES_KEY& AES_Key,
+                      uint64_t cid, int connfd, BlockPair *wires,
+                      short* wires_val, int* fanout,
                       uint64_t* num_skipped_gates, block* output_labels,
                       short* output_vals);
 uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
                         block* init_labels, block* input_labels,
-                        block* garbled_tables, AES_KEY& AES_Key, uint64_t cid,
-                        int connfd, block *wires, short* wires_val, int* fanout,
+                        block* garbled_tables, uint64_t *garbled_table_ind,
+                        AES_KEY& AES_Key, uint64_t cid, int connfd,
+                        block *wires, short* wires_val, int* fanout,
                         block* output_labels, short* output_vals);
 int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
                       block** init_labels, block** input_labels,
