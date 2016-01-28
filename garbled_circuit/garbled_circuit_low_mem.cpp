@@ -49,13 +49,18 @@
 int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                    BIGNUM* p_input, BIGNUM* g_init, BIGNUM* g_input,
                    uint64_t clock_cycles, const string& output_mask,
-                   OutputMode output_mode, block* init_labels,
-                   block* input_labels, block* output_labels,
-                   short* output_vals, BIGNUM* output_bn, block R,
+                   OutputMode output_mode, BIGNUM* output_bn, block R,
                    block global_key, bool disable_OT, int connfd) {
+
   uint64_t ot_time = 0;
   uint64_t garble_time = 0;
   uint64_t comm_time = 0;
+
+  block* init_labels = nullptr;
+  block* input_labels = nullptr;
+  block* output_labels = nullptr;
+  short* output_vals = nullptr;
+
   BlockPair *wires = nullptr;
   CHECK_ALLOC(wires = new BlockPair[garbled_circuit.get_wire_size()]);
   short *wires_val = nullptr;
@@ -157,6 +162,10 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Alice garbling time (cc) = " << garble_time << endl;
 
+  delete[] init_labels;
+  delete[] input_labels;
+  delete[] output_labels;
+  delete[] output_vals;
   delete[] wires;
   delete[] wires_val;
   delete[] fanout;
@@ -167,13 +176,16 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                      BIGNUM* p_input, BIGNUM* e_init, BIGNUM* e_input,
                      uint64_t clock_cycles, const string& output_mask,
-                     OutputMode output_mode, block* init_labels,
-                     block* input_labels, block* output_labels,
-                     short* output_vals, BIGNUM* output_bn, block global_key,
-                     bool disable_OT, int connfd) {
+                     OutputMode output_mode, BIGNUM* output_bn,
+                     block global_key, bool disable_OT, int connfd) {
   uint64_t ot_time = 0;
   uint64_t eval_time = 0;
   uint64_t comm_time = 0;
+
+  block* init_labels = nullptr;
+  block* input_labels = nullptr;
+  block* output_labels = nullptr;
+  short* output_vals = nullptr;
   block *wires = nullptr;
   CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
   short *wires_val = nullptr;
@@ -254,6 +266,10 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   LOG(INFO) << "Bob communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Bob evaluation time (cc) = " << eval_time << endl;
 
+  delete[] init_labels;
+  delete[] input_labels;
+  delete[] output_labels;
+  delete[] output_vals;
   delete[] wires;
   delete[] wires_val;
   delete[] fanout;
@@ -285,9 +301,18 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         wires_val[dff_bias + i] = 1;
       } else if (wire_index >= 0
           && wire_index < (int64_t) garbled_circuit.get_init_size()) {
-        wires[dff_bias + i].label0 = init_labels[wire_index * 2 + 0];
-        wires[dff_bias + i].label1 = init_labels[wire_index * 2 + 1];
-        wires_val[dff_bias + i] = -1;
+        if (wire_index < (int64_t) garbled_circuit.get_p_init_hi_index()) {
+          wires_val[dff_bias + i] = BN_is_bit_set(
+              p_init,
+              wire_index - (int64_t) garbled_circuit.get_p_init_lo_index());
+        } else {
+          int64_t label_index = wire_index
+              - (int64_t) garbled_circuit.get_p_init_hi_index();
+
+          wires[dff_bias + i].label0 = init_labels[label_index * 2 + 0];
+          wires[dff_bias + i].label1 = init_labels[label_index * 2 + 1];
+          wires_val[dff_bias + i] = UNKOWN;
+        }
       } else {
         LOG(ERROR) << "Invalid I: " << wire_index << endl;
         wires_val[dff_bias + i] = 0;
@@ -313,10 +338,17 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   }
 
   // inputs
-  uint64_t input_bias = garbled_circuit.get_input_lo_index();
-  for (uint64_t i = 0; i < garbled_circuit.get_input_size(); i++) {
+  uint64_t p_input_bias = garbled_circuit.get_p_input_lo_index();
+  for (uint64_t i = 0; i < garbled_circuit.p_input_size; i++) {
+    wires_val[p_input_bias + i] = BN_is_bit_set(
+        p_input, cid * garbled_circuit.p_input_size + i);
+  }
+
+  uint64_t input_bias = garbled_circuit.get_g_input_lo_index();
+  for (uint64_t i = 0; i < garbled_circuit.get_secret_input_size(); i++) {
     wires[input_bias + i].label0 = input_labels[i * 2 + 0];
     wires[input_bias + i].label1 = input_labels[i * 2 + 1];
+    wires_val[input_bias + i] = UNKOWN;
     DUMP("input") << input_labels[i * 2 + 0] << endl;
   }
 
@@ -446,8 +478,17 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         wires_val[dff_bias + i] = 1;
       } else if (wire_index >= 0
           && wire_index < (int64_t) garbled_circuit.get_init_size()) {
-        wires[dff_bias + i] = init_labels[wire_index];
-        wires_val[dff_bias + i] = -1;
+        if (wire_index < (int64_t) garbled_circuit.get_p_init_hi_index()) {
+          wires_val[dff_bias + i] = BN_is_bit_set(
+              p_init,
+              wire_index - (int64_t) garbled_circuit.get_p_init_lo_index());
+        } else {
+          int64_t label_index = wire_index
+              - (int64_t) garbled_circuit.get_p_init_hi_index();
+
+          wires[dff_bias + i] = init_labels[label_index];
+          wires_val[dff_bias + i] = -1;
+        }
       } else {
         LOG(ERROR) << "Invalid I: " << wire_index << endl;
         wires_val[dff_bias + i] = 0;
@@ -472,8 +513,13 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     }
   }
   // inputs
-  uint64_t input_bias = garbled_circuit.get_input_lo_index();
-  for (uint64_t i = 0; i < garbled_circuit.get_input_size(); i++) {
+  uint64_t p_input_bias = garbled_circuit.get_p_input_lo_index();
+  for (uint64_t i = 0; i < garbled_circuit.p_input_size; i++) {
+    wires_val[p_input_bias + i] = BN_is_bit_set(
+        p_input, cid * garbled_circuit.p_input_size + i);
+  }
+  uint64_t input_bias = garbled_circuit.get_g_input_lo_index();
+  for (uint64_t i = 0; i < garbled_circuit.get_secret_input_size(); i++) {
     wires[input_bias + i] = input_labels[i];
     DUMP("input") << input_labels[i] << endl;
   }
@@ -585,17 +631,19 @@ int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
   // allocate and generate random init and inputs label pairs
   (*init_labels) = nullptr;
   if (garbled_circuit.get_init_size() > 0) {
-    CHECK_ALLOC((*init_labels) = new block[garbled_circuit.get_init_size() * 2]);
-    for (uint i = 0; i < garbled_circuit.get_init_size(); i++) {
+    CHECK_ALLOC(
+        (*init_labels) = new block[garbled_circuit.get_secret_init_size() * 2]);
+    for (uint i = 0; i < garbled_circuit.get_secret_init_size(); i++) {
       (*init_labels)[i * 2 + 0] = RandomBlock();
       (*init_labels)[i * 2 + 1] = XorBlock(R, (*init_labels)[i * 2 + 0]);
     }
   }
 
   (*input_labels) = nullptr;
-  if (garbled_circuit.get_input_size() > 0) {
-    CHECK_ALLOC((*input_labels) =
-        new block[garbled_circuit.get_input_size() * 2]);
+  if (garbled_circuit.get_secret_input_size() > 0) {
+    CHECK_ALLOC(
+        (*input_labels) =
+            new block[garbled_circuit.get_secret_input_size() * 2]);
   }
 
   (*output_labels) = nullptr;
@@ -614,7 +662,7 @@ int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
 int GarbleGneInitLabels(const GarbledCircuit& garbled_circuit,
                         block* init_labels, block R) {
 
-  for (uint i = 0; i < garbled_circuit.get_init_size(); i++) {
+  for (uint i = 0; i < garbled_circuit.get_secret_init_size(); i++) {
     init_labels[i * 2 + 0] = RandomBlock();
     init_labels[i * 2 + 1] = XorBlock(R, init_labels[i * 2 + 0]);
   }
@@ -624,8 +672,8 @@ int GarbleGneInitLabels(const GarbledCircuit& garbled_circuit,
 
 int GarbleGenInputLabels(const GarbledCircuit& garbled_circuit,
                          block* input_labels, block R) {
-  if (garbled_circuit.get_input_size() > 0) {
-    for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
+  if (garbled_circuit.get_secret_input_size() > 0) {
+    for (uint i = 0; i < garbled_circuit.get_secret_input_size(); i++) {
       input_labels[i * 2 + 0] = RandomBlock();
       input_labels[i * 2 + 1] = XorBlock(R, input_labels[i * 2 + 0]);
     }
@@ -638,13 +686,15 @@ int EvaluateAllocLabels(const GarbledCircuit& garbled_circuit,
                         block** output_labels, short** output_vals) {
 
   (*init_labels) = nullptr;
-  if (garbled_circuit.get_init_size() > 0) {
-    CHECK_ALLOC((*init_labels) = new block[garbled_circuit.get_init_size()]);
+  if (garbled_circuit.get_secret_init_size() > 0) {
+    CHECK_ALLOC((*init_labels) =
+        new block[garbled_circuit.get_secret_init_size()]);
   }
 
   (*input_labels) = nullptr;
-  if (garbled_circuit.get_input_size() > 0) {
-    CHECK_ALLOC((*input_labels) = new block[garbled_circuit.get_input_size()]);
+  if (garbled_circuit.get_secret_input_size() > 0) {
+    CHECK_ALLOC(
+        (*input_labels) = new block[garbled_circuit.get_secret_input_size()]);
   }
 
   (*output_labels) = nullptr;
