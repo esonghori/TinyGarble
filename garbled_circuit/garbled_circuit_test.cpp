@@ -77,7 +77,8 @@ void TestTeardown() {
 int Alice(const void* data, int connfd) {
   GCTestStruct* gc_data = (GCTestStruct*) data;
   string output_str;
-  int ret = GarbleStr(gc_data->scd_file_address, gc_data->init, gc_data->input,
+  int ret = GarbleStr(gc_data->scd_file_address, gc_data->p_init,
+                      gc_data->p_input, gc_data->init, gc_data->input,
                       gc_data->clock_cycles, gc_data->output_mask,
                       gc_data->output_mode, gc_data->disable_OT,
                       gc_data->low_mem_foot, &output_str, connfd);
@@ -101,11 +102,11 @@ int Alice(const void* data, int connfd) {
 int Bob(const void *data, int connfd) {
   GCTestStruct* gc_data = (GCTestStruct*) data;
   string output_str;
-  int ret = EvaluateStr(gc_data->scd_file_address, gc_data->init,
-                        gc_data->input, gc_data->clock_cycles,
-                        gc_data->output_mask, gc_data->output_mode,
-                        gc_data->disable_OT, gc_data->low_mem_foot, &output_str,
-                        connfd);
+  int ret = EvaluateStr(gc_data->scd_file_address, gc_data->p_init,
+                        gc_data->p_input, gc_data->init, gc_data->input,
+                        gc_data->clock_cycles, gc_data->output_mask,
+                        gc_data->output_mode, gc_data->disable_OT,
+                        gc_data->low_mem_foot, &output_str, connfd);
   if (ret == FAILURE) {
     LOG(ERROR) << "EvaluateStr failed.";
     return FAILURE;
@@ -679,7 +680,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
   MU_RUN_TEST(Hamming32Bit8ccLowMem);
   MU_RUN_TEST(NonSecret8bit3cc);
-  //MU_RUN_TEST(PublicWire8Bit2cc);
+//  MU_RUN_TEST(PublicWire8Bit2cc);
 
 }
 

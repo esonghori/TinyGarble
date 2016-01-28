@@ -46,12 +46,13 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
-                   BIGNUM* g_input, uint64_t clock_cycles,
-                   const string& output_mask, OutputMode output_mode,
-                   block* init_labels, block* input_labels,
-                   block* output_labels, short* output_vals, BIGNUM* output_bn,
-                   block R, block global_key, bool disable_OT, int connfd) {
+int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                   BIGNUM* p_input, BIGNUM* g_init, BIGNUM* g_input,
+                   uint64_t clock_cycles, const string& output_mask,
+                   OutputMode output_mode, block* init_labels,
+                   block* input_labels, block* output_labels,
+                   short* output_vals, BIGNUM* output_bn, block R,
+                   block global_key, bool disable_OT, int connfd) {
   uint64_t ot_time = 0;
   uint64_t garble_time = 0;
   uint64_t comm_time = 0;
@@ -106,9 +107,9 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
 
     uint64_t garble_start_time = RDTSC;
     {
-      GarbleLowMem(garbled_circuit, init_labels, input_labels, garbled_tables,
-                   &garbled_table_ind, R, AES_Key, cid, connfd, wires,
-                   wires_val, fanout, &num_skipped_gates, output_labels,
+      GarbleLowMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
+                   garbled_tables, &garbled_table_ind, R, AES_Key, cid, connfd,
+                   wires, wires_val, fanout, &num_skipped_gates, output_labels,
                    output_vals);
     }
     garble_time += RDTSC - garble_start_time;
@@ -163,13 +164,13 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
   return SUCCESS;
 }
 
-int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
-                     BIGNUM* e_input, uint64_t clock_cycles,
-                     const string& output_mask, OutputMode output_mode,
-                     block* init_labels, block* input_labels,
-                     block* output_labels, short* output_vals,
-                     BIGNUM* output_bn, block global_key, bool disable_OT,
-                     int connfd) {
+int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                     BIGNUM* p_input, BIGNUM* e_init, BIGNUM* e_input,
+                     uint64_t clock_cycles, const string& output_mask,
+                     OutputMode output_mode, block* init_labels,
+                     block* input_labels, block* output_labels,
+                     short* output_vals, BIGNUM* output_bn, block global_key,
+                     bool disable_OT, int connfd) {
   uint64_t ot_time = 0;
   uint64_t eval_time = 0;
   uint64_t comm_time = 0;
@@ -223,10 +224,11 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
 
     uint64_t eval_start_time = RDTSC;
     {
-      eval_time += EvaluateLowMem(garbled_circuit, init_labels, input_labels,
-                                  garbled_tables, &garbled_table_ind, AES_Key,
-                                  cid, connfd, wires, wires_val, fanout,
-                                  output_labels, output_vals);
+      eval_time += EvaluateLowMem(garbled_circuit, p_init, p_input, init_labels,
+                                  input_labels, garbled_tables,
+                                  &garbled_table_ind, AES_Key, cid, connfd,
+                                  wires, wires_val, fanout, output_labels,
+                                  output_vals);
     }
     eval_time += RDTSC - eval_start_time;
 
@@ -260,11 +262,11 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
   return SUCCESS;
 }
 
-uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
-                      block* input_labels, block* garbled_tables,
-                      uint64_t *garbled_table_ind, block R, AES_KEY& AES_Key,
-                      uint64_t cid, int connfd, BlockPair *wires,
-                      short* wires_val, int* fanout,
+uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                      BIGNUM* p_input, block* init_labels, block* input_labels,
+                      block* garbled_tables, uint64_t *garbled_table_ind,
+                      block R, AES_KEY& AES_Key, uint64_t cid, int connfd,
+                      BlockPair *wires, short* wires_val, int* fanout,
                       uint64_t* num_skipped_gates, block* output_labels,
                       short* output_vals) {
   *garbled_table_ind = 0;
@@ -422,12 +424,13 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, block* init_labels,
   return (end_time - start_time);
 }
 
-uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit,
-                        block* init_labels, block* input_labels,
-                        block* garbled_tables, uint64_t *garbled_table_ind,
-                        AES_KEY& AES_Key, uint64_t cid, int connfd,
-                        block *wires, short* wires_val, int* fanout,
-                        block* output_labels, short* output_vals) {
+uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                        BIGNUM* p_input, block* init_labels,
+                        block* input_labels, block* garbled_tables,
+                        uint64_t *garbled_table_ind, AES_KEY& AES_Key,
+                        uint64_t cid, int connfd, block *wires,
+                        short* wires_val, int* fanout, block* output_labels,
+                        short* output_vals) {
   *garbled_table_ind = 0;
   uint64_t start_time = RDTSC;
 
