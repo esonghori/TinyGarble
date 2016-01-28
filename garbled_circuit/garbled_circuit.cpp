@@ -84,21 +84,15 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
                         garbled_circuit.p_input_size, clock_cycles, &p_init,
                         &p_input));
 
-  block* init_labels = nullptr;
-  block* input_labels = nullptr;
-  block* output_labels = nullptr;
-  short* output_vals = nullptr;
-
   // global key
   block global_key = RandomBlock();
   CHECK(SendData(connfd, &global_key, sizeof(block)));  // send global key
 
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
-        GarbleBNLowMem(garbled_circuit, p_init, p_input, g_init, g_input, clock_cycles,
-                       output_mask, output_mode, init_labels, input_labels,
-                       output_labels, output_vals, output_bn, R, global_key,
-                       disable_OT, connfd));
+        GarbleBNLowMem(garbled_circuit, p_init, p_input, g_init, g_input,
+                       clock_cycles, output_mask, output_mode, output_bn, R,
+                       global_key, disable_OT, connfd));
 
     CHECK(
         OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
@@ -106,10 +100,9 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
 
   } else {
     CHECK(
-        GarbleBNHighMem(garbled_circuit, p_init, p_input, g_init, g_input, clock_cycles,
-                        output_mask, output_mode, init_labels, input_labels,
-                        output_labels, output_vals, output_bn, R, global_key,
-                        disable_OT, connfd));
+        GarbleBNHighMem(garbled_circuit, p_init, p_input, g_init, g_input,
+                        clock_cycles, output_mask, output_mode, output_bn, R,
+                        global_key, disable_OT, connfd));
     CHECK(
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));
@@ -119,11 +112,6 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
   BN_free(g_init);
   BN_free(g_input);
   BN_free(output_bn);
-
-  delete[] init_labels;
-  delete[] input_labels;
-  delete[] output_labels;
-  delete[] output_vals;
 
   RemoveGarbledCircuit(&garbled_circuit);
 
@@ -162,30 +150,23 @@ int EvaluateStr(const string& scd_file_address, const string& p_init_str,
                         garbled_circuit.p_input_size, clock_cycles, &p_init,
                         &p_input));
 
-  block* init_labels = nullptr;
-  block* input_labels = nullptr;
-  block* output_labels = nullptr;
-  short* output_vals = nullptr;
-
   // global key
   block global_key = RandomBlock();
   CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
 
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
-        EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init, e_input, clock_cycles,
-                         output_mask, output_mode, init_labels, input_labels,
-                         output_labels, output_vals, output_bn, global_key,
-                         disable_OT, connfd));
+        EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init, e_input,
+                         clock_cycles, output_mask, output_mode, output_bn,
+                         global_key, disable_OT, connfd));
     CHECK(
         OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
                            output_mode, output_str));
   } else {
     CHECK(
-        EvaluateBNHighMem(garbled_circuit, p_init, p_input,e_init, e_input, clock_cycles,
-                          output_mask, output_mode, init_labels, input_labels,
-                          output_labels, output_vals, output_bn, global_key,
-                          disable_OT, connfd));
+        EvaluateBNHighMem(garbled_circuit, p_init, p_input, e_init, e_input,
+                          clock_cycles, output_mask, output_mode, output_bn,
+                          global_key, disable_OT, connfd));
     CHECK(
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));
@@ -195,11 +176,6 @@ int EvaluateStr(const string& scd_file_address, const string& p_init_str,
   BN_free(e_init);
   BN_free(e_input);
   BN_free(output_bn);
-
-  delete[] init_labels;
-  delete[] input_labels;
-  delete[] output_labels;
-  delete[] output_vals;
 
   RemoveGarbledCircuit(&garbled_circuit);
   return SUCCESS;
