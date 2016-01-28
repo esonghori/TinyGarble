@@ -100,6 +100,13 @@ typedef struct GarbledCircuit {
     return get_init_size() + get_input_size() + dff_size + gate_size;
   }
 
+  inline uint64_t get_secret_init_size() const {
+    return g_init_size + e_init_size;
+  }
+  inline uint64_t get_secret_input_size() const {
+    return g_input_size + e_input_size;
+  }
+
   /**
    * indexing structure:
    * 0.p_init
