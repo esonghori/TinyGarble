@@ -73,10 +73,12 @@ typedef struct GarbledGate {
  * for both garbling and evaluation. It is created based on SCD file.
  */
 typedef struct GarbledCircuit {
-  uint64_t g_init_size;
-  uint64_t e_init_size;
-  uint64_t g_input_size;
-  uint64_t e_input_size;
+  uint64_t p_init_size;  // public init
+  uint64_t g_init_size;  // garbler init
+  uint64_t e_init_size;  // eval init
+  uint64_t p_input_size;  // public input
+  uint64_t g_input_size;  // garbler input
+  uint64_t e_input_size;  // eval input
   uint64_t dff_size;
   uint64_t output_size;
   uint64_t gate_size;
@@ -89,10 +91,10 @@ typedef struct GarbledCircuit {
    to I signal (Initial) of DFF. */
 
   inline uint64_t get_init_size() const {
-    return g_init_size + e_init_size;
+    return p_init_size + g_init_size + e_init_size;
   }
   inline uint64_t get_input_size() const {
-    return g_input_size + e_input_size;
+    return p_input_size + g_input_size + e_input_size;
   }
   inline uint64_t get_wire_size() const {
     return get_init_size() + get_input_size() + dff_size + gate_size;
@@ -100,65 +102,85 @@ typedef struct GarbledCircuit {
 
   /**
    * indexing structure:
-   * 0.g_init
-   * 1.e_init
-   * 2.g_input
-   * 3.e_input
-   * 4.dff
-   * 5.gate
+   * 0.p_init
+   * 1.g_init
+   * 2.e_init
+   * 3.p_input
+   * 4.g_input
+   * 5.e_input
+   * 6.dff
+   * 7.gate
    */
   inline uint64_t get_init_lo_index() const {
     return 0;
   }
+
+  inline uint64_t get_p_init_lo_index() const {
+    return get_init_lo_index();
+  }
+  inline uint64_t get_p_init_hi_index() const {
+    return get_p_init_lo_index() + p_init_size;
+  }
+
   inline uint64_t get_g_init_lo_index() const {
-    return 0;
+    return get_p_init_hi_index();
   }
   inline uint64_t get_g_init_hi_index() const {
-    return g_init_size;
+    return get_g_init_lo_index() + g_init_size;
   }
 
   inline uint64_t get_e_init_lo_index() const {
     return get_g_init_hi_index();
   }
   inline uint64_t get_e_init_hi_index() const {
-    return get_g_init_hi_index() + e_init_size;
+    return get_e_init_lo_index() + e_init_size;
   }
+
   inline uint64_t get_init_hi_index() const {
     return get_e_init_hi_index();
   }
 
   inline uint64_t get_input_lo_index() const {
-    return get_e_init_hi_index();
+    return get_init_hi_index();
   }
+
+  inline uint64_t get_p_input_lo_index() const {
+    return get_input_lo_index();
+  }
+  inline uint64_t get_p_input_hi_index() const {
+    return get_p_input_lo_index() + p_input_size;
+  }
+
   inline uint64_t get_g_input_lo_index() const {
-    return get_e_init_hi_index();
+    return get_p_input_hi_index();
   }
   inline uint64_t get_g_input_hi_index() const {
-    return get_e_init_hi_index() + g_input_size;
+    return get_g_input_lo_index() + g_input_size;
   }
 
   inline uint64_t get_e_input_lo_index() const {
     return get_g_input_hi_index();
   }
   inline uint64_t get_e_input_hi_index() const {
-    return get_g_input_hi_index() + e_input_size;
+    return get_e_input_lo_index() + e_input_size;
   }
+
   inline uint64_t get_input_hi_index() const {
     return get_e_input_hi_index();
   }
 
   inline uint64_t get_dff_lo_index() const {
-    return get_e_input_hi_index();
+    return get_input_hi_index();
   }
   inline uint64_t get_dff_hi_index() const {
-    return get_e_input_hi_index() + dff_size;
+    return get_dff_lo_index() + dff_size;
   }
 
   inline uint64_t get_gate_lo_index() const {
     return get_dff_hi_index();
   }
   inline uint64_t get_gate_hi_index() const {
-    return get_dff_hi_index() + gate_size;
+    return get_gate_lo_index() + gate_size;
   }
 
   inline uint64_t get_wire_lo_index() const {
@@ -169,6 +191,15 @@ typedef struct GarbledCircuit {
   }
 
 } GarbledCircuit;
+
+/**
+ * @brief Modes of printing output.
+ */
+enum class OutputMode {
+  consecutive = 0,
+  separated_clock = 1,
+  last_clock = 2
+};
 
 uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);

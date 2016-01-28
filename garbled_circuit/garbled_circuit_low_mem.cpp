@@ -48,7 +48,7 @@
 
 int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
                    BIGNUM* g_input, uint64_t clock_cycles,
-                   const string& output_mask, int output_mode,
+                   const string& output_mask, OutputMode output_mode,
                    block* init_labels, block* input_labels,
                    block* output_labels, short* output_vals, BIGNUM* output_bn,
                    block R, block global_key, bool disable_OT, int connfd) {
@@ -165,7 +165,7 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
 
 int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
                      BIGNUM* e_input, uint64_t clock_cycles,
-                     const string& output_mask, int output_mode,
+                     const string& output_mask, OutputMode output_mode,
                      block* init_labels, block* input_labels,
                      block* output_labels, short* output_vals,
                      BIGNUM* output_bn, block global_key, bool disable_OT,
@@ -915,18 +915,18 @@ int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
 
 int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                block* output_labels, short* output_vals,
-                               uint64_t cid, int output_mode,
+                               uint64_t cid, OutputMode output_mode,
                                const string& output_mask, BIGNUM* output_bn,
                                int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
   uint64_t output_bit_offset = 0;
-  if (output_mode == 0) {  // normal mode, keep all the bits.
+  if (output_mode == OutputMode::consecutive) {  // normal mode, keep all the bits.
     output_bit_offset = cid * garbled_circuit.output_size;
-  } else if (output_mode == 1) {  // Separated by clock mode, keep all the bits.
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock mode, keep all the bits.
     output_bit_offset = cid * garbled_circuit.output_size;
-  } else if (output_mode == 2) {  // keep the last cycle, overwrite the bits.
+  } else if (output_mode == OutputMode::last_clock) {  // keep the last cycle, overwrite the bits.
     output_bit_offset = 0;
   }
 
@@ -961,18 +961,18 @@ int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
 
 int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                  block* output_labels, short* output_vals,
-                                 uint64_t cid, int output_mode,
+                                 uint64_t cid, OutputMode output_mode,
                                  const string& output_mask, BIGNUM* output_bn,
                                  int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
   uint64_t output_bit_offset = 0;
-  if (output_mode == 0) {  // normal mode, keep all the bits.
+  if (output_mode == OutputMode::consecutive) {  // normal mode, keep all the bits.
     output_bit_offset = cid * garbled_circuit.output_size;
-  } else if (output_mode == 1) {  // Separated by clock mode, keep all the bits.
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock mode, keep all the bits.
     output_bit_offset = cid * garbled_circuit.output_size;
-  } else if (output_mode == 2) {  // keep the last cycle, overwrite the bits.
+  } else if (output_mode == OutputMode::last_clock) {  // keep the last cycle, overwrite the bits.
     output_bit_offset = 0;
   }
 
