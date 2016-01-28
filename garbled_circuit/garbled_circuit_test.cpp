@@ -91,7 +91,7 @@ int Alice(const void* data, int connfd) {
   if (output_str != gc_data->output) {
     LOG(ERROR) << "Alice-side equality test failed "
                "(plain-text's != garble circuit's): "
-               << output_str << " != " << gc_data->output << endl;
+               << gc_data->output << " != " << output_str << endl;
     return FAILURE;
   }
   LOG(INFO) << "Equality passed: " << output_str << " == " << gc_data->output
@@ -115,7 +115,7 @@ int Bob(const void *data, int connfd) {
   if (output_str != gc_data->output) {
     LOG(ERROR) << "Bob's side equality test failed "
                "(plain-text's != garble circuit's): "
-               << output_str << " != " << gc_data->output << endl;
+               << gc_data->output << " != " << output_str << endl;
     return FAILURE;
   }
   LOG(INFO) << "Equality passed: " << output_str << " == " << gc_data->output
@@ -629,17 +629,16 @@ MU_TEST(PublicWire8Bit2cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/public_test_8bit_ncc.scd";
   OutputMode output_mode = OutputMode::consecutive;
-  string p_init_str = "AB";
-  string g_init_str = "18";
-  string e_init_str = "B2";
-  string p_input_str = "C3DE";
-  string g_input_str = "1945";
-  string e_input_str = "A5C6";
+  string p_init_str = "AB";  // 8bit
+  string g_init_str = "18C3";  //16bit
+  string e_init_str = "B226B5F2";  //32bit
+  string p_input_str = "B5C4C3DE95464A5C";  //2*32bit
+  string g_input_str = "19458C20";  //2*16bit
+  string e_input_str = "A5C6";  //2*8bit
+  string output_str;  //2*32bit
   uint64_t clock_cycles = 2;
   bool disable_OT = false;
-  bool low_mem_foot = false;
-
-  string output_str = "";
+  bool low_mem_foot;
 
   LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
 
@@ -648,7 +647,10 @@ MU_TEST(PublicWire8Bit2cc) {
                                   e_input_str, clock_cycles, output_mode,
                                   &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+  LOG(INFO) << "output_str = " << output_str << endl;
 
+  //
+  low_mem_foot = false;
   GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                p_input_str, g_init_str,
                                                g_input_str, "0", "0",
@@ -663,24 +665,36 @@ MU_TEST(PublicWire8Bit2cc) {
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   mu_assert(ret == SUCCESS, "TcpipTestRun");
 
-  mu_check(output_str == "235C");
+  //
+  low_mem_foot = true;
+  garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                                  g_init_str, g_input_str, "0", "0",
+                                  output_mode, disable_OT, low_mem_foot,
+                                  clock_cycles);
+  eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                               e_init_str, e_input_str, output_str, "0",
+                               output_mode, disable_OT, low_mem_foot,
+                               clock_cycles);
+
+  ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+  mu_assert(ret == SUCCESS, "TcpipTestRun");
 
 }
 
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
-  MU_RUN_TEST(Mux8Bit1cc);
-  MU_RUN_TEST(Sum1Bit8cc);
-  MU_RUN_TEST(Sum8Bit1cc);
-  MU_RUN_TEST(Hamming32Bit1cc);
-  MU_RUN_TEST(Hamming32Bit8cc);
-  MU_RUN_TEST(Hamming32Bit8ccDisabledOT);
-  MU_RUN_TEST(Hamming32Bit8ccWithMask);
-  MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
-  MU_RUN_TEST(Hamming32Bit8ccLowMem);
-  MU_RUN_TEST(NonSecret8bit3cc);
-//  MU_RUN_TEST(PublicWire8Bit2cc);
+//  MU_RUN_TEST(Mux8Bit1cc);
+//  MU_RUN_TEST(Sum1Bit8cc);
+//  MU_RUN_TEST(Sum8Bit1cc);
+//  MU_RUN_TEST(Hamming32Bit1cc);
+//  MU_RUN_TEST(Hamming32Bit8cc);
+//  MU_RUN_TEST(Hamming32Bit8ccDisabledOT);
+//  MU_RUN_TEST(Hamming32Bit8ccWithMask);
+//  MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
+//  MU_RUN_TEST(Hamming32Bit8ccLowMem);
+//  MU_RUN_TEST(NonSecret8bit3cc);
+  MU_RUN_TEST(PublicWire8Bit2cc);
 
 }
 

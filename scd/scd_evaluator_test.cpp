@@ -212,13 +212,13 @@ MU_TEST(PublicWire8Bit2cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/public_test_8bit_ncc.scd";
   OutputMode output_mode = OutputMode::consecutive;
-  string p_init_str = "AB";
-  string g_init_str = "18";
-  string e_init_str = "B2";
-  string p_input_str = "C3DE";
-  string g_input_str = "1945";
-  string e_input_str = "A5C6";
-  string output_str;
+  string p_init_str =  "AB"; // 8bit
+  string g_init_str =  "18C3"; //16bit
+  string e_init_str =  "B226B5F2"; //32bit
+  string p_input_str = "B5C4C3DE95464A5C"; //2*32bit
+  string g_input_str = "19458C20"; //2*16bit
+  string e_input_str = "A5C6"; //2*8bit
+  string output_str; //2*32bit
   uint64_t clock_cycles = 2;
 
   LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
@@ -230,7 +230,7 @@ MU_TEST(PublicWire8Bit2cc) {
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
   LOG(INFO) << "result: " << output_str << endl;
 
-  mu_check(output_str == "235C");
+  mu_check(output_str == "92A4B11E27606B20");
 
 }
 
