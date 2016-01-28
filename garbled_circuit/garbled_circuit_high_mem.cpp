@@ -47,12 +47,13 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
-                    BIGNUM* g_input, uint64_t clock_cycles,
-                    const string& output_mask, OutputMode output_mode,
-                    block* init_labels, block* input_labels,
-                    block* output_labels, short* output_vals, BIGNUM* output_bn,
-                    block R, block global_key, bool disable_OT, int connfd) {
+int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                    BIGNUM* p_input, BIGNUM* g_init, BIGNUM* g_input,
+                    uint64_t clock_cycles, const string& output_mask,
+                    OutputMode output_mode, block* init_labels,
+                    block* input_labels, block* output_labels,
+                    short* output_vals, BIGNUM* output_bn, block R,
+                    block global_key, bool disable_OT, int connfd) {
   // allocate init and input values and translate form string
   CHECK(
       GarbleMakeLabels(garbled_circuit, &init_labels, &input_labels,
@@ -75,8 +76,9 @@ int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
               + clock_cycles * garbled_circuit.e_input_size))
       << endl;
 
-  GarbleHighMem(garbled_circuit, init_labels, input_labels, global_key, R,
-                clock_cycles, connfd, output_labels, output_vals);
+  GarbleHighMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
+                global_key, R, clock_cycles, connfd, output_labels,
+                output_vals);
   CHECK(
       GarbleTransferOutput(garbled_circuit, output_labels, output_vals,
                            clock_cycles, output_mask, output_mode, output_bn,
@@ -84,13 +86,13 @@ int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
   return SUCCESS;
 }
 
-int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
-                      BIGNUM* e_input, uint64_t clock_cycles,
-                      const string& output_mask, OutputMode output_mode,
-                      block* init_labels, block* input_labels,
-                      block* output_labels, short* output_vals,
-                      BIGNUM* output_bn, block global_key, bool disable_OT,
-                      int connfd) {
+int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                      BIGNUM* p_input, BIGNUM* e_init, BIGNUM* e_input,
+                      uint64_t clock_cycles, const string& output_mask,
+                      OutputMode output_mode, block* init_labels,
+                      block* input_labels, block* output_labels,
+                      short* output_vals, BIGNUM* output_bn, block global_key,
+                      bool disable_OT, int connfd) {
   CHECK(
       EvaluateMakeLabels(garbled_circuit, &init_labels, &input_labels,
                          &output_labels, &output_vals, clock_cycles));
@@ -111,8 +113,8 @@ int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
               + clock_cycles * garbled_circuit.e_input_size))
       << endl;
 
-  EvaluateHighMem(garbled_circuit, init_labels, input_labels, global_key,
-                  clock_cycles, connfd, output_labels, output_vals);
+  EvaluateHighMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
+                  global_key, clock_cycles, connfd, output_labels, output_vals);
 
   CHECK(
       EvaluateTransferOutput(garbled_circuit, output_labels, output_vals,
@@ -121,10 +123,10 @@ int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
   return SUCCESS;
 }
 
-int GarbleHighMem(const GarbledCircuit& garbled_circuit, block* init_labels,
-                  block* input_labels, block global_key, block R,
-                  uint64_t clock_cycles, int connfd, block* output_labels,
-                  short* output_vals) {
+int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                  BIGNUM* p_input, block* init_labels, block* input_labels,
+                  block global_key, block R, uint64_t clock_cycles, int connfd,
+                  block* output_labels, short* output_vals) {
 
   DUMP("r_key") << R << endl;
   DUMP("r_key") << global_key << endl;
@@ -348,10 +350,10 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, block* init_labels,
   return SUCCESS;
 }
 
-int EvaluateHighMem(const GarbledCircuit& garbled_circuit, block* init_labels,
-                    block* input_labels, block global_key,
-                    uint64_t clock_cycles, int connfd, block* output_labels,
-                    short* output_vals) {
+int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
+                    BIGNUM* p_input, block* init_labels, block* input_labels,
+                    block global_key, uint64_t clock_cycles, int connfd,
+                    block* output_labels, short* output_vals) {
 
   DUMP("r_key") << global_key << endl;
 
@@ -846,7 +848,8 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
 int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
                          block* output_labels, short * output_vals,
                          uint64_t clock_cycles, const string& output_mask,
-                         OutputMode output_mode, BIGNUM* output_bn, int connfd) {
+                         OutputMode output_mode, BIGNUM* output_bn,
+                         int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
@@ -885,7 +888,8 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
 int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
                            block* output_labels, short* output_vals,
                            uint64_t clock_cycles, const string& output_mask,
-                           OutputMode output_mode, BIGNUM* output_bn, int connfd) {
+                           OutputMode output_mode, BIGNUM* output_bn,
+                           int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
