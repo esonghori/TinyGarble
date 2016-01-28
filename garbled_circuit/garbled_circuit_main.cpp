@@ -142,6 +142,8 @@ int main(int argc, char* argv[]) {
   int port;
   string scd_file_address;
   string server_ip;
+  string p_init_str;
+  string p_input_str;
   string init_str;
   string input_str;
   uint64_t clock_cycles;
@@ -166,6 +168,10 @@ int main(int argc, char* argv[]) {
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
+  ("p_init", po::value<string>(&p_init_str)->default_value("0"),
+   "Hexadecimal public init for initializing DFFs.")  //
+  ("p_input", po::value<string>(&p_input_str)->default_value("0"),
+   "Hexadecimal public input.")  //
   ("init", po::value<string>(&init_str)->default_value("0"),
    "Hexadecimal init for initializing DFFs.")  //
   ("input", po::value<string>(&input_str)->default_value("0"),
@@ -255,9 +261,9 @@ int main(int argc, char* argv[]) {
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        GarbleStr(scd_file_address, init_str, input_str, clock_cycles,
-                  output_mask, output_mode, disable_OT, low_mem_foot,
-                  &output_str, connfd));
+        GarbleStr(scd_file_address, p_init_str, p_input_str, init_str,
+                  input_str, clock_cycles, output_mask, output_mode, disable_OT,
+                  low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Alice's output = " << output_str << endl;
@@ -292,9 +298,9 @@ int main(int argc, char* argv[]) {
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        EvaluateStr(scd_file_address, init_str, input_str, clock_cycles,
-                    output_mask, output_mode, disable_OT, low_mem_foot,
-                    &output_str, connfd));
+        EvaluateStr(scd_file_address, p_init_str, p_input_str, init_str,
+                    input_str, clock_cycles, output_mask, output_mode,
+                    disable_OT, low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Bob's output = " << output_str << endl;

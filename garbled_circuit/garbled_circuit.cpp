@@ -49,7 +49,8 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int GarbleStr(const string& scd_file_address, const string& init_str,
+int GarbleStr(const string& scd_file_address, const string& p_init_str,
+              const string& p_input_str, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
               const string& output_mask, OutputMode output_mode,
               bool disable_OT, bool low_mem_foot, string* output_str,
@@ -69,6 +70,8 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   *((short *) (&R)) |= 1;
 
   // parse init and input
+  BIGNUM* p_init = BN_new();
+  BIGNUM* p_input = BN_new();
   BIGNUM* g_init = BN_new();
   BIGNUM* g_input = BN_new();
   BIGNUM* output_bn = BN_new();
@@ -76,6 +79,10 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
       ParseInitInputStr(init_str, input_str, garbled_circuit.g_init_size,
                         garbled_circuit.g_input_size, clock_cycles, &g_init,
                         &g_input));
+  CHECK(
+      ParseInitInputStr(p_init_str, p_input_str, garbled_circuit.p_init_size,
+                        garbled_circuit.p_input_size, clock_cycles, &p_init,
+                        &p_input));
 
   block* init_labels = nullptr;
   block* input_labels = nullptr;
@@ -88,7 +95,7 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
-        GarbleBNLowMem(garbled_circuit, g_init, g_input, clock_cycles,
+        GarbleBNLowMem(garbled_circuit, p_init, p_input, g_init, g_input, clock_cycles,
                        output_mask, output_mode, init_labels, input_labels,
                        output_labels, output_vals, output_bn, R, global_key,
                        disable_OT, connfd));
@@ -99,7 +106,7 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 
   } else {
     CHECK(
-        GarbleBNHighMem(garbled_circuit, g_init, g_input, clock_cycles,
+        GarbleBNHighMem(garbled_circuit, p_init, p_input, g_init, g_input, clock_cycles,
                         output_mask, output_mode, init_labels, input_labels,
                         output_labels, output_vals, output_bn, R, global_key,
                         disable_OT, connfd));
@@ -107,6 +114,8 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));
   }
+  BN_free(p_init);
+  BN_free(p_input);
   BN_free(g_init);
   BN_free(g_input);
   BN_free(output_bn);
@@ -121,10 +130,12 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   return SUCCESS;
 }
 
-int EvaluateStr(const string& scd_file_address, const string& init_str,
+int EvaluateStr(const string& scd_file_address, const string& p_init_str,
+                const string& p_input_str, const string& init_str,
                 const string& input_str, uint64_t clock_cycles,
-                const string& output_mask, OutputMode output_mode, bool disable_OT,
-                bool low_mem_foot, string* output_str, int connfd) {
+                const string& output_mask, OutputMode output_mode,
+                bool disable_OT, bool low_mem_foot, string* output_str,
+                int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -137,6 +148,8 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
   FillFanout(&garbled_circuit);
 
 // allocate init and input values and translate form string
+  BIGNUM* p_init = BN_new();
+  BIGNUM* p_input = BN_new();
   BIGNUM* e_init = BN_new();
   BIGNUM* e_input = BN_new();
   BIGNUM* output_bn = BN_new();
@@ -144,6 +157,10 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
       ParseInitInputStr(init_str, input_str, garbled_circuit.e_init_size,
                         garbled_circuit.e_input_size, clock_cycles, &e_init,
                         &e_input));
+  CHECK(
+      ParseInitInputStr(p_init_str, p_input_str, garbled_circuit.p_init_size,
+                        garbled_circuit.p_input_size, clock_cycles, &p_init,
+                        &p_input));
 
   block* init_labels = nullptr;
   block* input_labels = nullptr;
@@ -156,7 +173,7 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
 
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
-        EvaluateBNLowMem(garbled_circuit, e_init, e_input, clock_cycles,
+        EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init, e_input, clock_cycles,
                          output_mask, output_mode, init_labels, input_labels,
                          output_labels, output_vals, output_bn, global_key,
                          disable_OT, connfd));
@@ -165,7 +182,7 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
                            output_mode, output_str));
   } else {
     CHECK(
-        EvaluateBNHighMem(garbled_circuit, e_init, e_input, clock_cycles,
+        EvaluateBNHighMem(garbled_circuit, p_init, p_input,e_init, e_input, clock_cycles,
                           output_mask, output_mode, init_labels, input_labels,
                           output_labels, output_vals, output_bn, global_key,
                           disable_OT, connfd));
@@ -173,6 +190,8 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));
   }
+  BN_free(p_init);
+  BN_free(p_input);
   BN_free(e_init);
   BN_free(e_input);
   BN_free(output_bn);
