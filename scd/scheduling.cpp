@@ -54,8 +54,7 @@ int Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
   const vector<ReadGate>& G = readCircuit.gate_list;
   int64_t no_task;
 
-  int64_t input_size = readCircuit.g_init_size + readCircuit.e_init_size
-      + readCircuit.g_input_size + readCircuit.e_input_size;
+  int64_t input_size = readCircuit.get_init_input_size();
 
   int64_t no_of_input_dff = input_size + readCircuit.dff_size;
   no_task = readCircuit.gate_size;

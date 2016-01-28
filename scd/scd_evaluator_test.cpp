@@ -44,10 +44,12 @@ uint32_t HammingDistance(uint32_t x, uint32_t y) {
 MU_TEST(Sum1Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_nbit_ncc.scd";
+  string p_init_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
+  string p_input_str = "";
   uint64_t clock_cycles = 8;
-  int output_mode = 0;
+  OutputMode output_mode = OutputMode::consecutive;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint8_t x[2];
     x[0] = (uint8_t) (rand() % 127);
@@ -60,9 +62,10 @@ MU_TEST(Sum1Bit) {
     LOG(INFO) << "add with sum_1bit: " << g_input_str << " + " << e_input_str
               << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -74,10 +77,12 @@ MU_TEST(Sum1Bit) {
 MU_TEST(Mux8Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/mux_8bit_1cc.scd";
+  string p_init_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
+  string p_input_str = "";
   uint64_t clock_cycles = 1;
-  int output_mode = 0;
+  OutputMode output_mode = OutputMode::separated_clock;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint8_t x[2];
     x[0] = (uint8_t) (rand() % 256);
@@ -91,9 +96,10 @@ MU_TEST(Mux8Bit) {
     LOG(INFO) << "select with mux_8bit: " << e_input_str << " from {0:"
               << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2)
               << "}. " << g_input_str << endl;
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
     uint8_t y = strtol(output_str.c_str(), nullptr, 16);
@@ -105,10 +111,12 @@ MU_TEST(Mux8Bit) {
 MU_TEST(Sum8Bit) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_8bit_1cc.scd";
+  string p_init_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
+  string p_input_str = "";
   uint64_t clock_cycles = 1;
-  int output_mode = 0;
+  OutputMode output_mode = OutputMode::consecutive;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint8_t x[2];
     x[0] = (uint8_t) (rand() % 127);
@@ -120,9 +128,10 @@ MU_TEST(Sum8Bit) {
 
     LOG(INFO) << "add with sum_8bit: " << g_input_str << " + " << e_input_str
               << endl;
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -134,9 +143,11 @@ MU_TEST(Sum8Bit) {
 MU_TEST(Hamming32Bit1cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_1cc.scd";
-  int output_mode = 0;  // normal mode
+  OutputMode output_mode = OutputMode::consecutive;
+  string p_init_str = "";
   string g_init_str = "";
   string e_init_str = "";
+  string p_input_str = "";
   uint64_t clock_cycles = 1;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint32_t x[2];
@@ -150,9 +161,10 @@ MU_TEST(Hamming32Bit1cc) {
     LOG(INFO) << "Hamming distance between " << g_input_str << " and "
               << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -165,9 +177,11 @@ MU_TEST(Hamming32Bit1cc) {
 MU_TEST(Hamming32Bit8cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
-  int output_mode = 2;  // print the last cycle
+  OutputMode output_mode = OutputMode::last_clock;
+  string p_init_str = "";
   string g_init_str = "";
   string e_init_str = "";
+  string p_input_str = "";
   uint64_t clock_cycles = 8;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint32_t x[2];
@@ -181,9 +195,10 @@ MU_TEST(Hamming32Bit8cc) {
     LOG(INFO) << "Hamming distance between " << g_input_str << " and "
               << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -191,6 +206,32 @@ MU_TEST(Hamming32Bit8cc) {
 
     mu_check(y == HammingDistance(x[0], x[1]));
   }
+}
+
+MU_TEST(PublicWire8Bit2cc) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/public_test_8bit_ncc.scd";
+  OutputMode output_mode = OutputMode::consecutive;
+  string p_init_str = "AB";
+  string g_init_str = "18";
+  string e_init_str = "B2";
+  string p_input_str = "C3DE";
+  string g_input_str = "1945";
+  string e_input_str = "A5C6";
+  string output_str;
+  uint64_t clock_cycles = 2;
+
+  int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                  e_init_str, p_input_str, g_input_str,
+                                  e_input_str, clock_cycles, output_mode,
+                                  &output_str);
+  mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+  LOG(INFO) << "result: " << output_str << endl;
+
+  uint32_t y = strtol(output_str.c_str(), nullptr, 16);
+
+  mu_check(output_str == "235C");
+
 }
 
 MU_TEST_SUITE(TestSuite) {
@@ -201,6 +242,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(Sum8Bit);
   MU_RUN_TEST(Hamming32Bit1cc);
   MU_RUN_TEST(Hamming32Bit8cc);
+  MU_RUN_TEST(PublicWire8Bit2cc);
 }
 
 int main(int argc, char *argv[]) {
