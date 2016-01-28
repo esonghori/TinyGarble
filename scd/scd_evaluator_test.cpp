@@ -221,14 +221,14 @@ MU_TEST(PublicWire8Bit2cc) {
   string output_str;
   uint64_t clock_cycles = 2;
 
+  LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
+
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
                                   e_input_str, clock_cycles, output_mode,
                                   &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
   LOG(INFO) << "result: " << output_str << endl;
-
-  uint32_t y = strtol(output_str.c_str(), nullptr, 16);
 
   mu_check(output_str == "235C");
 
