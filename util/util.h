@@ -35,8 +35,9 @@ int Str2Block(const string &s, block* v);
 string to_string_hex(uint64_t v, int pad = 0);
 
 int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                 uint64_t clock_cycles, int output_mode, string *output_str);
+                        uint64_t clock_cycles, OutputMode output_mode,
+                        string *output_str);
 int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                       uint64_t clock_cycles, int output_mode,
+                       uint64_t clock_cycles, OutputMode output_mode,
                        string* output_str);
 #endif /* UTIL_UTIL_H_ */

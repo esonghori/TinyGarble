@@ -51,8 +51,9 @@
 
 int GarbleStr(const string& scd_file_address, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
-              const string& output_mask, int output_mode, bool disable_OT,
-              bool low_mem_foot, string* output_str, int connfd) {
+              const string& output_mask, OutputMode output_mode,
+              bool disable_OT, bool low_mem_foot, string* output_str,
+              int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -88,9 +89,9 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
         GarbleBNLowMem(garbled_circuit, g_init, g_input, clock_cycles,
-                        output_mask, output_mode, init_labels, input_labels,
-                        output_labels, output_vals, output_bn, R, global_key,
-                        disable_OT, connfd));
+                       output_mask, output_mode, init_labels, input_labels,
+                       output_labels, output_vals, output_bn, R, global_key,
+                       disable_OT, connfd));
 
     CHECK(
         OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
@@ -99,9 +100,9 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
   } else {
     CHECK(
         GarbleBNHighMem(garbled_circuit, g_init, g_input, clock_cycles,
-                         output_mask, output_mode, init_labels, input_labels,
-                         output_labels, output_vals, output_bn, R, global_key,
-                         disable_OT, connfd));
+                        output_mask, output_mode, init_labels, input_labels,
+                        output_labels, output_vals, output_bn, R, global_key,
+                        disable_OT, connfd));
     CHECK(
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));
@@ -122,7 +123,7 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
 
 int EvaluateStr(const string& scd_file_address, const string& init_str,
                 const string& input_str, uint64_t clock_cycles,
-                const string& output_mask, int output_mode, bool disable_OT,
+                const string& output_mask, OutputMode output_mode, bool disable_OT,
                 bool low_mem_foot, string* output_str, int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
@@ -156,18 +157,18 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
         EvaluateBNLowMem(garbled_circuit, e_init, e_input, clock_cycles,
-                          output_mask, output_mode, init_labels, input_labels,
-                          output_labels, output_vals, output_bn, global_key,
-                          disable_OT, connfd));
+                         output_mask, output_mode, init_labels, input_labels,
+                         output_labels, output_vals, output_bn, global_key,
+                         disable_OT, connfd));
     CHECK(
         OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
                            output_mode, output_str));
   } else {
     CHECK(
         EvaluateBNHighMem(garbled_circuit, e_init, e_input, clock_cycles,
-                           output_mask, output_mode, init_labels, input_labels,
-                           output_labels, output_vals, output_bn, global_key,
-                           disable_OT, connfd));
+                          output_mask, output_mode, init_labels, input_labels,
+                          output_labels, output_vals, output_bn, global_key,
+                          disable_OT, connfd));
     CHECK(
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));

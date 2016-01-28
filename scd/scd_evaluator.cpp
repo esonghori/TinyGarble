@@ -24,7 +24,8 @@
 #include "scd/scd.h"
 
 int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
-                       const BIGNUM* g_init, const BIGNUM* e_init,
+                       const BIGNUM* p_init, const BIGNUM* g_init,
+                       const BIGNUM* e_init, const BIGNUM* p_input,
                        const BIGNUM* g_input, const BIGNUM* e_input,
                        uint64_t clock_cycles, BIGNUM** outputs) {
 
@@ -49,18 +50,25 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
           b = true;
         } else if (wire_index >= 0
             && wire_index < (int64_t) garbled_circuit.get_init_size()) {
-          if (wire_index < (int64_t) garbled_circuit.g_init_size) {
-            b = BN_is_bit_set(g_init, wire_index);
-          } else {
+          if (wire_index < (int64_t) garbled_circuit.get_p_init_hi_index()) {
             b = BN_is_bit_set(
-                e_init, wire_index - (int64_t) garbled_circuit.g_init_size);
+                p_init,
+                wire_index - (int64_t) garbled_circuit.get_p_init_lo_index());
+          } else if (wire_index
+              < (int64_t) garbled_circuit.get_g_init_hi_index()) {
+            b = BN_is_bit_set(
+                g_init,
+                wire_index - (int64_t) garbled_circuit.get_g_init_lo_index());
+          } else {  // e_init
+            b = BN_is_bit_set(
+                e_init,
+                wire_index - (int64_t) garbled_circuit.get_e_init_lo_index());
           }
         } else {
           LOG(ERROR) << "Invalid I index: " << wire_index << endl;
           b = false;
         }
         wires[dff_bias + i] = b;
-
       }
     } else {  //copy latched labels
       for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
@@ -84,20 +92,21 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
     // inputs
     uint64_t input_bias = garbled_circuit.get_input_lo_index();
     for (int64_t i = 0; i < (int64_t) garbled_circuit.get_input_size(); i++) {
-      if (i < (int64_t) garbled_circuit.g_input_size) {  // input belongs to g
-        wires[input_bias + i] = BN_is_bit_set(
-            g_input, cid * garbled_circuit.g_input_size + i);
-        /*LOG(INFO) << "g_input [" << cid << "][" << i << "]\t= input["
-         << input_bias + i << "]\t= " << wires[input_bias + i] << endl;*/
-      } else {
-        wires[input_bias + i] = BN_is_bit_set(
-            e_input,
-            cid * garbled_circuit.e_input_size
-                + (i - (int64_t) garbled_circuit.g_input_size));
-        /*LOG(INFO) << "e_input [" << cid << "]["
-         << (i - (int64_t) garbled_circuit.g_input_size)
-         << "]\t= input[" << input_bias + i << "]\t= "
-         << wires[input_bias + i] << endl;*/
+      uint64_t bit_bias;
+      if ((int64_t)(i + input_bias) < (int64_t) garbled_circuit.get_p_input_hi_index()) {  // input belongs to p
+        bit_bias = cid * garbled_circuit.p_input_size + i + input_bias
+            - (int64_t) garbled_circuit.get_p_input_lo_index();
+        wires[input_bias + i] = BN_is_bit_set(p_input, bit_bias);
+
+      } else if ((int64_t)(i + input_bias)
+          < (int64_t) garbled_circuit.get_g_input_hi_index()) {  // input belongs to g
+        bit_bias = cid * garbled_circuit.g_input_size + i + input_bias
+            - (int64_t) garbled_circuit.get_g_input_lo_index();
+        wires[input_bias + i] = BN_is_bit_set(g_input, bit_bias);
+      } else {  // e
+        bit_bias = cid * garbled_circuit.e_input_size + i + input_bias
+            - (int64_t) garbled_circuit.get_e_input_lo_index();
+        wires[input_bias + i] = BN_is_bit_set(e_input, bit_bias);
       }
     }
 
@@ -154,23 +163,30 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
 }
 
 int EvalauatePlaintextStr(const string& scd_file_address,
-                          const string& g_init_str, const string& e_init_str,
+                          const string& p_init_str, const string& g_init_str,
+                          const string& e_init_str, const string& p_input_str,
                           const string& g_input_str, const string& e_input_str,
-                          uint64_t clock_cycles, int output_mode,
+                          uint64_t clock_cycles, OutputMode output_mode,
                           string* outputs_str) {
+  BIGNUM* p_init = BN_new();
   BIGNUM* g_init = BN_new();
   BIGNUM* e_init = BN_new();
+  BIGNUM* p_input = BN_new();
   BIGNUM* g_input = BN_new();
   BIGNUM* e_input = BN_new();
 
+  BN_hex2bn(&p_init, p_init_str.c_str());
   BN_hex2bn(&g_init, g_init_str.c_str());
   BN_hex2bn(&e_init, e_init_str.c_str());
+  BN_hex2bn(&p_input, p_input_str.c_str());
   BN_hex2bn(&g_input, g_input_str.c_str());
   BN_hex2bn(&e_input, e_input_str.c_str());
 
-  LOG(INFO) << "g_init = " << BN_bn2hex(g_init) << "\te_init = "
-            << BN_bn2hex(e_init) << "\tg_input = " << BN_bn2hex(g_input)
-            << "\te_input = " << BN_bn2hex(e_input) << endl;
+  LOG(INFO) << "p_init = " << BN_bn2hex(p_init) << "\tg_init = "
+            << BN_bn2hex(g_init) << "\te_init = " << BN_bn2hex(e_init)
+            << "\tp_input = " << BN_bn2hex(p_input) << "\tg_input = "
+            << BN_bn2hex(g_input) << "\te_input = " << BN_bn2hex(e_input)
+            << endl;
 
   GarbledCircuit garbled_circuit;
   if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {
@@ -179,12 +195,12 @@ int EvalauatePlaintextStr(const string& scd_file_address,
   }
 
   BIGNUM* outputs = BN_new();
-  EvalauatePlaintext(garbled_circuit, g_init, e_init, g_input, e_input,
-                     clock_cycles, &outputs);
+  EvalauatePlaintext(garbled_circuit, p_init, g_init, e_init, p_input, g_input,
+                     e_input, clock_cycles, &outputs);
 
   LOG(INFO) << "outputs = " << BN_bn2hex(outputs) << endl;
   OutputBN2StrHighMem(garbled_circuit, outputs, clock_cycles, output_mode,
-               outputs_str);
+                      outputs_str);
   return SUCCESS;
 }
 

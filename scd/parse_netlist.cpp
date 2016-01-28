@@ -260,17 +260,22 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         string bits_str(*beg);
         no_of_bits = atoi(bits_str.c_str())+1;
       } else if(str.compare("clk") && str.compare("rst")) {
-        if(!str.compare("g_init")) {
+        if(!str.compare("p_init")) {
+          readCircuitString.p_init_size = (no_of_bits>0)?no_of_bits:1;
+        } else if(!str.compare("g_init")) {
           readCircuitString.g_init_size = (no_of_bits>0)?no_of_bits:1;
         } else if(!str.compare("e_init")) {
           readCircuitString.e_init_size = (no_of_bits>0)?no_of_bits:1;
+        } else if(!str.compare("p_input")) {
+          readCircuitString.p_input_size = (no_of_bits>0)?no_of_bits:1;
         } else if(!str.compare("g_input")) {
           readCircuitString.g_input_size = (no_of_bits>0)?no_of_bits:1;
         } else if(!str.compare("e_input")) {
           readCircuitString.e_input_size = (no_of_bits>0)?no_of_bits:1;
         } else {
           LOG(ERROR) << "The input name is not valid " << str << endl <<
-          "valid choice: { g_init,  e_init, g_input, e_input}" << endl;
+          "valid choice: { p_init, g_init, e_init, "
+          "p_input, g_input, e_input}" << endl;
           return FAILURE;
         }
       }
@@ -403,8 +408,10 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
   }
 }
 
-  LOG(INFO) << "g_init:" << readCircuitString.g_init_size << " e_init:"
-            << readCircuitString.e_init_size << " g_input:"
+  LOG(INFO) << "p_init:" << readCircuitString.p_init_size << " g_init:"
+            << readCircuitString.g_init_size << " e_init:"
+            << readCircuitString.e_init_size << " p_input:"
+            << readCircuitString.p_input_size << " g_input:"
             << readCircuitString.g_input_size << " e_input:"
             << readCircuitString.e_input_size << endl;
 
@@ -442,23 +449,26 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
 }
 
 void AddWireArray(map<string, int64_t>& wire_name_table, const string& name,
-                  uint64_t size, int64_t& wire_index) {
+                  uint64_t size, int64_t *wire_index) {
   if (size == 1) {
-    wire_name_table.insert(pair<string, int64_t>(name, wire_index));
-    wire_name_table.insert(pair<string, int64_t>(name + "[0]", wire_index++));  // some cases, it is w[0]
+    wire_name_table.insert(pair<string, int64_t>(name, *wire_index));
+    wire_name_table.insert(
+        pair<string, int64_t>(name + "[0]", (*wire_index)++));  // some cases, it is w[0]
   } else {
     for (uint i = 0; i < size; ++i) {
       wire_name_table.insert(
           pair<string, int64_t>(name + "[" + std::to_string(i) + "]",
-                                wire_index++));
+                                (*wire_index)++));
     }
   }
 }
 
 int IdAssignment(const ReadCircuitString& readCircuitString,
                  ReadCircuit &readCircuit) {
+  readCircuit.p_init_size = readCircuitString.p_init_size;
   readCircuit.g_init_size = readCircuitString.g_init_size;
   readCircuit.e_init_size = readCircuitString.e_init_size;
+  readCircuit.p_input_size = readCircuitString.p_input_size;
   readCircuit.g_input_size = readCircuitString.g_input_size;
   readCircuit.e_input_size = readCircuitString.e_input_size;
 
@@ -469,12 +479,15 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
   map<string, int64_t> wire_name_table;
   int64_t wire_index = 0;
 
-  AddWireArray(wire_name_table, "g_init", readCircuit.g_init_size, wire_index);
-  AddWireArray(wire_name_table, "e_init", readCircuit.e_init_size, wire_index);
+  AddWireArray(wire_name_table, "p_init", readCircuit.p_init_size, &wire_index);
+  AddWireArray(wire_name_table, "g_init", readCircuit.g_init_size, &wire_index);
+  AddWireArray(wire_name_table, "e_init", readCircuit.e_init_size, &wire_index);
+  AddWireArray(wire_name_table, "p_input", readCircuit.p_input_size,
+               &wire_index);
   AddWireArray(wire_name_table, "g_input", readCircuit.g_input_size,
-               wire_index);
+               &wire_index);
   AddWireArray(wire_name_table, "e_input", readCircuit.e_input_size,
-               wire_index);
+               &wire_index);
 
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     wire_name_table.insert(
@@ -610,8 +623,7 @@ int TopologicalSort(ReadCircuit &readCircuit) {
 
   vector<int64_t> ts(readCircuit.gate_size);
 
-  int64_t input_size = readCircuit.g_init_size + readCircuit.e_init_size
-      + readCircuit.g_input_size + readCircuit.e_input_size;
+  int64_t input_size = readCircuit.get_init_input_size();
   for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
     readCircuit.task_schedule[i] = core[0][i];
     ts[i] = core[0][i] + input_size + readCircuit.dff_size;

@@ -49,7 +49,7 @@
 
 int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
                     BIGNUM* g_input, uint64_t clock_cycles,
-                    const string& output_mask, int output_mode,
+                    const string& output_mask, OutputMode output_mode,
                     block* init_labels, block* input_labels,
                     block* output_labels, short* output_vals, BIGNUM* output_bn,
                     block R, block global_key, bool disable_OT, int connfd) {
@@ -86,7 +86,7 @@ int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
 
 int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
                       BIGNUM* e_input, uint64_t clock_cycles,
-                      const string& output_mask, int output_mode,
+                      const string& output_mask, OutputMode output_mode,
                       block* init_labels, block* input_labels,
                       block* output_labels, short* output_vals,
                       BIGNUM* output_bn, block global_key, bool disable_OT,
@@ -846,7 +846,7 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
 int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
                          block* output_labels, short * output_vals,
                          uint64_t clock_cycles, const string& output_mask,
-                         int output_mode, BIGNUM* output_bn, int connfd) {
+                         OutputMode output_mode, BIGNUM* output_bn, int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
@@ -885,7 +885,7 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
 int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
                            block* output_labels, short* output_vals,
                            uint64_t clock_cycles, const string& output_mask,
-                           int output_mode, BIGNUM* output_bn, int connfd) {
+                           OutputMode output_mode, BIGNUM* output_bn, int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
 

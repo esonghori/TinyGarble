@@ -189,12 +189,12 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
 }
 
 int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                 uint64_t clock_cycles, int output_mode, string *output_str) {
+                 uint64_t clock_cycles, OutputMode output_mode, string *output_str) {
   (*output_str) = "";
-  if (output_mode == 0) {  // normal
+  if (output_mode == OutputMode::consecutive) {  // normal
     const char* output_c = BN_bn2hex(outputs);
     (*output_str) = output_c;
-  } else if (output_mode == 1) {  // Separated by clock
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
     BIGNUM* temp = BN_new();
     for (uint64_t i = 0; i < clock_cycles; i++) {
       BN_rshift(temp, outputs, i * garbled_circuit.output_size);
@@ -205,7 +205,7 @@ int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
       }
     }
     BN_free(temp);
-  } else if (output_mode == 2) {  // only last clock
+  } else if (output_mode == OutputMode::last_clock) {  // only last clock
     BIGNUM* temp = BN_new();
     BN_rshift(temp, outputs, (clock_cycles - 1) * garbled_circuit.output_size);
     BN_mask_bits(temp, garbled_circuit.output_size);
@@ -216,13 +216,13 @@ int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
 }
 
 int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                       uint64_t clock_cycles, int output_mode,
+                       uint64_t clock_cycles, OutputMode output_mode,
                        string* output_str) {
   (*output_str) = "";
-  if (output_mode == 0) {  // normal
+  if (output_mode == OutputMode::consecutive) {  // normal
     const char* output_c = BN_bn2hex(outputs);
     (*output_str) = output_c;
-  } else if (output_mode == 1) {  // Separated by clock
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
     BIGNUM* temp = BN_new();
     for (uint64_t i = 0; i < clock_cycles; i++) {
       BN_rshift(temp, outputs, i * garbled_circuit.output_size);
@@ -233,7 +233,7 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
       }
     }
     BN_free(temp);
-  } else if (output_mode == 2) {  // only last clock
+  } else if (output_mode == OutputMode::last_clock) {  // only last clock
     (*output_str) += BN_bn2hex(outputs);
   }
 
