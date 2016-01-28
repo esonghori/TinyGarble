@@ -146,7 +146,8 @@ int main(int argc, char* argv[]) {
   string input_str;
   uint64_t clock_cycles;
   string output_mask;
-  int output_mode;
+  string output_mode_str;
+  OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
   bool low_mem_foot = false;
   boost::format fmter(
@@ -181,8 +182,9 @@ int main(int argc, char* argv[]) {
   ("output_mask", po::value<string>(&output_mask)->default_value("0"),
    "Hexadecimal mask for output. 0 indicates that output belongs to Bob, "
    "and 1 belongs to Alice.")  //
-  ("output_mode", po::value<int>(&output_mode)->default_value(0),
-   "0: normal, 1:separated by clock 2:last clock.");
+  ("output_mode", po::value<string>(&output_mode_str),
+   "output print mode: {0:consecutive, 1:separated_clock, "
+   "2:last_clock}, e.g., consecutive, 0, 1");
 
   po::variables_map vm;
   try {
@@ -198,6 +200,25 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
     std::cout << desc << endl;
     return FAILURE;
+  }
+
+  if (vm.count("output_mode")) {
+    if (vm["output_mode"].as<string>() == "0"
+        || vm["output_mode"].as<string>() == "consecutive") {
+      output_mode = OutputMode::consecutive;
+    } else if (vm["output_mode"].as<string>() == "1"
+        || vm["output_mode"].as<string>() == "separated_clock") {
+      output_mode = OutputMode::separated_clock;
+    } else if (vm["output_mode"].as<string>() == "2"
+        || vm["output_mode"].as<string>() == "last_clock") {
+      output_mode = OutputMode::last_clock;
+    } else {
+      LOG(ERROR) << "ERROR: output_mode should be in "
+                 "{0:consecutive, 1:separated_clock, 2:last_clock}"
+                 << endl;
+      std::cout << desc << endl;
+      return FAILURE;
+    }
   }
 
   if (vm.count("disable_OT")) {

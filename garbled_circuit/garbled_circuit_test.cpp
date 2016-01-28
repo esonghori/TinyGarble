@@ -39,7 +39,7 @@ struct GCTestStruct {
   string input;
   string output;
   string output_mask;
-  int output_mode;
+  OutputMode output_mode;
   bool disable_OT;
   bool low_mem_foot;
   uint64_t clock_cycles;
@@ -48,7 +48,7 @@ struct GCTestStruct {
 GCTestStruct MakeGCTestStruct(const string& scd_file_address,
                               const string& init, const string& input,
                               const string& output, const string& output_mask,
-                              int output_mode, bool disable_OT,
+                              OutputMode output_mode, bool disable_OT,
                               bool low_mem_foot, uint64_t clock_cycles) {
   GCTestStruct ret;
 
@@ -124,10 +124,12 @@ MU_TEST(Mux8Bit1cc) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/mux_8bit_1cc.scd";
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
-  int output_mode = 0;
+  OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
   bool low_mem_foot = false;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -143,9 +145,10 @@ MU_TEST(Mux8Bit1cc) {
     LOG(INFO) << "mux (8-bit 1cc): " << e_input_str << " from {0:"
               << to_string_hex(x[0], 2) << ", 1:" << to_string_hex(x[1], 2)
               << "}. " << g_input_str << endl;
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -168,10 +171,12 @@ MU_TEST(Sum1Bit8cc) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_nbit_ncc.scd";
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 8;
-  int output_mode = 0;
+  OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
   bool low_mem_foot = false;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -186,9 +191,10 @@ MU_TEST(Sum1Bit8cc) {
     LOG(INFO) << "sum (1-bit 8cc): " << g_input_str << " + " << e_input_str
               << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -212,10 +218,12 @@ MU_TEST(Sum8Bit1cc) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/sum_8bit_1cc.scd";
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 1;
-  int output_mode = 0;
+  OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
   bool low_mem_foot = false;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -229,9 +237,10 @@ MU_TEST(Sum8Bit1cc) {
 
     LOG(INFO) << "sum (8-bit 1cc): " << g_input_str << " + " << e_input_str
               << endl;
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -254,7 +263,9 @@ MU_TEST(Hamming32Bit1cc) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_1cc.scd";
-  int output_mode = 0;  // normal mode
+  OutputMode output_mode = OutputMode::consecutive;  // normal mode
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 1;
@@ -272,9 +283,10 @@ MU_TEST(Hamming32Bit1cc) {
     LOG(INFO) << "Hamming (32-bit 1cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -297,7 +309,9 @@ MU_TEST(Hamming32Bit8cc) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
-  int output_mode = 2;  // print the last cycle
+  OutputMode output_mode = OutputMode::last_clock;  // print the last cycle
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 8;
@@ -315,9 +329,10 @@ MU_TEST(Hamming32Bit8cc) {
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -341,7 +356,9 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
-  int output_mode = 2;  // print the last cycle
+  OutputMode output_mode = OutputMode::last_clock;  // print the last cycle
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 8;
@@ -359,9 +376,10 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -384,7 +402,9 @@ MU_TEST(Hamming32Bit8ccWithMask) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
-  int output_mode = 2;  // print the last cycle
+  OutputMode output_mode = OutputMode::last_clock;  // print the last cycle
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 8;
@@ -403,9 +423,10 @@ MU_TEST(Hamming32Bit8ccWithMask) {
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     string garble_output_str = output_str;
@@ -435,7 +456,9 @@ MU_TEST(Hamming32Bit8ccDisabledOTLowMem) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
-  int output_mode = 2;  // print the last cycle
+  OutputMode output_mode = OutputMode::last_clock;  // print the last cycle
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 8;
@@ -453,9 +476,10 @@ MU_TEST(Hamming32Bit8ccDisabledOTLowMem) {
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -479,7 +503,9 @@ MU_TEST(Hamming32Bit8ccLowMem) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
-  int output_mode = 2;  // print the last cycle
+  OutputMode output_mode = OutputMode::last_clock;  // print the last cycle
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
   uint64_t clock_cycles = 8;
@@ -497,9 +523,10 @@ MU_TEST(Hamming32Bit8ccLowMem) {
     LOG(INFO) << "Hamming (32-bit 8cc) distance between " << g_input_str
               << " and " << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, g_init_str,
@@ -523,10 +550,12 @@ MU_TEST(NonSecret8bit3cc) {
 
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/non_secret_test_8bit_ncc.scd";
+  string p_init_str = "";
+  string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
   uint64_t clock_cycles = 3;
-  int output_mode = 1;
+  OutputMode output_mode = OutputMode::separated_clock;
   bool disable_OT = false;
   bool low_mem_foot = false;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -547,9 +576,10 @@ MU_TEST(NonSecret8bit3cc) {
     LOG(INFO) << "Non-secret test (1-bit 8cc): " << g_input_str << " (+/-) "
               << e_input_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, g_init_str, e_init_str,
-                                    g_input_str, e_input_str, clock_cycles,
-                                    output_mode, &output_str);
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
     LOG(INFO) << "output_str = " << output_str << endl;

@@ -14,13 +14,13 @@
 
 int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* g_init,
                    BIGNUM* g_input, uint64_t clock_cycles,
-                   const string& output_mask, int output_mode,
+                   const string& output_mask, OutputMode output_mode,
                    block* init_labels, block* input_labels,
                    block* output_labels, short* output_vals, BIGNUM* output_bn,
                    block R, block global_key, bool disable_OT, int connfd);
 int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
                      BIGNUM* e_input, uint64_t clock_cycles,
-                     const string& output_mask, int output_mode,
+                     const string& output_mask, OutputMode output_mode,
                      block* init_labels, block* input_labels,
                      block* output_labels, short* output_vals,
                      BIGNUM* output_bn, block global_key, bool disable_OT,
@@ -61,16 +61,16 @@ int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
                                 BIGNUM* e_input, block* input_labels,
                                 uint64_t cid, bool disable_OT, int connfd);
 int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                       uint64_t clock_cycles, int output_mode,
+                       uint64_t clock_cycles, OutputMode output_mode,
                        string* output_str);
 int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                block* output_labels, short* output_vals,
-                               uint64_t cid, int output_mode,
+                               uint64_t cid, OutputMode output_mode,
                                const string& output_mask, BIGNUM* output_bn,
                                int connfd);
 int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                  block* output_labels, short* output_vals,
-                                 uint64_t cid, int output_mode,
+                                 uint64_t cid, OutputMode output_mode,
                                  const string& output_mask, BIGNUM* output_bn,
                                  int connfd);
 
