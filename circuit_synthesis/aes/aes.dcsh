@@ -20,14 +20,14 @@ compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high 
 write -hierarchy -format verilog -output syn/aes_syn_$cc.v
 }
 
-#elaborate aes_comb -architecture verilog -library DEFAULT -update
-#set_max_area -ignore_tns 0 
-#set_flatten false -design *
-#set_structure -design * false
-#set_resource_allocation area_only
-#report_compile_options
-#compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-#write -hierarchy -format verilog -output syn/aes_syn_1.v
+elaborate aes_comb -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/aes_syn_1.v
 
 
 exit
