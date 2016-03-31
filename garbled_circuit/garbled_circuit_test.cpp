@@ -684,16 +684,16 @@ MU_TEST(PublicWire8Bit2cc) {
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
-//  MU_RUN_TEST(Mux8Bit1cc);
-//  MU_RUN_TEST(Sum1Bit8cc);
-//  MU_RUN_TEST(Sum8Bit1cc);
-//  MU_RUN_TEST(Hamming32Bit1cc);
-//  MU_RUN_TEST(Hamming32Bit8cc);
-//  MU_RUN_TEST(Hamming32Bit8ccDisabledOT);
-//  MU_RUN_TEST(Hamming32Bit8ccWithMask);
-//  MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
-//  MU_RUN_TEST(Hamming32Bit8ccLowMem);
-//  MU_RUN_TEST(NonSecret8bit3cc);
+  MU_RUN_TEST(Mux8Bit1cc);
+  MU_RUN_TEST(Sum1Bit8cc);
+  MU_RUN_TEST(Sum8Bit1cc);
+  MU_RUN_TEST(Hamming32Bit1cc);
+  MU_RUN_TEST(Hamming32Bit8cc);
+  MU_RUN_TEST(Hamming32Bit8ccDisabledOT);
+  MU_RUN_TEST(Hamming32Bit8ccWithMask);
+  MU_RUN_TEST(Hamming32Bit8ccDisabledOTLowMem);
+  MU_RUN_TEST(Hamming32Bit8ccLowMem);
+  MU_RUN_TEST(NonSecret8bit3cc);
   MU_RUN_TEST(PublicWire8Bit2cc);
 
 }
