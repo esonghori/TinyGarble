@@ -70,9 +70,9 @@ module aes_comb
   generate 
   for(i=0;i<NR;i=i+1)
   begin:ADDROUNDKEY
-    if(i==NR-1) begin
+    if(i==NR-1) begin:LAST
       AddRoundKey a(.x(x3[i]), .y(expandedKeyi[i+1]), .z(out));
-    end else begin
+    end else begin:ELSE
       AddRoundKey a(.x(x4[i]), .y(expandedKeyi[i+1]), .z(x1[i+1]));
     end
   end

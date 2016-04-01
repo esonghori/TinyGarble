@@ -8,17 +8,18 @@ analyze -format verilog AddRoundKey.v
 analyze -format verilog SubBytes.v 
 analyze -format verilog ShiftRows.v 
 analyze -format verilog MixColumns.v 
+analyze -format verilog KeyExpansion.v
+analyze -format verilog KeyExpansionSeq.v
 
-foreach cc {10} {
-elaborate aes_seq -architecture verilog -library DEFAULT -update -parameters $cc
+elaborate aes_seq -architecture verilog -library DEFAULT -update
 set_max_area -ignore_tns 0 
 set_flatten false -design *
 set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn/aes_syn_$cc.v
-}
+write -hierarchy -format verilog -output syn/aes_10cc.v
+
 
 elaborate aes_comb -architecture verilog -library DEFAULT -update
 set_max_area -ignore_tns 0 
@@ -27,7 +28,7 @@ set_structure -design * false
 set_resource_allocation area_only
 report_compile_options
 compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
-write -hierarchy -format verilog -output syn/aes_syn_1.v
+write -hierarchy -format verilog -output syn/aes_1cc.v
 
 
 exit

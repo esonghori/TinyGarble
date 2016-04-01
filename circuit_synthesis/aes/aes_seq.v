@@ -37,7 +37,7 @@ module aes_seq
   always @(posedge clk or posedge rst) begin
     if (rst) begin
       key <= g_init;
-      msg = e_init;
+      msg <= e_init;
       counter <= 0;
     end else begin
       msg <= add_round_key_out;
