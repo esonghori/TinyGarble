@@ -17,6 +17,7 @@
 
 #include "scd/scheduling.h"
 
+#include <string>
 #include <cstring>
 #include "util/common.h"
 #include "util/log.h"
@@ -49,6 +50,70 @@ int TopSort(const vector<ReadGate>& G, int64_t no_task, int64_t *index) {
   return SUCCESS;
 }
 
+int DFS(const ReadCircuit &readCircuit, vector<int> *status, int wire_index,
+        vector<int> *loop) {
+
+  const vector<ReadGate>& Gates = readCircuit.gate_list;
+  int64_t no_of_input_dff = readCircuit.get_init_input_size()
+      + readCircuit.dff_size;
+
+  if (wire_index < 0 || (*status)[wire_index] == 2) {  // clear
+    return SUCCESS;
+  } else if ((*status)[wire_index] == 1) {  // loop
+    loop->push_back(wire_index);
+    return FAILURE;
+  } else {
+    (*status)[wire_index] = 1;
+    if (DFS(readCircuit, status, Gates[wire_index - no_of_input_dff].input[0],
+            loop) == FAILURE) {
+      loop->push_back(wire_index);
+      return FAILURE;
+    }
+    if (DFS(readCircuit, status, Gates[wire_index - no_of_input_dff].input[1],
+            loop) == FAILURE) {
+      loop->push_back(wire_index);
+      return FAILURE;
+    }
+    (*status)[wire_index] = 2;
+  }
+  return SUCCESS;
+}
+
+int FindPath(const ReadCircuit &readCircuit, vector<int> *loop) {
+
+  vector<int> path;
+  int64_t no_of_input_dff = readCircuit.get_init_input_size()
+      + readCircuit.dff_size;
+  int64_t no_of_gate = readCircuit.gate_size;
+
+  vector<int> status(no_of_input_dff + no_of_gate);
+  for (int64_t i = 0; i < no_of_input_dff + no_of_gate; i++) {
+    if (i < no_of_input_dff) {  // inputs or DFF inputs
+      status[i] = 2;  //clear
+    } else {
+      status[i] = 0;  //un visited
+    }
+  }
+
+  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
+    if (DFS(readCircuit, &status, readCircuit.dff_list[i].input[0],
+            loop) == FAILURE)
+      return FAILURE;
+  }
+
+  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
+    if (DFS(readCircuit, &status, readCircuit.output_list[i], loop) == FAILURE)
+      return FAILURE;
+  }
+
+  for (int64_t i = 0; i < no_of_input_dff + no_of_gate; i++) {
+    if (status[i] != 2)
+      return FAILURE;
+  }
+
+  return SUCCESS;
+}
+
 int Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
 
   const vector<ReadGate>& G = readCircuit.gate_list;
@@ -58,6 +123,19 @@ int Schedule(const ReadCircuit &readCircuit, int64_t no_core, int64_t **core) {
 
   int64_t no_of_input_dff = input_size + readCircuit.dff_size;
   no_task = readCircuit.gate_size;
+
+  vector<int> loop;
+  if (FindPath(readCircuit, &loop) != SUCCESS) {
+    LOG(ERROR) << "There is a loop in the circuit." << endl;
+
+    string loop_srt = "";
+    for (uint64_t i = 0; i < loop.size(); i++) {
+      loop_srt += std::to_string(loop[i] - no_of_input_dff) + " -> ";
+    }
+    LOG(ERROR) << loop_srt << endl;
+
+    //return FAILURE;
+  }
 
   int64_t *index;
   index = new int64_t[no_task];

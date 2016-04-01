@@ -99,7 +99,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
   bool endoffile = false;
   while (!endoffile) {
     getline(fin, buf);
-    char_separator<char> sep(" ,;.()\t\r");
+    char_separator<char> sep(" ,;()\t\r");
     tokenizer<char_separator<char> > tok(buf, sep);
 
     BOOST_FOREACH(string str, tok){
@@ -293,37 +293,37 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         "valid choice: { o }" << endl;
         return FAILURE;
       }
-    } else if (!str.compare("A")) {
+    } else if (!str.compare(".A")) {
       store_input0 = 1;
     } else if(store_input0) {
       readCircuitString.gate_list_string.back().input[0] = str;
       store_input0 = 0;
-    } else if(!str.compare("D")) {
+    } else if(!str.compare(".D")) {
       store_d = 1;
     } else if(store_d) {
       readCircuitString.dff_list_string.back().input[0] = str;
       store_d = 0;
-    } else if(!str.compare("I")) {
+    } else if(!str.compare(".I")) {
       store_i = 1;
     } else if(store_i) {
       readCircuitString.dff_list_string.back().input[1] = str;
       store_i = 0;
-    } else if (!str.compare("B")) {
+    } else if (!str.compare(".B")) {
       store_input1 = 1;
     } else if(store_input1) {
       readCircuitString.gate_list_string.back().input[1] = str;
       store_input1 = 0;
-    } else if (!str.compare("Z")) {
+    } else if (!str.compare(".Z")) {
       store_output = 1;
     } else if(store_output) {
       readCircuitString.gate_list_string.back().output = str;
       store_output = 0;
-    } else if (!str.compare("Q")) {
+    } else if (!str.compare(".Q")) {
       store_q = 1;
     } else if(store_q) {
       readCircuitString.dff_list_string.back().output = str;
       store_q = 0;
-    } else if (!str.compare("IN0")) {
+    } else if (!str.compare(".IN0")) {
       store_in0 = 1;
     } else if(store_in0) {
       int last = readCircuitString.gate_list_string.size() - 1;
@@ -337,7 +337,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         readCircuitString.gate_list_string[last-4].input[0] = str;
       }
       store_in0 = 0;
-    } else if (!str.compare("IN1")) {
+    } else if (!str.compare(".IN1")) {
       store_in1 = 1;
     } else if(store_in1) {
       int last = readCircuitString.gate_list_string.size() - 1;
@@ -351,7 +351,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         readCircuitString.gate_list_string[last].input[1] = str;
       }
       store_in1 = 0;
-    } else if (!str.compare("SEL") || !str.compare("CIN")) {
+    } else if (!str.compare(".SEL") || !str.compare(".CIN")) {
       store_sel_cin = 1;
     } else if(store_sel_cin) {
       int last = readCircuitString.gate_list_string.size() - 1;
@@ -363,7 +363,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         readCircuitString.gate_list_string[last-1].input[1] = str;
       }
       store_sel_cin = 0;
-    } else if (!str.compare("COUT")) {
+    } else if (!str.compare(".COUT")) {
       store_cout = 1;
     } else if(store_cout) {
       int last = readCircuitString.gate_list_string.size() - 1;
@@ -373,7 +373,7 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         readCircuitString.gate_list_string[last-1].output = str;
       }
       store_cout = 0;
-    } else if (!str.compare("F") || !str.compare("SUM")) {
+    } else if (!str.compare(".F") || !str.compare(".SUM")) {
       store_f_sum = 1;
     } else if(store_f_sum) {
       int last = readCircuitString.gate_list_string.size() - 1;
