@@ -1,32 +1,31 @@
+`timescale 1ns / 1ps
+// synopsys template
+
+
 module aes_comb
-#(
-	parameter CC=1
-)
 (
-	clk,
-	rst,
-	g_input,
-	e_input,
-	o
+  clk,
+  rst,
+  g_input,
+  e_input,
+  o
 );
-	localparam		NR = 10;
-	input					clk;
-	input					rst;
-  input 	[128*NR/CC-1:0]	g_input;
-  input 	[127:0] 		e_input;
-  output	[127:0] 		o;
+  localparam    NR = 10;
+  input                 clk;
+  input                 rst;
+  input   [127:0]       g_input; // key
+  input   [127:0]       e_input; // message
+  output  [127:0]       o;
 
-
-
-
-  wire  [128*NR/CC-1:0] key;
-  wire  [127:0]     msg;
-  wire  [127:0]     out;
-	wire 	[127:0] 		keyi[NR/CC-1:0];
-  wire 	[127:0] 		w0[NR/CC-1:0];
-  wire 	[127:0] 		w1[NR/CC-1:0];
-  wire 	[127:0] 		w2[NR/CC-1:0];
-  wire 	[127:0] 		w3[NR/CC-1:0];
+  wire    [127:0]          key;
+  wire    [127:0]          msg;
+  wire    [127:0]          out;
+  wire    [128*(NR+1)-1:0] expandedKey;
+  wire    [127:0]          expandedKeyi[NR:0];
+  wire    [127:0]          x1[NR-1:0];
+  wire    [127:0]          x2[NR-1:0];
+  wire    [127:0]          x3[NR-1:0];
+  wire    [127:0]          x4[NR-2:0];
 
 
   assign  key = g_input;   
@@ -35,45 +34,49 @@ module aes_comb
 
   genvar i;
 
-	generate 
-	for(i=0;i<NR/CC;i=i+1)
-	begin:KEYI
-		assign keyi[i] = key[128*(i+1)-1:128*i];
-	end
-	endgenerate
-
-	assign w0[0] = msg;
-
-    generate 
-	for(i=0;i<NR;i=i+1)
-	begin:ADDROUNDKEY
-		AddRoundKey a(.x(w0[i]), .y(keyi[i]), .z(w1[i]));
-	end
-	endgenerate
+  KeyExpansion e (.key(key), .expandedKey(expandedKey));
 
 
-	AddRoundKey a(.x(w3[NR-1]), .y(keyi[NR-1]), .z(out));
+  generate 
+  for(i=0;i<(NR+1);i=i+1)
+  begin:EXPANDKEY
+    assign expandedKeyi[i] = expandedKey[128*(i+1)-1:128*i];
+  end
+  endgenerate
 
-	generate 
-	for(i=0;i<NR;i=i+1)
-	begin:SUBBYTES
-		SubBytes a(.x(w1[i]), .z(w2[i]));
-	end
-	endgenerate
+  AddRoundKey a(.x(msg), .y(expandedKeyi[0]), .z(x1[0]));
 
-	generate 
-	for(i=0;i<NR;i=i+1)
-	begin:SHIFTROWS
-		ShiftRows 	c(.x(w2[i]), .z(w3[i]));
-	end
-	endgenerate
+  generate 
+  for(i=0;i<NR;i=i+1)
+  begin:SUBBYTES
+    SubBytes a(.x(x1[i]), .z(x2[i]));
+  end
+  endgenerate
 
-	generate 
-	for(i=0;i<NR-1;i=i+1)
-	begin:MIXCOLUMNS
-		MixColumns 	d(.x(w3[i]), .z(w0[i+1]));
-	end
-	endgenerate
+  generate 
+  for(i=0;i<NR;i=i+1)
+  begin:SHIFTROWS
+    ShiftRows c(.x(x2[i]), .z(x3[i]));
+  end
+  endgenerate
+
+  generate 
+  for(i=0;i<NR-1;i=i+1)
+  begin:MIXCOLUMNS
+    MixColumns d(.x(x3[i]), .z(x4[i]));
+  end
+  endgenerate
+
+  generate 
+  for(i=0;i<NR;i=i+1)
+  begin:ADDROUNDKEY
+    if(i==NR-1) begin
+      AddRoundKey a(.x(x3[i]), .y(expandedKeyi[i+1]), .z(out));
+    end else begin
+      AddRoundKey a(.x(x4[i]), .y(expandedKeyi[i+1]), .z(x1[i+1]));
+    end
+  end
+  endgenerate
 
 
 endmodule
