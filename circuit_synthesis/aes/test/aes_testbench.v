@@ -23,7 +23,7 @@ module aes_testbench();
 
   assign clk = 0;
   assign rst = 0;
-  assign g_input = 128'h98677fafd6adb70c59e8d947c971150f;
+  assign g_input = 128'h00000000000000000000000000000000;
   assign e_input = 128'h00000000000000000000000000000000;
 
 
@@ -56,7 +56,7 @@ module aes_testbench_seq();
   );
 
 
-  assign g_init = 128'h98677fafd6adb70c59e8d947c971150f;
+  assign g_init = 128'h00000000000000000000000000000000;
   assign e_init = 128'h00000000000000000000000000000000;
 
   integer i;
