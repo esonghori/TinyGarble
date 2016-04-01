@@ -23,3 +23,5 @@ transcript
 *.wlf
 syn/
 syn/*
+work/
+work/*
