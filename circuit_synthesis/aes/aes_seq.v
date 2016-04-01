@@ -1,92 +1,78 @@
+`timescale 1ns / 1ps
+// synopsys template
+
+
 module aes_seq
-#(
-	parameter CC=2
-)
 (
-	clk,
-	rst,
-	e_init,
-  g_input,
-	o
+  clk,
+  rst,
+  g_init,
+  e_init,
+  o
 );
-	localparam		NR = 10;
-	input					clk;
-	input					rst;
-  input   [127:0]         e_init;
-  input   [128*NR/CC-1:0] g_input;
-  output  [127:0]     o;
 
-  wire  [128*NR/CC-1:0] key;
-  wire  [127:0]     msg;
-  wire  [127:0]     out;
-	wire 	[127:0] 		keyi[NR/CC-1:0];
-  wire 	[127:0] 		w0[NR/CC:0];
-  wire 	[127:0] 		w1[NR/CC-1:0];
-  wire 	[127:0] 		w2[NR/CC-1:0];
-  wire 	[127:0] 		w3[NR/CC-1:0];
+  localparam            CC = 10;
+  localparam            NR = 10;
+  input                 clk;
+  input                 rst;
+  input   [127:0]       g_init; // key
+  input   [127:0]       e_init; // message
+  output  [127:0]       o;
 
 
-  assign  msg = e_init;
-  assign  key = g_input;   
-  assign  o = out;
+  reg     [127:0]          key;
+  reg     [127:0]          msg;
+  reg     [3:0]            counter;
 
-    reg		init;
-    reg 	[127:0]			state;
-   	always@(posedge clk or posedge rst)
-   	begin
-   		if(rst)
-   		begin
-   			state <= msg;
-   		end
-   		else
-   		begin
-			state <= w0[NR/CC-1];
-   		end
-   	end
-	assign w0[0] = state;
-    
+  wire    [127:0]          nextKey;
+  wire    [127:0]          add_round_key_input;
+  wire    [127:0]          add_round_key_out;
+  wire    [127:0]          sub_byte_out;
+  wire    [127:0]          shift_row_out;
+  wire    [127:0]          mix_col_out;
 
-    genvar i;
-
-	generate 
-	for(i=0;i<NR/CC;i=i+1)
-	begin:KEYI
-		assign keyi[i] = key[128*(i+1)-1:128*i];
-	end
-	endgenerate
+  KeyExpansionSeq e( .key(key), .counter(counter), .nextKey(nextKey));
 
 
+  always @(posedge clk or posedge rst) begin
+    if (rst) begin
+      key <= g_init;
+      msg = e_init;
+      counter <= 0;
+    end else begin
+      msg <= add_round_key_out;
+      key <= nextKey;
+      counter <= counter + 1;
+    end
+  end
 
-    generate 
-	for(i=0;i<NR/CC;i=i+1)
-	begin:ADDROUNDKEY
-		AddRoundKey a(.x(w0[i]), .y(keyi[i]), .z(w1[i]));
-	end
-	endgenerate
+  reg [1:0] addr_sel;
+
+  always @(*) begin
+    if(counter==0) begin
+      addr_sel = 2'b00;
+    end else if (counter<10) begin
+      addr_sel = 2'b01;
+    end else begin
+      addr_sel = 2'b11;
+    end
+  end
+
+  assign add_round_key_input = (addr_sel == 2'b0) ? msg :
+                               (addr_sel == 2'b1) ? mix_col_out:
+                                                    shift_row_out;
 
 
-	AddRoundKey a(.x(w3[NR/CC-1]), .y(keyi[NR/CC-1]), .z(out));
+  SubBytes b(.x(msg), .z(sub_byte_out));
 
-	generate 
-	for(i=0;i<NR/CC;i=i+1)
-	begin:SUBBYTES
-		SubBytes a(.x(w1[i]), .z(w2[i]));
-	end
-	endgenerate
+  ShiftRows c(.x(sub_byte_out), .z(shift_row_out));
 
-	generate 
-	for(i=0;i<NR/CC;i=i+1)
-	begin:SHIFTROWS
-		ShiftRows 	c(.x(w2[i]), .z(w3[i]));
-	end
-	endgenerate
+  MixColumns d(.x(shift_row_out), .z(mix_col_out));
 
-	generate 
-	for(i=0;i<NR/CC;i=i+1)
-	begin:MIXCOLUMNS
-		MixColumns 	d(.x(w3[i]), .z(w0[i+1]));
-	end
-	endgenerate
+  AddRoundKey a(.x(add_round_key_input), .y(key), .z(add_round_key_out));
+  
+
+  assign  o = add_round_key_out;
 
 
 endmodule

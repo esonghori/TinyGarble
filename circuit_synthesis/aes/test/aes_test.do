@@ -1,4 +1,3 @@
-add wave sim:/aes_testbench/utt_aes_comb/*
-add wave sim:/aes_testbench/utt_aes_comb/e/*
+add wave -position insertpoint sim:/aes_testbench_seq/utt_aes_seq/*
 
 run -all
