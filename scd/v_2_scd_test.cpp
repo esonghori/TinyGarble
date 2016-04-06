@@ -45,10 +45,10 @@ MU_TEST(SumNbitNcc) {
         + verilogfilenames[i];
     string outfilename = "/dev/null";
 
-    LOG(INFO) << "Verilog2SCD " << infilename << endl;
+    LOG(ERROR) << "Verilog2SCD " << infilename << endl;
     int ret = Verilog2SCD(infilename, outfilename);
 
-    mu_assert(ret == SUCCESS, "Verilog2SCD");
+    mu_assert(ret == SUCCESS, "Verilog2SCD " + verilogfilenames[i]);
   }
 }
 
