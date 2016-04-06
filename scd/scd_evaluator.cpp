@@ -93,12 +93,13 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
     uint64_t input_bias = garbled_circuit.get_input_lo_index();
     for (int64_t i = 0; i < (int64_t) garbled_circuit.get_input_size(); i++) {
       uint64_t bit_bias;
-      if ((int64_t)(i + input_bias) < (int64_t) garbled_circuit.get_p_input_hi_index()) {  // input belongs to p
+      if ((int64_t) (i + input_bias)
+          < (int64_t) garbled_circuit.get_p_input_hi_index()) {  // input belongs to p
         bit_bias = cid * garbled_circuit.p_input_size + i + input_bias
             - (int64_t) garbled_circuit.get_p_input_lo_index();
         wires[input_bias + i] = BN_is_bit_set(p_input, bit_bias);
 
-      } else if ((int64_t)(i + input_bias)
+      } else if ((int64_t) (i + input_bias)
           < (int64_t) garbled_circuit.get_g_input_hi_index()) {  // input belongs to g
         bit_bias = cid * garbled_circuit.g_input_size + i + input_bias
             - (int64_t) garbled_circuit.get_g_input_lo_index();
@@ -198,7 +199,7 @@ int EvalauatePlaintextStr(const string& scd_file_address,
   EvalauatePlaintext(garbled_circuit, p_init, g_init, e_init, p_input, g_input,
                      e_input, clock_cycles, &outputs);
 
-  LOG(INFO) << "outputs = " << BN_bn2hex(outputs) << endl;
+  //LOG(INFO) << "outputs = " << BN_bn2hex(outputs) << endl;
   OutputBN2StrHighMem(garbled_circuit, outputs, clock_cycles, output_mode,
                       outputs_str);
   return SUCCESS;

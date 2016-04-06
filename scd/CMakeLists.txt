@@ -10,17 +10,21 @@ add_library (SCD_SCD OBJECT
 add_library (SCD_SCD_Evaluator OBJECT
   "scd_evaluator.cpp")
 
-add_executable(V2SCD
-  "v_2_scd.cpp"
+add_library (SCD_V2SCD OBJECT
+  "v_2_scd.cpp")
+
+add_executable(V2SCD_Main
+  "v_2_scd_main.cpp"
+  "$<TARGET_OBJECTS:SCD_V2SCD>"
   "$<TARGET_OBJECTS:SCD_ParseNetlist>"
   "$<TARGET_OBJECTS:SCD_Scheduling>"
   "$<TARGET_OBJECTS:SCD_SCD>"
   "$<TARGET_OBJECTS:Util_Log>")
 
 if (Boost_FOUND)
-  target_link_libraries(V2SCD ${Boost_LIBRARIES})
+  target_link_libraries(V2SCD_Main ${Boost_LIBRARIES})
 endif (Boost_FOUND)
-target_link_libraries(V2SCD -lrt)
+target_link_libraries(V2SCD_Main -lrt)
 
 add_executable(SCD_Evaluator_Main
   "scd_evaluator_main.cpp"
@@ -38,6 +42,26 @@ if (OPENSSL_FOUND)
   target_link_libraries(SCD_Evaluator_Main ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
 target_link_libraries(SCD_Evaluator_Main -lrt)
+
+add_executable(V2SCD_Test
+  "v_2_scd_test.cpp"
+  "$<TARGET_OBJECTS:SCD_V2SCD>"
+  "$<TARGET_OBJECTS:SCD_ParseNetlist>"
+  "$<TARGET_OBJECTS:SCD_Scheduling>"
+  "$<TARGET_OBJECTS:SCD_SCD>"
+  "$<TARGET_OBJECTS:Util_Log>")
+
+if (Boost_FOUND)
+  target_link_libraries(V2SCD_Test ${Boost_LIBRARIES})
+endif (Boost_FOUND)
+target_link_libraries(V2SCD_Test -lrt)
+
+add_test (SCD_V2SCD_Test
+  V2SCD_Test --log2std)
+
+set_tests_properties (SCD_V2SCD_Test
+  PROPERTIES
+  FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
 
 add_executable(SCD_Evaluator_Test
   "scd_evaluator_test.cpp"
@@ -60,6 +84,8 @@ add_test (SCD_SCD_Evaluator_Test
   SCD_Evaluator_Test --log2std)
 
 set_tests_properties (SCD_SCD_Evaluator_Test
-	PROPERTIES
-	FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
+  PROPERTIES
+  FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
+
+
 
