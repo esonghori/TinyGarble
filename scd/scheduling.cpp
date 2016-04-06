@@ -333,28 +333,39 @@ enum Mark {
   PerMarked = 2   // Permanently mark
 };
 
-int TopologicalSortVisit(const ReadCircuit &readCircuit,
-                         const vector<vector<int64_t>> &fanout,
-                         vector<Mark> &marks, int64_t current_unmark_index,
+int TopologicalSortVisit(const ReadCircuit &readCircuit, vector<Mark> &marks,
+                         int64_t current_unmark_index,
                          vector<int64_t> &sorted_list, vector<int64_t> &loop) {
 
-  if (marks[current_unmark_index] == Mark::TempMarked) {
+  int64_t init_input_size = readCircuit.get_init_input_size();
+  int64_t init_input_dff_size = init_input_size + readCircuit.dff_size;
+
+  if (current_unmark_index < 0) {  // CONSTANT or IV 2nd input (-1) are sorted.
+    return SUCCESS;
+  } else if (marks[current_unmark_index] == Mark::TempMarked) {
     LOG(ERROR) << "There is a loop in the circuit." << endl;
     loop.push_back(current_unmark_index);
     return FAILURE;
-  }
-  if (marks[current_unmark_index] == Mark::UnMarked) {
+  } else if (marks[current_unmark_index] == Mark::UnMarked) {
     marks[current_unmark_index] = Mark::TempMarked;
 
-    const vector<int64_t>& umarked_gate_fanout = fanout[current_unmark_index];
-    for (int64_t i = 0; i < (int64_t) umarked_gate_fanout.size(); i++) {
-      if (TopologicalSortVisit(readCircuit, fanout, marks,
-                               umarked_gate_fanout[i], sorted_list,
-                               loop) == FAILURE) {
-        loop.push_back(current_unmark_index);
-        return FAILURE;
-      }
+    if (TopologicalSortVisit(
+        readCircuit,
+        marks,
+        readCircuit.gate_list[current_unmark_index - init_input_dff_size].input[0],
+        sorted_list, loop) == FAILURE) {
+      loop.push_back(current_unmark_index);
+      return FAILURE;
     }
+    if (TopologicalSortVisit(
+        readCircuit,
+        marks,
+        readCircuit.gate_list[current_unmark_index - init_input_dff_size].input[1],
+        sorted_list, loop) == FAILURE) {
+      loop.push_back(current_unmark_index);
+      return FAILURE;
+    }
+
     marks[current_unmark_index] = Mark::PerMarked;
     sorted_list.push_back(current_unmark_index);
   }
@@ -370,19 +381,19 @@ int TopologicalSort(const ReadCircuit &readCircuit,
   int64_t init_input_dff_size = init_input_size + readCircuit.dff_size;
 
 // vector of fan out gates (gate ID) for each gate
-  vector<vector<int64_t>> fanout(init_input_dff_size + readCircuit.gate_size,
-                                 vector<int64_t>());
-
-  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
-    if (readCircuit.gate_list[i].input[0] >= 0) {
-      fanout[readCircuit.gate_list[i].input[0]].push_back(
-          i + init_input_dff_size);
-    }
-    if (readCircuit.gate_list[i].input[1] >= 0) {
-      fanout[readCircuit.gate_list[i].input[1]].push_back(
-          i + init_input_dff_size);
-    }
-  }
+//  vector<vector<int64_t>> fanout(init_input_dff_size + readCircuit.gate_size,
+//                                 vector<int64_t>());
+//
+//  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
+//    if (readCircuit.gate_list[i].input[0] >= 0) {
+//      fanout[readCircuit.gate_list[i].input[0]].push_back(
+//          i + init_input_dff_size);
+//    }
+//    if (readCircuit.gate_list[i].input[1] >= 0) {
+//      fanout[readCircuit.gate_list[i].input[1]].push_back(
+//          i + init_input_dff_size);
+//    }
+//  }
 
   sorted_list.clear();
   vector<Mark> marks(init_input_dff_size + readCircuit.gate_size,
@@ -396,32 +407,26 @@ int TopologicalSort(const ReadCircuit &readCircuit,
 
   while (true) {
     int64_t unmark_index = -1;
+    // Everything is sorted.
+    if (sorted_list.size() == init_input_dff_size + readCircuit.gate_size) {
+      break;
+    }
     for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
+      //TODO: use a list to store unmarked.
       if (marks[init_input_dff_size + i] == Mark::UnMarked) {
         unmark_index = init_input_dff_size + i;
         break;
       }
     }
-    if (unmark_index != -1) {  // there a unmarked gate
+    if (unmark_index != -1) {  // There is an unmarked gate.
       vector<int64_t> loop;  // for detecting loop
-      if (TopologicalSortVisit(readCircuit, fanout, marks, unmark_index,
-                               sorted_list, loop) == FAILURE) {
+      if (TopologicalSortVisit(readCircuit, marks, unmark_index, sorted_list,
+                               loop) == FAILURE) {
         string loop_id_str = "";
         string loop_name_str = "";
         for (int64_t i = (int64_t) loop.size() - 1; i > 0; i--) {
-
-          if (readCircuitString.gate_list_string[loop[i] - init_input_dff_size]
-              .output == "") {
-            loop_name_str += readCircuitString.gate_list_string[loop[i]
-                - init_input_dff_size].input[0] + "&"
-                + readCircuitString.gate_list_string[loop[i]
-                    - init_input_dff_size].input[1] + "->";
-          } else {
-
-            loop_name_str += readCircuitString.gate_list_string[loop[i]
-                - init_input_dff_size].output + "->";
-          }
-
+          loop_name_str += readCircuitString.gate_list_string[loop[i]
+              - init_input_dff_size].output + "->";
           loop_id_str += std::to_string(loop[i] - init_input_dff_size) + "->";
         }
         loop_name_str += readCircuitString.gate_list_string[loop[0]
@@ -456,8 +461,12 @@ int SortNetlist(ReadCircuit &readCircuit,
     return FAILURE;
 
   vector<int64_t> sorted_list_1(sorted_list.size());  //reverse sorted list
+
+  LOG(INFO) << "sorted list: " << endl;
   for (int64_t i = 0; i < (int64_t) sorted_list.size(); i++) {
     sorted_list_1[sorted_list[i]] = i;
+
+    LOG(INFO) << sorted_list[i] << endl;
   }
 
   readCircuit.task_schedule.clear();
@@ -480,15 +489,21 @@ int SortNetlist(ReadCircuit &readCircuit,
         .output];
   }
   for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
+    readCircuit.gate_list[i].output = sorted_list_1[init_input_dff_size + i];
     if (readCircuit.gate_list[i].input[0] > 0) {  // Constant values are negative
       readCircuit.gate_list[i].input[0] = sorted_list_1[readCircuit.gate_list[i]
           .input[0]];
+      CHECK_EXPR_MSG(
+          readCircuit.gate_list[i].input[0] < readCircuit.gate_list[i].output,
+          "input 0 is larger than gate id");
     }
     if (readCircuit.gate_list[i].input[1] > 0) {  // Constant values are negative
       readCircuit.gate_list[i].input[1] = sorted_list_1[readCircuit.gate_list[i]
           .input[1]];
+      CHECK_EXPR_MSG(
+          readCircuit.gate_list[i].input[1] < readCircuit.gate_list[i].output,
+          "input 1 is larger than gate id");
     }
-    readCircuit.gate_list[i].output = sorted_list_1[init_input_dff_size + i];
   }
   for (int64_t i = 0; i < (int64_t) readCircuit.output_size; i++) {
     readCircuit.output_list[i] = sorted_list_1[readCircuit.output_list[i]];

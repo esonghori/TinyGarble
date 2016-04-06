@@ -106,4 +106,6 @@ class ReadCircuit {
   }
 };
 
+int Verilog2SCD(const string &infilename, const string &outfilename);
+
 #endif
