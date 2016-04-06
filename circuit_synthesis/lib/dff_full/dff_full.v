@@ -209,7 +209,7 @@ module DFF
   RST,
   D,
   I, 
-  Q,
+  Q
 );
 
   input CLK, RST, D, I;
