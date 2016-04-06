@@ -7,14 +7,17 @@ module Inst_Mem
     parameter   L = 6
 )
 (
+  clk,
+  rst,
 	inst_mem_in_wire,
-    pc,
-    opcode
+  pc,
+  opcode
 );
 
 localparam  N = 2**L;
 
-
+input clk;
+input rst;
 // Interface
 input 	[31:2]		pc;
 output  [W-1:0]  	opcode;
@@ -35,14 +38,15 @@ endgenerate
 
 assign  opcode = inst_mem_reg[pc[L+3:2]];  
 
+integer i;
 always @(posedge clk or posedge rst) begin
   if (rst) begin
-    for (i = 0; i < n; i = i + 1)begin:
+    for (i = 0; i < N; i = i + 1) begin
         inst_mem_reg[i] <= inst_mem_in[i];
     end
   end
   else begin
-    for (i = 0; i < n; i = i + 1)begin:
+    for (i = 0; i < N; i = i + 1) begin
       inst_mem_reg[i] <= inst_mem_reg[i];
     end
   end
