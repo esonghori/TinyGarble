@@ -384,6 +384,15 @@ library(dff_full){
 			preset	: "I*RST";
 			clear_preset_var1	: L;
 		}
+		pin(CLK){
+			direction	: input;
+			capacitance	: 0;
+			clock	: true;
+		}
+		pin(RST){
+			direction	: input;
+			capacitance	: 0;
+		}
 		pin(D){
 			direction	: input;
 			capacitance	: 0;
@@ -391,16 +400,7 @@ library(dff_full){
 			  related_pin	: "CLK";
 			}
 		}
-		pin(CLK){
-			direction	: input;
-			capacitance	: 0;
-			clock	: true;
-		}
 		pin(I){
-			direction	: input;
-			capacitance	: 0;
-		}
-		pin(RST){
 			direction	: input;
 			capacitance	: 0;
 		}

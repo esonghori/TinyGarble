@@ -58,9 +58,6 @@ int EvaluateTransferInitLabels(const GarbledCircuit& garbled_circuit,
 int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
                                 BIGNUM* e_input, block* input_labels,
                                 uint64_t cid, bool disable_OT, int connfd);
-int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                       uint64_t clock_cycles, OutputMode output_mode,
-                       string* output_str);
 int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
                                block* output_labels, short* output_vals,
                                uint64_t cid, OutputMode output_mode,

@@ -22,11 +22,9 @@
 #include "scd/v_2_scd.h"
 
 string Type2StrGate(short itype);
-int ParseNetlist(const string &filename,
-                  ReadCircuitString &readCircuitString);
+int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString);
 int IdAssignment(const ReadCircuitString& readCircuitString,
-                  ReadCircuit &readCircuit);
+                 ReadCircuit &readCircuit);
 int TopologicalSort(ReadCircuit &readCircuit);
-
 
 #endif /* SCD_PARSE_NETLIST_H_ */

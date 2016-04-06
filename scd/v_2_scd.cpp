@@ -21,8 +21,9 @@
 #include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
-#include "scd/scd.h"
 #include "scd/parse_netlist.h"
+#include "scd/scd.h"
+#include "scd/scheduling.h"
 #include "util/log.h"
 
 namespace po = boost::program_options;
@@ -34,25 +35,25 @@ int Verilog2SCD(const string &infilename, const string &outfilename) {
   ReadCircuitString readCircuitString;
   ReadCircuit readCircuit;
 
-  if (ParseNetlist(infilename, readCircuitString) == -1) {
+  if (ParseNetlist(infilename, readCircuitString) == FAILURE) {
     LOG(ERROR) << "parsing verilog netlist failed." << endl;
-    return -1;
+    return FAILURE;
   }
-  if (IdAssignment(readCircuitString, readCircuit) == -1) {
+  if (IdAssignment(readCircuitString, readCircuit) == FAILURE) {
     LOG(ERROR) << "id assignment to netlist components failed." << endl;
-    return -1;
+    return FAILURE;
   }
-  if (TopologicalSort(readCircuit) == -1) {
+  if (SortNetlist(readCircuit, readCircuitString) == FAILURE) {
     LOG(ERROR) << "topological sort failed." << endl;
-    return -1;
+    return FAILURE;
   }
 
-  if (WriteSCD(readCircuit, outfilename) == -1) {
+  if (WriteSCD(readCircuit, outfilename) == FAILURE) {
     LOG(ERROR) << "write result to SCD file failed." << endl;
-    return -1;
+    return FAILURE;
   }
 
-  return 0;
+  return SUCCESS;
 }
 
 int main(int argc, char** argv) {
@@ -80,13 +81,13 @@ int main(int argc, char** argv) {
     po::store(parsed, vm);
     if (vm.count("help")) {
       std::cout << desc << endl;
-      return 0;
+      return SUCCESS;
     }
     po::notify(vm);
   } catch (po::error& e) {
     LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
     std::cout << desc << endl;
-    return -1;
+    return FAILURE;
   }
 
   if (vm.count("netlist") == 0 || vm.count("scd") == 0) {
@@ -95,14 +96,14 @@ int main(int argc, char** argv) {
         << "Both input netlist(-i) and output scd(-o) options must be indicated."
         << endl;
     std::cout << desc << endl;
-    return 0;
+    return SUCCESS;
   }
 
-  if (Verilog2SCD(input_netlist_file, output_scd_file) == -1) {
+  if (Verilog2SCD(input_netlist_file, output_scd_file) == FAILURE) {
     LOG(ERROR) << "Verilog to SCD failed." << endl;
-    return -1;
+    return FAILURE;
   }
 
   LogFinish();
-  return 0;
+  return SUCCESS;
 }
