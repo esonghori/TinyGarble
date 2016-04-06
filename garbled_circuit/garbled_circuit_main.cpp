@@ -142,10 +142,10 @@ int main(int argc, char* argv[]) {
   int port;
   string scd_file_address;
   string server_ip;
-  string p_init_str;
-  string p_input_str;
-  string init_str;
-  string input_str;
+  string p_init_f_hex_str;
+  string p_input_f_hex_str;
+  string init_f_hex_str;
+  string input_f_hex_str;
   uint64_t clock_cycles;
   string output_mask;
   string output_mode_str;
@@ -168,14 +168,15 @@ int main(int argc, char* argv[]) {
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
-  ("p_init", po::value<string>(&p_init_str)->default_value("0"),
-   "Hexadecimal public init for initializing DFFs.")  //
-  ("p_input", po::value<string>(&p_input_str)->default_value("0"),
-   "Hexadecimal public input.")  //
-  ("init", po::value<string>(&init_str)->default_value("0"),
+  ("p_init", po::value<string>(&p_init_f_hex_str)->default_value("0"),
+   "File or Hexadecimal public init for initializing DFFs. In case of file,"
+   " each line should contain multiple of 4 bits (e.g., 4bit, 8bit, 32bit).")  //
+  ("p_input", po::value<string>(&p_input_f_hex_str)->default_value("0"),
+   "File or Hexadecimal public input.")  //
+  ("init", po::value<string>(&init_f_hex_str)->default_value("0"),
    "Hexadecimal init for initializing DFFs.")  //
-  ("input", po::value<string>(&input_str)->default_value("0"),
-   "Hexadecimal input.")  //
+  ("input", po::value<string>(&input_f_hex_str)->default_value("0"),
+   "File or Hexadecimal input.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),
@@ -244,6 +245,12 @@ int main(int argc, char* argv[]) {
     std::cout << desc << endl;
     return FAILURE;
   }
+
+  // Transferring file in to hex
+  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+  string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
+  string init_str = ReadFileOrPassHex(init_f_hex_str);
+  string input_str = ReadFileOrPassHex(input_f_hex_str);
 
   if (vm.count("alice")) {
     // open the socket

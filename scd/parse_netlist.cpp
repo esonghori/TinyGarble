@@ -388,18 +388,46 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
       } else if(block_type == HADDER) {
         readCircuitString.gate_list_string[last].output = str;
       } else if(block_type == FADDER) {
-        readCircuitString.gate_list_string[last-4].output = "FADDER_INT_1" + std::to_string(last-4);
 
-        readCircuitString.gate_list_string[last-3].output = "FADDER_INT_2" + std::to_string(last-3);
+        // TODO: an awful hack in case of missing COUT
+        if(readCircuitString.gate_list_string[last-1].output == "") {  // FADDER w/o COUT
 
-        readCircuitString.gate_list_string[last-2].input[0] = readCircuitString.gate_list_string[last-4].output;
-        readCircuitString.gate_list_string[last-2].input[1] = readCircuitString.gate_list_string[last-3].output;
-        readCircuitString.gate_list_string[last-2].output = "FADDER_INT_3" + std::to_string(last-2);
+          ReadGateString g1, g2;
+          g1.type = XORGATE;
+          g2.type = XORGATE;
 
-        readCircuitString.gate_list_string[last-1].input[0] = readCircuitString.gate_list_string[last-2].output;
+          g1.input[0] = readCircuitString.gate_list_string[last-4].input[0];//INT0
+          g1.input[1] = readCircuitString.gate_list_string[last-3].input[0];//INT1
+          g1.output = "FADDER_INT_WO_COUT_" + std::to_string(last - 4);
 
-        readCircuitString.gate_list_string[last].input[0] = readCircuitString.gate_list_string[last-4].output;
-        readCircuitString.gate_list_string[last].output = str;
+          g2.input[0] = readCircuitString.gate_list_string[last-4].input[1];//CIN
+          g2.input[1] = g1.output;
+          g2.output = str;
+
+          readCircuitString.gate_list_string.pop_back();// XOR
+          readCircuitString.gate_list_string.pop_back();// XOR
+          readCircuitString.gate_list_string.pop_back();// AND
+          readCircuitString.gate_list_string.pop_back();// XOR
+          readCircuitString.gate_list_string.pop_back();// XOR
+
+          readCircuitString.gate_list_string.push_back(g1);
+          readCircuitString.gate_list_string.push_back(g2);
+
+        } else {
+
+          readCircuitString.gate_list_string[last-4].output = "FADDER_INT_1" + std::to_string(last-4);
+
+          readCircuitString.gate_list_string[last-3].output = "FADDER_INT_2" + std::to_string(last-3);
+
+          readCircuitString.gate_list_string[last-2].input[0] = readCircuitString.gate_list_string[last-4].output;
+          readCircuitString.gate_list_string[last-2].input[1] = readCircuitString.gate_list_string[last-3].output;
+          readCircuitString.gate_list_string[last-2].output = "FADDER_INT_3" + std::to_string(last-2);
+
+          readCircuitString.gate_list_string[last-1].input[0] = readCircuitString.gate_list_string[last-2].output;
+
+          readCircuitString.gate_list_string[last].input[0] = readCircuitString.gate_list_string[last-4].output;
+          readCircuitString.gate_list_string[last].output = str;
+        }
 
       }
       store_f_sum = 0;
@@ -609,88 +637,3 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
 
   return 0;
 }
-
-int TopologicalSort(ReadCircuit &readCircuit) {
-
-  int64_t **core;
-  core = new int64_t*[1];  // no of rows = no_core
-  core[0] = new int64_t[readCircuit.gate_size + 1];  // no of columns = no_of_gates+1
-  memset(core[0], -1, (readCircuit.gate_size + 1) * sizeof(uint64_t));
-
-  Schedule(readCircuit, 1, core);
-
-  readCircuit.task_schedule.resize(readCircuit.gate_size);
-
-  vector<int64_t> ts(readCircuit.gate_size);
-
-  int64_t input_size = readCircuit.get_init_input_size();
-  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
-    readCircuit.task_schedule[i] = core[0][i];
-    ts[i] = core[0][i] + input_size + readCircuit.dff_size;
-  }
-
-  vector<int64_t> ts_1(
-      input_size + readCircuit.dff_size + readCircuit.gate_size);
-
-  for (int64_t i = 0; i < input_size + (int64_t) readCircuit.dff_size; i++) {
-    ts_1[i] = i;
-  }
-
-  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
-    ts_1[ts[i]] = i + input_size + readCircuit.dff_size;
-  }
-  for (int64_t i = 0; i < (int64_t) readCircuit.dff_size; i++) {
-    if (readCircuit.dff_list[i].input[0] > 0) {  // Constant values are negative
-      readCircuit.dff_list[i].input[0] = ts_1[readCircuit.dff_list[i].input[0]];
-    }
-    if (readCircuit.dff_list[i].input[1] > 0) {  // Constant values are negative
-      readCircuit.dff_list[i].input[1] = ts_1[readCircuit.dff_list[i].input[1]];
-    }
-    readCircuit.dff_list[i].output = ts_1[readCircuit.dff_list[i].output];
-  }
-  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
-    if (readCircuit.gate_list[i].input[0] > 0) {  // Constant values are negative
-      readCircuit.gate_list[i].input[0] =
-          ts_1[readCircuit.gate_list[i].input[0]];
-    }
-    if (readCircuit.gate_list[i].input[1] > 0) {  // Constant values are negative
-      readCircuit.gate_list[i].input[1] =
-          ts_1[readCircuit.gate_list[i].input[1]];
-    }
-    readCircuit.gate_list[i].output =
-        ts_1[i + input_size + readCircuit.dff_size];
-  }
-  for (int64_t i = 0; i < (int64_t) readCircuit.output_size; i++) {
-    readCircuit.output_list[i] = ts_1[readCircuit.output_list[i]];
-  }
-
-  LOG(INFO) << endl << "Topological Sort" << endl;
-  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
-  for (int64_t i = 0; i < (int64_t) readCircuit.dff_size; i++) {
-    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
-              << readCircuit.dff_list[i].input[0] << "\t"
-              << readCircuit.dff_list[i].input[1] << "\t"
-              << readCircuit.dff_list[i].output << endl;
-  }
-  LOG(INFO) << endl;
-
-  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
-  for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
-    int64_t gid = readCircuit.task_schedule[i];
-    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[gid].type)
-              << "\t" << readCircuit.gate_list[gid].input[0] << "\t"
-              << readCircuit.gate_list[gid].input[1] << "\t"
-              << readCircuit.gate_list[gid].output << endl;
-  }
-  LOG(INFO) << endl;
-
-  LOG(INFO) << "outputs:" << endl;
-  for (int64_t i = 0; i < (int64_t) readCircuit.output_size; i++) {
-    LOG(INFO) << readCircuit.output_list[i] << endl;
-  }
-  LOG(INFO) << endl;
-  delete[] core[0];
-  delete[] core;
-  return 0;
-}
-
