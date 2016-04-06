@@ -134,6 +134,8 @@ MU_TEST(Mux8Bit1cc) {
   string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 1;
   OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
@@ -159,14 +161,16 @@ MU_TEST(Mux8Bit1cc) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -183,6 +187,8 @@ MU_TEST(Sum1Bit8cc) {
   string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 8;
   OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
@@ -207,14 +213,16 @@ MU_TEST(Sum1Bit8cc) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -232,6 +240,8 @@ MU_TEST(Sum8Bit1cc) {
   string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 1;
   OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
@@ -255,14 +265,16 @@ MU_TEST(Sum8Bit1cc) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -280,6 +292,8 @@ MU_TEST(Hamming32Bit1cc) {
   string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 1;
   bool disable_OT = false;
   bool low_mem_foot = false;
@@ -303,14 +317,16 @@ MU_TEST(Hamming32Bit1cc) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -328,6 +344,8 @@ MU_TEST(Hamming32Bit8cc) {
   string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 8;
   bool disable_OT = false;
   bool low_mem_foot = false;
@@ -351,14 +369,16 @@ MU_TEST(Hamming32Bit8cc) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -377,6 +397,8 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
   string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 8;
   bool disable_OT = true;
   bool low_mem_foot = false;
@@ -400,14 +422,16 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -425,8 +449,8 @@ MU_TEST(Hamming32Bit8ccWithMask) {
   string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
-  uint64_t clock_cycles = 8;
   string output_mask = "FFFFFFFFFFFF";  //48-bit
+  uint64_t clock_cycles = 8;
   bool disable_OT = false;
   bool low_mem_foot = false;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -481,6 +505,8 @@ MU_TEST(Hamming32Bit8ccDisabledOTLowMem) {
   string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 8;
   bool disable_OT = true;
   bool low_mem_foot = true;
@@ -504,14 +530,16 @@ MU_TEST(Hamming32Bit8ccDisabledOTLowMem) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -530,6 +558,8 @@ MU_TEST(Hamming32Bit8ccLowMem) {
   string p_input_str = "";
   string g_init_str = "";
   string e_init_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 8;
   bool disable_OT = false;
   bool low_mem_foot = true;
@@ -553,14 +583,16 @@ MU_TEST(Hamming32Bit8ccLowMem) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, "0", "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -578,6 +610,8 @@ MU_TEST(NonSecret8bit3cc) {
   string p_input_str = "";
   string g_init_str = "0";
   string e_init_str = "0";
+  string output_mask = "0";
+  string alice_output = "0";
   uint64_t clock_cycles = 3;
   OutputMode output_mode = OutputMode::separated_clock;
   bool disable_OT = false;
@@ -610,14 +644,16 @@ MU_TEST(NonSecret8bit3cc) {
 
     GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                  p_input_str, g_init_str,
-                                                 g_input_str, g_output_str, "0",
-                                                 output_mode, disable_OT,
-                                                 low_mem_foot, clock_cycles);
+                                                 g_input_str, g_output_str,
+                                                 alice_output, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
     GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                               p_input_str, e_init_str,
-                                              e_input_str, output_str, "0",
-                                              output_mode, disable_OT,
-                                              low_mem_foot, clock_cycles);
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
 
     ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
     mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -635,6 +671,8 @@ MU_TEST(PublicWire8Bit2cc) {
   string p_input_str = "B5C4C3DE95464A5C";  //2*32bit
   string g_input_str = "19458C20";  //2*16bit
   string e_input_str = "A5C6";  //2*8bit
+  string output_mask = "0";
+  string alice_output = "0";
   string output_str;  //2*32bit
   uint64_t clock_cycles = 2;
   bool disable_OT = false;
@@ -653,14 +691,16 @@ MU_TEST(PublicWire8Bit2cc) {
   low_mem_foot = false;
   GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                p_input_str, g_init_str,
-                                               g_input_str, "0", "0",
-                                               output_mode, disable_OT,
-                                               low_mem_foot, clock_cycles);
+                                               g_input_str, alice_output,
+                                               output_mask, output_mode,
+                                               disable_OT, low_mem_foot,
+                                               clock_cycles);
   GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                             p_input_str, e_init_str,
-                                            e_input_str, output_str, "0",
-                                            output_mode, disable_OT,
-                                            low_mem_foot, clock_cycles);
+                                            e_input_str, output_str,
+                                            output_mask, output_mode,
+                                            disable_OT, low_mem_foot,
+                                            clock_cycles);
 
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -668,16 +708,164 @@ MU_TEST(PublicWire8Bit2cc) {
   //
   low_mem_foot = true;
   garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                                  g_init_str, g_input_str, "0", "0",
-                                  output_mode, disable_OT, low_mem_foot,
-                                  clock_cycles);
+                                  g_init_str, g_input_str, alice_output,
+                                  output_mask, output_mode, disable_OT,
+                                  low_mem_foot, clock_cycles);
   eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                               e_init_str, e_input_str, output_str, "0",
+                               e_init_str, e_input_str, output_str, output_mask,
                                output_mode, disable_OT, low_mem_foot,
                                clock_cycles);
 
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   mu_assert(ret == SUCCESS, "TcpipTestRun");
+
+}
+
+MU_TEST(AES128Bit1cc) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/aes_1cc.scd";
+  OutputMode output_mode = OutputMode::last_clock;
+  string p_init_str = "";
+  string g_init_str = "";
+  string e_init_str = "";
+  string p_input_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
+  string output_str;
+  uint64_t clock_cycles = 1;
+  bool disable_OT = false;
+  bool low_mem_foot;
+
+  for (int i = 0; i < 2; i++) {
+    string g_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+        + "/scd/netlists/hex_file/aes_key_" + std::to_string(i) + ".txt";
+    string e_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+        + "/scd/netlists/hex_file/aes_message_" + std::to_string(i) + ".txt";
+    string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+        + "/scd/netlists/hex_file/aes_cipher_" + std::to_string(i) + ".txt";
+
+    string g_input_str = ReadFileOrPassHex(g_input_f_hex_str);
+    string e_input_str = ReadFileOrPassHex(e_input_f_hex_str);
+
+    LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
+
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+    string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
+    LOG(INFO) << "output_str: " << output_str << " expected output_str: "
+              << output_expected_str << endl;
+
+    mu_check(icompare(output_str, output_expected_str));
+
+    //
+    low_mem_foot = false;
+    GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                                 p_input_str, g_init_str,
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
+    GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                              p_input_str, e_init_str,
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
+
+    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+    mu_assert(ret == SUCCESS, "TcpipTestRun");
+
+    //
+    low_mem_foot = true;
+    garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                                    g_init_str, g_input_str, alice_output,
+                                    output_mask, output_mode, disable_OT,
+                                    low_mem_foot, clock_cycles);
+    eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                                 e_init_str, e_input_str, output_str,
+                                 output_mask, output_mode, disable_OT,
+                                 low_mem_foot, clock_cycles);
+
+    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+    mu_assert(ret == SUCCESS, "TcpipTestRun");
+  }
+
+}
+
+MU_TEST(AES128Bit11cc) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/aes_11cc.scd";
+  OutputMode output_mode = OutputMode::last_clock;
+  string p_init_str = "";
+  string p_input_str = "";
+  string g_input_str = "";
+  string e_input_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
+  string output_str;
+  uint64_t clock_cycles = 11;
+  bool disable_OT = false;
+  bool low_mem_foot;
+
+  for (int i = 0; i < 2; i++) {
+    string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+        + "/scd/netlists/hex_file/aes_key_" + std::to_string(i) + ".txt";
+    string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+        + "/scd/netlists/hex_file/aes_message_" + std::to_string(i) + ".txt";
+    string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+        + "/scd/netlists/hex_file/aes_cipher_" + std::to_string(i) + ".txt";
+
+    string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
+    string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
+
+    LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
+
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, output_mode,
+                                    &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+    string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
+    LOG(INFO) << "output_str: " << output_str << " expected output_str: "
+              << output_expected_str << endl;
+
+    mu_check(icompare(output_str, output_expected_str));
+
+    //
+    low_mem_foot = false;
+    GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                                 p_input_str, g_init_str,
+                                                 g_input_str, alice_output,
+                                                 output_mask, output_mode,
+                                                 disable_OT, low_mem_foot,
+                                                 clock_cycles);
+    GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                              p_input_str, e_init_str,
+                                              e_input_str, output_str,
+                                              output_mask, output_mode,
+                                              disable_OT, low_mem_foot,
+                                              clock_cycles);
+
+    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+    mu_assert(ret == SUCCESS, "TcpipTestRun");
+
+    //
+    low_mem_foot = true;
+    garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                                    g_init_str, g_input_str, alice_output,
+                                    output_mask, output_mode, disable_OT,
+                                    low_mem_foot, clock_cycles);
+    eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                                 e_init_str, e_input_str, output_str,
+                                 output_mask, output_mode, disable_OT,
+                                 low_mem_foot, clock_cycles);
+
+    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+    mu_assert(ret == SUCCESS, "TcpipTestRun");
+  }
 
 }
 
@@ -695,7 +883,8 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(Hamming32Bit8ccLowMem);
   MU_RUN_TEST(NonSecret8bit3cc);
   MU_RUN_TEST(PublicWire8Bit2cc);
-
+  MU_RUN_TEST(AES128Bit1cc);
+  MU_RUN_TEST(AES128Bit11cc);
 }
 
 int main(int argc, char* argv[]) {
