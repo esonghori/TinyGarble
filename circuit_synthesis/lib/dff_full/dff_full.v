@@ -37,12 +37,12 @@ module FADDER
   IN0, 
   IN1, 
   CIN, 
-  SUM, 
-  COUT 
+  COUT, 
+  SUM 
 );
 
   input IN0, IN1, CIN;
-  output SUM, COUT;
+  output COUT, SUM;
 
   assign SUM  = IN0^IN1^CIN;
   assign COUT = ((CIN&IN0)|(CIN&IN1)|(IN0&IN1));
