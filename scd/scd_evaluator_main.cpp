@@ -30,12 +30,12 @@ int main(int argc, char*argv[]) {
   LogInitial(argc, argv);
 
   string scd_file_address;
-  string p_init_str;
-  string g_init_str;
-  string e_init_str;
-  string p_input_str;
-  string g_input_str;
-  string e_input_str;
+  string p_init_f_hex_str;
+  string g_init_f_hex_str;
+  string e_init_f_hex_str;
+  string p_input_f_hex_str;
+  string g_input_f_hex_str;
+  string e_input_f_hex_str;
   uint64_t clock_cycles;
   string output_mode_str;
   OutputMode output_mode = OutputMode::consecutive;
@@ -47,18 +47,19 @@ int main(int argc, char*argv[]) {
    "scd address")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
-  ("p_init", po::value<string>(&p_init_str)->default_value("0"),
-   "p_init in hexadecimal.")  //
-  ("g_init", po::value<string>(&g_init_str)->default_value("0"),
-   "g_init in hexadecimal.")  //
-  ("e_init", po::value<string>(&e_init_str)->default_value("0"),
-   "e_init in hexadecimal.")  //
-  ("p_input", po::value<string>(&p_input_str)->default_value("5"),
-   "p_input in hexadecimal.")  //
-  ("g_input", po::value<string>(&g_input_str)->default_value("5"),
-   "g_input in hexadecimal.")  //
-  ("e_input", po::value<string>(&e_input_str)->default_value("4"),
-   "e_input in hexadecimal.")  //
+  ("p_init", po::value<string>(&p_init_f_hex_str)->default_value("0"),
+   "p_init file or in hexadecimal. In case of file, each "
+   "line should contain multiple of 4 bits (e.g., 4bit, 8bit, 32bit).")  //
+  ("g_init", po::value<string>(&g_init_f_hex_str)->default_value("0"),
+   "g_init file or in hexadecimal.")  //
+  ("e_init", po::value<string>(&e_init_f_hex_str)->default_value("0"),
+   "e_init file or in hexadecimal.")  //
+  ("p_input", po::value<string>(&p_input_f_hex_str)->default_value("0"),
+   "p_input file or in hexadecimal.")  //
+  ("g_input", po::value<string>(&g_input_f_hex_str)->default_value("0"),
+   "g_input file or in hexadecimal.")  //
+  ("e_input", po::value<string>(&e_input_f_hex_str)->default_value("0"),
+   "e_input file or in hexadecimal.")  //
   ("output_mode", po::value<string>(&output_mode_str),
    "output print mode: {0:consecutive, 1:separated_clock, "
    "2:last_clock}, e.g., consecutive, 0, 1");
@@ -98,6 +99,13 @@ int main(int argc, char*argv[]) {
       return FAILURE;
     }
   }
+
+  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+  string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
+  string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
+  string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
+  string g_input_str = ReadFileOrPassHex(g_input_f_hex_str);
+  string e_input_str = ReadFileOrPassHex(e_input_f_hex_str);
 
   string output_str;
   EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str, e_init_str,

@@ -41,9 +41,12 @@
 #include <stdint.h>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 #include "crypto/aes.h"
 #include "util/common.h"
 #include "util/log.h"
+
+using std::ifstream;
 
 static block cur_seed;
 
@@ -189,7 +192,8 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
 }
 
 int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                 uint64_t clock_cycles, OutputMode output_mode, string *output_str) {
+                        uint64_t clock_cycles, OutputMode output_mode,
+                        string *output_str) {
   (*output_str) = "";
   if (output_mode == OutputMode::consecutive) {  // normal
     const char* output_c = BN_bn2hex(outputs);
@@ -239,3 +243,36 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
 
   return SUCCESS;
 }
+
+string ReadFileOrPassHex(string file_hex_str) {  // file address of or a hex string
+
+  ifstream fin;
+  fin.open(file_hex_str);
+  if (fin.is_open()) {
+    string hex_str = "";
+    string line;
+    while (std::getline(fin, line)) {
+      hex_str = line + hex_str;
+    }
+    return hex_str;
+  } else {
+    return file_hex_str;
+  }
+}
+
+bool icompare_pred(unsigned char a, unsigned char b)
+{
+    return std::tolower(a) == std::tolower(b);
+}
+
+bool icompare(std::string const& a, std::string const& b)
+{
+    if (a.length()==b.length()) {
+        return std::equal(b.begin(), b.end(),
+                           a.begin(), icompare_pred);
+    }
+    else {
+        return false;
+    }
+}
+
