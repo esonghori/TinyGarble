@@ -21,6 +21,8 @@ output  [W-1:0]  	opcode;
 
 input 	[N*W-1:0] 	inst_mem_in_wire;
 
+reg [W-1:0]   inst_mem_reg  [0:N-1];
+
 //initialization
 wire    [W-1:0]   inst_mem_in  [0:N-1];
 genvar g;
@@ -31,6 +33,20 @@ begin:MEM_INIT
 end
 endgenerate
 
-assign  opcode = inst_mem_in[pc[L+3:2]];  //TODO add DFF instead of MUX
+assign  opcode = inst_mem_reg[pc[L+3:2]];  
+
+always @(posedge clk or posedge rst) begin
+  if (rst) begin
+    for (i = 0; i < n; i = i + 1)begin:
+        inst_mem_reg[i] <= inst_mem_in[i];
+    end
+  end
+  else begin
+    for (i = 0; i < n; i = i + 1)begin:
+      inst_mem_reg[i] <= inst_mem_reg[i];
+    end
+  end
+end
+
 
 endmodule
