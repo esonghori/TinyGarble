@@ -245,7 +245,6 @@ MU_TEST(AES128Bit1cc) {
   string output_str;
   uint64_t clock_cycles = 1;
 
-
   for (int i = 0; i < 2; i++) {
     string g_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
         + "/scd/netlists/hex_file/aes_key_" + std::to_string(i) + ".txt";
@@ -256,8 +255,6 @@ MU_TEST(AES128Bit1cc) {
         + "/scd/netlists/hex_file/aes_cipher_" + std::to_string(i) + ".txt";
     string g_input_str = ReadFileOrPassHex(g_input_f_hex_str);
     string e_input_str = ReadFileOrPassHex(e_input_f_hex_str);
-
-
 
     LOG(INFO) << "AES (128-bit 1cc)" << endl;
     int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
@@ -314,6 +311,81 @@ MU_TEST(AES128Bit11cc) {
 
 }
 
+MU_TEST(A23MemTest600cc) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/a23_gc_main_n_cc.scd";
+  OutputMode output_mode = OutputMode::last_clock;
+  string g_init_str = "";
+  string e_init_str = "";
+  string p_input_str = "";
+  string g_input_str = "";
+  string e_input_str = "";
+
+  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/hex_file/a23-mem-test-code.txt";
+
+  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+
+  string output_str;
+  uint64_t clock_cycles = 600;
+
+  LOG(INFO) << "A32 Mem Test 600cc" << endl;
+  int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                  e_init_str, p_input_str, g_input_str,
+                                  e_input_str, clock_cycles, output_mode,
+                                  &output_str);
+  mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+
+  string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/hex_file/a23-mem-test-o.txt";
+
+  string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
+  LOG(INFO) << "result: " << output_str << " expected result: "
+            << output_expected_str << endl;
+
+  mu_check(icompare(output_str, output_expected_str));
+}
+
+MU_TEST(A23Hamming750cc) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/a23_gc_main_n_cc.scd";
+  OutputMode output_mode = OutputMode::last_clock;
+
+  string p_input_str = "";
+  string g_input_str = "";
+  string e_input_str = "";
+
+  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/hex_file/a23-hamming-code.txt";
+  string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/hex_file/a23-hamming-g_init.txt";
+  string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/hex_file/a23-hamming-e_init.txt";
+
+  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+  string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
+  string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
+
+  string output_str;
+  uint64_t clock_cycles = 750;
+
+  LOG(INFO) << "A32 Hamming Distance 750cc" << endl;
+  int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                  e_init_str, p_input_str, g_input_str,
+                                  e_input_str, clock_cycles, output_mode,
+                                  &output_str);
+  mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+
+  string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/hex_file/a23-hamming-o.txt";
+
+  string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
+  LOG(INFO) << "result: " << output_str << " expected result: "
+            << output_expected_str << endl;
+
+  mu_check(icompare(output_str, output_expected_str));
+}
+
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
@@ -325,6 +397,8 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(PublicWire8Bit2cc);
   MU_RUN_TEST(AES128Bit1cc);
   MU_RUN_TEST(AES128Bit11cc);
+  MU_RUN_TEST(A23MemTest600cc);
+  MU_RUN_TEST(A23Hamming750cc);
 }
 
 int main(int argc, char *argv[]) {
