@@ -375,7 +375,9 @@ int FillFanout(GarbledCircuit* garbled_circuit) {
 
   for (uint64_t oid = 0; oid < garbled_circuit->output_size; oid++) {
     int64_t gid = garbled_circuit->outputs[oid] - gate_bias;
-    garbled_circuit->garbledGates[gid].fanout++;
+    if (gid >= 0) { // if output is not directly connected to DFF's Q or inputs.
+      garbled_circuit->garbledGates[gid].fanout++;
+    }
   }
 
   return SUCCESS;
