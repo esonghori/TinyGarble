@@ -954,7 +954,12 @@ int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit,
       if (output_vals[cid * garbled_circuit.output_size + i] == 0) {
         BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
       } else if (output_vals[cid * garbled_circuit.output_size + i] == 1) {
-        BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
+        if (cid * garbled_circuit.output_size + i
+            >= (uint64_t) BN_num_bits(output_mask_bn)
+            && BN_is_bit_set(output_mask_bn,
+                             cid * garbled_circuit.output_size + i) == 0) {
+          BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
+        }
       } else {
         short garble_output_type;
         short eval_output_type = get_LSB(
