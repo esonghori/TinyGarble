@@ -57,7 +57,7 @@ endif (Boost_FOUND)
 target_link_libraries(V2SCD_Test -lrt)
 
 add_test (SCD_V2SCD_Test
-  V2SCD_Test --log2std)
+  V2SCD_Test --error2std)
 
 set_tests_properties (SCD_V2SCD_Test
   PROPERTIES

@@ -52,6 +52,12 @@ using std::endl;
 #define NOTGATE 12
 #define DFFGATE -1
 
+// blocks
+#define MUXGATE 15
+#define HADDERGATE 16
+#define FADDERGATE 17
+#define INVALGATE 18
+
 #define RDTSC ({unsigned long long res; \
   unsigned hi, lo;   \
   __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi)); \
