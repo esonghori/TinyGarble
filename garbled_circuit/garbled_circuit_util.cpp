@@ -127,12 +127,11 @@ inline void HalfGarbleGate(int type, int knwon_wire_ind, short input_value,
 
 void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type,
                               short* output_value) {
-  if (input0_value >= 0 && input1_value >= 0) {
+  if (!IsSecret(input0_value) && !IsSecret(input1_value)) {
     *output_value = GateOperator(type, input0_value, input1_value);
-  } else if (input0_value >= 0) {
+  } else if (!IsSecret(input0_value)) {
     HalfGarbleEvalGateKnownValue(type, 0, input0_value, output_value);
-
-  } else if (input1_value >= 0) {
+  } else if (!IsSecret(input1_value)) {
     HalfGarbleEvalGateKnownValue(type, 1, input1_value, output_value);
   } else {
     *output_value = SECRET;
@@ -149,13 +148,13 @@ void GarbleGate(BlockPair input0_labels, short input0_value,
   output_labels->label0 = ZeroBlock();
   output_labels->label1 = ZeroBlock();
 
-  if (input0_value >= 0 && input1_value >= 0) {  // non-secret
+  if (!IsSecret(input0_value) && !IsSecret(input1_value)) {
     *output_value = GateOperator(type, input0_value, input1_value);
 
-  } else if (input0_value >= 0) {  // non-secret
+  } else if (!IsSecret(input0_value)) {
     HalfGarbleGate(type, 0, input0_value, input1_labels, output_labels,
                    output_value);
-  } else if (input1_value >= 0) {  // non-secret
+  } else if (!IsSecret(input1_value)) {
     HalfGarbleGate(type, 1, input1_value, input0_labels, output_labels,
                    output_value);
   } else {
@@ -331,12 +330,12 @@ void EvalGate(block input0_labels, short input0_value, block input1_labels,
               block* garbled_tables, uint64_t* garbled_table_ind,
               AES_KEY AES_Key, block* output_labels, short* output_value) {
 
-  if (input0_value >= 0 && input1_value >= 0) {
+  if (!IsSecret(input0_value) && !IsSecret(input1_value)) {
     *output_value = GateOperator(type, input0_value, input1_value);
-  } else if (input0_value >= 0) {
+  } else if (!IsSecret(input0_value)) {
     HalfEvalGate(type, 0, input0_value, input1_value, input1_labels,
                  output_labels, output_value);
-  } else if (input1_value >= 0) {
+  } else if (!IsSecret(input1_value)) {
     HalfEvalGate(type, 1, input1_value, input0_value, input0_labels,
                  output_labels, output_value);
   } else {
