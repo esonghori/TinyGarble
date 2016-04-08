@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
   string output_scd_file;
 
   boost::format fmter(
-      "Read Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
+      "Verilog to SCD, TinyGarble version %1%.%2%.%3%.\nAllowed options");
   fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
       % TinyGarble_VERSION_PATCH;
   po::options_description desc(fmter.str());
