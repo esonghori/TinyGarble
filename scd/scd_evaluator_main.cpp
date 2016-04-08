@@ -15,9 +15,11 @@
  You should have received a copy of the GNU General Public License
  along with TinyGarble.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "scd/scd_evaluator.h"
 
 #include <boost/program_options.hpp>
-#include "scd/scd_evaluator.h"
+#include <boost/format.hpp>
+
 #include "scd/scd.h"
 #include "util/common.h"
 #include "util/log.h"
@@ -39,11 +41,15 @@ int main(int argc, char*argv[]) {
   uint64_t clock_cycles;
   string output_mode_str;
   OutputMode output_mode = OutputMode::consecutive;
-  po::options_description desc("");
+  boost::format fmter(
+      "Evaluate Netlist in Plain-Text, TinyGarble version %1%.%2%.%3%.\nAllowed options");
+  fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
+      % TinyGarble_VERSION_PATCH;
+  po::options_description desc(fmter.str());
   desc.add_options()("help,h", "produce help message")  //
   ("scd_file,i",
    po::value<string>(&scd_file_address)->default_value(
-       "../scd/netlists/sum_nbit_ncc.scd"),
+       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/sum_nbit_ncc.scd"),
    "scd address")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //

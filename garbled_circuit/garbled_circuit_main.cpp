@@ -136,8 +136,8 @@ int main(int argc, char* argv[]) {
 
   LogInitial(argc, argv);
   HashInit();
-  srand(time(0));  // srand(1);
-  SrandSSE(time(0));  // SrandSSE(1111);
+  srand(time(0));
+  SrandSSE(time(0));
 
   int port;
   string scd_file_address;
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
   bool disable_OT = false;
   bool low_mem_foot = false;
   boost::format fmter(
-      "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
+      "Garble and Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
   fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
       % TinyGarble_VERSION_PATCH;
   po::options_description desc(fmter.str());
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
   ("bob,b", "Run as Bob (client).")  //
   ("scd_file,i",
    po::value<string>(&scd_file_address)->default_value(
-       "../scd/netlists/hamming_32bit_1cc.scd"),
+       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/hamming_32bit_1cc.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
