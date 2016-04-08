@@ -156,7 +156,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   short *wires_val = nullptr;
   CHECK_ALLOC(wires_val = new short[garbled_circuit.get_wire_size()]);
   for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
-    wires_val[i] = UNKOWN;  // All wires are initialed with unknown.
+    wires_val[i] = SECRET;  // All wires are initialed with secret.
   }
 
   int *fanout = nullptr;
@@ -199,7 +199,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
             wires[dff_bias + i].label0 = init_labels[label_index * 2 + 0];
             wires[dff_bias + i].label1 = init_labels[label_index * 2 + 1];
-            wires_val[dff_bias + i] = UNKOWN;
+            wires_val[dff_bias + i] = SECRET;
           }
         } else {
           LOG(ERROR) << "Invalid I: " << wire_index << endl;
@@ -252,7 +252,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      short input0_value = UNKOWN;
+      short input0_value = SECRET;
       if (input0 == CONST_ZERO) {
         input0_value = 0;
       } else if (input0 == CONST_ONE) {
@@ -265,7 +265,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         input0_value = 0;
       }
 
-      short input1_value = UNKOWN;
+      short input1_value = SECRET;
       if (input1 == CONST_ZERO) {
         input1_value = 0;
       } else if (input1 == CONST_ONE) {
@@ -281,10 +281,11 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       GarbleEvalGateKnownValue(input0_value, input1_value, type,
                                &wires_val[output]);
 
-      if (wires_val[output] != UNKOWN) {
-        if (input0_value == UNKOWN) {
+      if (wires_val[output] >= 0) {
+        fanout[i] = 0;
+        if (input0_value < 0) {
           ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
-        } else if (input1_value == UNKOWN) {
+        } else if (input1_value < 0) {
           ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
@@ -297,9 +298,9 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      if (fanout[i] > 0 && wires_val[output] == UNKOWN) {
+      if (fanout[i] > 0 && wires_val[output] < 0) {
         BlockPair input0_labels = { ZeroBlock(), ZeroBlock() };
-        short input0_value = -1;
+        short input0_value = SECRET;
         if (input0 == CONST_ZERO) {
           input0_value = 0;
         } else if (input0 == CONST_ONE) {
@@ -314,7 +315,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         }
 
         BlockPair input1_labels = { ZeroBlock(), ZeroBlock() };
-        short input1_value = -1;
+        short input1_value = SECRET;
         if (input1 == CONST_ZERO) {
           input1_value = 0;
         } else if (input1 == CONST_ONE) {
@@ -372,6 +373,10 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       << (100.0 * num_skipped_non_xor_gates) / (num_of_non_xor * clock_cycles)
       << "%)" << endl;
 
+  LOG(INFO) << "Total non-XOR gates = "
+            << num_of_non_xor * clock_cycles - num_skipped_non_xor_gates
+            << endl;
+
   LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Alice garbling time (cc) = " << garble_time << endl;
 
@@ -395,7 +400,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   short *wires_val = nullptr;
   CHECK_ALLOC(wires_val = new short[garbled_circuit.get_wire_size()]);
   for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
-    wires_val[i] = UNKOWN;  // All wires are initialed with unknown.
+    wires_val[i] = SECRET;  // All wires are initialed with unknown.
   }
 
   int *fanout = nullptr;
@@ -444,7 +449,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                 - (int64_t) garbled_circuit.get_p_init_hi_index();
 
             wires[dff_bias + i] = init_labels[label_index];
-            wires_val[dff_bias + i] = UNKOWN;
+            wires_val[dff_bias + i] = SECRET;
           }
         } else {
           LOG(ERROR) << "Invalid I: " << wire_index << endl;
@@ -494,7 +499,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      short input0_value = UNKOWN;
+      short input0_value = SECRET;
       if (input0 == CONST_ZERO) {
         input0_value = 0;
       } else if (input0 == CONST_ONE) {
@@ -507,7 +512,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         input0_value = 0;
       }
 
-      short input1_value = UNKOWN;
+      short input1_value = SECRET;
       if (input1 == CONST_ZERO) {
         input1_value = 0;
       } else if (input1 == CONST_ONE) {
@@ -522,14 +527,14 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
       GarbleEvalGateKnownValue(input0_value, input1_value, type,
                                &wires_val[output]);
-      if (wires_val[output] != UNKOWN) {
-        if (input0_value == UNKOWN) {
+      if (wires_val[output] >= 0) {
+        fanout[i] = 0;
+        if (input0_value < 0) {
           ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
-        } else if (input1_value == UNKOWN) {
+        } else if (input1_value < 0) {
           ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
-
     }
 
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  // secret values
@@ -539,9 +544,9 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      if (fanout[i] > 0 && wires_val[output] == UNKOWN) {
+      if (fanout[i] > 0 && wires_val[output] < 0) {
         block input0_labels = ZeroBlock();
-        short input0_value = -1;
+        short input0_value = SECRET;
         if (input0 == CONST_ZERO) {
           input0_value = 0;
         } else if (input0 == CONST_ONE) {
@@ -556,7 +561,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         }
 
         block input1_labels = ZeroBlock();
-        short input1_value = -1;
+        short input1_value = SECRET;
         if (input1 == CONST_ZERO) {
           input1_value = 0;
         } else if (input1 == CONST_ONE) {
