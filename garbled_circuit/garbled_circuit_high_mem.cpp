@@ -281,11 +281,11 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       GarbleEvalGateKnownValue(input0_value, input1_value, type,
                                &wires_val[output]);
 
-      if (wires_val[output] >= 0) {
+      if (!IsSecret(wires_val[output])) {
         fanout[i] = 0;
-        if (input0_value < 0) {
+        if (IsSecret(input0_value)) {
           ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
-        } else if (input1_value < 0) {
+        } else if (IsSecret(input1_value)) {
           ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
@@ -298,7 +298,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      if (fanout[i] > 0 && wires_val[output] < 0) {
+      if (fanout[i] > 0 && IsSecret(wires_val[output])) {
         BlockPair input0_labels = { ZeroBlock(), ZeroBlock() };
         short input0_value = SECRET;
         if (input0 == CONST_ZERO) {
@@ -527,11 +527,11 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
       GarbleEvalGateKnownValue(input0_value, input1_value, type,
                                &wires_val[output]);
-      if (wires_val[output] >= 0) {
+      if (!IsSecret(wires_val[output])) {
         fanout[i] = 0;
-        if (input0_value < 0) {
+        if (IsSecret(input0_value)) {
           ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
-        } else if (input1_value < 0) {
+        } else if (IsSecret(input1_value)) {
           ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
@@ -544,7 +544,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       int64_t output = garbledGate.output;
       int type = garbledGate.type;
 
-      if (fanout[i] > 0 && wires_val[output] < 0) {
+      if (fanout[i] > 0 && IsSecret(wires_val[output])) {
         block input0_labels = ZeroBlock();
         short input0_value = SECRET;
         if (input0 == CONST_ZERO) {

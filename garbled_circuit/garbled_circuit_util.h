@@ -47,6 +47,8 @@ using std::string;
 #define SECRET (-1)
 #define SECRET_INV (-2)
 
+#define IsSecret(X) ((X) < 0)
+
 /**
  * @brief Used to store two labels.
  */
