@@ -44,7 +44,8 @@
 
 using std::string;
 
-#define UNKOWN (-1)
+#define SECRET (-1)
+#define SECRET_INV (-2)
 
 /**
  * @brief Used to store two labels.
