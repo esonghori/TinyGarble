@@ -27,7 +27,6 @@
 #include "util/util.h"
 #include "util/log.h"
 #include "util/tinygarble_config.h"
-#include "util/minunit.h"
 
 GCTestStruct MakeGCTestStruct(const string& scd_file_address,
                                      const string& p_init,
