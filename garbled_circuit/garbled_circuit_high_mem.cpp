@@ -163,8 +163,12 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
 
   uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
-  block* garbled_tables = nullptr;
-  CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+  uint64_t garbled_tables_size = num_of_non_xor;
+  GarbledTable* garbled_tables_temp = nullptr;
+  CHECK_ALLOC(garbled_tables_temp = new GarbledTable[garbled_tables_size]);
+  GarbledTable* garbled_tables = nullptr;
+  CHECK_ALLOC(garbled_tables = new GarbledTable[garbled_tables_size]);
+
   uint64_t num_skipped_gates = 0;
   uint64_t num_skipped_non_xor_gates = 0;
 
@@ -175,7 +179,6 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
 
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
-    uint64_t garbled_table_ind = 0;
     uint64_t garble_start_time = RDTSC;
     // init
     uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
@@ -285,11 +288,14 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         fanout[i] = 0;
         if (IsSecret(input0_value)) {
           ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
-        } else if (IsSecret(input1_value)) {
+        }
+        if (IsSecret(input1_value)) {
           ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
     }
+
+    uint64_t garbled_table_ind_temp = 0;
 
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  //secret value
       GarbledGate& garbledGate = garbled_circuit.garbledGates[i];
@@ -330,10 +336,29 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         }
 
         GarbleGate(input0_labels, input0_value, input1_labels, input1_value,
-                   type, cid, i, garbled_tables, &garbled_table_ind, R, AES_Key,
-                   &wires[output], &wires_val[output]);
-      } else {
-        num_skipped_gates++;
+                   type, cid, i, garbled_tables_temp, &garbled_table_ind_temp,
+                   R, AES_Key, &wires[output], &wires_val[output]);
+        if (!IsSecret(wires_val[output])) {
+          fanout[i] = 0;
+          if (IsSecret(input0_value)) {
+            ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
+          }
+          if (IsSecret(input1_value)) {
+            ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
+          }
+        }
+      }
+    }
+
+    uint64_t garbled_table_ind = 0;  // fill from 0
+
+    // table select
+    for (uint64_t i = 0; i < garbled_table_ind_temp; i++) {
+      GarbledTable &table = garbled_tables_temp[i];
+      if (fanout[table.gid] > 0) {
+        garbled_tables[garbled_table_ind++] = table;
+        DUMP("table") << table.row[0] << endl;
+        DUMP("table") << table.row[1] << endl;
       }
     }
 
@@ -350,7 +375,9 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
     uint64_t comm_start_time = RDTSC;
     CHECK(SendData(connfd, &garbled_table_ind, sizeof(uint64_t)));
-    CHECK(SendData(connfd, garbled_tables, garbled_table_ind * sizeof(block)));
+    CHECK(
+        SendData(connfd, garbled_tables,
+                 garbled_table_ind * sizeof(GarbledTable)));
     comm_time += RDTSC - comm_start_time;
 
     num_skipped_non_xor_gates += num_of_non_xor - garbled_table_ind / 2;
@@ -384,6 +411,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   delete[] wires_val;
   delete[] fanout;
   delete[] garbled_tables;
+  delete[] garbled_tables_temp;
   return SUCCESS;
 }
 
@@ -407,8 +435,8 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
 
   uint64_t num_of_non_xor = NumOfNonXor(garbled_circuit);
-  block* garbled_tables = nullptr;
-  CHECK_ALLOC(garbled_tables = new block[num_of_non_xor * 2]);
+  GarbledTable* garbled_tables = nullptr;
+  CHECK_ALLOC(garbled_tables = new GarbledTable[num_of_non_xor]);
 
   uint64_t comm_time = 0;
   uint64_t eval_time = 0;
@@ -423,7 +451,8 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     uint64_t comm_start_time = RDTSC;
     CHECK(RecvData(connfd, &garbled_table_ind_rcv, sizeof(uint64_t)));
     CHECK(
-        RecvData(connfd, garbled_tables, garbled_table_ind_rcv * sizeof(block)));
+        RecvData(connfd, garbled_tables,
+                 garbled_table_ind_rcv * sizeof(GarbledTable)));
     comm_time += RDTSC - comm_start_time;
 
     uint64_t eval_start_time = RDTSC;
@@ -531,7 +560,8 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         fanout[i] = 0;
         if (IsSecret(input0_value)) {
           ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
-        } else if (IsSecret(input1_value)) {
+        }
+        if (IsSecret(input1_value)) {
           ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
         }
       }
@@ -578,6 +608,15 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         EvalGate(input0_labels, input0_value, input1_labels, input1_value, type,
                  cid, i, garbled_tables, &garbled_table_ind, AES_Key,
                  &wires[output], &wires_val[output]);
+        if (!IsSecret(wires_val[output])) {
+          fanout[i] = 0;
+          if (IsSecret(input0_value)) {
+            ReduceFanout(garbled_circuit, fanout, input0, gate_bias);
+          }
+          if (IsSecret(input1_value)) {
+            ReduceFanout(garbled_circuit, fanout, input1, gate_bias);
+          }
+        }
       }
     }
 

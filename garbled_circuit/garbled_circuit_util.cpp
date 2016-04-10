@@ -140,7 +140,7 @@ void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type,
 
 void GarbleGate(BlockPair input0_labels, short input0_value,
                 BlockPair input1_labels, short input1_value, int type,
-                uint64_t cid, uint64_t gid, block* garbled_tables,
+                uint64_t cid, uint64_t gid, GarbledTable* garbled_tables,
                 uint64_t* garbled_table_ind, block R, AES_KEY AES_Key,
                 BlockPair* output_labels, short* output_value) {
 
@@ -281,10 +281,10 @@ void GarbleGate(BlockPair input0_labels, short input0_value,
         output_labels->label0 = C0;
         output_labels->label1 = C1;
 
-        for (uint64_t j = 0; j < 2; j++) {
-          garbled_tables[(*garbled_table_ind)++] = table[j];
-          DUMP("table") << table[j] << endl;
-        }
+        garbled_tables[(*garbled_table_ind)].row[0] = table[0];
+        garbled_tables[(*garbled_table_ind)].row[1] = table[1];
+        garbled_tables[(*garbled_table_ind)].gid = gid;
+        (*garbled_table_ind)++;
       }
     }
   }
@@ -327,7 +327,7 @@ inline void HalfEvalGate(int type, int knwon_wire_ind, short input_value,
 
 void EvalGate(block input0_labels, short input0_value, block input1_labels,
               short input1_value, int type, uint64_t cid, uint64_t gid,
-              block* garbled_tables, uint64_t* garbled_table_ind,
+              GarbledTable* garbled_tables, uint64_t* garbled_table_ind,
               AES_KEY AES_Key, block* output_labels, short* output_value) {
 
   if (!IsSecret(input0_value) && !IsSecret(input1_value)) {
@@ -388,10 +388,15 @@ void EvalGate(block input0_labels, short input0_value, block input1_labels,
         block tweak1 = MakeBlock(cid, 2 * gid + 1);
 
         block table[2];
-        for (uint64_t j = 0; j < 2; j++) {
-          table[j] = garbled_tables[(*garbled_table_ind)++];
-          //CHECK(RecvData(connfd, &(table[j]), sizeof(block)));
-          DUMP("table") << table[j] << endl;
+        if (garbled_tables[(*garbled_table_ind)].gid == gid) {  // correct table
+          table[0] = garbled_tables[(*garbled_table_ind)].row[0];
+          table[1] = garbled_tables[(*garbled_table_ind)].row[1];
+          (*garbled_table_ind)++;
+          DUMP("table") << table[0] << endl;
+          DUMP("table") << table[1] << endl;
+        } else {  // the gate will not be used in output.
+          table[0] = RandomBlock();
+          table[1] = RandomBlock();
         }
 
         block keys[2];
