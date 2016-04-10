@@ -238,4 +238,10 @@ void EvalGate(block input0_labels, short input0_value, block input1_labels,
 int FillFanout(GarbledCircuit* garbled_circuit);
 void ReduceFanout(const GarbledCircuit& garbled_circuit, int *fanout,
                   int64_t wid, int64_t gate_bias);
+
+void PrintPredecessorsEval(const GarbledCircuit& garbled_circuit, block *wires,
+                           int64_t cid, int64_t gid);
+void PrintPredecessorsGarble(const GarbledCircuit& garbled_circuit,
+                             BlockPair *wires, int64_t cid, int64_t gid);
+
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_UTIL_H_ */
