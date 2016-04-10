@@ -79,8 +79,6 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   GarbledTable* garbled_tables = nullptr;
   CHECK_ALLOC(garbled_tables = new GarbledTable[garbled_tables_size]);
 
-  uint64_t num_skipped_gates = 0;
-
   CHECK(
       GarbleAllocLabels(garbled_circuit, &init_labels, &input_labels,
                         &output_labels, &output_vals, R));
@@ -118,7 +116,7 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       GarbleLowMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
                    garbled_tables_temp, garbled_tables, &garbled_table_ind, R,
                    AES_Key, cid, connfd, wires, wires_val, fanout,
-                   &num_skipped_gates, output_labels, output_vals);
+                   output_labels, output_vals);
     }
     garble_time += RDTSC - garble_start_time;
 
@@ -149,22 +147,12 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       << endl;
 
   LOG(INFO)
-      << "Non-secret skipped gates = "
-      << num_skipped_gates
-      << " out of "
-      << garbled_circuit.gate_size * clock_cycles
-      << "\t ("
-      << (100.0 * num_skipped_gates)
-          / (garbled_circuit.gate_size * clock_cycles)
-      << "%)" << endl;
-
-  LOG(INFO)
       << "Non-secret skipped non-XOR gates = " << num_skipped_non_xor_gates
       << " out of " << num_of_non_xor * clock_cycles << "\t ("
       << (100.0 * num_skipped_non_xor_gates) / (num_of_non_xor * clock_cycles)
       << "%)" << endl;
 
-  LOG(INFO) << "Total non-XOR gates = "
+  LOG(INFO) << "Total garbled non-XOR gates = "
             << num_of_non_xor * clock_cycles - num_skipped_non_xor_gates
             << endl;
 
@@ -294,8 +282,7 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                       GarbledTable* garbled_tables, uint64_t *garbled_table_ind,
                       block R, AES_KEY& AES_Key, uint64_t cid, int connfd,
                       BlockPair *wires, short* wires_val, int* fanout,
-                      uint64_t* num_skipped_gates, block* output_labels,
-                      short* output_vals) {
+                      block* output_labels, short* output_vals) {
   uint64_t start_time = RDTSC;
 
   // init

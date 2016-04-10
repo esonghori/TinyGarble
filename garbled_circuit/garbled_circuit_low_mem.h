@@ -28,8 +28,7 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                       GarbledTable* garbled_tables, uint64_t *garbled_table_ind,
                       block R, AES_KEY& AES_Key, uint64_t cid, int connfd,
                       BlockPair *wires, short* wires_val, int* fanout,
-                      uint64_t* num_skipped_gates, block* output_labels,
-                      short* output_vals);
+                      block* output_labels, short* output_vals);
 uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                         BIGNUM* p_input, block* init_labels,
                         block* input_labels, GarbledTable* garbled_tables,
