@@ -169,7 +169,6 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   GarbledTable* garbled_tables = nullptr;
   CHECK_ALLOC(garbled_tables = new GarbledTable[garbled_tables_size]);
 
-  uint64_t num_skipped_gates = 0;
   uint64_t num_skipped_non_xor_gates = 0;
 
   uint64_t comm_time = 0;
@@ -385,22 +384,12 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   }
 
   LOG(INFO)
-      << "Non-secret skipped gates = "
-      << num_skipped_gates
-      << " out of "
-      << garbled_circuit.gate_size * clock_cycles
-      << "\t ("
-      << (100.0 * num_skipped_gates)
-          / (garbled_circuit.gate_size * clock_cycles)
-      << "%)" << endl;
-
-  LOG(INFO)
       << "Non-secret skipped non-XOR gates = " << num_skipped_non_xor_gates
       << " out of " << num_of_non_xor * clock_cycles << "\t ("
       << (100.0 * num_skipped_non_xor_gates) / (num_of_non_xor * clock_cycles)
       << "%)" << endl;
 
-  LOG(INFO) << "Total non-XOR gates = "
+  LOG(INFO) << "Total garbled non-XOR gates = "
             << num_of_non_xor * clock_cycles - num_skipped_non_xor_gates
             << endl;
 
