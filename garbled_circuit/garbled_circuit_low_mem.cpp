@@ -122,7 +122,7 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     }
     garble_time += RDTSC - garble_start_time;
 
-    num_skipped_non_xor_gates += num_of_non_xor - garbled_table_ind / 2;
+    num_skipped_non_xor_gates += num_of_non_xor - garbled_table_ind;
 
     uint64_t comm_start_time = RDTSC;
     {
@@ -499,7 +499,7 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   *garbled_table_ind = 0;
   uint64_t start_time = RDTSC;
 
-  // init
+// init
   uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
   int64_t gate_bias = (int64_t) garbled_circuit.get_gate_lo_index();
   if (cid == 0) {
@@ -545,7 +545,7 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       }
     }
   }
-  // inputs
+// inputs
   uint64_t p_input_bias = garbled_circuit.get_p_input_lo_index();
   for (uint64_t i = 0; i < garbled_circuit.p_input_size; i++) {
     wires_val[p_input_bias + i] = BN_is_bit_set(
@@ -672,7 +672,7 @@ int GarbleAllocLabels(const GarbledCircuit& garbled_circuit,
                       block** init_labels, block** input_labels,
                       block** output_labels, short** output_vals, block R) {
 
-  // allocate and generate random init and inputs label pairs
+// allocate and generate random init and inputs label pairs
   (*init_labels) = nullptr;
   if (garbled_circuit.get_init_size() > 0) {
     CHECK_ALLOC(
@@ -886,7 +886,7 @@ int GarbleTransferInitLabels(const GarbledCircuit& garbled_circuit,
                              BIGNUM* g_init, block* init_labels,
                              bool disable_OT, int connfd) {
 
-  // g_init
+// g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
     if (i >= (uint) BN_num_bits(g_init) || BN_is_bit_set(g_init, i) == 0) {
       CHECK(SendData(connfd, &init_labels[i * 2 + 0], sizeof(block)));
@@ -924,7 +924,7 @@ int GarbleTransferInputLabels(const GarbledCircuit& garbled_circuit,
                               BIGNUM* g_input, block* input_labels,
                               uint64_t cid, bool disable_OT, int connfd) {
 
-  // g_input
+// g_input
   for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
     if (cid * garbled_circuit.g_input_size + i >= (uint) BN_num_bits(g_input)
         || BN_is_bit_set(g_input, cid * garbled_circuit.g_input_size + i)
@@ -966,7 +966,7 @@ int GarbleTransferInputLabels(const GarbledCircuit& garbled_circuit,
 int EvaluateTransferInitLabels(const GarbledCircuit& garbled_circuit,
                                BIGNUM* e_init, block* init_labels,
                                bool disable_OT, int connfd) {
-  // g_init
+// g_init
   for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
     CHECK(RecvData(connfd, &init_labels[i], sizeof(block)));
   }
@@ -989,7 +989,7 @@ int EvaluateTransferInitLabels(const GarbledCircuit& garbled_circuit,
 int EvaluateTransferInputLabels(const GarbledCircuit& garbled_circuit,
                                 BIGNUM* e_input, block* input_labels,
                                 uint64_t cid, bool disable_OT, int connfd) {
-  // g_input
+// g_input
   for (uint i = 0; i < garbled_circuit.g_input_size; i++) {
     CHECK(RecvData(connfd, &input_labels[i], sizeof(block)));
   }

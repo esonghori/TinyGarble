@@ -39,8 +39,11 @@ int main(int argc, char* argv[]) {
 
   LogInitial(argc, argv);
   HashInit();
-  srand(time(0));
-  SrandSSE(time(0));
+  //srand(time(0));
+  //SrandSSE(time(0));
+
+  srand(111);
+  SrandSSE(1111);
 
   string scd_file_address;
   uint64_t clock_cycles;
