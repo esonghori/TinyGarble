@@ -380,7 +380,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                  garbled_table_ind * sizeof(GarbledTable)));
     comm_time += RDTSC - comm_start_time;
 
-    num_skipped_non_xor_gates += num_of_non_xor - garbled_table_ind / 2;
+    num_skipped_non_xor_gates += num_of_non_xor - garbled_table_ind;
 
   }
 
