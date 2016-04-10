@@ -523,9 +523,12 @@ int SortNetlist(ReadCircuit &readCircuit,
   for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
     int64_t gid = readCircuit.task_schedule[i];
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[gid].type)
-              << "\t" << readCircuit.gate_list[gid].input[0] << "\t"
-              << readCircuit.gate_list[gid].input[1] << "\t"
-              << readCircuit.gate_list[gid].output << endl;
+              << "\t" << readCircuitString.gate_list_string[gid].input[0]
+              << " (" << readCircuit.gate_list[gid].input[0] << ")\t"
+              << readCircuitString.gate_list_string[gid].input[1] << " ("
+              << readCircuit.gate_list[gid].input[1] << ")\t"
+              << readCircuitString.gate_list_string[gid].output << " ("
+              << readCircuit.gate_list[gid].output << ")" << endl;
   }
   LOG(INFO) << endl;
 
