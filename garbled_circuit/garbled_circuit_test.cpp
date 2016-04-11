@@ -1013,7 +1013,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(AES128Bit11cc);
   MU_RUN_TEST(A23MemTest600cc);
   MU_RUN_TEST(A23Hamming750cc);
-//  MU_RUN_TEST(A23Sum40cc);
+  MU_RUN_TEST(A23Sum40cc);
 }
 
 int main(int argc, char* argv[]) {
