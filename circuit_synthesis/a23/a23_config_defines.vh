@@ -1,15 +1,13 @@
-/*----------------------------------------------------------------
+//////////////////////////////////////////////////////////////////
 //                                                              //
-//  start.S                                                     //
+//  Amber Configuration and Debug for the AMber 2 Core          //
 //                                                              //
 //  This file is part of the Amber project                      //
 //  http://www.opencores.org/project,amber                      //
 //                                                              //
 //  Description                                                 //
-//  Assembly routines for hello-world.                          //
-//  As hello-world is a stand-alone application, it needs a     //
-//  simple start function written in assembly to call the       //
-//  C code main() function.                                     //
+//  Contains a set of defines used to configure and debug       //
+//  the Amber core                                              //
 //                                                              //
 //  Author(s):                                                  //
 //      - Conor Santifort, csantifort.amber@gmail.com           //
@@ -39,31 +37,11 @@
 // Public License along with this source; if not, download it   //
 // from http://www.opencores.org/lgpl.shtml                     //
 //                                                              //
-----------------------------------------------------------------*/
+//////////////////////////////////////////////////////////////////
 
-        .section .text
-        .globl  start 
-_start:               
+`ifndef _A23_CONFIG_DEFINES
+`define _A23_CONFIG_DEFINES
 
-        @ initialize the stack pointer
-        ldr     sp, AdrStack
 
-        @ initialize the input address
-        ldr     r0, AdrGarbler
-        ldr     r1, AdrEvaluator
-        ldr     r2, AdrOut
+`endif
 
-        @ jump to main
-        .extern gc_main
-        bl      gc_main
-END:    b        END
-
-AdrGarbler:   .word  0x01000000
-AdrEvaluator: .word  0x02000000
-AdrOut:       .word  0x03000000
-AdrStack:     .word  0x04001000 // 0x1000 bytes (1024 words) stack memory
-
-        .section .bss
-        .word  0x0
-
-/* ========================================================================= */

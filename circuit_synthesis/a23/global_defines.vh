@@ -1,15 +1,14 @@
-/*----------------------------------------------------------------
+//////////////////////////////////////////////////////////////////
 //                                                              //
-//  start.S                                                     //
+//  Global testbench defines                                    //
 //                                                              //
 //  This file is part of the Amber project                      //
 //  http://www.opencores.org/project,amber                      //
 //                                                              //
 //  Description                                                 //
-//  Assembly routines for hello-world.                          //
-//  As hello-world is a stand-alone application, it needs a     //
-//  simple start function written in assembly to call the       //
-//  C code main() function.                                     //
+//  Contains a set of defines for each module so if the module  //
+//  hierarchy changes, hierarchical references to signals       //
+//  will still work as long as this file is updated.            //
 //                                                              //
 //  Author(s):                                                  //
 //      - Conor Santifort, csantifort.amber@gmail.com           //
@@ -39,31 +38,56 @@
 // Public License along with this source; if not, download it   //
 // from http://www.opencores.org/lgpl.shtml                     //
 //                                                              //
-----------------------------------------------------------------*/
+//////////////////////////////////////////////////////////////////
 
-        .section .text
-        .globl  start 
-_start:               
+// ---------------------------------------------------------------
+// Module hierarchy defines
+// ---------------------------------------------------------------
+`ifndef _GLOBAL_DEFINES
+`define _GLOBAL_DEFINES
 
-        @ initialize the stack pointer
-        ldr     sp, AdrStack
+`ifndef AMBER_TIMEOUT
+    `define AMBER_TIMEOUT 0
+`endif
 
-        @ initialize the input address
-        ldr     r0, AdrGarbler
-        ldr     r1, AdrEvaluator
-        ldr     r2, AdrOut
+`define U_TB                    tb
+`define U_SYSTEM                `U_TB.u_system
 
-        @ jump to main
-        .extern gc_main
-        bl      gc_main
-END:    b        END
+`define U_AMBER                 `U_SYSTEM.u_amber
+`define U_FETCH                 `U_AMBER.u_fetch
+`define U_MMU                   `U_FETCH.u_mmu
+`define U_CACHE                 `U_FETCH.u_cache
+`define U_COPRO15               `U_AMBER.u_coprocessor
+`define U_EXECUTE               `U_AMBER.u_execute
+`define U_WB                    `U_AMBER.u_write_back
+`define U_REGISTER_BANK         `U_EXECUTE.u_register_bank
+`define U_DECODE                `U_AMBER.u_decode
+`define U_DECOMPILE             `U_DECODE.u_decompile
+`define U_L2CACHE               `U_SYSTEM.u_l2cache
+`define U_TEST_MODULE           `U_SYSTEM.u_test_module
 
-AdrGarbler:   .word  0x01000000
-AdrEvaluator: .word  0x02000000
-AdrOut:       .word  0x03000000
-AdrStack:     .word  0x04001000 // 0x1000 bytes (1024 words) stack memory
+`ifdef AMBER_A25_CORE
+    `define U_MEM               `U_AMBER.u_mem
+    `define U_DCACHE            `U_MEM.u_dcache
+    `define U_WISHBONE          `U_AMBER.u_wishbone
+    `define U_BOOT_MEM          `U_SYSTEM.boot_mem128.u_boot_mem
+`else    
+    `define U_WISHBONE          `U_FETCH.u_wishbone
+    `define U_BOOT_MEM          `U_SYSTEM.boot_mem32.u_boot_mem
+`endif
+// ---------------------------------------------------------------
 
-        .section .bss
-        .word  0x0
+`define TB_DEBUG_MESSAGE        $display("\nDEBUG in %m @ tick %8d ", `U_TB.clk_count );
+`define TB_WARNING_MESSAGE      $display("\nWARNING in %m @ tick %8d", `U_TB.clk_count );
+`define TB_ERROR_MESSAGE        $display("\nFATAL ERROR in %m @ tick %8d", `U_TB.clk_count ); force `U_TB.testfail = 1'd1;
 
-/* ========================================================================= */
+
+`ifdef XILINX_FPGA
+// Full DDR3 memory Model
+`define U_RAM                tb.u_ddr3_model_c3.memory
+`else
+// Simplified Main Memory Model
+`define U_RAM                tb.u_system.u_main_mem.ram
+`endif
+
+`endif
