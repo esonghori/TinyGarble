@@ -61,7 +61,7 @@ END:    b        END
 AdrGarbler:   .word  0x01000000
 AdrEvaluator: .word  0x02000000
 AdrOut:       .word  0x03000000
-AdrStack:     .word  0x04000100 // 0x100 bytes (64 words) stack memory
+AdrStack:     .word  0x04001000 // 0x1000 bytes (1024 words) stack memory
 
         .section .bss
         .word  0x0
