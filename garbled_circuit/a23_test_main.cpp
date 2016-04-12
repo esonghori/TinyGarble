@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
   ("help,h", "produce help message")  //
   ("scd_file,i",
    po::value<string>(&scd_file_address)->default_value(
-       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/a23_gc_main_n_cc.scd"),
+       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/a23_gc_main_64_w_n_cc.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(100),
    "Number of clock cycles to evaluate the circuit.")  //

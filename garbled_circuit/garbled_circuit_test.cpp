@@ -788,7 +788,7 @@ MU_TEST(AES128Bit11cc) {
 
 MU_TEST(A23MemTest600cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/a23_gc_main_n_cc.scd";
+      + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string g_init_str = "";
   string e_init_str = "";
@@ -856,7 +856,7 @@ MU_TEST(A23MemTest600cc) {
 
 MU_TEST(A23Hamming750cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/a23_gc_main_n_cc.scd";
+      + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string p_input_str = "";
   string g_input_str = "";
@@ -926,7 +926,7 @@ MU_TEST(A23Hamming750cc) {
 
 MU_TEST(A23Sum40cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/a23_gc_main_n_cc.scd";
+      + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string p_input_str = "";
   string g_input_str = "";
