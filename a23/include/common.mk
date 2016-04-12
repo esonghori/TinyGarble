@@ -41,6 +41,7 @@
 TOOLSPATH        = ../tools
 LDS              = ../include/sections.lds
 LIBPATH          = ../lib
+HEXPATH          = ../../scd/netlists/hex_file
 AMBER_CROSSTOOL ?= arm-linux-gnueabi
 
 AS       = $(AMBER_CROSSTOOL)-as
@@ -53,11 +54,12 @@ OC       = $(AMBER_CROSSTOOL)-objcopy
 ELF      = $(TOOLSPATH)/amber-elfsplitter
 TCODE32  = $(TOOLSPATH)/amber-code32.sh
 
-MEM      = $(addsuffix .mem, $(basename $(TGT)))
-DIS      = $(addsuffix .dis, $(basename $(TGT)))
-OBJ      = $(addsuffix .o,   $(basename $(SRC)))
-CODE32   = $(addprefix a23-, $(addsuffix -code.txt, $(basename $(TGT))))
-LIBOBJ   = $(LIBPATH)/start.o
+MEM       = $(addsuffix .mem, $(basename $(TGT)))
+DIS       = $(addsuffix .dis, $(basename $(TGT)))
+OBJ       = $(addsuffix .o,   $(basename $(SRC)))
+CODE32HEX = $(addprefix a23-, $(addsuffix -code.hex, $(basename $(TGT))))
+CODE32TXT = $(addprefix a23-, $(addsuffix -code.txt, $(basename $(TGT))))
+LIBOBJ    = $(LIBPATH)/start.o
 
 
 ifndef TGT
@@ -84,10 +86,7 @@ endif
  DSFLAGS = -C -S -EL
  LDFLAGS = -Bstatic -Map $(MAP) --strip-debug --fix-v4bx
 
-all:  $(ELF) $(CODE32) $(DIS)
-
-$(CODE32): $(MEM)
-	$(TCODE32) $(MEM) $(CODE32)
+all:  $(ELF) $(CODE32HEX) $(DIS) $(HEXPATH)/$(CODE32TXT)
 
 $(MEM): $(TGT)
 	$(ELF) $(TGT) > $(MEM)
@@ -105,6 +104,12 @@ $(LIBOBJ):
 $(DIS): $(TGT)
 	$(DS) $(DSFLAGS) $^ > $@
 
+$(CODE32HEX): $(MEM)
+	$(TCODE32) $(MEM) $(CODE32HEX)
+
+$(HEXPATH)/$(CODE32TXT): $(CODE32HEX)
+	cp $(CODE32HEX) $(HEXPATH)/$(CODE32TXT)
+
 clean:
-	@rm -rfv *.o *.elf *.flt *.gdb *.dis *.map *.mem *.v $(CODE32)
+	@rm -rfv *.o *.elf *.flt *.gdb *.dis *.map *.mem *.v $(CODE32HEX)
 
