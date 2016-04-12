@@ -25,3 +25,9 @@ syn/
 syn/*
 work/
 work/*
+*.dis
+*.elf
+*.map
+*.mem
+*.hex
+a23/tools/amber-elfsplitter
