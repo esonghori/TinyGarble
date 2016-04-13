@@ -245,7 +245,7 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
     CHECK_EXPR_MSG(garbled_table_ind == garbled_table_ind_rcv,
                    "Number of garbled tables generated "
-                   "by Alice and received by Bob are not equal.")
+                   "by Alice and received by Bob are not equal.");
 
     for (uint64_t j = 0; j < garbled_table_ind; j++) {  // clear tables
       garbled_tables[j].gid = (uint32_t) (-1);
