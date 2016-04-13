@@ -63,31 +63,19 @@ input       [31:0]          i_cacheable_area,   // each bit corresponds to 2MB a
 output                      o_fetch_stall,      // when this is asserted all registers 
                                                 // in all 3 pipeline stages are held
                                                 // at their current values
-output   [31:0]             o_dm_address, //data memory
-output   [31:0]             o_dm_write,
-output                      o_dm_write_en,
-output   [3:0]              o_dm_byte_enable,
-input    [31:0]             i_dm_read,        
-
-output   [31:0]             o_im_address, // instruction memory
-input    [31:0]             i_im_read
-
+output   [31:0]             o_m_address, //memory
+output   [31:0]             o_m_write,
+output                      o_m_write_en,
+output   [3:0]              o_m_byte_enable,
+input    [31:0]             i_m_read
 );
 
-assign o_dm_address = (i_data_access && i_address_valid) ? i_address : 32'b0;
-assign o_dm_write   = (i_data_access && i_write_enable && i_address_valid) ? i_write_data : 32'b0;
-
-assign o_dm_write_en = (i_data_access && i_write_enable && i_address_valid);
-
-assign o_dm_byte_enable = i_byte_enable;
-
-assign o_read_data = (~i_address_valid )? 32'b0     : 
-                     (i_data_access   )? i_dm_read : 
-                                         i_im_read ;
-
-assign o_im_address = (~i_data_access && i_address_valid) ? i_address : 32'b0;
-
-assign o_fetch_stall = 'b0;
+assign o_m_address     = (i_address_valid) ? i_address : 32'b0;
+assign o_m_write       = (i_write_enable && i_address_valid)? i_write_data : 32'b0;
+assign o_m_write_en    = (i_write_enable && i_address_valid);
+assign o_m_byte_enable = i_byte_enable;
+assign o_read_data     = (i_address_valid) ? i_m_read : 32'b0;
+assign o_fetch_stall   = 'b0;
 
 endmodule
 

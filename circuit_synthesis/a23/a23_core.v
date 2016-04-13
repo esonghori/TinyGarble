@@ -45,14 +45,13 @@ module a23_core
 input                       i_clk,
 input                       i_rst,
 
-output   [31:0]             o_dm_address, //data memory
-output   [31:0]             o_dm_write,
-output                      o_dm_write_en,
-output   [3:0]              o_dm_byte_enable,
-input    [31:0]             i_dm_read,        
+output   [31:0]             o_m_address, //data memory
+output   [31:0]             o_m_write,
+output                      o_m_write_en,
+output   [3:0]              o_m_byte_enable,
+input    [31:0]             i_m_read,        
 
-output   [31:0]             o_im_address, // instruction memory
-input    [31:0]             i_im_read
+output                      terminate
 );
 
 wire      [31:0]          execute_address;
@@ -147,6 +146,8 @@ assign decode_fault_address = dabt_trigger ? dabt_fault_address : iabt_fault_add
 assign decode_fault         = dabt_trigger | iabt_trigger;
 
 
+assign terminate = ({execute_address[31:2], 2'd0} == 32'h00000018) && (execute_address_nxt == 32'h0000001c);
+
 a23_fetch u_fetch (
     .i_clk                              ( i_clk                             ),
     .i_rst                              ( i_rst                             ),
@@ -167,13 +168,11 @@ a23_fetch u_fetch (
 
     .o_fetch_stall                      ( fetch_stall                       ),
     
-    .o_dm_address                       ( o_dm_address                      ),
-    .o_dm_write                         ( o_dm_write                        ),
-    .o_dm_write_en                      ( o_dm_write_en                     ),
-    .o_dm_byte_enable                   ( o_dm_byte_enable                  ),
-    .i_dm_read                          ( i_dm_read                         ),        
-    .o_im_address                       ( o_im_address                      ),
-    .i_im_read                          ( i_im_read                         )
+    .o_m_address                        ( o_m_address                       ),
+    .o_m_write                          ( o_m_write                         ),
+    .o_m_write_en                       ( o_m_write_en                      ),
+    .o_m_byte_enable                    ( o_m_byte_enable                   ),
+    .i_m_read                           ( i_m_read                          )
 );
 
 

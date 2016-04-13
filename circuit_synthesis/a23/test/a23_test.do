@@ -1,4 +1,7 @@
-add wave sim:/a23_testbench/*
+add wave sim:/a23_testbench/clk
+add wave sim:/a23_testbench/rst
+add wave sim:/a23_testbench/cc
+add wave sim:/a23_testbench/terminate
 add wave sim:/a23_testbench/u_a23_gc_main/u_a23_core/u_decode/instruction_valid
 add wave sim:/a23_testbench/u_a23_gc_main/u_a23_core/u_decode/instruction
 add wave \
@@ -18,4 +21,6 @@ sim:/a23_testbench/u_a23_gc_main/u_a23_core/u_execute/u_register_bank/r12 \
 sim:/a23_testbench/u_a23_gc_main/u_a23_core/u_execute/u_register_bank/r13_rds \
 sim:/a23_testbench/u_a23_gc_main/u_a23_core/u_execute/u_register_bank/r14_rds \
 sim:/a23_testbench/u_a23_gc_main/u_a23_core/u_execute/u_register_bank/r15_out_rn
+
 run -all
+exit

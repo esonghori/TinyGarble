@@ -1,22 +1,23 @@
+`timescale 1ns / 1ps
 
 module a23_testbench();
 
-localparam CODE_MEM_SIZE  = 64; //_start:    0x00000000
+localparam CODE_MEM_SIZE  = 1024; //_start:    0x00000000
 localparam G_MEM_SIZE     = 64; //AdrAliceX: 0x01000000
 localparam E_MEM_SIZE     = 64; //AdrBobY:   0x02000000
 localparam OUT_MEM_SIZE   = 64; //AdrOutZ:   0x03000000
-localparam STACK_MEM_SIZE = 1024; //AdrStack:  0x04001000
-localparam CC             = 1000; // run for CC clock cycles
+localparam STACK_MEM_SIZE = 64; //AdrStack:  0x04000000
+localparam CC             = 100; // run for CC clock cycles
 
 reg                            clk;
 reg                            rst;
 wire  [CODE_MEM_SIZE*32-1:0]   p_init;
 wire  [G_MEM_SIZE   *32-1:0]   g_init;
 wire  [E_MEM_SIZE   *32-1:0]   e_init;
-wire  [OUT_MEM_SIZE *32-1:0]   o;
+wire  [OUT_MEM_SIZE *32  :0]   o;
 
 genvar i;
-integer j;
+integer cc;
 
 a23_gc_main 
 #
@@ -36,6 +37,8 @@ u_a23_gc_main
   .e_init ( e_init ), 
   .o      ( o      ) 
 );
+
+wire terminate = o[OUT_MEM_SIZE *32];
 
 reg  [31:0] p_init_reg  [CODE_MEM_SIZE  -1:0];
 reg  [31:0] g_init_reg  [G_MEM_SIZE     -1:0];
@@ -61,16 +64,18 @@ initial
 begin
   clk = 0;
   rst = 1;
-  j = 0;
-  $readmemh("p_init.txt", p_init_reg);
-  $readmemh("g_init.txt", g_init_reg);
-  $readmemh("e_init.txt", e_init_reg);
+  cc = 0;
+
+  $readmemh("../../scd/netlists/hex_file/p_init.txt", p_init_reg);
+  $readmemh("../../scd/netlists/hex_file/g_init.txt", g_init_reg);
+  $readmemh("../../scd/netlists/hex_file/e_init.txt", e_init_reg);
   #28
   rst = 0;
-  for(j=0;j<CC;j=j+1)
-      @(posedge clk);
-  @(posedge clk);
-  $writememh("o.txt", o_word_wire);
+  while (~terminate) begin
+    @(posedge clk);
+    cc = cc +1;
+  end
+  $writememh("./o.txt", o_word_wire);
   $stop;
 end
 
