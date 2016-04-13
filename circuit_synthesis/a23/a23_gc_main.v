@@ -88,13 +88,28 @@ always @(posedge clk or posedge rst) begin
     for(i=0;i<4*E_MEM_SIZE;i=i+1) begin
       e_mem[i] <= e_init_byte[i];
     end
-    for(i=0;i<OUT_MEM_SIZE*4;i=i+1) begin
+    for(i=0;i<4*OUT_MEM_SIZE;i=i+1) begin
       out_mem[i] <= 8'b0;
     end
-    for(i=0;i<STACK_MEM_SIZE*4;i=i+1) begin
+    for(i=0;i<4*STACK_MEM_SIZE;i=i+1) begin
       stack_mem[i] <= 8'b0;
     end
   end else begin
+    for(i=0;i<4*CODE_MEM_SIZE;i=i+1) begin
+      p_mem[i] <= p_mem[i];
+    end
+    for(i=0;i<4*G_MEM_SIZE;i=i+1) begin
+      g_mem[i] <= g_mem[i];
+    end
+    for(i=0;i<4*E_MEM_SIZE;i=i+1) begin
+      e_mem[i] <= e_mem[i];
+    end
+    for(i=0;i<4*OUT_MEM_SIZE;i=i+1) begin
+      out_mem[i] <= out_mem[i];
+    end
+    for(i=0;i<4*STACK_MEM_SIZE;i=i+1) begin
+      stack_mem[i] <= stack_mem[i];
+    end
     if (o_m_write_en) begin // AdrGarbler and AdrEvaluator are const
       if(o_m_address[31:24] == 8'h00) begin //Code: 0x00000000
         case(o_m_byte_enable)
