@@ -5,6 +5,9 @@ rm -rf work transcript vsim.wlf
 vlib work
 
 vlog ../*.v
-vlog a23_gc_main.v
+vlog a23_testbench.v
 
-vsim -do a23_test.do a23_testbench
+vsim -c -do a23_test.do a23_testbench
+
+#for gui
+# vsim -do a23_test.do a23_testbench 

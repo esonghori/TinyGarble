@@ -7,7 +7,6 @@ localparam G_MEM_SIZE     = 64; //AdrAliceX: 0x01000000
 localparam E_MEM_SIZE     = 64; //AdrBobY:   0x02000000
 localparam OUT_MEM_SIZE   = 64; //AdrOutZ:   0x03000000
 localparam STACK_MEM_SIZE = 64; //AdrStack:  0x04000000
-localparam CC             = 100; // run for CC clock cycles
 
 reg                            clk;
 reg                            rst;
@@ -66,16 +65,16 @@ begin
   rst = 1;
   cc = 0;
 
-  $readmemh("../../scd/netlists/hex_file/p_init.txt", p_init_reg);
-  $readmemh("../../scd/netlists/hex_file/g_init.txt", g_init_reg);
-  $readmemh("../../scd/netlists/hex_file/e_init.txt", e_init_reg);
+  $readmemh("../../../a23/hamming/p.txt", p_init_reg);
+  $readmemh("../../../a23/hamming/test/g.txt", g_init_reg);
+  $readmemh("../../../a23/hamming/test/e.txt", e_init_reg);
   #28
   rst = 0;
   while (~terminate) begin
     @(posedge clk);
     cc = cc +1;
   end
-  $writememh("./o.txt", o_word_wire);
+  $writememh("./o.txt.out", o_word_wire);
   $stop;
 end
 
