@@ -34,12 +34,10 @@ using std::endl;
 
 #define TEST_REPEAT 3
 
-
 void TestSetup() {
 }
 void TestTeardown() {
 }
-
 
 MU_TEST(Mux8Bit1cc) {
 
@@ -653,62 +651,60 @@ MU_TEST(AES128Bit1cc) {
   bool disable_OT = false;
   bool low_mem_foot;
 
-  for (int i = 0; i < 2; i++) {
-    string g_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-        + "/scd/netlists/hex_file/aes_key_" + std::to_string(i) + ".txt";
-    string e_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-        + "/scd/netlists/hex_file/aes_message_" + std::to_string(i) + ".txt";
-    string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-        + "/scd/netlists/hex_file/aes_cipher_" + std::to_string(i) + ".txt";
+  string g_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/g.txt";
+  string e_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/e.txt";
+  string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/o.txt";
 
-    string g_input_str = ReadFileOrPassHex(g_input_f_hex_str);
-    string e_input_str = ReadFileOrPassHex(e_input_f_hex_str);
+  string g_input_str = ReadFileOrPassHex(g_input_f_hex_str);
+  string e_input_str = ReadFileOrPassHex(e_input_f_hex_str);
 
-    LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
+  LOG(INFO) << "AES (128-bit 1cc)" << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
-                                    e_init_str, p_input_str, g_input_str,
-                                    e_input_str, clock_cycles, output_mode,
-                                    &output_str);
-    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
-    string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
-    LOG(INFO) << "output_str: " << output_str << " expected output_str: "
-              << output_expected_str << endl;
+  int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                  e_init_str, p_input_str, g_input_str,
+                                  e_input_str, clock_cycles, output_mode,
+                                  &output_str);
+  mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+  string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
+  LOG(INFO) << "output_str: " << output_str << " expected output_str: "
+            << output_expected_str << endl;
 
-    mu_check(icompare(output_str, output_expected_str));
+  mu_check(icompare(output_str, output_expected_str));
 
-    //
-    low_mem_foot = false;
-    GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
-                                                 p_input_str, g_init_str,
-                                                 g_input_str, alice_output,
-                                                 output_mask, output_mode,
-                                                 disable_OT, low_mem_foot,
-                                                 clock_cycles);
-    GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
-                                              p_input_str, e_init_str,
-                                              e_input_str, output_str,
-                                              output_mask, output_mode,
-                                              disable_OT, low_mem_foot,
-                                              clock_cycles);
+  //
+  low_mem_foot = false;
+  GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                               p_input_str, g_init_str,
+                                               g_input_str, alice_output,
+                                               output_mask, output_mode,
+                                               disable_OT, low_mem_foot,
+                                               clock_cycles);
+  GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                            p_input_str, e_init_str,
+                                            e_input_str, output_str,
+                                            output_mask, output_mode,
+                                            disable_OT, low_mem_foot,
+                                            clock_cycles);
 
-    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
-    mu_assert(ret == SUCCESS, "TcpipTestRun");
+  ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+  mu_assert(ret == SUCCESS, "TcpipTestRun");
 
-    //
-    low_mem_foot = true;
-    garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                                    g_init_str, g_input_str, alice_output,
-                                    output_mask, output_mode, disable_OT,
-                                    low_mem_foot, clock_cycles);
-    eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                                 e_init_str, e_input_str, output_str,
-                                 output_mask, output_mode, disable_OT,
-                                 low_mem_foot, clock_cycles);
+  //
+  low_mem_foot = true;
+  garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                                  g_init_str, g_input_str, alice_output,
+                                  output_mask, output_mode, disable_OT,
+                                  low_mem_foot, clock_cycles);
+  eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                               e_init_str, e_input_str, output_str, output_mask,
+                               output_mode, disable_OT, low_mem_foot,
+                               clock_cycles);
 
-    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
-    mu_assert(ret == SUCCESS, "TcpipTestRun");
-  }
+  ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+  mu_assert(ret == SUCCESS, "TcpipTestRun");
 
 }
 
@@ -727,62 +723,59 @@ MU_TEST(AES128Bit11cc) {
   bool disable_OT = false;
   bool low_mem_foot;
 
-  for (int i = 0; i < 2; i++) {
-    string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-        + "/scd/netlists/hex_file/aes_key_" + std::to_string(i) + ".txt";
-    string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-        + "/scd/netlists/hex_file/aes_message_" + std::to_string(i) + ".txt";
-    string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-        + "/scd/netlists/hex_file/aes_cipher_" + std::to_string(i) + ".txt";
+  string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/g.txt";
+  string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/e.txt";
+  string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/o.txt";
+  string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
+  string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
 
-    string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
-    string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
+  LOG(INFO) << "AES (128-bit 1cc)" << endl;
 
-    LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
+  int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                  e_init_str, p_input_str, g_input_str,
+                                  e_input_str, clock_cycles, output_mode,
+                                  &output_str);
+  mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+  string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
+  LOG(INFO) << "output_str: " << output_str << " expected output_str: "
+            << output_expected_str << endl;
 
-    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
-                                    e_init_str, p_input_str, g_input_str,
-                                    e_input_str, clock_cycles, output_mode,
-                                    &output_str);
-    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
-    string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
-    LOG(INFO) << "output_str: " << output_str << " expected output_str: "
-              << output_expected_str << endl;
+  mu_check(icompare(output_str, output_expected_str));
 
-    mu_check(icompare(output_str, output_expected_str));
+  //
+  low_mem_foot = false;
+  GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                               p_input_str, g_init_str,
+                                               g_input_str, alice_output,
+                                               output_mask, output_mode,
+                                               disable_OT, low_mem_foot,
+                                               clock_cycles);
+  GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                            p_input_str, e_init_str,
+                                            e_input_str, output_str,
+                                            output_mask, output_mode,
+                                            disable_OT, low_mem_foot,
+                                            clock_cycles);
 
-    //
-    low_mem_foot = false;
-    GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
-                                                 p_input_str, g_init_str,
-                                                 g_input_str, alice_output,
-                                                 output_mask, output_mode,
-                                                 disable_OT, low_mem_foot,
-                                                 clock_cycles);
-    GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
-                                              p_input_str, e_init_str,
-                                              e_input_str, output_str,
-                                              output_mask, output_mode,
-                                              disable_OT, low_mem_foot,
-                                              clock_cycles);
+  ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+  mu_assert(ret == SUCCESS, "TcpipTestRun");
 
-    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
-    mu_assert(ret == SUCCESS, "TcpipTestRun");
+  //
+  low_mem_foot = true;
+  garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                                  g_init_str, g_input_str, alice_output,
+                                  output_mask, output_mode, disable_OT,
+                                  low_mem_foot, clock_cycles);
+  eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
+                               e_init_str, e_input_str, output_str, output_mask,
+                               output_mode, disable_OT, low_mem_foot,
+                               clock_cycles);
 
-    //
-    low_mem_foot = true;
-    garbler_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                                    g_init_str, g_input_str, alice_output,
-                                    output_mask, output_mode, disable_OT,
-                                    low_mem_foot, clock_cycles);
-    eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                                 e_init_str, e_input_str, output_str,
-                                 output_mask, output_mode, disable_OT,
-                                 low_mem_foot, clock_cycles);
-
-    ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
-    mu_assert(ret == SUCCESS, "TcpipTestRun");
-  }
+  ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+  mu_assert(ret == SUCCESS, "TcpipTestRun");
 
 }
 
@@ -801,7 +794,7 @@ MU_TEST(A23MemTest600cc) {
   bool low_mem_foot;
 
   string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-mem-test-code.txt";
+      + "/a23/mem-test/p.txt";
 
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
 
@@ -815,7 +808,7 @@ MU_TEST(A23MemTest600cc) {
                                   &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
   string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-mem-test-o.txt";
+      + "/a23/mem-test/test/o.txt";
 
   string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
 
@@ -845,9 +838,9 @@ MU_TEST(A23MemTest600cc) {
                                   output_mask, output_mode, disable_OT,
                                   low_mem_foot, clock_cycles);
   eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                               e_init_str, e_input_str, output_str,
-                               output_mask, output_mode, disable_OT,
-                               low_mem_foot, clock_cycles);
+                               e_init_str, e_input_str, output_str, output_mask,
+                               output_mode, disable_OT, low_mem_foot,
+                               clock_cycles);
 
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -867,11 +860,11 @@ MU_TEST(A23Hamming750cc) {
   bool low_mem_foot;
 
   string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-hamming-code.txt";
+      + "/a23/hamming/p.txt";
   string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-hamming-g_init.txt";
+      + "/a23/hamming/test/g.txt";
   string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-hamming-e_init.txt";
+      + "/a23/hamming/test/e.txt";
 
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
   string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
@@ -887,7 +880,7 @@ MU_TEST(A23Hamming750cc) {
                                   &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
   string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-hamming-o.txt";
+      + "/a23/hamming/test/o.txt";
 
   string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
   mu_check(icompare(output_str, output_expected_str));
@@ -916,9 +909,9 @@ MU_TEST(A23Hamming750cc) {
                                   output_mask, output_mode, disable_OT,
                                   low_mem_foot, clock_cycles);
   eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                               e_init_str, e_input_str, output_str,
-                               output_mask, output_mode, disable_OT,
-                               low_mem_foot, clock_cycles);
+                               e_init_str, e_input_str, output_str, output_mask,
+                               output_mode, disable_OT, low_mem_foot,
+                               clock_cycles);
 
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   mu_assert(ret == SUCCESS, "TcpipTestRun");
@@ -936,12 +929,11 @@ MU_TEST(A23Sum40cc) {
   bool disable_OT = false;
   bool low_mem_foot;
 
-  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-sum-code.txt";
+  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/sum/p.txt";
   string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-sum-g_init.txt";
+      + "/a23/sum/test/g.txt";
   string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-sum-e_init.txt";
+      + "/a23/sum/test/e.txt";
 
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
   string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
@@ -957,7 +949,7 @@ MU_TEST(A23Sum40cc) {
                                   &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
   string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-sum-o.txt";
+      + "/a23/sum/test/o.txt";
 
   string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
   LOG(INFO) << "SCD Evaluate result: " << output_str << endl;
@@ -987,9 +979,9 @@ MU_TEST(A23Sum40cc) {
                                   output_mask, output_mode, disable_OT,
                                   low_mem_foot, clock_cycles);
   eval_data = MakeGCTestStruct(scd_file_address, p_init_str, p_input_str,
-                               e_init_str, e_input_str, output_str,
-                               output_mask, output_mode, disable_OT,
-                               low_mem_foot, clock_cycles);
+                               e_init_str, e_input_str, output_str, output_mask,
+                               output_mode, disable_OT, low_mem_foot,
+                               clock_cycles);
 
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   mu_assert(ret == SUCCESS, "TcpipTestRun");
