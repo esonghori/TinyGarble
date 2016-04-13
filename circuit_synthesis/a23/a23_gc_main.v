@@ -3,11 +3,11 @@ module a23_gc_main
 #
 (
   // mem size in words (32bit)
-  parameter CODE_MEM_SIZE  = 64  ,   //_start:       0x00000000
-  parameter G_MEM_SIZE     = 64  ,   //AdrGarbler:   0x01000000
-  parameter E_MEM_SIZE     = 64  ,   //AdrEvaluator: 0x02000000
-  parameter OUT_MEM_SIZE   = 64  ,   //AdrOut:       0x03000000
-  parameter STACK_MEM_SIZE = 1024    //AdrStack:     0x04001000
+  parameter CODE_MEM_SIZE  = 1024  ,   //_start:       0x00000000
+  parameter G_MEM_SIZE     = 64    ,   //AdrGarbler:   0x01000000
+  parameter E_MEM_SIZE     = 64    ,   //AdrEvaluator: 0x02000000
+  parameter OUT_MEM_SIZE   = 64    ,   //AdrOut:       0x03000000
+  parameter STACK_MEM_SIZE = 64        //AdrStack:     0x04000100
 )
 (
   input                           clk,
