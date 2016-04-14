@@ -298,7 +298,7 @@ inline short InvertSecretValue(short value) {
 }
 
 inline short XorSecret(short a, short b) {
-  if(a == b) {
+  if (a == b) {
     return SECRET;
   } else {
     return SECRET_INV;
@@ -477,7 +477,16 @@ int FillFanout(GarbledCircuit* garbled_circuit) {
 
   for (uint64_t oid = 0; oid < garbled_circuit->output_size; oid++) {
     int64_t gid = garbled_circuit->outputs[oid] - gate_bias;
-    if (gid >= 0) {  // if output is not directly connected to DFF's Q or inputs.
+    // if output is not directly connected to DFF's Q or inputs.
+    if (gid >= 0) {
+      garbled_circuit->garbledGates[gid].fanout++;
+    }
+  }
+
+  if (garbled_circuit->terminate_id > 0) {
+    int64_t gid = garbled_circuit->terminate_id - gate_bias;
+    // if terminate signal is not directly connected to DFF's Q or inputs.
+    if (gid >= 0) {
       garbled_circuit->garbledGates[gid].fanout++;
     }
   }
