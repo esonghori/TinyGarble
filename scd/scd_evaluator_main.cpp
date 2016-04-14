@@ -39,6 +39,7 @@ int main(int argc, char*argv[]) {
   string g_input_f_hex_str;
   string e_input_f_hex_str;
   uint64_t clock_cycles;
+  int64_t terminate_period;
   string output_mode_str;
   OutputMode output_mode = OutputMode::consecutive;
   boost::format fmter(
@@ -51,7 +52,7 @@ int main(int argc, char*argv[]) {
    po::value<string>(&scd_file_address)->default_value(
        string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/sum_nbit_ncc.scd"),
    "scd address")  //
-  ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
+  ("clock_cycles,c", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("p_init", po::value<string>(&p_init_f_hex_str)->default_value("0"),
    "p_init file or in hexadecimal. In case of file, each "
@@ -66,6 +67,10 @@ int main(int argc, char*argv[]) {
    "g_input file or in hexadecimal.")  //
   ("e_input", po::value<string>(&e_input_f_hex_str)->default_value("0"),
    "e_input file or in hexadecimal.")  //
+  ("terminate_period,t",
+   po::value<int64_t>(&terminate_period)->default_value(-1),
+   "Terminate signal reveal period: "
+   "0: No termination or never reveal, T: Reveal every T clock cycle.")  //
   ("output_mode", po::value<string>(&output_mode_str),
    "output print mode: {0:consecutive, 1:separated_clock, "
    "2:last_clock}, e.g., consecutive, 0, 1");
@@ -81,7 +86,7 @@ int main(int argc, char*argv[]) {
     }
     po::notify(vm);
   } catch (po::error& e) {
-    LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
+    LOG(ERROR) << e.what() << endl << endl;
     std::cout << desc << endl;
     return FAILURE;
   }
@@ -116,7 +121,7 @@ int main(int argc, char*argv[]) {
   string output_str;
   EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str, e_init_str,
                         p_input_str, g_input_str, e_input_str, clock_cycles,
-                        output_mode, &output_str);
+                        terminate_period, output_mode, &output_str);
 
   std::cout << output_str << endl;
 
