@@ -47,14 +47,14 @@ using std::string;
 int GarbleStr(const string& scd_file_address, const string& p_init_str,
               const string& p_input_str, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
-              const string& output_mask, OutputMode output_mode,
-              bool disable_OT, bool low_mem_foot, string* output_str,
-              int connfd);
+              const string& output_mask, int64_t terminate_period,
+              OutputMode output_mode, bool disable_OT, bool low_mem_foot,
+              string* output_str, int connfd);
 int EvaluateStr(const string& scd_file_address, const string& p_init_str,
                 const string& p_input_str, const string& init_str,
                 const string& input_str, uint64_t clock_cycles,
-                const string& output_mask, OutputMode output_mode,
-                bool disable_OT, bool low_mem_foot, string* output_str,
-                int connfd);
+                const string& output_mask, int64_t terminate_period,
+                OutputMode output_mode, bool disable_OT, bool low_mem_foot,
+                string* output_str, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_H_ */

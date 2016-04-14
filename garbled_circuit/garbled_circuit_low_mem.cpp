@@ -48,9 +48,10 @@
 
 int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                    BIGNUM* p_input, BIGNUM* g_init, BIGNUM* g_input,
-                   uint64_t clock_cycles, const string& output_mask,
-                   OutputMode output_mode, BIGNUM* output_bn, block R,
-                   block global_key, bool disable_OT, int connfd) {
+                   uint64_t* clock_cycles, const string& output_mask,
+                   int64_t terminate_period, OutputMode output_mode,
+                   BIGNUM* output_bn, block R, block global_key,
+                   bool disable_OT, int connfd) {
 
   uint64_t ot_time = 0;
   uint64_t garble_time = 0;
@@ -58,6 +59,8 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
   block* init_labels = nullptr;
   block* input_labels = nullptr;
+  BlockPair terminate_label;
+  short terminate_val;
   block* output_labels = nullptr;
   short* output_vals = nullptr;
 
@@ -99,7 +102,7 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   DUMP("r_key") << global_key << endl;
 
   uint64_t num_skipped_non_xor_gates = 0;
-  for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+  for (uint64_t cid = 0; cid < (*clock_cycles); cid++) {
     uint64_t garbled_table_ind;
     CHECK(GarbleGenInputLabels(garbled_circuit, input_labels, R));
 
@@ -116,7 +119,8 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       GarbleLowMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
                    garbled_tables_temp, garbled_tables, &garbled_table_ind, R,
                    AES_Key, cid, connfd, wires, wires_val, fanout,
-                   output_labels, output_vals);
+                   &terminate_label, &terminate_val, output_labels,
+                   output_vals);
     }
     garble_time += RDTSC - garble_start_time;
 
@@ -135,6 +139,28 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                                    cid, output_mode, output_mask, output_bn,
                                    connfd));
 
+    //if has terminate signal
+    if (terminate_period != 0 && garbled_circuit.terminate_id > 0) {
+      if (cid % terminate_period == 0) {
+        bool is_terminate = false;
+        CHECK(
+            GarbleTransferTerminate(garbled_circuit, terminate_label,
+                                    terminate_val, &is_terminate, connfd));
+
+        if (is_terminate) {
+          LOG(INFO) << "Alice Terminated in " << cid + 1 << "cc out of "
+                    << *clock_cycles << "cc." << endl;
+          *clock_cycles = cid + 1;
+          break;
+        }
+      }
+      //last clock cycle, not terminated
+      if (cid == (*clock_cycles) - 1) {
+        LOG(ERROR) << "Alice Not enough clock cycles. Circuit is not terminated in "
+                   << *clock_cycles << "cc." << endl;
+      }
+    }
+
   }
 
   LOG(INFO)
@@ -143,17 +169,21 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       << "\t(cc/bit) = "
       << ot_time
           / ((double) (garbled_circuit.e_init_size
-              + clock_cycles * garbled_circuit.e_input_size))
-      << endl;
+              + (*clock_cycles) * garbled_circuit.e_input_size))
+      << endl;  //TODO:fix clock_cycle
 
   LOG(INFO)
-      << "Non-secret skipped non-XOR gates = " << num_skipped_non_xor_gates
-      << " out of " << num_of_non_xor * clock_cycles << "\t ("
-      << (100.0 * num_skipped_non_xor_gates) / (num_of_non_xor * clock_cycles)
+      << "Non-secret skipped non-XOR gates = "
+      << num_skipped_non_xor_gates
+      << " out of "
+      << num_of_non_xor * (*clock_cycles)
+      << "\t ("
+      << (100.0 * num_skipped_non_xor_gates)
+          / (num_of_non_xor * (*clock_cycles))
       << "%)" << endl;
 
   LOG(INFO) << "Total garbled non-XOR gates = "
-            << num_of_non_xor * clock_cycles - num_skipped_non_xor_gates
+            << num_of_non_xor * (*clock_cycles) - num_skipped_non_xor_gates
             << endl;
 
   LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
@@ -173,15 +203,18 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
 int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                      BIGNUM* p_input, BIGNUM* e_init, BIGNUM* e_input,
-                     uint64_t clock_cycles, const string& output_mask,
-                     OutputMode output_mode, BIGNUM* output_bn,
-                     block global_key, bool disable_OT, int connfd) {
+                     uint64_t* clock_cycles, const string& output_mask,
+                     int64_t terminate_period, OutputMode output_mode,
+                     BIGNUM* output_bn, block global_key, bool disable_OT,
+                     int connfd) {
   uint64_t ot_time = 0;
   uint64_t eval_time = 0;
   uint64_t comm_time = 0;
 
   block* init_labels = nullptr;
   block* input_labels = nullptr;
+  block terminate_label;
+  short terminate_val;
   block* output_labels = nullptr;
   short* output_vals = nullptr;
   block *wires = nullptr;
@@ -213,7 +246,7 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   AESSetEncryptKey((unsigned char *) &(global_key), 128, &AES_Key);
   DUMP("r_key") << global_key << endl;
 
-  for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+  for (uint64_t cid = 0; cid < (*clock_cycles); cid++) {
     uint64_t garbled_table_ind_rcv;  // #of tables received from garbler
     uint64_t garbled_table_ind;
     ot_start_time = RDTSC;
@@ -238,8 +271,8 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       eval_time += EvaluateLowMem(garbled_circuit, p_init, p_input, init_labels,
                                   input_labels, garbled_tables,
                                   &garbled_table_ind, AES_Key, cid, connfd,
-                                  wires, wires_val, fanout, output_labels,
-                                  output_vals);
+                                  wires, wires_val, fanout, &terminate_label,
+                                  &terminate_val, output_labels, output_vals);
     }
     eval_time += RDTSC - eval_start_time;
 
@@ -255,6 +288,28 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
         EvaluateTransferOutputLowMem(garbled_circuit, output_labels,
                                      output_vals, cid, output_mode, output_mask,
                                      output_bn, connfd));
+
+    //if has terminate signal
+    if (terminate_period != 0 && garbled_circuit.terminate_id > 0) {
+      if (cid % terminate_period == 0) {
+        bool is_terminate = false;
+        CHECK(
+            EvaluateTransferTerminate(garbled_circuit, terminate_label,
+                                      terminate_val, &is_terminate, connfd));
+
+        if (is_terminate) {
+          LOG(INFO) << "Bob Terminated in " << cid + 1 << "cc out of "
+                    << *clock_cycles << "cc." << endl;
+          *clock_cycles = cid + 1;
+          break;
+        }
+      }
+      //last clock cycle, not terminated
+      if (cid == (*clock_cycles) - 1) {
+        LOG(ERROR) << "Bob Not enough clock cycles. Circuit is not terminated in "
+                   << *clock_cycles << "cc." << endl;
+      }
+    }
   }
 
   LOG(INFO)
@@ -263,8 +318,8 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       << "\t(cc/bit) = "
       << ot_time
           / ((double) (garbled_circuit.e_init_size
-              + clock_cycles * garbled_circuit.e_input_size))
-      << endl;
+              + (*clock_cycles) * garbled_circuit.e_input_size))
+      << endl;  //TODO:fix clock_cycle
 
   LOG(INFO) << "Bob communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Bob evaluation time (cc) = " << eval_time << endl;
@@ -287,6 +342,7 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                       GarbledTable* garbled_tables, uint64_t *garbled_table_ind,
                       block R, AES_KEY& AES_Key, uint64_t cid, int connfd,
                       BlockPair *wires, short* wires_val, int* fanout,
+                      BlockPair* terminate_label, short* terminate_val,
                       block* output_labels, short* output_vals) {
   uint64_t start_time = RDTSC;
 
@@ -474,6 +530,10 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     output_labels[(i) * 2 + 1] = wires[garbled_circuit.outputs[i]].label1;
     output_vals[i] = wires_val[garbled_circuit.outputs[i]];
   }
+  if (garbled_circuit.terminate_id > 0) {
+    (*terminate_label) = wires[garbled_circuit.terminate_id];
+    (*terminate_val) = wires_val[garbled_circuit.terminate_id];
+  }
 
   uint64_t end_time = RDTSC;
   return (end_time - start_time);
@@ -484,7 +544,8 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                         block* input_labels, GarbledTable* garbled_tables,
                         uint64_t *garbled_table_ind, AES_KEY& AES_Key,
                         uint64_t cid, int connfd, block *wires,
-                        short* wires_val, int* fanout, block* output_labels,
+                        short* wires_val, int* fanout, block* terminate_label,
+                        short* terminate_val, block* output_labels,
                         short* output_vals) {
   *garbled_table_ind = 0;
   uint64_t start_time = RDTSC;
@@ -652,6 +713,10 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     output_labels[i] = wires[garbled_circuit.outputs[i]];
     output_vals[i] = wires_val[garbled_circuit.outputs[i]];
     DUMP("output") << wires[garbled_circuit.outputs[i]] << endl;
+  }
+  if (garbled_circuit.terminate_id > 0) {
+    (*terminate_label) = wires[garbled_circuit.terminate_id];
+    (*terminate_val) = wires_val[garbled_circuit.terminate_id];
   }
 
   uint64_t end_time = RDTSC;
@@ -1101,4 +1166,3 @@ int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
   BN_free(output_mask_bn);
   return SUCCESS;
 }
-

@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
 
   string scd_file_address;
   uint64_t clock_cycles;
+  int64_t terminate_period;
   string test_name;
 
   boost::format fmter(
@@ -63,7 +64,11 @@ int main(int argc, char* argv[]) {
    "Simple circuit description (.scd) file address.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(100),
    "Number of clock cycles to evaluate the circuit.")  //
-  ("test_name,t", po::value<string>(&test_name)->default_value("sum"),
+  ("terminate_period,t",
+   po::value<int64_t>(&terminate_period)->default_value(1),
+   "Terminate signal reveal period: "
+   "0: No termination or never reveal, T: Reveal every T clock cycle.")  //
+  ("test_name,n", po::value<string>(&test_name)->default_value("sum"),
    "A23 test name.");
 
   po::variables_map vm;
@@ -103,12 +108,12 @@ int main(int argc, char* argv[]) {
   string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
 
   string output_str;
-  int64_t terminate = 0;
 
-  LOG(INFO) << "A32 Test " << test_name << " " << clock_cycles << "cc" << endl;
+  LOG(INFO) << "A32 Test " << test_name << " " << clock_cycles
+            << "cc with terminate period " << terminate_period << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
-                                  e_input_str, clock_cycles, terminate,
+                                  e_input_str, clock_cycles, terminate_period,
                                   output_mode, &output_str);
   CHECK_EXPR_MSG(ret == SUCCESS, "EvalauatePlaintextStr");
 
@@ -117,15 +122,15 @@ int main(int argc, char* argv[]) {
   GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                                p_input_str, g_init_str,
                                                g_input_str, alice_output,
-                                               output_mask, output_mode,
-                                               disable_OT, low_mem_foot,
-                                               clock_cycles);
+                                               output_mask, terminate_period,
+                                               output_mode, disable_OT,
+                                               low_mem_foot, clock_cycles);
   GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
                                             p_input_str, e_init_str,
                                             e_input_str, output_str,
-                                            output_mask, output_mode,
-                                            disable_OT, low_mem_foot,
-                                            clock_cycles);
+                                            output_mask, terminate_period,
+                                            output_mode, disable_OT,
+                                            low_mem_foot, clock_cycles);
 
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   CHECK_EXPR_MSG(ret == SUCCESS, "TcpipTestRun");

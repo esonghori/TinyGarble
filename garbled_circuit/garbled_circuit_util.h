@@ -92,7 +92,7 @@ typedef struct GarbledCircuit {
   uint64_t e_input_size;  // eval input
   uint64_t dff_size;
   uint64_t output_size;
-  uint64_t terminate_id; // terminate signal id, 0 in case of no signal
+  uint64_t terminate_id;  // terminate signal id, 0 in case of no signal
   uint64_t gate_size;
 
   GarbledGate* garbledGates; /*!< topologically sorted gates */
@@ -244,5 +244,13 @@ void PrintPredecessorsEval(const GarbledCircuit& garbled_circuit, block *wires,
                            int64_t cid, int64_t gid);
 void PrintPredecessorsGarble(const GarbledCircuit& garbled_circuit,
                              BlockPair *wires, int64_t cid, int64_t gid);
+
+int GarbleTransferTerminate(const GarbledCircuit& garbled_circuit,
+                            const BlockPair &terminate_label,
+                            short terminate_val, bool* is_terminate,
+                            int connfd);
+int EvaluateTransferTerminate(const GarbledCircuit& garbled_circuit,
+                              const block &terminate_label, short terminate_val,
+                              bool* is_terminate, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_UTIL_H_ */

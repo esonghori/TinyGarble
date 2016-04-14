@@ -52,9 +52,9 @@
 int GarbleStr(const string& scd_file_address, const string& p_init_str,
               const string& p_input_str, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
-              const string& output_mask, OutputMode output_mode,
-              bool disable_OT, bool low_mem_foot, string* output_str,
-              int connfd) {
+              const string& output_mask, int64_t terminate_period,
+              OutputMode output_mode, bool disable_OT, bool low_mem_foot,
+              string* output_str, int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -65,6 +65,13 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
     return FAILURE;
   }
   FillFanout(&garbled_circuit);
+
+  if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
+    LOG(ERROR) << "There is no terminate signal in the circuit."
+               " The terminate period should be 0."
+               << endl;
+    return FAILURE;
+  }
 
   block R = RandomBlock();  // secret label
   *((short *) (&R)) |= 1;
@@ -91,8 +98,9 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
         GarbleBNLowMem(garbled_circuit, p_init, p_input, g_init, g_input,
-                       clock_cycles, output_mask, output_mode, output_bn, R,
-                       global_key, disable_OT, connfd));
+                       &clock_cycles, output_mask, terminate_period,
+                       output_mode, output_bn, R, global_key, disable_OT,
+                       connfd));
 
     CHECK(
         OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
@@ -101,8 +109,9 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
   } else {
     CHECK(
         GarbleBNHighMem(garbled_circuit, p_init, p_input, g_init, g_input,
-                        clock_cycles, output_mask, output_mode, output_bn, R,
-                        global_key, disable_OT, connfd));
+                        &clock_cycles, output_mask, terminate_period,
+                        output_mode, output_bn, R, global_key, disable_OT,
+                        connfd));
     CHECK(
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));
@@ -121,9 +130,9 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
 int EvaluateStr(const string& scd_file_address, const string& p_init_str,
                 const string& p_input_str, const string& init_str,
                 const string& input_str, uint64_t clock_cycles,
-                const string& output_mask, OutputMode output_mode,
-                bool disable_OT, bool low_mem_foot, string* output_str,
-                int connfd) {
+                const string& output_mask, int64_t terminate_period,
+                OutputMode output_mode, bool disable_OT, bool low_mem_foot,
+                string* output_str, int connfd) {
   if (clock_cycles == 0) {
     return FAILURE;
   }
@@ -135,7 +144,14 @@ int EvaluateStr(const string& scd_file_address, const string& p_init_str,
   }
   FillFanout(&garbled_circuit);
 
-// allocate init and input values and translate form string
+  if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
+    LOG(ERROR) << "There is no terminate signal in the circuit."
+               " The terminate period should be 0."
+               << endl;
+    return FAILURE;
+  }
+
+  // allocate init and input values and translate form string
   BIGNUM* p_init = BN_new();
   BIGNUM* p_input = BN_new();
   BIGNUM* e_init = BN_new();
@@ -157,16 +173,18 @@ int EvaluateStr(const string& scd_file_address, const string& p_init_str,
   if (low_mem_foot && clock_cycles > 1) {
     CHECK(
         EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init, e_input,
-                         clock_cycles, output_mask, output_mode, output_bn,
-                         global_key, disable_OT, connfd));
+                         &clock_cycles, output_mask, terminate_period,
+                         output_mode, output_bn, global_key, disable_OT,
+                         connfd));
     CHECK(
         OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
                            output_mode, output_str));
   } else {
     CHECK(
         EvaluateBNHighMem(garbled_circuit, p_init, p_input, e_init, e_input,
-                          clock_cycles, output_mask, output_mode, output_bn,
-                          global_key, disable_OT, connfd));
+                          &clock_cycles, output_mask, terminate_period,
+                          output_mode, output_bn, global_key, disable_OT,
+                          connfd));
     CHECK(
         OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
                             output_mode, output_str));
