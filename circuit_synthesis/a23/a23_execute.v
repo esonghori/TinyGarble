@@ -380,7 +380,7 @@ assign reg_write_nxt = i_reg_write_sel == 3'd0 ? alu_out               :
 // Byte Enable Select
 // ========================================================
 assign byte_enable_nxt = i_byte_enable_sel == 2'd0  ? 4'b1111 :  // word write
-                         i_byte_enable_sel == 2'd2  ?            // halfword write
+                         i_byte_enable_sel == 2'd2  ?            // halfword write, never happen
                          ( o_address_nxt[1] == 1'd0 ? 4'b0011 : 
                                                       4'b1100  ) :
                            

@@ -7,7 +7,8 @@ vlib work
 vlog ../*.v
 vlog a23_testbench.v
 
-vsim -c -do a23_test.do a23_testbench
+#w/o gui
+#vsim -c -do a23_test.do a23_testbench
 
-#for gui
-# vsim -do a23_test.do a23_testbench 
+#w/ gui
+vsim -do a23_test.do a23_testbench 

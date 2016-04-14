@@ -2,11 +2,11 @@
 
 module a23_testbench();
 
-localparam CODE_MEM_SIZE  = 1024; //_start:    0x00000000
+localparam CODE_MEM_SIZE  = 512; //_start:    0x00000000
 localparam G_MEM_SIZE     = 64; //AdrAliceX: 0x01000000
 localparam E_MEM_SIZE     = 64; //AdrBobY:   0x02000000
 localparam OUT_MEM_SIZE   = 64; //AdrOutZ:   0x03000000
-localparam STACK_MEM_SIZE = 64; //AdrStack:  0x04000000
+localparam STACK_MEM_SIZE = 64; //AdrStack:  0x04000100
 
 reg                            clk;
 reg                            rst;
@@ -65,9 +65,9 @@ begin
   rst = 1;
   cc = 0;
 
-  $readmemh("../../../a23/hamming/p.txt", p_init_reg);
-  $readmemh("../../../a23/hamming/test/g.txt", g_init_reg);
-  $readmemh("../../../a23/hamming/test/e.txt", e_init_reg);
+  $readmemh("../../../a23/aes/p.txt", p_init_reg);
+  $readmemh("../../../a23/aes/test/g.txt", g_init_reg);
+  $readmemh("../../../a23/aes/test/e.txt", e_init_reg);
   #28
   rst = 0;
   while (~terminate) begin

@@ -16,7 +16,7 @@ module a23_gc_main
   input  [G_MEM_SIZE   *32-1:0]   g_init,
   input  [E_MEM_SIZE   *32-1:0]   e_init,
   output [OUT_MEM_SIZE *32-1:0]   o,
-  output 						  terminate
+  output                          terminate
 );
 
 wire   [31:0]             o_m_address;
@@ -40,7 +40,7 @@ a23_core u_a23_core
   .o_m_address       (o_m_address       ),
   .o_m_write         (o_m_write         ),
   .o_m_write_en      (o_m_write_en      ),
-  .o_m_byte_enable   (o_m_byte_enable   ),  
+  .o_m_byte_enable   (o_m_byte_enable   ),
   .i_m_read          (i_m_read          ),
   .terminate         (terminate)
 );
@@ -68,7 +68,7 @@ endgenerate
 wire [23:0] trunc_m_address;
 assign trunc_m_address = o_m_address[23:0];
 
-assign  i_m_read =  (o_m_address[31:24] == 8'h00) ? {p_mem[trunc_m_address+3], p_mem[trunc_m_address+2], p_mem[trunc_m_address+1], p_mem[trunc_m_address]}  ://Code:  0x00000000 
+assign  i_m_read =  (o_m_address[31:24] == 8'h00) ? {p_mem[trunc_m_address+3], p_mem[trunc_m_address+2], p_mem[trunc_m_address+1], p_mem[trunc_m_address]}  ://Code:  0x00000000
                     (o_m_address[31:24] == 8'h01) ? {g_mem[trunc_m_address+3], g_mem[trunc_m_address+2], g_mem[trunc_m_address+1], g_mem[trunc_m_address]}  ://AdrGarbler: 0x01000000
                     (o_m_address[31:24] == 8'h02) ? {e_mem[trunc_m_address+3], e_mem[trunc_m_address+2], e_mem[trunc_m_address+1], e_mem[trunc_m_address]}  ://AdrEvaluator:   0x02000000
                     (o_m_address[31:24] == 8'h03) ? {out_mem[trunc_m_address+3], out_mem[trunc_m_address+2], out_mem[trunc_m_address+1], out_mem[trunc_m_address]}  ://AdrOut:   0x03000000
@@ -117,8 +117,19 @@ always @(posedge clk or posedge rst) begin
           p_mem[trunc_m_address+2] <= o_m_write[23:16];
           p_mem[trunc_m_address+1] <= o_m_write[15:8];
           p_mem[trunc_m_address+0] <= o_m_write[7:0];
-        end 
-        4'b0001, 4'b0010, 4'b0100, 4'b1000: p_mem[trunc_m_address] <= o_m_write[7:0];
+        end
+        4'b0001: begin
+          p_mem[trunc_m_address+0] <= o_m_write[7:0];
+        end
+        4'b0010: begin
+          p_mem[trunc_m_address+1] <= o_m_write[7:0];
+        end
+        4'b0100: begin
+          p_mem[trunc_m_address+2] <= o_m_write[7:0];
+        end
+        4'b1000: begin
+          p_mem[trunc_m_address+3] <= o_m_write[7:0];
+        end
         endcase
       end else if(o_m_address[31:24] == 8'h03) begin //AdrOut: 0x03000000
         case(o_m_byte_enable)
@@ -127,8 +138,19 @@ always @(posedge clk or posedge rst) begin
           out_mem[trunc_m_address+2] <= o_m_write[23:16];
           out_mem[trunc_m_address+1] <= o_m_write[15:8];
           out_mem[trunc_m_address+0] <= o_m_write[7:0];
-        end 
-        4'b0001, 4'b0010, 4'b0100, 4'b1000: out_mem[trunc_m_address] <= o_m_write[7:0];
+        end
+        4'b0001: begin
+          out_mem[trunc_m_address+0] <= o_m_write[7:0];
+        end
+        4'b0010: begin
+          out_mem[trunc_m_address+1] <= o_m_write[7:0];
+        end
+        4'b0100: begin
+          out_mem[trunc_m_address+2] <= o_m_write[7:0];
+        end
+        4'b1000: begin
+          out_mem[trunc_m_address+3] <= o_m_write[7:0];
+        end
         endcase
       end else if (o_m_address[31:24] == 8'h04) begin //AdrStack: 0x04000000
         case(o_m_byte_enable)
@@ -137,15 +159,24 @@ always @(posedge clk or posedge rst) begin
           stack_mem[trunc_m_address+2] <= o_m_write[23:16];
           stack_mem[trunc_m_address+1] <= o_m_write[15:8];
           stack_mem[trunc_m_address+0] <= o_m_write[7:0];
-        end 
-        4'b0001, 4'b0010, 4'b0100, 4'b1000: stack_mem[trunc_m_address] <= o_m_write[7:0];
-        endcase 
+        end
+        4'b0001: begin
+          stack_mem[trunc_m_address+0] <= o_m_write[7:0];
+        end
+        4'b0010: begin
+          stack_mem[trunc_m_address+1] <= o_m_write[7:0];
+        end
+        4'b0100: begin
+          stack_mem[trunc_m_address+2] <= o_m_write[7:0];
+        end
+        4'b1000: begin
+          stack_mem[trunc_m_address+3] <= o_m_write[7:0];
+        end
+        endcase
       end
     end
   end
 end
-
-assign o[OUT_MEM_SIZE *32] = terminate;
 
 
 endmodule

@@ -287,10 +287,10 @@ void AES128_ECB_encrypt(const uint8_t* input, const uint8_t* key, uint8_t* outpu
   Cipher();
 }
 
-void gc_main(const int *g,  // Garbler's input array (AES message)
-    const int *e,           // Evaluator's input array (AES key)
+void gc_main(const int *g,  // Garbler's input array (AES key)
+    const int *e,           // Evaluator's input array (AES message)
     int *o                  // output array
     ) {
-  AES128_ECB_encrypt((const uint8_t *)g, (const uint8_t *)e, (uint8_t *)o);
+  AES128_ECB_encrypt((const uint8_t *)e, (const uint8_t *)g, (uint8_t *)o);
 }
 
