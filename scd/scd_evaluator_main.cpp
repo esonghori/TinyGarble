@@ -68,7 +68,7 @@ int main(int argc, char*argv[]) {
   ("e_input", po::value<string>(&e_input_f_hex_str)->default_value("0"),
    "e_input file or in hexadecimal.")  //
   ("terminate_period,t",
-   po::value<int64_t>(&terminate_period)->default_value(-1),
+   po::value<int64_t>(&terminate_period)->default_value(0),
    "Terminate signal reveal period: "
    "0: No termination or never reveal, T: Reveal every T clock cycle.")  //
   ("output_mode", po::value<string>(&output_mode_str),

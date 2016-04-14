@@ -29,12 +29,12 @@
 #include "util/tinygarble_config.h"
 
 GCTestStruct MakeGCTestStruct(const string& scd_file_address,
-                                     const string& p_init,
-                                     const string& p_input, const string& init,
-                                     const string& input, const string& output,
-                                     const string& output_mask,
-                                     OutputMode output_mode, bool disable_OT,
-                                     bool low_mem_foot, uint64_t clock_cycles) {
+                              const string& p_init, const string& p_input,
+                              const string& init, const string& input,
+                              const string& output, const string& output_mask,
+                              int64_t terminate_period, OutputMode output_mode,
+                              bool disable_OT, bool low_mem_foot,
+                              uint64_t clock_cycles) {
   GCTestStruct ret;
 
   ret.scd_file_address = scd_file_address;
@@ -44,6 +44,7 @@ GCTestStruct MakeGCTestStruct(const string& scd_file_address,
   ret.input = input;
   ret.output = output;
   ret.output_mask = output_mask;
+  ret.terminate_period = terminate_period;
   ret.output_mode = output_mode;
   ret.disable_OT = disable_OT;
   ret.low_mem_foot = low_mem_foot;
@@ -57,8 +58,9 @@ int Alice(const void* data, int connfd) {
   int ret = GarbleStr(gc_data->scd_file_address, gc_data->p_init,
                       gc_data->p_input, gc_data->init, gc_data->input,
                       gc_data->clock_cycles, gc_data->output_mask,
-                      gc_data->output_mode, gc_data->disable_OT,
-                      gc_data->low_mem_foot, &output_str, connfd);
+                      gc_data->terminate_period, gc_data->output_mode,
+                      gc_data->disable_OT, gc_data->low_mem_foot, &output_str,
+                      connfd);
 
   if (ret == FAILURE) {
     LOG(ERROR) << "GarbleStr failed.";
@@ -82,8 +84,9 @@ int Bob(const void *data, int connfd) {
   int ret = EvaluateStr(gc_data->scd_file_address, gc_data->p_init,
                         gc_data->p_input, gc_data->init, gc_data->input,
                         gc_data->clock_cycles, gc_data->output_mask,
-                        gc_data->output_mode, gc_data->disable_OT,
-                        gc_data->low_mem_foot, &output_str, connfd);
+                        gc_data->terminate_period, gc_data->output_mode,
+                        gc_data->disable_OT, gc_data->low_mem_foot, &output_str,
+                        connfd);
   if (ret == FAILURE) {
     LOG(ERROR) << "EvaluateStr failed.";
     return FAILURE;
@@ -100,5 +103,4 @@ int Bob(const void *data, int connfd) {
 
   return SUCCESS;
 }
-
 
