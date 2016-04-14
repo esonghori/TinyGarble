@@ -35,6 +35,7 @@
 
 #include "garbled_circuit/garbled_circuit_util.h"
 
+#include "tcpip/tcpip.h"
 #include "util/common.h"
 #include "util/log.h"
 #include "util/util.h"
@@ -585,4 +586,41 @@ void PrintPredecessorsEval(const GarbledCircuit& garbled_circuit, block *wires,
     PrintPredecessorsEval(garbled_circuit, wires, cid, input1_gid);
   }
 
+}
+
+int GarbleTransferTerminate(const GarbledCircuit& garbled_circuit,
+                            const BlockPair &terminate_label,
+                            short terminate_val, bool* is_terminate,
+                            int connfd) {
+  if (terminate_val == 0) {
+    (*is_terminate) = false;
+  } else if (terminate_val == 1) {
+    (*is_terminate) = true;
+  } else {
+    short terminate_type = get_LSB(terminate_label.label0);
+    CHECK(SendData(connfd, &terminate_type, sizeof(short)));
+    short eval_terminate_type;
+    CHECK(RecvData(connfd, &eval_terminate_type, sizeof(short)));
+    (*is_terminate) = (terminate_type == eval_terminate_type);
+  }
+
+  return SUCCESS;
+}
+
+int EvaluateTransferTerminate(const GarbledCircuit& garbled_circuit,
+                              const block &terminate_label, short terminate_val,
+                              bool* is_terminate, int connfd) {
+  if (terminate_val == 0) {
+    (*is_terminate) = false;
+  } else if (terminate_val == 1) {
+    (*is_terminate) = true;
+  } else {
+    short garble_terminate_type;
+    CHECK(RecvData(connfd, &garble_terminate_type, sizeof(short)));
+    short terminate_type = get_LSB(terminate_label);
+    CHECK(RecvData(connfd, &terminate_type, sizeof(short)));
+    (*is_terminate) = (terminate_type == garble_terminate_type);
+  }
+
+  return SUCCESS;
 }

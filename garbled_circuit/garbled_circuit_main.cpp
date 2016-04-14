@@ -146,6 +146,7 @@ int main(int argc, char* argv[]) {
   string p_input_f_hex_str;
   string init_f_hex_str;
   string input_f_hex_str;
+  int64_t terminate_period;
   uint64_t clock_cycles;
   string output_mask;
   string output_mode_str;
@@ -189,6 +190,10 @@ int main(int argc, char* argv[]) {
   ("output_mask", po::value<string>(&output_mask)->default_value("0"),
    "Hexadecimal mask for output. 0 indicates that output belongs to Bob, "
    "and 1 belongs to Alice.")  //
+  ("terminate_period,t",
+   po::value<int64_t>(&terminate_period)->default_value(0),
+   "Terminate signal reveal period: "
+   "0: No termination or never reveal, T: Reveal every T clock cycle.")  //
   ("output_mode", po::value<string>(&output_mode_str),
    "output print mode: {0:consecutive, 1:separated_clock, "
    "2:last_clock}, e.g., consecutive, 0, 1");
@@ -269,8 +274,8 @@ int main(int argc, char* argv[]) {
     uint64_t delta_time = RDTSC;
     CHECK(
         GarbleStr(scd_file_address, p_init_str, p_input_str, init_str,
-                  input_str, clock_cycles, output_mask, output_mode, disable_OT,
-                  low_mem_foot, &output_str, connfd));
+                  input_str, clock_cycles, output_mask, terminate_period,
+                  output_mode, disable_OT, low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Alice's output = " << output_str << endl;
@@ -306,8 +311,8 @@ int main(int argc, char* argv[]) {
     uint64_t delta_time = RDTSC;
     CHECK(
         EvaluateStr(scd_file_address, p_init_str, p_input_str, init_str,
-                    input_str, clock_cycles, output_mask, output_mode,
-                    disable_OT, low_mem_foot, &output_str, connfd));
+                    input_str, clock_cycles, output_mask, terminate_period,
+                    output_mode, disable_OT, low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Bob's output = " << output_str << endl;

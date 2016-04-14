@@ -313,7 +313,7 @@ MU_TEST(AES128Bit11cc) {
 
 }
 
-MU_TEST(A23MemTest600cc) {
+MU_TEST(A23MemTest1000cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
@@ -329,10 +329,10 @@ MU_TEST(A23MemTest600cc) {
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
 
   string output_str;
-  int64_t terminate = 0;
-  uint64_t clock_cycles = 600;
+  int64_t terminate = 1;
+  uint64_t clock_cycles = 1000;
 
-  LOG(INFO) << "A32 Mem Test 600cc" << endl;
+  LOG(INFO) << "A32 Mem Test 1000cc w/ terminat period 1" << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
                                   e_input_str, clock_cycles, terminate,
@@ -349,7 +349,7 @@ MU_TEST(A23MemTest600cc) {
   mu_check(icompare(output_str, output_expected_str));
 }
 
-MU_TEST(A23Hamming850cc) {
+MU_TEST(A23Hamming1000cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
@@ -370,10 +370,10 @@ MU_TEST(A23Hamming850cc) {
   string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
 
   string output_str;
-  int64_t terminate = 0;
-  uint64_t clock_cycles = 850;
+  int64_t terminate = 1;
+  uint64_t clock_cycles = 1000;
 
-  LOG(INFO) << "A32 Hamming Distance 850cc" << endl;
+  LOG(INFO) << "A32 Hamming Distance 1000cc w/ terminat period 1" << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
                                   e_input_str, clock_cycles, terminate,
@@ -401,8 +401,8 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(PublicWire8Bit2cc);
   MU_RUN_TEST(AES128Bit1cc);
   MU_RUN_TEST(AES128Bit11cc);
-  MU_RUN_TEST(A23MemTest600cc);
-  MU_RUN_TEST(A23Hamming850cc);
+  MU_RUN_TEST(A23MemTest1000cc);
+  MU_RUN_TEST(A23Hamming1000cc);
 }
 
 int main(int argc, char *argv[]) {

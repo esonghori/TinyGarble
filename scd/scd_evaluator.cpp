@@ -159,13 +159,21 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
         BN_clear_bit(*outputs, cid * garbled_circuit.output_size + i);
     }
 
-    //check terminate signal
-    if (terminate_period != 0 && cid % terminate_period == 0) {
-      // last bit of output is terminate signal
-      bool is_terminate = wires[garbled_circuit.terminate_id];
-      if (is_terminate) {
-        *clock_cycles = cid + 1;
-        break;
+    //if has terminate signal
+    if (terminate_period != 0 && garbled_circuit.terminate_id > 0) {
+      if (cid % terminate_period == 0) {
+        bool is_terminate = wires[garbled_circuit.terminate_id];
+        if (is_terminate) {
+          LOG(INFO) << "Terminated in " << cid + 1 << "cc out of "
+                    << *clock_cycles << "cc." << endl;
+          *clock_cycles = cid + 1;
+          break;
+        }
+      }
+      //last clock cycle, not terminated
+      if (cid == (*clock_cycles) - 1) {
+        LOG(ERROR) << "Not enough clock cycles. Circuit is not terminated in "
+                   << *clock_cycles << "cc." << endl;
       }
     }
   }

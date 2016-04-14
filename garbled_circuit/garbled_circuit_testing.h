@@ -32,6 +32,7 @@ struct GCTestStruct {
   string input;
   string output;
   string output_mask;
+  int64_t terminate_period;
   OutputMode output_mode;
   bool disable_OT;
   bool low_mem_foot;
@@ -42,8 +43,9 @@ GCTestStruct MakeGCTestStruct(const string& scd_file_address,
                               const string& p_init, const string& p_input,
                               const string& init, const string& input,
                               const string& output, const string& output_mask,
-                              OutputMode output_mode, bool disable_OT,
-                              bool low_mem_foot, uint64_t clock_cycles);
+                              int64_t terminate_period, OutputMode output_mode,
+                              bool disable_OT, bool low_mem_foot,
+                              uint64_t clock_cycles);
 
 int Alice(const void* data, int connfd);
 int Bob(const void *data, int connfd);

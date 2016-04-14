@@ -42,22 +42,26 @@
 
 int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                     BIGNUM* p_input, BIGNUM* g_init, BIGNUM* g_input,
-                    uint64_t clock_cycles, const string& output_mask,
-                    OutputMode output_mode, BIGNUM* output_bn, block R,
-                    block global_key, bool disable_OT, int connfd);
+                    uint64_t* clock_cycles, const string& output_mask,
+                    int64_t terminate_period, OutputMode output_mode,
+                    BIGNUM* output_bn, block R, block global_key,
+                    bool disable_OT, int connfd);
 int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                       BIGNUM* p_input, BIGNUM* e_init, BIGNUM* e_input,
-                      uint64_t clock_cycles, const string& output_mask,
-                      OutputMode output_mode, BIGNUM* output_bn, block global_key,
-                      bool disable_OT, int connfd);
+                      uint64_t* clock_cycles, const string& output_mask,
+                      int64_t terminate_period, OutputMode output_mode,
+                      BIGNUM* output_bn, block global_key, bool disable_OT,
+                      int connfd);
 int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                   BIGNUM* p_input, block* init_labels, block* input_labels,
-                  block global_key, block R, uint64_t clock_cycles, int connfd,
-                  block* output_labels, short* output_vals);
+                  block global_key, block R, uint64_t* clock_cycles,
+                  int64_t terminate_period, int connfd, block* output_labels,
+                  short* output_vals);
 int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                     BIGNUM* p_input, block* init_labels, block* input_labels,
-                    block global_key, uint64_t clock_cycles, int connfd,
-                    block* output_labels, short* output_vals);
+                    block global_key, uint64_t* clock_cycles,
+                    int64_t terminate_period, int connfd, block* output_labels,
+                    short* output_vals);
 int GarbleOT(const GarbledCircuit& garbled_circuit, block* init_labels,
              block* input_labels, uint64_t clock_cycles, int connfd);
 int EvalauteOT(const GarbledCircuit& garbled_circuit, BIGNUM* e_init,
