@@ -27,7 +27,8 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
                        const BIGNUM* p_init, const BIGNUM* g_init,
                        const BIGNUM* e_init, const BIGNUM* p_input,
                        const BIGNUM* g_input, const BIGNUM* e_input,
-                       uint64_t clock_cycles, BIGNUM** outputs) {
+                       uint64_t *clock_cycles, int64_t terminate_period,
+                       BIGNUM** outputs) {
 
   bool* wires = nullptr;
   CHECK_ALLOC(wires = new bool[garbled_circuit.get_wire_size()]);
@@ -35,9 +36,9 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
   if (*outputs == nullptr) {
     *outputs = BN_new();
   }
-  bn_expand(*outputs, clock_cycles * garbled_circuit.output_size);
+  bn_expand(*outputs, (*clock_cycles) * garbled_circuit.output_size);
 
-  for (uint64_t cid = 0; cid < clock_cycles; cid++) {  //for each clock cycle
+  for (uint64_t cid = 0; cid < (*clock_cycles); cid++) {  //for each clock cycle
     //dff initial value
     uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
     if (cid == 0) {
@@ -157,7 +158,18 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
       else
         BN_clear_bit(*outputs, cid * garbled_circuit.output_size + i);
     }
+
+    //check terminate signal
+    if (terminate_period != 0 && cid % terminate_period == 0) {
+      // last bit of output is terminate signal
+      bool is_terminate = wires[garbled_circuit.terminate_id];
+      if (is_terminate) {
+        *clock_cycles = cid + 1;
+        break;
+      }
+    }
   }
+
   delete[] wires;
 
   return SUCCESS;
@@ -167,8 +179,8 @@ int EvalauatePlaintextStr(const string& scd_file_address,
                           const string& p_init_str, const string& g_init_str,
                           const string& e_init_str, const string& p_input_str,
                           const string& g_input_str, const string& e_input_str,
-                          uint64_t clock_cycles, OutputMode output_mode,
-                          string* outputs_str) {
+                          uint64_t clock_cycles, int64_t terminate_period,
+                          OutputMode output_mode, string* outputs_str) {
   BIGNUM* p_init = BN_new();
   BIGNUM* g_init = BN_new();
   BIGNUM* e_init = BN_new();
@@ -195,11 +207,17 @@ int EvalauatePlaintextStr(const string& scd_file_address,
     return FAILURE;
   }
 
+  if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
+    LOG(ERROR) << "There is no terminate signal in the circuit."
+               " The terminate period should be 0."
+               << endl;
+    return FAILURE;
+  }
+
   BIGNUM* outputs = BN_new();
   EvalauatePlaintext(garbled_circuit, p_init, g_init, e_init, p_input, g_input,
-                     e_input, clock_cycles, &outputs);
+                     e_input, &clock_cycles, terminate_period, &outputs);
 
-  //LOG(INFO) << "outputs = " << BN_bn2hex(outputs) << endl;
   OutputBN2StrHighMem(garbled_circuit, outputs, clock_cycles, output_mode,
                       outputs_str);
   return SUCCESS;

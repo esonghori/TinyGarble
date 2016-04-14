@@ -509,6 +509,10 @@ int SortNetlist(ReadCircuit &readCircuit,
     readCircuit.output_list[i] = sorted_list_1[readCircuit.output_list[i]];
   }
 
+  if (readCircuit.terminate_id != 0) {
+    readCircuit.terminate_id = sorted_list_1[readCircuit.terminate_id];
+  }
+
   LOG(INFO) << endl << "Topological Sort" << endl;
   LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (int64_t i = 0; i < (int64_t) readCircuit.dff_size; i++) {
@@ -537,6 +541,8 @@ int SortNetlist(ReadCircuit &readCircuit,
     LOG(INFO) << readCircuit.output_list[i] << endl;
   }
   LOG(INFO) << endl;
+
+  LOG(INFO) << "terminate id = " << readCircuit.terminate_id << endl << endl;
 
   return SUCCESS;
 }

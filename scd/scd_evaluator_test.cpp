@@ -48,6 +48,7 @@ MU_TEST(Sum1Bit) {
   string g_init_str = "0";
   string e_init_str = "0";
   string p_input_str = "";
+  int64_t terminate = 0;
   uint64_t clock_cycles = 8;
   OutputMode output_mode = OutputMode::consecutive;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -64,8 +65,8 @@ MU_TEST(Sum1Bit) {
 
     int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                     e_init_str, p_input_str, g_input_str,
-                                    e_input_str, clock_cycles, output_mode,
-                                    &output_str);
+                                    e_input_str, clock_cycles, terminate,
+                                    output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -81,6 +82,7 @@ MU_TEST(Mux8Bit) {
   string g_init_str = "0";
   string e_init_str = "0";
   string p_input_str = "";
+  int64_t terminate = 0;
   uint64_t clock_cycles = 1;
   OutputMode output_mode = OutputMode::separated_clock;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -98,8 +100,8 @@ MU_TEST(Mux8Bit) {
               << "}. " << g_input_str << endl;
     int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                     e_init_str, p_input_str, g_input_str,
-                                    e_input_str, clock_cycles, output_mode,
-                                    &output_str);
+                                    e_input_str, clock_cycles, terminate,
+                                    output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
     uint8_t y = strtol(output_str.c_str(), nullptr, 16);
@@ -115,6 +117,7 @@ MU_TEST(Sum8Bit) {
   string g_init_str = "0";
   string e_init_str = "0";
   string p_input_str = "";
+  int64_t terminate = 0;
   uint64_t clock_cycles = 1;
   OutputMode output_mode = OutputMode::consecutive;
   for (int i = 0; i < TEST_REPEAT; i++) {
@@ -130,8 +133,8 @@ MU_TEST(Sum8Bit) {
               << endl;
     int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                     e_init_str, p_input_str, g_input_str,
-                                    e_input_str, clock_cycles, output_mode,
-                                    &output_str);
+                                    e_input_str, clock_cycles, terminate,
+                                    output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -148,6 +151,7 @@ MU_TEST(Hamming32Bit1cc) {
   string g_init_str = "";
   string e_init_str = "";
   string p_input_str = "";
+  int64_t terminate = 0;
   uint64_t clock_cycles = 1;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint32_t x[2];
@@ -163,8 +167,8 @@ MU_TEST(Hamming32Bit1cc) {
 
     int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                     e_init_str, p_input_str, g_input_str,
-                                    e_input_str, clock_cycles, output_mode,
-                                    &output_str);
+                                    e_input_str, clock_cycles, terminate,
+                                    output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -182,6 +186,7 @@ MU_TEST(Hamming32Bit8cc) {
   string g_init_str = "";
   string e_init_str = "";
   string p_input_str = "";
+  int64_t terminate = 0;
   uint64_t clock_cycles = 8;
   for (int i = 0; i < TEST_REPEAT; i++) {
     uint32_t x[2];
@@ -197,8 +202,8 @@ MU_TEST(Hamming32Bit8cc) {
 
     int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                     e_init_str, p_input_str, g_input_str,
-                                    e_input_str, clock_cycles, output_mode,
-                                    &output_str);
+                                    e_input_str, clock_cycles, terminate,
+                                    output_mode, &output_str);
     mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
     LOG(INFO) << "result: " << output_str << endl;
 
@@ -219,14 +224,15 @@ MU_TEST(PublicWire8Bit2cc) {
   string g_input_str = "19458C20";  //2*16bit
   string e_input_str = "A5C6";  //2*8bit
   string output_str;  //2*32bit
+  int64_t terminate = 0;
   uint64_t clock_cycles = 2;
 
   LOG(INFO) << "Public Wire test (8-bit 2cc)" << endl;
 
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
-                                  e_input_str, clock_cycles, output_mode,
-                                  &output_str);
+                                  e_input_str, clock_cycles, terminate,
+                                  output_mode, &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
   LOG(INFO) << "result: " << output_str << endl;
 
@@ -243,6 +249,7 @@ MU_TEST(AES128Bit1cc) {
   string e_init_str = "";
   string p_input_str = "";
   string output_str;
+  int64_t terminate = 0;
   uint64_t clock_cycles = 1;
 
   string g_input_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
@@ -257,8 +264,8 @@ MU_TEST(AES128Bit1cc) {
   LOG(INFO) << "AES (128-bit 1cc)" << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
-                                  e_input_str, clock_cycles, output_mode,
-                                  &output_str);
+                                  e_input_str, clock_cycles, terminate,
+                                  output_mode, &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
   string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
@@ -288,13 +295,14 @@ MU_TEST(AES128Bit11cc) {
   string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
 
   string output_str;
+  int64_t terminate = 0;
   uint64_t clock_cycles = 11;
 
   LOG(INFO) << "AES (128-bit 1cc)" << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
-                                  e_input_str, clock_cycles, output_mode,
-                                  &output_str);
+                                  e_input_str, clock_cycles, terminate,
+                                  output_mode, &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
   string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
@@ -321,13 +329,14 @@ MU_TEST(A23MemTest600cc) {
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
 
   string output_str;
+  int64_t terminate = 0;
   uint64_t clock_cycles = 600;
 
   LOG(INFO) << "A32 Mem Test 600cc" << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
-                                  e_input_str, clock_cycles, output_mode,
-                                  &output_str);
+                                  e_input_str, clock_cycles, terminate,
+                                  output_mode, &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
   string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
@@ -361,13 +370,14 @@ MU_TEST(A23Hamming850cc) {
   string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
 
   string output_str;
+  int64_t terminate = 0;
   uint64_t clock_cycles = 850;
 
   LOG(INFO) << "A32 Hamming Distance 850cc" << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
-                                  e_input_str, clock_cycles, output_mode,
-                                  &output_str);
+                                  e_input_str, clock_cycles, terminate,
+                                  output_mode, &output_str);
   mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
 
   string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)

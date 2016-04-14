@@ -13,7 +13,8 @@ reg                            rst;
 wire  [CODE_MEM_SIZE*32-1:0]   p_init;
 wire  [G_MEM_SIZE   *32-1:0]   g_init;
 wire  [E_MEM_SIZE   *32-1:0]   e_init;
-wire  [OUT_MEM_SIZE *32  :0]   o;
+wire  [OUT_MEM_SIZE *32-1:0]   o;
+wire                           terminate;
 
 genvar i;
 integer cc;
@@ -29,15 +30,14 @@ a23_gc_main
 )
 u_a23_gc_main
 (
-  .clk    ( clk    ), 
-  .rst    ( rst    ), 
-  .p_init ( p_init ), 
-  .g_init ( g_init ), 
-  .e_init ( e_init ), 
-  .o      ( o      ) 
+  .clk       ( clk       ), 
+  .rst       ( rst       ), 
+  .p_init    ( p_init    ), 
+  .g_init    ( g_init    ), 
+  .e_init    ( e_init    ), 
+  .o         ( o         ),
+  .terminate ( terminate )
 );
-
-wire terminate = o[OUT_MEM_SIZE *32];
 
 reg  [31:0] p_init_reg  [CODE_MEM_SIZE  -1:0];
 reg  [31:0] g_init_reg  [G_MEM_SIZE     -1:0];

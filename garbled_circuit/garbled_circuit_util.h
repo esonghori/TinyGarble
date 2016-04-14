@@ -92,6 +92,7 @@ typedef struct GarbledCircuit {
   uint64_t e_input_size;  // eval input
   uint64_t dff_size;
   uint64_t output_size;
+  uint64_t terminate_id; // terminate signal id, 0 in case of no signal
   uint64_t gate_size;
 
   GarbledGate* garbledGates; /*!< topologically sorted gates */

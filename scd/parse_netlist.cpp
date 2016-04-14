@@ -313,11 +313,17 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
         tokenizer<>::iterator beg = bits.begin();
         string bits_str(*beg);
         no_of_bits = atoi(bits_str.c_str())+1;
+      } else if(!str.compare("terminate")) {
+        if(no_of_bits != 0) {
+          LOG(ERROR) << "Terminate signal should be 1-bit output." << endl;
+          return FAILURE;
+        }
+        readCircuitString.has_terminate = true;
       } else if(!str.compare("o")) {
         readCircuitString.output_size = (no_of_bits>0)?no_of_bits:1;
       } else {
         LOG(ERROR) << "The output name is not valid " << str << endl <<
-        "valid choice: { o }" << endl;
+        "valid choice: { o, terminate}" << endl;
         return FAILURE;
       }
     } else if(!str.compare("assign")) {
@@ -611,6 +617,11 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
     }
   }
 
+  if (readCircuitString.has_terminate) {
+    CHECK_EXPR(wire_name_table["terminate"] != 0);
+    readCircuit.terminate_id = wire_name_table["terminate"];
+  }
+
   LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
@@ -632,6 +643,8 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
     LOG(INFO) << readCircuit.output_list[i] << endl;
   }
   LOG(INFO) << endl;
+
+  LOG(INFO) << "terminate id = " << readCircuit.terminate_id << endl << endl;
 
   return 0;
 }

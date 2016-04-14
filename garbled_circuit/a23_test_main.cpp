@@ -58,7 +58,8 @@ int main(int argc, char* argv[]) {
   ("help,h", "produce help message")  //
   ("scd_file,i",
    po::value<string>(&scd_file_address)->default_value(
-       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/a23_gc_main_64_w_n_cc.scd"),
+       string(TINYGARBLE_SOURCE_DIR)
+           + "/scd/netlists/a23_gc_main_64_w_n_cc.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(100),
    "Number of clock cycles to evaluate the circuit.")  //
@@ -102,12 +103,13 @@ int main(int argc, char* argv[]) {
   string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
 
   string output_str;
+  int64_t terminate = 0;
 
   LOG(INFO) << "A32 Test " << test_name << " " << clock_cycles << "cc" << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
-                                  e_input_str, clock_cycles, output_mode,
-                                  &output_str);
+                                  e_input_str, clock_cycles, terminate,
+                                  output_mode, &output_str);
   CHECK_EXPR_MSG(ret == SUCCESS, "EvalauatePlaintextStr");
 
   LOG(INFO) << "SCD Evaluate result: " << output_str << endl;

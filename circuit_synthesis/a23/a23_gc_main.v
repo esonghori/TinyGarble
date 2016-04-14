@@ -15,7 +15,8 @@ module a23_gc_main
   input  [CODE_MEM_SIZE*32-1:0]   p_init,
   input  [G_MEM_SIZE   *32-1:0]   g_init,
   input  [E_MEM_SIZE   *32-1:0]   e_init,
-  output [OUT_MEM_SIZE *32  :0]   o
+  output [OUT_MEM_SIZE *32-1:0]   o,
+  output 						  terminate
 );
 
 wire   [31:0]             o_m_address;
@@ -23,8 +24,6 @@ wire   [31:0]             o_m_write;
 wire                      o_m_write_en;
 wire   [3:0]              o_m_byte_enable;
 wire   [31:0]             i_m_read;
-
-wire                      terminate;
 
 reg [7:0]  p_mem     [4*CODE_MEM_SIZE-1:0];
 reg [7:0]  g_mem     [4*G_MEM_SIZE-1:0];
