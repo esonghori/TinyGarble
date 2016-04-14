@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
        string(TINYGARBLE_SOURCE_DIR)
            + "/scd/netlists/a23_gc_main_64_w_n_cc.scd"),
    "Simple circuit description (.scd) file address.")  //
-  ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(100),
+  ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1000),
    "Number of clock cycles to evaluate the circuit.")  //
   ("terminate_period,t",
    po::value<int64_t>(&terminate_period)->default_value(1),
@@ -96,12 +96,12 @@ int main(int argc, char* argv[]) {
   bool disable_OT = false;
   bool low_mem_foot = true;
 
-  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-" + test_name + "-code.txt";
-  string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-" + test_name + "-g_init.txt";
-  string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
-      + "/scd/netlists/hex_file/a23-" + test_name + "-e_init.txt";
+  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/" + test_name
+      + "/p.txt";
+  string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/test/"
+      + test_name + "/g.txt";
+  string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/test/"
+      + test_name + "/e.txt";
 
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
   string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
