@@ -29,12 +29,13 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
                        const BIGNUM* p_init, const BIGNUM* g_init,
                        const BIGNUM* e_init, const BIGNUM* p_input,
                        const BIGNUM* g_input, const BIGNUM* e_input,
-                       uint64_t clock_cycles, BIGNUM** outputs);
+                       uint64_t *clock_cycles, int64_t terminate_period,
+                       BIGNUM** outputs);
 int EvalauatePlaintextStr(const string& scd_file_address,
                           const string& p_init_str, const string& g_init_str,
                           const string& e_init_str, const string& p_input_str,
                           const string& g_input_str, const string& e_input_str,
-                          uint64_t clock_cycles, OutputMode output_mode,
-                          string* outputs_str);
+                          uint64_t clock_cycles, int64_t terminate_period,
+                          OutputMode output_mode, string* outputs_str);
 
 #endif /* SCD_SCD_EVALUATOR_H_ */
