@@ -1003,6 +1003,62 @@ MU_TEST(A23Sum1000cc) {
   mu_assert(ret == SUCCESS, "TcpipTestRun");
 }
 
+MU_TEST(A23AES20000cc) {
+  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+      + "/scd/netlists/a23_gc_main_512_w_n_cc.scd";
+  OutputMode output_mode = OutputMode::last_clock;
+  string p_input_str = "";
+  string g_input_str = "";
+  string e_input_str = "";
+  string output_mask = "0";
+  string alice_output = "0";
+  bool disable_OT = false;
+  bool low_mem_foot = true;
+
+  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/aes/p.txt";
+  string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/g.txt";
+  string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/e.txt";
+
+  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+  string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
+  string e_init_str = ReadFileOrPassHex(e_init_f_hex_str);
+
+  string output_str;
+  int64_t terminate_period = 1;
+  uint64_t clock_cycles = 20000;
+
+  LOG(INFO) << "A32 AES 20000cc with terminate period 1" << endl;
+  int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                  e_init_str, p_input_str, g_input_str,
+                                  e_input_str, clock_cycles, terminate_period,
+                                  output_mode, &output_str);
+  mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+  string output_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/aes/test/o.txt";
+
+  string output_expected_str = ReadFileOrPassHex(output_f_hex_str);
+  LOG(INFO) << "SCD Evaluate result: " << output_str << endl;
+  mu_check(icompare(output_str, output_expected_str));
+
+  GCTestStruct garbler_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                               p_input_str, g_init_str,
+                                               g_input_str, alice_output,
+                                               output_mask, terminate_period,
+                                               output_mode, disable_OT,
+                                               low_mem_foot, clock_cycles);
+  GCTestStruct eval_data = MakeGCTestStruct(scd_file_address, p_init_str,
+                                            p_input_str, e_init_str,
+                                            e_input_str, output_str,
+                                            output_mask, terminate_period,
+                                            output_mode, disable_OT,
+                                            low_mem_foot, clock_cycles);
+
+  ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
+  mu_assert(ret == SUCCESS, "TcpipTestRun");
+}
+
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
@@ -1022,6 +1078,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(A23MemTest1000cc);
   MU_RUN_TEST(A23Hamming1000cc);
   MU_RUN_TEST(A23Sum1000cc);
+  MU_RUN_TEST(A23AES20000cc);
 }
 
 int main(int argc, char* argv[]) {
