@@ -444,7 +444,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(AES128Bit11cc);
   MU_RUN_TEST(A23MemTest1000cc);
   MU_RUN_TEST(A23Hamming1000cc);
-//  MU_RUN_TEST(A23AES20000cc);
+  MU_RUN_TEST(A23AES20000cc);
 }
 
 int main(int argc, char *argv[]) {
