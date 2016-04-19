@@ -2,7 +2,7 @@
 // synopsys template
 
 
-module aes_seq
+module aes_11cc
 (
   clk,
   rst,

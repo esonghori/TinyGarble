@@ -2,7 +2,7 @@
 // synopsys template
 
 
-module aes_comb
+module aes_1cc
 (
   clk,
   rst,
