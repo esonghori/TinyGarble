@@ -35,7 +35,7 @@ module knns_tb;
 	wire [639:0] min_val_out;
 
 	// Instantiate the Unit Under Test (UUT)
-	knns_seq uut (
+	k_nns_seq_td uut (
 		.clk(clk), 
 		.rst(rst), 
 		.x1(x1), 

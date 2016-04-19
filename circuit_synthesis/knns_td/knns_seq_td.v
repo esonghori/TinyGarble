@@ -1,4 +1,4 @@
-module knns_seq
+module k_nns_seq_td
 #
 (
 	parameter W = 32,
