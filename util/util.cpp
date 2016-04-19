@@ -44,9 +44,12 @@
 #include <bitset>
 #include <cstdlib> 
 #include <vector>
+#include <fstream>
 #include "crypto/aes.h"
 #include "util/common.h"
 #include "util/log.h"
+
+using std::ifstream;
 
 static block cur_seed;
 
@@ -191,13 +194,14 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
   return ret;
 }
 
-int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                 uint64_t clock_cycles, int output_mode, string *output_str) {
+int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                        uint64_t clock_cycles, OutputMode output_mode,
+                        string *output_str) {
   (*output_str) = "";
-  if (output_mode == 0) {  // normal
+  if (output_mode == OutputMode::consecutive) {  // normal
     const char* output_c = BN_bn2hex(outputs);
     (*output_str) = output_c;
-  } else if (output_mode == 1) {  // Separated by clock
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
     BIGNUM* temp = BN_new();
     for (uint64_t i = 0; i < clock_cycles; i++) {
       BN_rshift(temp, outputs, i * garbled_circuit.output_size);
@@ -208,7 +212,7 @@ int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
       }
     }
     BN_free(temp);
-  } else if (output_mode == 2) {  // only last clock
+  } else if (output_mode == OutputMode::last_clock) {  // only last clock
     BIGNUM* temp = BN_new();
     BN_rshift(temp, outputs, (clock_cycles - 1) * garbled_circuit.output_size);
     BN_mask_bits(temp, garbled_circuit.output_size);
@@ -219,13 +223,13 @@ int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
 }
 
 int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                       uint64_t clock_cycles, int output_mode,
+                       uint64_t clock_cycles, OutputMode output_mode,
                        string* output_str) {
   (*output_str) = "";
-  if (output_mode == 0) {  // normal
+  if (output_mode == OutputMode::consecutive) {  // normal
     const char* output_c = BN_bn2hex(outputs);
     (*output_str) = output_c;
-  } else if (output_mode == 1) {  // Separated by clock
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
     BIGNUM* temp = BN_new();
     for (uint64_t i = 0; i < clock_cycles; i++) {
       BN_rshift(temp, outputs, i * garbled_circuit.output_size);
@@ -236,12 +240,13 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
       }
     }
     BN_free(temp);
-  } else if (output_mode == 2) {  // only last clock
+  } else if (output_mode == OutputMode::last_clock) {  // only last clock
     (*output_str) += BN_bn2hex(outputs);
   }
 
   return SUCCESS;
 }
+
 
 string fromatGCInputString(vector<uint64_t> input, vector<uint8_t> bit_len){
 	string bin_input_str, input_str;
@@ -297,3 +302,37 @@ string bin2hex(string bin){
 	string hex_ = stream.str();
 	return hex_;
 }
+
+string ReadFileOrPassHex(string file_hex_str) {  // file address of or a hex string
+
+  ifstream fin;
+  fin.open(file_hex_str);
+  if (fin.is_open()) {
+    string hex_str = "";
+    string line;
+    while (std::getline(fin, line)) {
+      hex_str = line + hex_str;
+    }
+    return hex_str;
+  } else {
+    return file_hex_str;
+  }
+}
+
+bool icompare_pred(unsigned char a, unsigned char b)
+{
+    return std::tolower(a) == std::tolower(b);
+}
+
+bool icompare(std::string const& a, std::string const& b)
+{
+    if (a.length()==b.length()) {
+        return std::equal(b.begin(), b.end(),
+                           a.begin(), icompare_pred);
+    }
+    else {
+        return false;
+    }
+}
+
+>>>>>>> upstream/master

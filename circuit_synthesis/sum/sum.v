@@ -38,8 +38,8 @@ module sum
 	generate
 	if(CC>1)
 	begin
-		assign {carry_on_d, o} = g_input + e_input + carry_on;
-		/*ADD 
+		//assign {carry_on_d, o} = g_input + e_input + carry_on;
+		ADD 
 		#(
 			.N(N/CC)
 		)
@@ -50,12 +50,12 @@ module sum
 			.CI(carry_on),
 			.S(o),
 			.CO(carry_on_d)
-		);*/
+		);
 	end
 	else
 	begin
-		assign o = g_input + e_input;
-		/*ADD 
+		//assign o = g_input + e_input;
+		ADD 
 		#(
 			.N(N/CC)
 		)
@@ -66,7 +66,7 @@ module sum
 			.CI(1'b0),
 			.S(o),
 			.CO()
-		);*/
+		);
 	end
 	endgenerate
 endmodule

@@ -54,6 +54,7 @@ void LogInitial(int argc, char *argv[]) {
   ("alice,a", "")  //
   ("bob,b", "")  //
   ("dump_directory", po::value<string>(&dump_directory), "")  //
+  ("error2std", "")  //
   ("log2std", "");
 
   po::variables_map vm;
@@ -62,9 +63,14 @@ void LogInitial(int argc, char *argv[]) {
 
   po::store(parsed, vm);
 
-  bool to_std = false;
+  bool log_2_std = false;
   if (vm.count("log2std")) {
-    to_std = true;
+    log_2_std = true;
+  }
+
+  bool error_2_std = false;
+  if (vm.count("error2std")) {
+    error_2_std = true;
   }
 
   if (vm.count("dump_directory")) {
@@ -80,19 +86,23 @@ void LogInitial(int argc, char *argv[]) {
     }
   }
 
-  if (to_std) {
-    log_map[ERROR] = &std::cerr;
+  string timestamp = std::to_string(time(nullptr));
+  string file_addresss_prefix = string(argv[0]) + "-" + timestamp;
+
+  if (log_2_std) {
     log_map[INFO] = &std::cout;
   } else {
-    string timestamp = std::to_string(time(nullptr));
-
-    string file_addresss_error = string(argv[0]) + "-" + timestamp
-        + "-error.log";
-    log_map[ERROR] = new std::ofstream(file_addresss_error.c_str(),
-                                       std::ios::out);
-    string file_addresss_info = string(argv[0]) + "-" + timestamp + "-info.log";
+    string file_addresss_info = file_addresss_prefix + "-info.log";
     log_map[INFO] = new std::ofstream(file_addresss_info.c_str(),
                                       std::ios::out);
+  }
+
+  if (log_2_std || error_2_std) {
+    log_map[ERROR] = &std::cerr;
+  } else {
+    string file_addresss_error = file_addresss_prefix + "-error.log";
+    log_map[ERROR] = new std::ofstream(file_addresss_error.c_str(),
+                                       std::ios::out);
   }
 }
 

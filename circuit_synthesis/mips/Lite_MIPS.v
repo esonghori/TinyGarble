@@ -93,6 +93,8 @@ module Lite_MIPS
 	)
 	Inst_Mem
 	(
+    .clk                (clk),
+    .rst                (rst),
 		.inst_mem_in_wire   (inst_mem_in_wire),
 		.pc                 (pc_current),
 		.opcode             (opcode)

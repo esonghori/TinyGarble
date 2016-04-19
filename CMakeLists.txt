@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.1.0 FATAL_ERROR)
-project (TinyGarble 
-  VERSION 1.0.3
-  LANGUAGES C CXX)
+project (TinyGarble
+  VERSION 3.0.0
+  LANGUAGES CXX)
 
 
 enable_testing()
@@ -9,7 +9,7 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 
 ##############
-# build type 
+# build type
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
@@ -24,7 +24,7 @@ endif ()
 
 ###############
 # Compiler flags
-set(CMAKE_CXX_FLAGS 
+set(CMAKE_CXX_FLAGS
   "${CMAKE_CXX_FLAGS} -Wall -Wno-strict-aliasing -march=native")
 
 set (CMAKE_CXX_STANDARD 11)
@@ -34,14 +34,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
 ###############
 # Library
 
-## Thread
-find_package (Threads)
-
-## Boost 
+## Boost
 set (Boost_USE_STATIC_LIBS OFF)
 set (Boost_USE_MULTITHREADED ON)
 set (Boost_USE_STATIC_RUNTIME OFF)
-find_package (Boost 1.45.0 
+find_package (Boost 1.45.0
   REQUIRED
   COMPONENTS program_options)
 
@@ -74,7 +71,6 @@ configure_file (
 # Subdirectory
 add_subdirectory ("crypto")
 add_subdirectory ("garbled_circuit")
-add_subdirectory ("tri_loc")
 add_subdirectory ("scd")
 add_subdirectory ("tcpip")
 add_subdirectory ("util")

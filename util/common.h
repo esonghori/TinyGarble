@@ -30,7 +30,7 @@ using std::endl;
 
 
 #define SUCCESS 0
-#define FAILURE -1
+#define FAILURE (-1)
 
 #define ROW_REDUCTION
 #define FREE_XOR
@@ -50,7 +50,13 @@ using std::endl;
 #define XORGATE 6
 #define XNORGATE 9
 #define NOTGATE 12
-#define DFFGATE -1
+#define DFFGATE (-1)
+
+// blocks
+#define MUXGATE 15
+#define HADDERGATE 16
+#define FADDERGATE 17
+#define INVALGATE 18
 
 #define RDTSC ({unsigned long long res; \
   unsigned hi, lo;   \

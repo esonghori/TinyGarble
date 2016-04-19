@@ -50,10 +50,11 @@ int ReadSCD(const string& fileName, GarbledCircuit* garbledCircuit) {
     return FAILURE;
   }
 
-  f >> garbledCircuit->g_init_size >> garbledCircuit->e_init_size
+  f >> garbledCircuit->p_init_size >> garbledCircuit->g_init_size
+      >> garbledCircuit->e_init_size >> garbledCircuit->p_input_size
       >> garbledCircuit->g_input_size >> garbledCircuit->e_input_size
       >> garbledCircuit->dff_size >> garbledCircuit->output_size
-      >> garbledCircuit->gate_size;
+      >> garbledCircuit->terminate_id >> garbledCircuit->gate_size;
 
   if (posix_memalign((void **) (&garbledCircuit->garbledGates), 128,
                      sizeof(GarbledGate) * garbledCircuit->gate_size)) {
@@ -125,10 +126,11 @@ int WriteSCD(const ReadCircuit& readCircuit, const string &fileName) {
     return -1;
   }
 
-  f << readCircuit.g_init_size << " " << readCircuit.e_init_size << " "
+  f << readCircuit.p_init_size << " " << readCircuit.g_init_size << " "
+    << readCircuit.e_init_size << " " << readCircuit.p_input_size << " "
     << readCircuit.g_input_size << " " << readCircuit.e_input_size << " "
     << readCircuit.dff_size << " " << readCircuit.output_size << " "
-    << readCircuit.gate_size << endl;
+    << readCircuit.terminate_id << " " << readCircuit.gate_size << endl;
 
   /*
    * 1st input of each gate

@@ -136,21 +136,25 @@ int main(int argc, char* argv[]) {
 
   LogInitial(argc, argv);
   HashInit();
-  srand(time(0));  // srand(1);
-  SrandSSE(time(0));  // SrandSSE(1111);
+  srand(time(0));
+  SrandSSE(time(0));
 
   int port;
   string scd_file_address;
   string server_ip;
-  string init_str;
-  string input_str;
+  string p_init_f_hex_str;
+  string p_input_f_hex_str;
+  string init_f_hex_str;
+  string input_f_hex_str;
+  int64_t terminate_period;
   uint64_t clock_cycles;
   string output_mask;
-  int output_mode;
+  string output_mode_str;
+  OutputMode output_mode = OutputMode::consecutive;
   bool disable_OT = false;
   bool low_mem_foot = false;
   boost::format fmter(
-      "Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
+      "Garble and Evaluate Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
   fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
       % TinyGarble_VERSION_PATCH;
   po::options_description desc(fmter.str());
@@ -160,15 +164,20 @@ int main(int argc, char* argv[]) {
   ("bob,b", "Run as Bob (client).")  //
   ("scd_file,i",
    po::value<string>(&scd_file_address)->default_value(
-       "../scd/netlists/hamming_32bit_1cc.scd"),
+       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/hamming_32bit_1cc.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
-  ("init", po::value<string>(&init_str)->default_value("0"),
+  ("p_init", po::value<string>(&p_init_f_hex_str)->default_value("0"),
+   "File or Hexadecimal public init for initializing DFFs. In case of file,"
+   " each line should contain multiple of 4 bits (e.g., 4bit, 8bit, 32bit).")  //
+  ("p_input", po::value<string>(&p_input_f_hex_str)->default_value("0"),
+   "File or Hexadecimal public input.")  //
+  ("init", po::value<string>(&init_f_hex_str)->default_value("0"),
    "Hexadecimal init for initializing DFFs.")  //
-  ("input", po::value<string>(&input_str)->default_value("0"),
-   "Hexadecimal input.")  //
+  ("input", po::value<string>(&input_f_hex_str)->default_value("0"),
+   "File or Hexadecimal input.")  //
   ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),
@@ -181,8 +190,13 @@ int main(int argc, char* argv[]) {
   ("output_mask", po::value<string>(&output_mask)->default_value("0"),
    "Hexadecimal mask for output. 0 indicates that output belongs to Bob, "
    "and 1 belongs to Alice.")  //
-  ("output_mode", po::value<int>(&output_mode)->default_value(0),
-   "0: normal, 1:separated by clock 2:last clock.");
+  ("terminate_period,t",
+   po::value<int64_t>(&terminate_period)->default_value(0),
+   "Terminate signal reveal period: "
+   "0: No termination or never reveal, T: Reveal every T clock cycle.")  //
+  ("output_mode", po::value<string>(&output_mode_str),
+   "output print mode: {0:consecutive, 1:separated_clock, "
+   "2:last_clock}, e.g., consecutive, 0, 1");
 
   po::variables_map vm;
   try {
@@ -198,6 +212,25 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
     std::cout << desc << endl;
     return FAILURE;
+  }
+
+  if (vm.count("output_mode")) {
+    if (vm["output_mode"].as<string>() == "0"
+        || vm["output_mode"].as<string>() == "consecutive") {
+      output_mode = OutputMode::consecutive;
+    } else if (vm["output_mode"].as<string>() == "1"
+        || vm["output_mode"].as<string>() == "separated_clock") {
+      output_mode = OutputMode::separated_clock;
+    } else if (vm["output_mode"].as<string>() == "2"
+        || vm["output_mode"].as<string>() == "last_clock") {
+      output_mode = OutputMode::last_clock;
+    } else {
+      LOG(ERROR) << "ERROR: output_mode should be in "
+                 "{0:consecutive, 1:separated_clock, 2:last_clock}"
+                 << endl;
+      std::cout << desc << endl;
+      return FAILURE;
+    }
   }
 
   if (vm.count("disable_OT")) {
@@ -218,6 +251,12 @@ int main(int argc, char* argv[]) {
     return FAILURE;
   }
 
+  // Transferring file in to hex
+  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+  string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
+  string init_str = ReadFileOrPassHex(init_f_hex_str);
+  string input_str = ReadFileOrPassHex(input_f_hex_str);
+
   if (vm.count("alice")) {
     // open the socket
     int connfd;
@@ -234,9 +273,9 @@ int main(int argc, char* argv[]) {
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        GarbleStr(scd_file_address, init_str, input_str, clock_cycles,
-                  output_mask, output_mode, disable_OT, low_mem_foot,
-                  &output_str, connfd));
+        GarbleStr(scd_file_address, p_init_str, p_input_str, init_str,
+                  input_str, clock_cycles, output_mask, terminate_period,
+                  output_mode, disable_OT, low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Alice's output = " << output_str << endl;
@@ -271,9 +310,9 @@ int main(int argc, char* argv[]) {
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        EvaluateStr(scd_file_address, init_str, input_str, clock_cycles,
-                    output_mask, output_mode, disable_OT, low_mem_foot,
-                    &output_str, connfd));
+        EvaluateStr(scd_file_address, p_init_str, p_input_str, init_str,
+                    input_str, clock_cycles, output_mask, terminate_period,
+                    output_mode, disable_OT, low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Bob's output = " << output_str << endl;
