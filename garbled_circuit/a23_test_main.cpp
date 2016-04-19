@@ -98,10 +98,10 @@ int main(int argc, char* argv[]) {
 
   string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/" + test_name
       + "/p.txt";
-  string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/test/"
-      + test_name + "/g.txt";
-  string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/test/"
-      + test_name + "/e.txt";
+  string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/"
+      + test_name + "/test/g.txt";
+  string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/"
+      + test_name + "/test/e.txt";
 
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
   string g_init_str = ReadFileOrPassHex(g_init_f_hex_str);
