@@ -65,9 +65,9 @@ begin
   rst = 1;
   cc = 0;
 
-  $readmemh("../../../a23/aes/p.txt", p_init_reg);
-  $readmemh("../../../a23/aes/test/g.txt", g_init_reg);
-  $readmemh("../../../a23/aes/test/e.txt", e_init_reg);
+  $readmemh("../../../a23/dijkstra/p.txt", p_init_reg);
+  $readmemh("../../../a23/dijkstra/test/g.txt", g_init_reg);
+  $readmemh("../../../a23/dijkstra/test/e.txt", e_init_reg);
   #28
   rst = 0;
   while (~terminate) begin
