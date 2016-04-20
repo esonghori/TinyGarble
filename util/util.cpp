@@ -334,5 +334,3 @@ bool icompare(std::string const& a, std::string const& b)
         return false;
     }
 }
-
->>>>>>> upstream/master
