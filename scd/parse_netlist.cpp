@@ -446,35 +446,35 @@ int ParseNetlist(const string &filename, ReadCircuitString &readCircuitString) {
             << readCircuitString.g_input_size << " e_input:"
             << readCircuitString.e_input_size << endl;
 
-  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
-  for (uint64_t i = 0; i < readCircuitString.dff_list_string.size(); i++) {
-    LOG(INFO) << i << "\t"
-              << Type2StrGate(readCircuitString.dff_list_string[i].type) << "\t"
-              << readCircuitString.dff_list_string[i].input[0] << "\t"
-              << readCircuitString.dff_list_string[i].input[1] << "\t"
-              << readCircuitString.dff_list_string[i].output << endl;
-  }
-
-  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
-  for (uint64_t i = 0; i < readCircuitString.gate_list_string.size(); i++) {
-    LOG(INFO) << i << "\t"
-              << Type2StrGate(readCircuitString.gate_list_string[i].type)
-              << "\t" << readCircuitString.gate_list_string[i].input[0] << "\t"
-              << readCircuitString.gate_list_string[i].input[1] << "\t"
-              << readCircuitString.gate_list_string[i].output << endl;
-  }
-
-  LOG(INFO) << "outputs:" << endl;
-  for (uint64_t i = 0; i < readCircuitString.output_size; i++) {
-    LOG(INFO) << "o[" << i << "]" << " " << i << endl;
-  }
-
-  LOG(INFO) << "assignments:" << endl;
-  for (uint64_t i = 0; i < readCircuitString.assignment_list_string.size();
-      i++) {
-    LOG(INFO) << readCircuitString.assignment_list_string[i].first << " = "
-              << readCircuitString.assignment_list_string[i].second << endl;
-  }
+//  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
+//  for (uint64_t i = 0; i < readCircuitString.dff_list_string.size(); i++) {
+//    LOG(INFO) << i << "\t"
+//              << Type2StrGate(readCircuitString.dff_list_string[i].type) << "\t"
+//              << readCircuitString.dff_list_string[i].input[0] << "\t"
+//              << readCircuitString.dff_list_string[i].input[1] << "\t"
+//              << readCircuitString.dff_list_string[i].output << endl;
+//  }
+//
+//  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
+//  for (uint64_t i = 0; i < readCircuitString.gate_list_string.size(); i++) {
+//    LOG(INFO) << i << "\t"
+//              << Type2StrGate(readCircuitString.gate_list_string[i].type)
+//              << "\t" << readCircuitString.gate_list_string[i].input[0] << "\t"
+//              << readCircuitString.gate_list_string[i].input[1] << "\t"
+//              << readCircuitString.gate_list_string[i].output << endl;
+//  }
+//
+//  LOG(INFO) << "outputs:" << endl;
+//  for (uint64_t i = 0; i < readCircuitString.output_size; i++) {
+//    LOG(INFO) << "o[" << i << "]" << " " << i << endl;
+//  }
+//
+//  LOG(INFO) << "assignments:" << endl;
+//  for (uint64_t i = 0; i < readCircuitString.assignment_list_string.size();
+//      i++) {
+//    LOG(INFO) << readCircuitString.assignment_list_string[i].first << " = "
+//              << readCircuitString.assignment_list_string[i].second << endl;
+//  }
 
   return 0;
 }
@@ -622,29 +622,29 @@ int IdAssignment(const ReadCircuitString& readCircuitString,
     readCircuit.terminate_id = wire_name_table["terminate"];
   }
 
-  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
-  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
-    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
-              << readCircuit.dff_list[i].input[0] << "\t"
-              << readCircuit.dff_list[i].input[1] << "\t"
-              << readCircuit.dff_list[i].output << endl;
-  }
-  LOG(INFO) << endl;
-  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
-  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
-    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[i].type)
-              << "\t" << readCircuit.gate_list[i].input[0] << "\t"
-              << readCircuit.gate_list[i].input[1] << "\t"
-              << readCircuit.gate_list[i].output << endl;
-  }
-  LOG(INFO) << endl;
-  LOG(INFO) << "outputs:" << endl;
-  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
-    LOG(INFO) << readCircuit.output_list[i] << endl;
-  }
-  LOG(INFO) << endl;
-
-  LOG(INFO) << "terminate id = " << readCircuit.terminate_id << endl << endl;
+//  LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
+//  for (uint64_t i = 0; i < readCircuit.dff_size; i++) {
+//    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
+//              << readCircuit.dff_list[i].input[0] << "\t"
+//              << readCircuit.dff_list[i].input[1] << "\t"
+//              << readCircuit.dff_list[i].output << endl;
+//  }
+//  LOG(INFO) << endl;
+//  LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
+//  for (uint64_t i = 0; i < readCircuit.gate_size; i++) {
+//    LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.gate_list[i].type)
+//              << "\t" << readCircuit.gate_list[i].input[0] << "\t"
+//              << readCircuit.gate_list[i].input[1] << "\t"
+//              << readCircuit.gate_list[i].output << endl;
+//  }
+//  LOG(INFO) << endl;
+//  LOG(INFO) << "outputs:" << endl;
+//  for (uint64_t i = 0; i < readCircuit.output_size; i++) {
+//    LOG(INFO) << readCircuit.output_list[i] << endl;
+//  }
+//  LOG(INFO) << endl;
+//
+//  LOG(INFO) << "terminate id = " << readCircuit.terminate_id << endl << endl;
 
   return 0;
 }

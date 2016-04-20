@@ -462,11 +462,8 @@ int SortNetlist(ReadCircuit &readCircuit,
 
   vector<int64_t> sorted_list_1(sorted_list.size());  //reverse sorted list
 
-  LOG(INFO) << "sorted list: " << endl;
   for (int64_t i = 0; i < (int64_t) sorted_list.size(); i++) {
     sorted_list_1[sorted_list[i]] = i;
-
-    LOG(INFO) << sorted_list[i] << endl;
   }
 
   readCircuit.task_schedule.clear();
@@ -513,15 +510,16 @@ int SortNetlist(ReadCircuit &readCircuit,
     readCircuit.terminate_id = sorted_list_1[readCircuit.terminate_id];
   }
 
-  LOG(INFO) << endl << "Topological Sort" << endl;
   LOG(INFO) << "dffs:\tD\tI\tQ" << endl;
   for (int64_t i = 0; i < (int64_t) readCircuit.dff_size; i++) {
     LOG(INFO) << i << "\t" << Type2StrGate(readCircuit.dff_list[i].type) << "\t"
-              << readCircuit.dff_list[i].input[0] << "\t"
-              << readCircuit.dff_list[i].input[1] << "\t"
-              << readCircuit.dff_list[i].output << endl;
+              << readCircuitString.dff_list_string[i].input[0] << "("
+              << readCircuit.dff_list[i].input[0] << ")\t"
+              << readCircuitString.dff_list_string[i].input[1] << "("
+              << readCircuit.dff_list[i].input[1] << ")\t"
+              << readCircuitString.dff_list_string[i].output << "("
+              << readCircuit.dff_list[i].output << ")" << endl;
   }
-  LOG(INFO) << endl;
 
   LOG(INFO) << "gates:\tI0\tI1\tO" << endl;
   for (int64_t i = 0; i < (int64_t) readCircuit.gate_size; i++) {
@@ -534,13 +532,11 @@ int SortNetlist(ReadCircuit &readCircuit,
               << readCircuitString.gate_list_string[gid].output << " ("
               << readCircuit.gate_list[gid].output << ")" << endl;
   }
-  LOG(INFO) << endl;
 
   LOG(INFO) << "outputs:" << endl;
   for (int64_t i = 0; i < (int64_t) readCircuit.output_size; i++) {
     LOG(INFO) << readCircuit.output_list[i] << endl;
   }
-  LOG(INFO) << endl;
 
   LOG(INFO) << "terminate id = " << readCircuit.terminate_id << endl << endl;
 
