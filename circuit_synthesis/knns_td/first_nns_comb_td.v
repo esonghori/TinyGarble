@@ -26,19 +26,20 @@ module first_nns_comb_td
 	input [2*W*N-1:0] e_input;
 	output [2*W-1:0] o;
 	
-	wire [W-1:0] x1, y1, x2, y2;
+	wire [W-1:0] x1[N-1:0]; 
+	wire [W-1:0] y1[N-1:0]; 
+	wire [W-1:0] x2, y2;
 	wire [2*W-1:0] min_val_out;
 	
-	assign x1 = e_input[2*W-1:W];
-	assign y1 = e_input[W-1:0];
 	assign x2 = g_input[2*W-1:W];
 	assign y2 = g_input[W-1:0];
 	assign min_val_out = o;
 
-	wire [2*W-1:0] DBi[N-1:0];
+	//wire [2*W-1:0] DBi[N-1:0];
 	wire [W+1:0] dist[N-1:0];
 
-	wire [2*W-1:0] min_val[N-1:0];
+	wire [W-1:0] min_val_x[N-1:0];
+	wire [W-1:0] min_val_y[N-1:0];
 	wire [W+1:0] min_dist[N-1:0];
 	wire gt_dist[N-1:1];
 
@@ -48,7 +49,9 @@ module first_nns_comb_td
 	generate
 	for (i=0;i<N;i=i+1)
 	begin:D_ASN
-		assign DBi[i] = e_input[2*W*(i+1)-1:2*W*i];
+		//assign DBi[i] = e_input[2*W*(i+1)-1:2*W*i];
+		assign x1[i] = e_input[2*W*(i+1)-1:2*W*(i+1)-W];
+		assign y1[i] = e_input[2*W*(i+1)-W-1:2*W*i];
 	end
 	endgenerate
 
@@ -61,13 +64,14 @@ module first_nns_comb_td
 		)
 		taxicab_distance_
 		(
-			.x1(x1), .y1(y1), .x2(x2), .y2(y2),
-		.dist(dist)
+			.x1(x1[i]), .y1(y1[i]), .x2(x2), .y2(y2),
+			.dist(dist[i])
 		);
 	end
 	endgenerate
 
-	assign min_val[0] 	= DBi[0];
+	assign min_val_x[0]	= x1[0];
+	assign min_val_y[0]	= y1[0];
 	assign min_dist[0]	= dist[0];
 
 	generate
@@ -95,10 +99,11 @@ module first_nns_comb_td
 		)
 		MUX_1
 		(
-			.A(DBi[i]),
-			.B(min_val[i-1]),
+			//.A(DBi[i]),
+			.A({x1[i], y1[i]}),
+			.B({min_val_x[i-1], min_val_y[i-1]}),
 			.S(gt_dist[i]),
-			.O(min_val[i])
+			.O({min_val_x[i], min_val_y[i]})
 		);
 		
 		MUX
@@ -117,7 +122,7 @@ module first_nns_comb_td
 	end
 	endgenerate
 
-	assign o = min_val[N-1];
+	assign o = {min_val_x[N-1], min_val_y[N-1]};
 
 
 endmodule
