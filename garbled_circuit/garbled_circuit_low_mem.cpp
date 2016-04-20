@@ -156,8 +156,9 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       }
       //last clock cycle, not terminated
       if (cid == (*clock_cycles) - 1) {
-        LOG(ERROR) << "Alice Not enough clock cycles. Circuit is not terminated in "
-                   << *clock_cycles << "cc." << endl;
+        LOG(ERROR)
+            << "Alice Not enough clock cycles. Circuit is not terminated in "
+            << *clock_cycles << "cc." << endl;
       }
     }
 
@@ -306,8 +307,9 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       }
       //last clock cycle, not terminated
       if (cid == (*clock_cycles) - 1) {
-        LOG(ERROR) << "Bob Not enough clock cycles. Circuit is not terminated in "
-                   << *clock_cycles << "cc." << endl;
+        LOG(ERROR)
+            << "Bob Not enough clock cycles. Circuit is not terminated in "
+            << *clock_cycles << "cc." << endl;
       }
     }
   }
@@ -522,8 +524,13 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       garbled_tables[(*garbled_table_ind)++] = table;
       DUMP("table") << table.row[0] << endl;
       DUMP("table") << table.row[1] << endl;
+
+      LOG(INFO) << "--@" << cid << " gid = " << table.gid << endl;
+
     }
   }
+
+  LOG(INFO) << "@" << cid << endl;
 
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
     output_labels[(i) * 2 + 0] = wires[garbled_circuit.outputs[i]].label0;
