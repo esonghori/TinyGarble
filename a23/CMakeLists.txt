@@ -1,0 +1,7 @@
+add_subdirectory ("aes")
+add_subdirectory ("dijkstra")
+add_subdirectory ("hamming")
+add_subdirectory ("mem-test")
+add_subdirectory ("mul")
+add_subdirectory ("sum")
+add_subdirectory ("lib")
