@@ -10,7 +10,7 @@ void gc_main(const int *g,  // Garbler's input array
   int ret = 0;
   for(int j = 0; j < G_SIZE; j++) {
     unsigned int t = (unsigned int)(g[j]^e[j]); 
-    for(int i = 0; i < 8*sizeof(int); i++) {
+    for(unsigned int i = 0; i < 8*sizeof(int); i++) {
       ret += (t&(1<<i))>>i;
     }
   }
