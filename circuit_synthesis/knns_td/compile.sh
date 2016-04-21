@@ -1,6 +1,5 @@
 #!/bin/bash 
 mkdir -p syn
-design_vision -no_gui -f knns_td.dcsh
 
 if [ $1 == "1" ]; then
 	design_vision -no_gui -f k_nns_seq_td.dcsh
