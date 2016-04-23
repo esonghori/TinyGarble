@@ -1003,7 +1003,7 @@ MU_TEST(A23Sum1000cc) {
   mu_assert(ret == SUCCESS, "TcpipTestRun");
 }
 
-MU_TEST(A23AES20000cc) {
+MU_TEST(A23AES25000cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/a23_gc_main_512_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
@@ -1027,9 +1027,10 @@ MU_TEST(A23AES20000cc) {
 
   string output_str;
   int64_t terminate_period = 1;
-  uint64_t clock_cycles = 20000;
+  uint64_t clock_cycles = 25000;
 
-  LOG(INFO) << "A32 AES 20000cc with terminate period 1" << endl;
+  LOG(INFO) << "A32 AES " << clock_cycles << "cc with terminate period 1"
+            << endl;
   int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
                                   e_init_str, p_input_str, g_input_str,
                                   e_input_str, clock_cycles, terminate_period,
@@ -1078,7 +1079,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(A23MemTest1000cc);
   MU_RUN_TEST(A23Hamming1000cc);
   MU_RUN_TEST(A23Sum1000cc);
-  MU_RUN_TEST(A23AES20000cc);
+  MU_RUN_TEST(A23AES25000cc);
 }
 
 int main(int argc, char* argv[]) {
