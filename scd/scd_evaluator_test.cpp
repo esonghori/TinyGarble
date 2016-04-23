@@ -390,7 +390,7 @@ MU_TEST(A23Hamming1000cc) {
   mu_check(icompare(output_str, output_expected_str));
 }
 
-MU_TEST(A23AES20000cc) {
+MU_TEST(A23AES25000cc) {
   string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
       + "/scd/netlists/a23_gc_main_512_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
@@ -411,7 +411,7 @@ MU_TEST(A23AES20000cc) {
 
   string output_str;
   int64_t terminate_period = 1;
-  uint64_t clock_cycles = 20000;
+  uint64_t clock_cycles = 25000;
 
   LOG(INFO) << "A32 AES 128-bit " << clock_cycles << "cc w/ terminat period "
             << terminate_period << endl;
@@ -444,7 +444,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(AES128Bit11cc);
   MU_RUN_TEST(A23MemTest1000cc);
   MU_RUN_TEST(A23Hamming1000cc);
-  MU_RUN_TEST(A23AES20000cc);
+  MU_RUN_TEST(A23AES25000cc);
 }
 
 int main(int argc, char *argv[]) {
