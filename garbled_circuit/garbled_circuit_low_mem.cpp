@@ -524,6 +524,11 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       garbled_tables[(*garbled_table_ind)++] = table;
       DUMP("table") << table.row[0] << endl;
       DUMP("table") << table.row[1] << endl;
+
+      ////
+//      LOG(INFO) << "@" << cid << " gid = " << table.gid << endl;
+      ////
+
     }
   }
   if (*garbled_table_ind != 0) {
