@@ -5,7 +5,7 @@
 #define V 8
 #define INT_MAX 32767
 
-int graph[V][V];
+int __attribute__((aligned(256))) graph[V][V];
 
 // A utility function to find the vertex with minimum distance value, from
 // the set of vertices not yet included in shortest path tree
