@@ -1072,7 +1072,8 @@ MU_TEST(A23Dijkstra6000cc) {
   bool disable_OT = false;
   bool low_mem_foot = true;
 
-  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR) + "/a23/dijkstra/p.txt";
+  string p_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
+      + "/a23/dijkstra/p.txt";
   string g_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
       + "/a23/dijkstra/test/g.txt";
   string e_init_f_hex_str = string(TINYGARBLE_SOURCE_DIR)
@@ -1116,7 +1117,6 @@ MU_TEST(A23Dijkstra6000cc) {
   ret = TcpipTestRun(Alice, (void *) &garbler_data, Bob, (void *) &eval_data);
   mu_assert(ret == SUCCESS, "TcpipTestRun");
 }
-
 
 MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
