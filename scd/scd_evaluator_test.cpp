@@ -485,7 +485,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(A23MemTest1000cc);
   MU_RUN_TEST(A23Hamming1000cc);
   MU_RUN_TEST(A23AES25000cc);
-  MU_RUN_TEST(A23Dijkstra6000cc);
+//  MU_RUN_TEST(A23Dijkstra6000cc); //too time consuming
 }
 
 int main(int argc, char *argv[]) {
