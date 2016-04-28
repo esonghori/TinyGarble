@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
   string o_str = BN_bn2hex(o_bn);
 
 
-  LOG(INFO) << "o_str = " << g_str << endl;
+  LOG(INFO) << "o_str = " << o_str << endl;
 
   std::cout << o_str << endl;
 
