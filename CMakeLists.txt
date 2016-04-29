@@ -5,8 +5,8 @@ project (TinyGarble
 
 ##############
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7.0")
-    message(FATAL_ERROR "Insufficient gcc version, should be at least 4.7.0")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.6.3")
+    message(FATAL_ERROR "Insufficient gcc version, should be at least 4.6.3")
   endif()
 endif()
 
