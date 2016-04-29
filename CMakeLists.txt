@@ -3,7 +3,14 @@ project (TinyGarble
   VERSION 3.0.0
   LANGUAGES CXX)
 
+##############
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7.0")
+    message(FATAL_ERROR "Insufficient gcc version, should be at least 4.7.0")
+  endif()
+endif()
 
+#############
 enable_testing()
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
