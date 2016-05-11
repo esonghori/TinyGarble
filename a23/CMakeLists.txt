@@ -1,5 +1,6 @@
 add_subdirectory ("aes")
 add_subdirectory ("bubble-sort")
+add_subdirectory ("compare")
 add_subdirectory ("merge-sort")
 add_subdirectory ("dijkstra")
 add_subdirectory ("hamming")
