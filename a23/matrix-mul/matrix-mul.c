@@ -1,6 +1,6 @@
 
 // max 8
-#define N 1
+#define N 3
 
 #define G_SIZE (N*N) // size of Garbler's input array
 #define E_SIZE (N*N) // size of Evaluator's input array
