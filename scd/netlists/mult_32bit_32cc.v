@@ -4,17 +4,17 @@ module mult_N32_CC32 ( clk, rst, g_input, e_input, o );
   input [0:0] e_input;
   output [63:0] o;
   input clk, rst;
-  wire   \add_33/carry[63] , \add_33/carry[62] , \add_33/carry[61] ,
-         \add_33/carry[60] , \add_33/carry[59] , \add_33/carry[58] ,
-         \add_33/carry[57] , \add_33/carry[56] , \add_33/carry[55] ,
-         \add_33/carry[54] , \add_33/carry[53] , \add_33/carry[52] ,
-         \add_33/carry[51] , \add_33/carry[50] , \add_33/carry[49] ,
-         \add_33/carry[48] , \add_33/carry[47] , \add_33/carry[46] ,
-         \add_33/carry[45] , \add_33/carry[44] , \add_33/carry[43] ,
-         \add_33/carry[42] , \add_33/carry[41] , \add_33/carry[40] ,
-         \add_33/carry[39] , \add_33/carry[38] , \add_33/carry[37] ,
-         \add_33/carry[36] , \add_33/carry[35] , \add_33/carry[34] ,
-         \add_33/carry[33] , \add_33/carry[32] , n66, n67, n68, n69, n70, n71,
+  wire   \add_42/carry[63] , \add_42/carry[62] , \add_42/carry[61] ,
+         \add_42/carry[60] , \add_42/carry[59] , \add_42/carry[58] ,
+         \add_42/carry[57] , \add_42/carry[56] , \add_42/carry[55] ,
+         \add_42/carry[54] , \add_42/carry[53] , \add_42/carry[52] ,
+         \add_42/carry[51] , \add_42/carry[50] , \add_42/carry[49] ,
+         \add_42/carry[48] , \add_42/carry[47] , \add_42/carry[46] ,
+         \add_42/carry[45] , \add_42/carry[44] , \add_42/carry[43] ,
+         \add_42/carry[42] , \add_42/carry[41] , \add_42/carry[40] ,
+         \add_42/carry[39] , \add_42/carry[38] , \add_42/carry[37] ,
+         \add_42/carry[36] , \add_42/carry[35] , \add_42/carry[34] ,
+         \add_42/carry[33] , \add_42/carry[32] , n66, n67, n68, n69, n70, n71,
          n72, n73, n74, n75, n76, n77, n78, n79, n80, n81, n82, n83, n84, n85,
          n86, n87, n88, n89, n90, n91, n92, n93, n94, n95, n96, n97;
   wire   [63:0] sreg;
@@ -48,7 +48,7 @@ module mult_N32_CC32 ( clk, rst, g_input, e_input, o );
   assign o[3] = sreg[3];
   assign o[2] = sreg[2];
   assign o[1] = sreg[1];
-  assign o[63] = \add_33/carry[63] ;
+  assign o[63] = \add_42/carry[63] ;
 
   DFF \sreg_reg[0]  ( .D(sreg[1]), .CLK(clk), .RST(rst), .I(1'b0), .Q(o[0]) );
   DFF \sreg_reg[1]  ( .D(sreg[2]), .CLK(clk), .RST(rst), .I(1'b0), .Q(sreg[1])
@@ -172,72 +172,72 @@ module mult_N32_CC32 ( clk, rst, g_input, e_input, o );
          );
   DFF \sreg_reg[61]  ( .D(o[62]), .CLK(clk), .RST(rst), .I(1'b0), .Q(sreg[61])
          );
-  DFF \sreg_reg[62]  ( .D(\add_33/carry[63] ), .CLK(clk), .RST(rst), .I(1'b0), 
+  DFF \sreg_reg[62]  ( .D(\add_42/carry[63] ), .CLK(clk), .RST(rst), .I(1'b0), 
         .Q(sreg[62]) );
-  FADDER \add_33/U1_32  ( .CIN(sreg[32]), .IN0(n96), .IN1(\add_33/carry[32] ), 
-        .COUT(\add_33/carry[33] ), .SUM(o[32]) );
-  FADDER \add_33/U1_33  ( .CIN(sreg[33]), .IN0(n95), .IN1(\add_33/carry[33] ), 
-        .COUT(\add_33/carry[34] ), .SUM(o[33]) );
-  FADDER \add_33/U1_34  ( .CIN(sreg[34]), .IN0(n94), .IN1(\add_33/carry[34] ), 
-        .COUT(\add_33/carry[35] ), .SUM(o[34]) );
-  FADDER \add_33/U1_35  ( .CIN(sreg[35]), .IN0(n93), .IN1(\add_33/carry[35] ), 
-        .COUT(\add_33/carry[36] ), .SUM(o[35]) );
-  FADDER \add_33/U1_36  ( .CIN(sreg[36]), .IN0(n92), .IN1(\add_33/carry[36] ), 
-        .COUT(\add_33/carry[37] ), .SUM(o[36]) );
-  FADDER \add_33/U1_37  ( .CIN(sreg[37]), .IN0(n91), .IN1(\add_33/carry[37] ), 
-        .COUT(\add_33/carry[38] ), .SUM(o[37]) );
-  FADDER \add_33/U1_38  ( .CIN(sreg[38]), .IN0(n90), .IN1(\add_33/carry[38] ), 
-        .COUT(\add_33/carry[39] ), .SUM(o[38]) );
-  FADDER \add_33/U1_39  ( .CIN(sreg[39]), .IN0(n89), .IN1(\add_33/carry[39] ), 
-        .COUT(\add_33/carry[40] ), .SUM(o[39]) );
-  FADDER \add_33/U1_40  ( .CIN(sreg[40]), .IN0(n88), .IN1(\add_33/carry[40] ), 
-        .COUT(\add_33/carry[41] ), .SUM(o[40]) );
-  FADDER \add_33/U1_41  ( .CIN(sreg[41]), .IN0(n87), .IN1(\add_33/carry[41] ), 
-        .COUT(\add_33/carry[42] ), .SUM(o[41]) );
-  FADDER \add_33/U1_42  ( .CIN(sreg[42]), .IN0(n86), .IN1(\add_33/carry[42] ), 
-        .COUT(\add_33/carry[43] ), .SUM(o[42]) );
-  FADDER \add_33/U1_43  ( .CIN(sreg[43]), .IN0(n85), .IN1(\add_33/carry[43] ), 
-        .COUT(\add_33/carry[44] ), .SUM(o[43]) );
-  FADDER \add_33/U1_44  ( .CIN(sreg[44]), .IN0(n84), .IN1(\add_33/carry[44] ), 
-        .COUT(\add_33/carry[45] ), .SUM(o[44]) );
-  FADDER \add_33/U1_45  ( .CIN(sreg[45]), .IN0(n83), .IN1(\add_33/carry[45] ), 
-        .COUT(\add_33/carry[46] ), .SUM(o[45]) );
-  FADDER \add_33/U1_46  ( .CIN(sreg[46]), .IN0(n82), .IN1(\add_33/carry[46] ), 
-        .COUT(\add_33/carry[47] ), .SUM(o[46]) );
-  FADDER \add_33/U1_47  ( .CIN(sreg[47]), .IN0(n81), .IN1(\add_33/carry[47] ), 
-        .COUT(\add_33/carry[48] ), .SUM(o[47]) );
-  FADDER \add_33/U1_48  ( .CIN(sreg[48]), .IN0(n80), .IN1(\add_33/carry[48] ), 
-        .COUT(\add_33/carry[49] ), .SUM(o[48]) );
-  FADDER \add_33/U1_49  ( .CIN(sreg[49]), .IN0(n79), .IN1(\add_33/carry[49] ), 
-        .COUT(\add_33/carry[50] ), .SUM(o[49]) );
-  FADDER \add_33/U1_50  ( .CIN(sreg[50]), .IN0(n78), .IN1(\add_33/carry[50] ), 
-        .COUT(\add_33/carry[51] ), .SUM(o[50]) );
-  FADDER \add_33/U1_51  ( .CIN(sreg[51]), .IN0(n77), .IN1(\add_33/carry[51] ), 
-        .COUT(\add_33/carry[52] ), .SUM(o[51]) );
-  FADDER \add_33/U1_52  ( .CIN(sreg[52]), .IN0(n76), .IN1(\add_33/carry[52] ), 
-        .COUT(\add_33/carry[53] ), .SUM(o[52]) );
-  FADDER \add_33/U1_53  ( .CIN(sreg[53]), .IN0(n75), .IN1(\add_33/carry[53] ), 
-        .COUT(\add_33/carry[54] ), .SUM(o[53]) );
-  FADDER \add_33/U1_54  ( .CIN(sreg[54]), .IN0(n74), .IN1(\add_33/carry[54] ), 
-        .COUT(\add_33/carry[55] ), .SUM(o[54]) );
-  FADDER \add_33/U1_55  ( .CIN(sreg[55]), .IN0(n73), .IN1(\add_33/carry[55] ), 
-        .COUT(\add_33/carry[56] ), .SUM(o[55]) );
-  FADDER \add_33/U1_56  ( .CIN(sreg[56]), .IN0(n72), .IN1(\add_33/carry[56] ), 
-        .COUT(\add_33/carry[57] ), .SUM(o[56]) );
-  FADDER \add_33/U1_57  ( .CIN(sreg[57]), .IN0(n71), .IN1(\add_33/carry[57] ), 
-        .COUT(\add_33/carry[58] ), .SUM(o[57]) );
-  FADDER \add_33/U1_58  ( .CIN(sreg[58]), .IN0(n70), .IN1(\add_33/carry[58] ), 
-        .COUT(\add_33/carry[59] ), .SUM(o[58]) );
-  FADDER \add_33/U1_59  ( .CIN(sreg[59]), .IN0(n69), .IN1(\add_33/carry[59] ), 
-        .COUT(\add_33/carry[60] ), .SUM(o[59]) );
-  FADDER \add_33/U1_60  ( .CIN(sreg[60]), .IN0(n68), .IN1(\add_33/carry[60] ), 
-        .COUT(\add_33/carry[61] ), .SUM(o[60]) );
-  FADDER \add_33/U1_61  ( .CIN(sreg[61]), .IN0(n67), .IN1(\add_33/carry[61] ), 
-        .COUT(\add_33/carry[62] ), .SUM(o[61]) );
-  FADDER \add_33/U1_62  ( .CIN(sreg[62]), .IN0(n66), .IN1(\add_33/carry[62] ), 
-        .COUT(\add_33/carry[63] ), .SUM(o[62]) );
-  AND U69 ( .A(n97), .B(sreg[31]), .Z(\add_33/carry[32] ) );
-  XOR U70 ( .A(sreg[31]), .B(n97), .Z(o[31]) );
+  FADDER \add_42/U1_32  ( .CIN(sreg[32]), .IN0(n96), .IN1(\add_42/carry[32] ), 
+        .COUT(\add_42/carry[33] ), .SUM(o[32]) );
+  FADDER \add_42/U1_33  ( .CIN(sreg[33]), .IN0(n95), .IN1(\add_42/carry[33] ), 
+        .COUT(\add_42/carry[34] ), .SUM(o[33]) );
+  FADDER \add_42/U1_34  ( .CIN(sreg[34]), .IN0(n94), .IN1(\add_42/carry[34] ), 
+        .COUT(\add_42/carry[35] ), .SUM(o[34]) );
+  FADDER \add_42/U1_35  ( .CIN(sreg[35]), .IN0(n93), .IN1(\add_42/carry[35] ), 
+        .COUT(\add_42/carry[36] ), .SUM(o[35]) );
+  FADDER \add_42/U1_36  ( .CIN(sreg[36]), .IN0(n92), .IN1(\add_42/carry[36] ), 
+        .COUT(\add_42/carry[37] ), .SUM(o[36]) );
+  FADDER \add_42/U1_37  ( .CIN(sreg[37]), .IN0(n91), .IN1(\add_42/carry[37] ), 
+        .COUT(\add_42/carry[38] ), .SUM(o[37]) );
+  FADDER \add_42/U1_38  ( .CIN(sreg[38]), .IN0(n90), .IN1(\add_42/carry[38] ), 
+        .COUT(\add_42/carry[39] ), .SUM(o[38]) );
+  FADDER \add_42/U1_39  ( .CIN(sreg[39]), .IN0(n89), .IN1(\add_42/carry[39] ), 
+        .COUT(\add_42/carry[40] ), .SUM(o[39]) );
+  FADDER \add_42/U1_40  ( .CIN(sreg[40]), .IN0(n88), .IN1(\add_42/carry[40] ), 
+        .COUT(\add_42/carry[41] ), .SUM(o[40]) );
+  FADDER \add_42/U1_41  ( .CIN(sreg[41]), .IN0(n87), .IN1(\add_42/carry[41] ), 
+        .COUT(\add_42/carry[42] ), .SUM(o[41]) );
+  FADDER \add_42/U1_42  ( .CIN(sreg[42]), .IN0(n86), .IN1(\add_42/carry[42] ), 
+        .COUT(\add_42/carry[43] ), .SUM(o[42]) );
+  FADDER \add_42/U1_43  ( .CIN(sreg[43]), .IN0(n85), .IN1(\add_42/carry[43] ), 
+        .COUT(\add_42/carry[44] ), .SUM(o[43]) );
+  FADDER \add_42/U1_44  ( .CIN(sreg[44]), .IN0(n84), .IN1(\add_42/carry[44] ), 
+        .COUT(\add_42/carry[45] ), .SUM(o[44]) );
+  FADDER \add_42/U1_45  ( .CIN(sreg[45]), .IN0(n83), .IN1(\add_42/carry[45] ), 
+        .COUT(\add_42/carry[46] ), .SUM(o[45]) );
+  FADDER \add_42/U1_46  ( .CIN(sreg[46]), .IN0(n82), .IN1(\add_42/carry[46] ), 
+        .COUT(\add_42/carry[47] ), .SUM(o[46]) );
+  FADDER \add_42/U1_47  ( .CIN(sreg[47]), .IN0(n81), .IN1(\add_42/carry[47] ), 
+        .COUT(\add_42/carry[48] ), .SUM(o[47]) );
+  FADDER \add_42/U1_48  ( .CIN(sreg[48]), .IN0(n80), .IN1(\add_42/carry[48] ), 
+        .COUT(\add_42/carry[49] ), .SUM(o[48]) );
+  FADDER \add_42/U1_49  ( .CIN(sreg[49]), .IN0(n79), .IN1(\add_42/carry[49] ), 
+        .COUT(\add_42/carry[50] ), .SUM(o[49]) );
+  FADDER \add_42/U1_50  ( .CIN(sreg[50]), .IN0(n78), .IN1(\add_42/carry[50] ), 
+        .COUT(\add_42/carry[51] ), .SUM(o[50]) );
+  FADDER \add_42/U1_51  ( .CIN(sreg[51]), .IN0(n77), .IN1(\add_42/carry[51] ), 
+        .COUT(\add_42/carry[52] ), .SUM(o[51]) );
+  FADDER \add_42/U1_52  ( .CIN(sreg[52]), .IN0(n76), .IN1(\add_42/carry[52] ), 
+        .COUT(\add_42/carry[53] ), .SUM(o[52]) );
+  FADDER \add_42/U1_53  ( .CIN(sreg[53]), .IN0(n75), .IN1(\add_42/carry[53] ), 
+        .COUT(\add_42/carry[54] ), .SUM(o[53]) );
+  FADDER \add_42/U1_54  ( .CIN(sreg[54]), .IN0(n74), .IN1(\add_42/carry[54] ), 
+        .COUT(\add_42/carry[55] ), .SUM(o[54]) );
+  FADDER \add_42/U1_55  ( .CIN(sreg[55]), .IN0(n73), .IN1(\add_42/carry[55] ), 
+        .COUT(\add_42/carry[56] ), .SUM(o[55]) );
+  FADDER \add_42/U1_56  ( .CIN(sreg[56]), .IN0(n72), .IN1(\add_42/carry[56] ), 
+        .COUT(\add_42/carry[57] ), .SUM(o[56]) );
+  FADDER \add_42/U1_57  ( .CIN(sreg[57]), .IN0(n71), .IN1(\add_42/carry[57] ), 
+        .COUT(\add_42/carry[58] ), .SUM(o[57]) );
+  FADDER \add_42/U1_58  ( .CIN(sreg[58]), .IN0(n70), .IN1(\add_42/carry[58] ), 
+        .COUT(\add_42/carry[59] ), .SUM(o[58]) );
+  FADDER \add_42/U1_59  ( .CIN(sreg[59]), .IN0(n69), .IN1(\add_42/carry[59] ), 
+        .COUT(\add_42/carry[60] ), .SUM(o[59]) );
+  FADDER \add_42/U1_60  ( .CIN(sreg[60]), .IN0(n68), .IN1(\add_42/carry[60] ), 
+        .COUT(\add_42/carry[61] ), .SUM(o[60]) );
+  FADDER \add_42/U1_61  ( .CIN(sreg[61]), .IN0(n67), .IN1(\add_42/carry[61] ), 
+        .COUT(\add_42/carry[62] ), .SUM(o[61]) );
+  FADDER \add_42/U1_62  ( .CIN(sreg[62]), .IN0(n66), .IN1(\add_42/carry[62] ), 
+        .COUT(\add_42/carry[63] ), .SUM(o[62]) );
+  AND U69 ( .A(sreg[31]), .B(n97), .Z(\add_42/carry[32] ) );
+  XOR U70 ( .A(n97), .B(sreg[31]), .Z(o[31]) );
   AND U71 ( .A(g_input[31]), .B(e_input[0]), .Z(n66) );
   AND U72 ( .A(g_input[30]), .B(e_input[0]), .Z(n67) );
   AND U73 ( .A(g_input[29]), .B(e_input[0]), .Z(n68) );

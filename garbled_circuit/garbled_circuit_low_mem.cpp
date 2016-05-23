@@ -156,8 +156,9 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       }
       //last clock cycle, not terminated
       if (cid == (*clock_cycles) - 1) {
-        LOG(ERROR) << "Alice Not enough clock cycles. Circuit is not terminated in "
-                   << *clock_cycles << "cc." << endl;
+        LOG(ERROR)
+            << "Alice Not enough clock cycles. Circuit is not terminated in "
+            << *clock_cycles << "cc." << endl;
       }
     }
 
@@ -306,8 +307,9 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       }
       //last clock cycle, not terminated
       if (cid == (*clock_cycles) - 1) {
-        LOG(ERROR) << "Bob Not enough clock cycles. Circuit is not terminated in "
-                   << *clock_cycles << "cc." << endl;
+        LOG(ERROR)
+            << "Bob Not enough clock cycles. Circuit is not terminated in "
+            << *clock_cycles << "cc." << endl;
       }
     }
   }
@@ -522,7 +524,36 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       garbled_tables[(*garbled_table_ind)++] = table;
       DUMP("table") << table.row[0] << endl;
       DUMP("table") << table.row[1] << endl;
+
+      ////
+//      LOG(INFO) << "@" << cid << " gid = " << table.gid << endl;
+      ////
+
     }
+  }
+  if (*garbled_table_ind != 0) {
+    ///////////////
+//    BIGNUM *pc = BN_new();
+//    BN_clear_bit(pc, 0);
+//    BN_clear_bit(pc, 1);
+//    for (uint64_t i = 25287; i < 25311; i++) {
+//      short v = wires_val[dff_bias + i];
+//      if (IsSecret(v)) {
+//        LOG(ERROR) << "@" << cid << " pc[" << i - 25287 + 2 << "] is secret"
+//                   << endl;
+//      }
+//      if (v == 1) {
+//        BN_set_bit(pc, i - 25287 + 2);
+//      } else {
+//        BN_clear_bit(pc, i - 25287 + 2);
+//      }
+//    }
+//
+//    LOG(INFO) << "@" << cid << "\tgarbled_table_ind = " << *garbled_table_ind
+//              << "\tpc = " << BN_bn2hex(pc) << endl;
+//    BN_clear(pc);
+    LOG(INFO) << "@" << cid << "\tgarbled_table_ind = " << *garbled_table_ind
+              << endl;
   }
 
   for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
