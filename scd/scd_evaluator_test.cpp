@@ -42,7 +42,7 @@ uint32_t HammingDistance(uint32_t x, uint32_t y) {
 }
 
 MU_TEST(Sum1Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_nbit_ncc.scd";
   string p_init_str = "";
   string g_init_str = "0";
@@ -76,7 +76,7 @@ MU_TEST(Sum1Bit) {
 }
 
 MU_TEST(Mux8Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/mux_8bit_1cc.scd";
   string p_init_str = "";
   string g_init_str = "0";
@@ -111,7 +111,7 @@ MU_TEST(Mux8Bit) {
 }
 
 MU_TEST(Sum8Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_8bit_1cc.scd";
   string p_init_str = "";
   string g_init_str = "0";
@@ -144,7 +144,7 @@ MU_TEST(Sum8Bit) {
 }
 
 MU_TEST(Hamming32Bit1cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_1cc.scd";
   OutputMode output_mode = OutputMode::consecutive;
   string p_init_str = "";
@@ -179,7 +179,7 @@ MU_TEST(Hamming32Bit1cc) {
 }
 
 MU_TEST(Hamming32Bit8cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string p_init_str = "";
@@ -214,7 +214,7 @@ MU_TEST(Hamming32Bit8cc) {
 }
 
 MU_TEST(PublicWire8Bit2cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/public_test_8bit_ncc.scd";
   OutputMode output_mode = OutputMode::consecutive;
   string p_init_str = "AB";  // 8bit
@@ -241,7 +241,7 @@ MU_TEST(PublicWire8Bit2cc) {
 }
 
 MU_TEST(AES128Bit1cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/aes_1cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string p_init_str = "";
@@ -277,7 +277,7 @@ MU_TEST(AES128Bit1cc) {
 }
 
 MU_TEST(AES128Bit11cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/aes_11cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string p_init_str = "";
@@ -314,7 +314,7 @@ MU_TEST(AES128Bit11cc) {
 }
 
 MU_TEST(A23MemTest1000cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string g_init_str = "";
@@ -351,7 +351,7 @@ MU_TEST(A23MemTest1000cc) {
 }
 
 MU_TEST(A23Hamming1000cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
 
@@ -393,7 +393,7 @@ MU_TEST(A23Hamming1000cc) {
 }
 
 MU_TEST(A23AES25000cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/a23_gc_main_512_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
 
@@ -434,7 +434,7 @@ MU_TEST(A23AES25000cc) {
 }
 
 MU_TEST(A23Dijkstra6000cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/a23_gc_main_512_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
   string p_input_str = "";
