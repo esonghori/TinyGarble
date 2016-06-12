@@ -21,7 +21,10 @@
 
 #include "scd/v_2_scd.h"
 
-int SortNetlist(ReadCircuit &readCircuit,
-                const ReadCircuitString& readCircuitString);
+int SortNetlist(ReadCircuit &read_circuit,
+                const ReadCircuitString& read_circuit_string);
+int WriteMapping(const ReadCircuitString& read_circuit_string,
+                 const ReadCircuit &read_circuit,
+                 const string& out_mapping_filename);
 
 #endif /* SCD_SCHEDULING_H_ */
