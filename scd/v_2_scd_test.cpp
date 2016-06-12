@@ -41,7 +41,7 @@ MU_TEST(SumNbitNcc) {
 
   for (uint64_t i = 0; i < verilogfilenames.size(); i++) {
 
-    string in_file_name = string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/"
+    string in_file_name = string(TINYGARBLE_BINARY_DIR) + "/scd/netlists/"
         + verilogfilenames[i];
     string out_file_name = "/dev/null";
     string out_mapping_filename = "/dev/null";

@@ -75,8 +75,10 @@ int main(int argc, char** argv) {
 
   string out_mapping_filename = output_scd_file + ".map";
 
-  if (Verilog2SCD(input_netlist_file, output_scd_file,
-                  out_mapping_filename) == FAILURE) {
+  LOG(INFO) << "V2SCD " << input_netlist_file << " to " << output_scd_file
+            << endl;
+  if (Verilog2SCD(input_netlist_file, out_mapping_filename,
+                  output_scd_file) == FAILURE) {
     LOG(ERROR) << "Verilog to SCD failed." << endl;
     return FAILURE;
   }

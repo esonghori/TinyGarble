@@ -87,5 +87,17 @@ set_tests_properties (SCD_SCD_Evaluator_Test
   PROPERTIES
   FAIL_REGULAR_EXPRESSION "[^a-z]Failed;failed")
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/netlists)
 
+execute_process(COMMAND
+                tar -xf ${CMAKE_CURRENT_SOURCE_DIR}/netlists/v.tar.gz 
+				     -C ${CMAKE_CURRENT_BINARY_DIR}/netlists)
 
+configure_file(
+  "V2SCD_ALL.sh.in"
+  "V2SCD_ALL.sh"
+  @ONLY)
+
+add_custom_command(TARGET V2SCD_Main
+                   COMMAND
+                   sh ${CMAKE_CURRENT_BINARY_DIR}/V2SCD_ALL.sh)
