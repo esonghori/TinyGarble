@@ -6,18 +6,19 @@ TinyGarble is a full implementation of Yao's Garbled Circuit (GC) protocol for
 two-party Secure Function Evaluation (SFE) in which the parties are able to
 execute any function on their private inputs and learn the output without
 leaking any information about their inputs.
-The project consists of two main parts: (1) circuit synthesis (output examples 
-of this is stored in `scd/netlist`) and (2) secure function evaluation.
+This repository consists of two main parts: (1) circuit synthesis (output examples 
+of this is stored in `scd/netlist/v.tar.bz`) and (2) secure function evaluation.
 Circuit synthesis is partially described in TinyGarble paper in IEEE S&P'15 (see
 References). It is based on upon hardware synthesis and sequential circuit
 concept and outputs a netlist Verilog (`.v`) file (not included in this repesitory). 
-The other part of TinyGarble, hereafter called "TinyGarble", is implemented
-based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/)
-project developed in UCSD. Beside Free-XOR, Row-reduction, OT extension, and
+The other part of TinyGarble, hereafter called "TinyGarble", is a GC framework 
+implemented based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/)
+project. Beside Free-XOR, Row-reduction, OT extension, and
 Fixed-key block cipher, TinyGarble includes Half Gates which is the most recent
 optimization on GC protocol and reduces the communication by 33%.
 TinyGarble also includes communication and Oblivious Transfer (OT) which were
-missing in JustGarble. OT is a crucial part for the security of the GC protocol.
+missing in JustGarble. Note that OT is a crucial part for the security of the GC 
+protocol.
 
 TinyGarble general flow:
 1. Write a Verilog file (`.v`) describing the function.
@@ -35,7 +36,7 @@ Any questions or comments: [Ebrahim Songhori](mailto:e.songhori@gmail.com)
 
 ### Dependencies
 Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
-(3.1.0 <). on Ubuntu:
+(3.1.0 <). On Ubuntu:
 
 * g++:
 ```
