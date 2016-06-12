@@ -34,9 +34,9 @@
  * @see JustGarble paper.
  * @see TinyGarble paper.
  */
-int ReadSCD(const string& fileName, GarbledCircuit *garbledCircuit);
+int ReadSCD(const string& file_name, GarbledCircuit *garbled_circuit);
 
-int WriteSCD(const ReadCircuit &readCircuit, const string &fileName);
+int WriteSCD(const ReadCircuit &read_circuit, const string &file_name);
 
 
 #endif /* SCD_SCD_H_ */

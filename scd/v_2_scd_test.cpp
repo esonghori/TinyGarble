@@ -41,12 +41,13 @@ MU_TEST(SumNbitNcc) {
 
   for (uint64_t i = 0; i < verilogfilenames.size(); i++) {
 
-    string infilename = string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/"
+    string in_file_name = string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/"
         + verilogfilenames[i];
-    string outfilename = "/dev/null";
+    string out_file_name = "/dev/null";
+    string out_mapping_filename = "/dev/null";
 
-    LOG(INFO) << "Verilog2SCD " << infilename << endl;
-    int ret = Verilog2SCD(infilename, outfilename);
+    LOG(INFO) << "Verilog2SCD " << in_file_name << endl;
+    int ret = Verilog2SCD(in_file_name, out_mapping_filename, out_file_name);
 
     string error_str = "Verilog2SCD " + verilogfilenames[i];
     mu_assert(ret == SUCCESS, error_str.c_str());
@@ -57,7 +58,6 @@ MU_TEST_SUITE(TestSuite) {
   MU_SUITE_CONFIGURE(&TestSetup, &TestTeardown);
 
   MU_RUN_TEST(SumNbitNcc);
-
 }
 
 int main(int argc, char *argv[]) {
