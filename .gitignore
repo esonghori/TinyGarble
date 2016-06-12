@@ -30,4 +30,6 @@ work/*
 *.map
 *.mem
 *.hex
-a23/tools/amber-elfsplitter
+a23/tools/amber-elfsplitter*.scd
+*.v
+*.scd.map
