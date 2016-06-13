@@ -10,7 +10,7 @@ This repository consists of two main parts: (1) circuit synthesis (output exampl
 of this is stored in `scd/netlist/v.tar.bz`) and (2) secure function evaluation.
 Circuit synthesis is partially described in TinyGarble paper in IEEE S&P'15 (see
 References). It is based on upon hardware synthesis and sequential circuit
-concept and outputs a netlist Verilog (`.v`) file (not included in this repesitory). 
+concept and outputs a netlist Verilog (`.v`) file (not included in this repository). 
 The other part of TinyGarble, hereafter called "TinyGarble", is a GC framework 
 implemented based on [JustGarble](http://cseweb.ucsd.edu/groups/justgarble/)
 project. Beside Free-XOR, Row-reduction, OT extension, and
@@ -60,7 +60,7 @@ Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
 ```
 
 ### Compile
-Confing TinyGarble and then compile it in `bin` directory (for debug mode, use 
+Configure TinyGarble and then compile it in `bin` directory (for debug mode, use 
 `cmake ..` inside `bin` directory before `make`):
 ```
   $ ./configure
