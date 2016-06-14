@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
   ("bob,b", "Run as Bob (client).")  //
   ("scd_file,i",
    po::value<string>(&scd_file_address)->default_value(
-       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/hamming_32bit_1cc.scd"),
+       string(TINYGARBLE_BINARY_DIR) + "/scd/netlists/hamming_32bit_1cc.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
