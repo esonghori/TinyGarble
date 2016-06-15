@@ -41,12 +41,9 @@
 #include <stdint.h>
 #include <iomanip>
 #include <sstream>
-<<<<<<< HEAD
 #include <bitset>
 #include <cstdlib> 
 #include <vector>
-=======
->>>>>>> upstream/develop
 #include <fstream>
 #include "crypto/aes.h"
 #include "util/common.h"
@@ -250,8 +247,6 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
   return SUCCESS;
 }
 
-<<<<<<< HEAD
-
 string fromatGCInputString(vector<uint64_t> input, vector<uint8_t> bit_len){
 	string bin_input_str, input_str;
 	for (uint i = 0; i < input.size(); i++){
@@ -307,8 +302,6 @@ string bin2hex(string bin){
 	return hex_;
 }
 
-=======
->>>>>>> upstream/develop
 string ReadFileOrPassHex(string file_hex_str) {  // file address of or a hex string
 
   ifstream fin;
@@ -337,7 +330,4 @@ bool icompare(std::string const& a, std::string const& b) {
     return false;
   }
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/develop
