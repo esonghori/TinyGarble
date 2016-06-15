@@ -24,25 +24,32 @@
 
 using std::endl;
 
-int Verilog2SCD(const string &infilename, const string &outfilename) {
+int Verilog2SCD(const string &in_file_name, const string& out_mapping_filename,
+                const string &out_file_name) {
 
-  ReadCircuitString readCircuitString;
-  ReadCircuit readCircuit;
+  ReadCircuitString read_circuit_string;
+  ReadCircuit read_circuit;
 
-  if (ParseNetlist(infilename, readCircuitString) == FAILURE) {
+  if (ParseNetlist(in_file_name, read_circuit_string) == FAILURE) {
     LOG(ERROR) << "parsing verilog netlist failed." << endl;
     return FAILURE;
   }
-  if (IdAssignment(readCircuitString, readCircuit) == FAILURE) {
+  if (IdAssignment(read_circuit_string, read_circuit) == FAILURE) {
     LOG(ERROR) << "id assignment to netlist components failed." << endl;
     return FAILURE;
   }
-  if (SortNetlist(readCircuit, readCircuitString) == FAILURE) {
+  if (SortNetlist(read_circuit, read_circuit_string) == FAILURE) {
     LOG(ERROR) << "topological sort failed." << endl;
     return FAILURE;
   }
 
-  if (WriteSCD(readCircuit, outfilename) == FAILURE) {
+  if (WriteMapping(read_circuit_string, read_circuit,
+                   out_mapping_filename) == FAILURE) {
+    LOG(ERROR) << "Write mapping failed." << endl;
+    return FAILURE;
+  }
+
+  if (WriteSCD(read_circuit, out_file_name) == FAILURE) {
     LOG(ERROR) << "write result to SCD file failed." << endl;
     return FAILURE;
   }
