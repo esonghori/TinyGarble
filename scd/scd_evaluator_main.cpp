@@ -48,10 +48,7 @@ int main(int argc, char*argv[]) {
       % TinyGarble_VERSION_PATCH;
   po::options_description desc(fmter.str());
   desc.add_options()("help,h", "produce help message")  //
-  ("scd_file,i",
-   po::value<string>(&scd_file_address)->default_value(
-       string(TINYGARBLE_SOURCE_DIR) + "/scd/netlists/sum_nbit_ncc.scd"),
-   "scd address")  //
+  ("scd_file,i", po::value<string>(&scd_file_address), "scd address")  //
   ("clock_cycles,c", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("p_init", po::value<string>(&p_init_f_hex_str)->default_value("0"),
@@ -87,6 +84,12 @@ int main(int argc, char*argv[]) {
     po::notify(vm);
   } catch (po::error& e) {
     LOG(ERROR) << e.what() << endl << endl;
+    std::cout << desc << endl;
+    return FAILURE;
+  }
+
+  if (scd_file_address.empty()) {
+    std::cerr << "ERROR: scd_file(i) must be indicated." << endl;
     std::cout << desc << endl;
     return FAILURE;
   }

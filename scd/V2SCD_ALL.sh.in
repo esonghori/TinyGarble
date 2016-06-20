@@ -4,5 +4,6 @@
 for verilogfile in @CMAKE_CURRENT_BINARY_DIR@/netlists/*.v
 do
   scdfile=${verilogfile%.*}.scd
-  @CMAKE_CURRENT_BINARY_DIR@/V2SCD_Main -i $verilogfile -o $scdfile --log2std
+  @CMAKE_CURRENT_BINARY_DIR@/V2SCD_Main -i $verilogfile -o $scdfile --log2std &
 done
+wait
