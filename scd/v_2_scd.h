@@ -112,5 +112,6 @@ class ReadCircuit {
 
 int Verilog2SCD(const string &in_file_name, const string& out_mapping_filename,
                 const string &out_file_name);
-
+int Bris2SCD(const string &in_file_name, const string& out_mapping_filename,
+             const string &out_file_name);
 #endif
