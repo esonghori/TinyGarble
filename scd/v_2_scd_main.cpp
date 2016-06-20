@@ -65,12 +65,11 @@ int main(int argc, char** argv) {
   }
 
   if (vm.count("netlist") == 0 || vm.count("scd") == 0) {
-    std::cerr
-        << "ERROR: "
-        << "Both input netlist(-i) and output scd(-o) options must be indicated."
-        << endl;
+    std::cerr << "ERROR: Both input netlist(-i) and output scd(-o) "
+              "options must be indicated."
+              << endl;
     std::cout << desc << endl;
-    return SUCCESS;
+    return FAILURE;
   }
 
   string out_mapping_filename = output_scd_file + ".map";

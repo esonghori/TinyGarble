@@ -7,7 +7,8 @@ two-party Secure Function Evaluation (SFE) in which the parties are able to
 execute any function on their private inputs and learn the output without
 leaking any information about their inputs.
 This repository consists of two main parts: (1) circuit synthesis (output examples 
-of this is stored in `scd/netlist/v.tar.bz`) and (2) secure function evaluation.
+of this is stored in `scd/netlist/v.tar.bz` and will be unzipped and translated in 
+`bin/scd/netlist/` after `make`) and (2) secure function evaluation.
 Circuit synthesis is partially described in TinyGarble paper in IEEE S&P'15 (see
 References). It is based on upon hardware synthesis and sequential circuit
 concept and outputs a netlist Verilog (`.v`) file (not included in this repository). 
@@ -72,11 +73,11 @@ Configure TinyGarble and then compile it in `bin` directory (for debug mode, use
 For finding Hamming distance between two 32-bit private inputs (e.g.,
 Alice: FF55AA77, Bob: 12345678), on Alice's terminal, run:
 ```
-  $ bin/garbled_circuit/TinyGarble --alice --scd_file scd/netlists/hamming_32bit_1cc.scd --input FF55AA77
+  $ bin/garbled_circuit/TinyGarble --alice --scd_file bin/scd/netlists/hamming_32bit_1cc.scd --input FF55AA77
 ```
 And on Bob's terminal, run:
 ```
-  $ bin/garbled_circuit/TinyGarble --bob --scd_file scd/netlists/hamming_32bit_1cc.scd --input 12345678 --server_ip 127.0.0.1
+  $ bin/garbled_circuit/TinyGarble --bob --scd_file bin/scd/netlists/hamming_32bit_1cc.scd --input 12345678
 ```
 Note that, it is supposed that Alice and Bob are in a same mahcine
 (server_ip = 127.0.0.1) in this example.
@@ -95,10 +96,10 @@ In `bin` directory call `ctest`:
 description (`.scd`) file.
 ```
   -h [ --help ]                         produce help message.
-  -i [ --netlist ] arg (=scd/netlists/test.v)
+  -i [ --netlist ]
                                         Input netlist (verilog .v) file
                                         address.
-  -o [ --scd ] arg (=scd/netlists/test.scd)
+  -o [ --scd ]
                                         Output simple circuit description (scd)
                                         file address.
 
@@ -108,8 +109,7 @@ description (`.scd`) file.
   -h [ --help ]                         produce help message
   -a [ --alice ]                        Run as Alice (server).
   -b [ --bob ]                          Run as Bob (client).
-  -i [ --scd_file ] arg (=../scd/netlists/hamming_32bit_1cc.scd)
-                                        Simple circuit description (.scd) file
+  -i [ --scd_file ]                     Simple circuit description (.scd) file
                                         address.
   -p [ --port ] arg (=1234)             socket port
   -s [ --server_ip ] arg (=127.0.0.1)   Server's (Alice's) IP, required when
@@ -136,8 +136,7 @@ description (`.scd`) file.
 * `scd/SCD_Evaluator_Main`: Evaluating a simple circuit description (`.scd`) file:
 ```
   -h [ --help ]                         produce help message
-  -i [ --scd_file ] arg (=../scd/netlists/test4.scd)
-                                        scd address
+  -i [ --scd_file ] 					scd address
   --clock_cycles arg (=1)               Number of clock cycles to evaluate the
                                         circuit.
   --g_init arg (=0)                     g_init in hexadecimal.
