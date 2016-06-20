@@ -23,9 +23,13 @@
 
 string Type2StrGate(short itype);
 int ParseNetlist(const string &file_name,
-                 ReadCircuitString &read_circuit_string);
+                 ReadCircuitString* read_circuit_string);
+int ParseBrisNetlist(const string &file_name,
+                     ReadCircuitString* read_circuit_string);
 int IdAssignment(const ReadCircuitString& read_circuit_string,
-                 ReadCircuit &read_circuit);
-int TopologicalSort(ReadCircuit &read_circuit);
+                 ReadCircuit* read_circuit);
+int TopologicalSort(const ReadCircuit &read_circuit,
+                    vector<int64_t>* sorted_list,
+                    const ReadCircuitString& read_circuit_string);
 
 #endif /* SCD_PARSE_NETLIST_H_ */
