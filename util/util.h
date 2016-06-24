@@ -22,10 +22,12 @@
 #include "garbled_circuit/garbled_circuit_util.h"
 #include "crypto/block.h"
 #include <openssl/bn.h>
+#include <vector>
 #include <ostream>
 #include <string>
 
 using std::string;
+using std::vector;
 
 block RandomBlock();
 void SrandSSE(unsigned int seed);
@@ -39,6 +41,14 @@ int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
 int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                        uint64_t clock_cycles, OutputMode output_mode,
                        string* output_str);
+					   
+string fromatGCInputString(vector<uint64_t>, vector<uint8_t>);
+string towsComplement(string);
+string dec2bin(int64_t, uint8_t);
+int64_t bin2dec(string, bool);
+string hex2bin(string, uint8_t);
+string bin2hex(string);
+
 string ReadFileOrPassHex(string file_hex_str);
 bool icompare(std::string const& a, std::string const& b);
 

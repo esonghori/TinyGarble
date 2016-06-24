@@ -1,11 +1,13 @@
-
 #define G_SIZE 4 // size of Garbler's input array
 #define E_SIZE 4 // size of Evaluator's input array
 #define O_SIZE 4 // size of output array
 
+#define COMPUTESBOX 1
 
 typedef unsigned char uint8_t;
 typedef unsigned int  uint32_t;
+
+
 
 /*****************************************************************************/
 /* Defines:                                                                  */
@@ -72,13 +74,166 @@ static const uint8_t Rcon[11] = {
 /*****************************************************************************/
 /* Private functions:                                                        */
 /*****************************************************************************/
+
+typedef union{
+	struct {
+		unsigned int bit0 : 1;
+		unsigned int bit1 : 1;
+		unsigned int bit2 : 1;
+		unsigned int bit3 : 1;
+		unsigned int bit4 : 1;
+		unsigned int bit5 : 1;
+		unsigned int bit6 : 1;
+		unsigned int bit7 : 1;
+	}bits;
+	uint8_t byte;
+}byte;
+
+inline static void gf_2_4_square(byte* q, byte a){
+	q->bits.bit0 = a.bits.bit0^a.bits.bit2;
+	q->bits.bit1 = a.bits.bit2;
+	q->bits.bit2 = a.bits.bit1^a.bits.bit3;
+	q->bits.bit3 = a.bits.bit3;
+}
+
+inline static void gf_2_4_mult(byte* q, byte a, byte b){
+	byte t;
+	t.bits.bit0 = a.bits.bit0^a.bits.bit3;
+	t.bits.bit1 = a.bits.bit2^a.bits.bit3;
+	t.bits.bit2 = a.bits.bit1^a.bits.bit2;
+	
+	q->bits.bit0 = (a.bits.bit0&b.bits.bit0)^(a.bits.bit3&b.bits.bit1)^(a.bits.bit2&b.bits.bit2)^(a.bits.bit1&b.bits.bit3);
+	q->bits.bit1 = (a.bits.bit1&b.bits.bit0)^(t.bits.bit0&b.bits.bit1)^(t.bits.bit1&b.bits.bit2)^(t.bits.bit2&b.bits.bit3);
+	q->bits.bit2 = (a.bits.bit2&b.bits.bit0)^(a.bits.bit1&b.bits.bit1)^(t.bits.bit0&b.bits.bit2)^(t.bits.bit1&b.bits.bit3);
+	q->bits.bit3 = (a.bits.bit3&b.bits.bit0)^(a.bits.bit2&b.bits.bit1)^(a.bits.bit1&b.bits.bit2)^(t.bits.bit0&b.bits.bit3);
+}
+
+inline static void gf_2_4_inv(byte* q, byte a){
+	byte t;
+	t.bits.bit0 = a.bits.bit1^a.bits.bit2^a.bits.bit3^(a.bits.bit1&a.bits.bit2&a.bits.bit3);
+	
+	q->bits.bit0 = t.bits.bit0^a.bits.bit0^(a.bits.bit0&a.bits.bit2)^(a.bits.bit1&a.bits.bit2)^(a.bits.bit0&a.bits.bit1&a.bits.bit2);
+	q->bits.bit1 = (a.bits.bit0&a.bits.bit1)^(a.bits.bit0&a.bits.bit2)^(a.bits.bit1&a.bits.bit2)^a.bits.bit3^(a.bits.bit1&a.bits.bit3)^(a.bits.bit0&a.bits.bit1&a.bits.bit3);
+	q->bits.bit2 = (a.bits.bit0&a.bits.bit1)^a.bits.bit2^(a.bits.bit0&a.bits.bit2)^a.bits.bit3^(a.bits.bit0&a.bits.bit3)^(a.bits.bit0&a.bits.bit2&a.bits.bit3);
+	q->bits.bit3 = t.bits.bit0^(a.bits.bit0&a.bits.bit3)^(a.bits.bit1&a.bits.bit3)^(a.bits.bit2&a.bits.bit3);
+}
+
+inline static void gf_2_4_mult_e(byte* q, byte a){
+	byte t;
+	t.bits.bit0 = a.bits.bit0^a.bits.bit1;
+	t.bits.bit1 = a.bits.bit2^a.bits.bit3;
+	
+	q->bits.bit0 = a.bits.bit1^t.bits.bit1;
+	q->bits.bit1 = t.bits.bit0;
+	q->bits.bit2 = t.bits.bit0^a.bits.bit2;
+	q->bits.bit3 = t.bits.bit0^t.bits.bit1;
+}
+
+inline static void gf_map_2_8_to_2_4(byte* al, byte* ah, byte a){
+	byte t;	
+	t.bits.bit0 = a.bits.bit1^a.bits.bit7;
+	t.bits.bit1 = a.bits.bit5^a.bits.bit7;
+	t.bits.bit2 = a.bits.bit4^a.bits.bit6;
+	
+	al->bits.bit0 = t.bits.bit2^a.bits.bit0^a.bits.bit5;
+	al->bits.bit1 = a.bits.bit1^a.bits.bit2;
+	al->bits.bit2 = t.bits.bit0;
+	al->bits.bit3 = a.bits.bit2^a.bits.bit4;
+	
+	ah->bits.bit0 = t.bits.bit2^a.bits.bit5;
+	ah->bits.bit1 = t.bits.bit0^t.bits.bit2;
+	ah->bits.bit2 = t.bits.bit1^a.bits.bit2^a.bits.bit3;
+	ah->bits.bit3 = t.bits.bit1;
+}
+
+inline static void gf_map_2_4_to_2_8(byte* a, byte al, byte ah){
+	byte t;	
+	t.bits.bit0 = al.bits.bit1^ah.bits.bit3;
+	t.bits.bit1 = ah.bits.bit0^ah.bits.bit1;
+	
+	a->bits.bit0 = al.bits.bit0^ah.bits.bit0;
+	a->bits.bit1 = t.bits.bit1^ah.bits.bit3;
+	a->bits.bit2 = t.bits.bit0^t.bits.bit1;
+	a->bits.bit3 = t.bits.bit1^al.bits.bit1^ah.bits.bit2;
+	a->bits.bit4 = t.bits.bit0 ^t.bits.bit1^al.bits.bit3;
+	a->bits.bit5 = t.bits.bit1^al.bits.bit2;
+	a->bits.bit6 = t.bits.bit0 ^al.bits.bit2^al.bits.bit3^ah.bits.bit0;
+	a->bits.bit7 = t.bits.bit1^al.bits.bit2^ah.bits.bit3;
+}
+
+inline static void gf_2_8_inv(byte* q, byte a){
+	byte al, ah;
+	gf_map_2_8_to_2_4(&al, &ah, a);
+		
+	byte d;
+	{
+		byte ah_sqr;
+		gf_2_4_square(&ah_sqr, ah);
+		byte ah_sqr_times_e;
+		gf_2_4_mult_e(&ah_sqr_times_e, ah_sqr);
+		byte ah_times_al;
+		gf_2_4_mult(&ah_times_al, ah, al);
+		byte al_sqr;
+		gf_2_4_square(&al_sqr, al);	
+		byte d_inv;
+		d_inv.byte = ah_sqr_times_e.byte^ah_times_al.byte^al_sqr.byte;
+		gf_2_4_inv(&d, d_inv);
+	}
+	
+	byte ah_prime;
+	gf_2_4_mult(&ah_prime, ah, d);
+	
+	byte al_prime;	
+	{
+		byte ah_xor_al;
+		ah_xor_al.byte = ah.byte^al.byte;
+		gf_2_4_mult(&al_prime, ah_xor_al, d);
+	}
+	
+	gf_map_2_4_to_2_8(q, al_prime, ah_prime);	
+}
+
+inline static void aff_trans(byte* q, byte a){
+	byte t;
+	t.bits.bit0 = a.bits.bit0^a.bits.bit1;
+	t.bits.bit1 = a.bits.bit2^a.bits.bit3;
+	t.bits.bit2 = a.bits.bit4^a.bits.bit5;
+	t.bits.bit3 = a.bits.bit6^a.bits.bit7;
+	
+	q->bits.bit0 = (~a.bits.bit0)^t.bits.bit2^t.bits.bit3;
+	q->bits.bit1 = (~a.bits.bit5)^t.bits.bit0^t.bits.bit3;
+	q->bits.bit2 = a.bits.bit2^t.bits.bit0^t.bits.bit3;
+	q->bits.bit3 = a.bits.bit7^t.bits.bit0^t.bits.bit1;
+	q->bits.bit4 = a.bits.bit4^t.bits.bit0^t.bits.bit1;
+	q->bits.bit5 = (~a.bits.bit1)^t.bits.bit1^t.bits.bit2;
+	q->bits.bit6 = (~a.bits.bit6)^t.bits.bit1^t.bits.bit2;
+	q->bits.bit7 = a.bits.bit3^t.bits.bit2^t.bits.bit3;
+}
+ 
+#if COMPUTESBOX
+static uint8_t getSBoxValue(uint8_t num){
+	uint8_t SubByte;
+	byte q, a, a_inv;
+	
+	a.byte = num;
+	gf_2_8_inv(&a_inv, a);
+	aff_trans(&q, a_inv);
+	SubByte = q.byte;
+	
+	return SubByte;
+}
+
+#else
+
 static uint8_t getSBoxValue(uint8_t num)
 {
   return sbox[num];
 }
 
+#endif
+
 // This function produces Nb(Nr+1) round keys. The round keys are used in each round to decrypt the states. 
-static void KeyExpansion(void)
+inline static void KeyExpansion(void)
 {
   uint32_t i, j, k;
   uint8_t tempa[4]; // Used for the column/row operations
@@ -145,7 +300,7 @@ static void KeyExpansion(void)
 
 // This function adds the round key to state.
 // The round key is added to the state by an XOR function.
-static void AddRoundKey(uint8_t round)
+inline static void AddRoundKey(uint8_t round)
 {
   uint8_t i,j;
   for(i=0;i<4;++i)
@@ -159,7 +314,7 @@ static void AddRoundKey(uint8_t round)
 
 // The SubBytes Function Substitutes the values in the
 // state matrix with values in an S-box.
-static void SubBytes(void)
+inline static void SubBytes(void)
 {
   uint8_t i, j;
   for(i = 0; i < 4; ++i)
@@ -174,7 +329,7 @@ static void SubBytes(void)
 // The ShiftRows() function shifts the rows in the state to the left.
 // Each row is shifted with different offset.
 // Offset = Row number. So the first row is not shifted.
-static void ShiftRows(void)
+inline static void ShiftRows(void)
 {
   uint8_t temp;
 
@@ -202,13 +357,13 @@ static void ShiftRows(void)
   (*state)[1][3] = temp;
 }
 
-static uint8_t xtime(uint8_t x)
+inline static uint8_t xtime(uint8_t x)
 {
   return ((x<<1) ^ (((x>>7) & 1) * 0x1b));
 }
 
 // MixColumns function mixes the columns of the state matrix
-static void MixColumns(void)
+inline static void MixColumns(void)
 {
   uint8_t i;
   uint8_t Tmp,Tm,t;
@@ -224,7 +379,7 @@ static void MixColumns(void)
 }
 
 // Cipher is the main function that encrypts the PlainText.
-static void Cipher(void)
+inline static void Cipher(void)
 {
   uint8_t round = 0;
 
@@ -249,7 +404,7 @@ static void Cipher(void)
   AddRoundKey(Nr);
 }
 
-static void BlockCopy(uint8_t* output, const uint8_t* input)
+inline static void BlockCopy(uint8_t* output, const uint8_t* input)
 {
   uint8_t i;
   for (i=0;i<KEYLEN;++i)
@@ -258,7 +413,7 @@ static void BlockCopy(uint8_t* output, const uint8_t* input)
   }
 }
 
-void AES128_ECB_encrypt(const uint8_t* input, const uint8_t* key, uint8_t* output)
+inline static void AES128_ECB_encrypt(const uint8_t* input, const uint8_t* key, uint8_t* output)
 {
   // Copy input to output, and work in-memory on output
   BlockCopy(output, input);

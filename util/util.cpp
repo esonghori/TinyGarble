@@ -41,6 +41,9 @@
 #include <stdint.h>
 #include <iomanip>
 #include <sstream>
+#include <bitset>
+#include <cstdlib> 
+#include <vector>
 #include <fstream>
 #include "crypto/aes.h"
 #include "util/common.h"
@@ -242,6 +245,61 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
   }
 
   return SUCCESS;
+}
+
+string fromatGCInputString(vector<uint64_t> input, vector<uint8_t> bit_len){
+	string bin_input_str, input_str;
+	for (uint i = 0; i < input.size(); i++){
+		bin_input_str = bin_input_str + dec2bin(input[i], bit_len[i]);
+	}
+	input_str = bin2hex(bin_input_str);
+	return input_str;
+}
+
+string towsComplement(string num){
+	string rnum(num);
+	size_t bit_len = num.length();	
+	bool invert = false;
+	for(int i = bit_len-1; i >= 0; i--){
+		if(invert){
+			if (num[i] == '1') rnum[i] = '0';
+			else rnum[i] = '1';
+		}
+		if(num[i] == '1') invert = true;
+	}	
+	return rnum;
+}
+
+string dec2bin(int64_t dec, uint8_t bit_len){
+	string bin = std::bitset<64>(dec).to_string(); 
+    bin = bin.substr(64-bit_len, bit_len);	
+	return bin;
+}
+
+int64_t bin2dec(string bin, bool s){
+	bool neg;
+	if (s && (bin[0] == '1')) neg = true;
+	if (neg) bin = towsComplement(bin);	
+	int64_t dec = (int64_t)(std::bitset<64>(bin).to_ulong());	
+	if (neg) dec = -dec;	
+    return dec;
+}
+
+string hex2bin(string hex_, uint8_t bit_len){
+	std::stringstream stream;
+	stream << std::hex << std::setw(ceil(bit_len/4)) << std::setfill('0') << hex_;
+	int64_t u;
+	stream >> u;
+	string bin = dec2bin(u, bit_len);	
+	return bin;
+}
+
+string bin2hex(string bin){
+	int64_t dec = (int64_t)(std::bitset<64>(bin).to_ulong());
+	std::stringstream stream;
+	stream << std::hex << dec;
+	string hex_ = stream.str();
+	return hex_;
 }
 
 string ReadFileOrPassHex(string file_hex_str) {  // file address of or a hex string
