@@ -1,12 +1,13 @@
-
 #define G_SIZE 4 // size of Garbler's input array
 #define E_SIZE 4 // size of Evaluator's input array
 #define O_SIZE 4 // size of output array
 
-//#define USE_LOOKUP_TABLE_SBOX
+#define COMPUTESBOX 1
 
 typedef unsigned char uint8_t;
 typedef unsigned int  uint32_t;
+
+
 
 /*****************************************************************************/
 /* Defines:                                                                  */
@@ -73,6 +74,9 @@ static const uint8_t Rcon[11] = {
 /*****************************************************************************/
 /* Private functions:                                                        */
 /*****************************************************************************/
+ 
+#if COMPUTESBOX
+
 typedef union{
 	struct {
 		unsigned int bit0 : 1;
@@ -84,145 +88,149 @@ typedef union{
 		unsigned int bit6 : 1;
 		unsigned int bit7 : 1;
 	}bits;
-	uint8_t byte;
+	unsigned char byte;
 }byte;
 
-inline void gf_2_4_square(byte* q, byte a){
-	q->bits.bit0 = a.bits.bit0^a.bits.bit2;
-	q->bits.bit1 = a.bits.bit2;
-	q->bits.bit2 = a.bits.bit1^a.bits.bit3;
-	q->bits.bit3 = a.bits.bit3;
+//previous implementation following "An ASIC Implementation of the AES SBoxes" is removed and can be found in earlier commits
+//this implementation follows http://cs-www.cs.yale.edu/homes/peralta/CircuitStuff/CMT.html
+
+uint8_t getSBoxValue(uint8_t num){
+	
+	byte x, s;
+	x.byte = num;
+	
+	byte y[3], t[8], z[2];
+	
+	y[1].bits.bit6	=	x.bits.bit4	^	x.bits.bit2;
+	y[1].bits.bit5	=	x.bits.bit7	^	x.bits.bit1;
+	y[1].bits.bit1	=	x.bits.bit7	^	x.bits.bit4;
+	y[1].bits.bit0	=	x.bits.bit7	^	x.bits.bit2;
+	t[0].bits.bit0	=	x.bits.bit6	^	x.bits.bit5;
+	y[0].bits.bit1	=	t[0].bits.bit0	^	x.bits.bit0;
+	y[0].bits.bit4	=	y[0].bits.bit1	^	x.bits.bit4;
+	y[1].bits.bit4	=	y[1].bits.bit5	^	y[1].bits.bit6;
+	y[0].bits.bit2	=	y[0].bits.bit1	^	x.bits.bit7;
+	y[0].bits.bit5	=	y[0].bits.bit1	^	x.bits.bit1;
+	y[0].bits.bit3	=	y[0].bits.bit5	^	y[1].bits.bit0;
+	t[0].bits.bit1	=	x.bits.bit3	^	y[1].bits.bit4;
+	y[1].bits.bit7	=	t[0].bits.bit1	^	x.bits.bit2;
+	y[2].bits.bit4	=	t[0].bits.bit1	^	x.bits.bit6;
+	y[0].bits.bit6	=	y[1].bits.bit7	^	x.bits.bit0;
+	y[1].bits.bit2	=	y[1].bits.bit7	^	t[0].bits.bit0;
+	y[1].bits.bit3	=	y[2].bits.bit4	^	y[1].bits.bit1;
+	y[0].bits.bit7	=	x.bits.bit0	^	y[1].bits.bit3;
+	y[2].bits.bit1	=	y[1].bits.bit2	^	y[1].bits.bit3;
+	y[2].bits.bit3	=	y[1].bits.bit2	^	y[1].bits.bit0;
+	y[2].bits.bit0	=	t[0].bits.bit0	^	y[1].bits.bit3;
+	y[2].bits.bit5	=	y[1].bits.bit5	^	y[2].bits.bit0;
+	y[2].bits.bit2	=	x.bits.bit7	^	y[2].bits.bit0;
+
+	t[0].bits.bit2	=	y[1].bits.bit4	&	y[1].bits.bit7;
+	t[0].bits.bit3	=	y[0].bits.bit3	&	y[0].bits.bit6;
+	t[0].bits.bit4	=	t[0].bits.bit3	^	t[0].bits.bit2;
+	t[0].bits.bit5	=	y[0].bits.bit4	&	x.bits.bit0;
+	t[0].bits.bit6	=	t[0].bits.bit5	^	t[0].bits.bit2;
+	t[0].bits.bit7	=	y[1].bits.bit5	&	y[2].bits.bit0;
+	t[1].bits.bit0	=	y[0].bits.bit5	&	y[0].bits.bit1;
+	t[1].bits.bit1	=	t[1].bits.bit0	^	t[0].bits.bit7;
+	t[1].bits.bit2	=	y[0].bits.bit2	&	y[0].bits.bit7;
+	t[1].bits.bit3	=	t[1].bits.bit2	^	t[0].bits.bit7;
+	t[1].bits.bit4	=	y[1].bits.bit1	&	y[1].bits.bit3;
+	t[1].bits.bit5	=	y[1].bits.bit6	&	y[2].bits.bit1;
+	t[1].bits.bit6	=	t[1].bits.bit5	^	t[1].bits.bit4;
+	t[1].bits.bit7	=	y[1].bits.bit0	&	y[1].bits.bit2;
+	t[2].bits.bit0	=	t[1].bits.bit7	^	t[1].bits.bit4;
+	t[2].bits.bit1	=	t[0].bits.bit4	^	t[1].bits.bit6;
+	t[2].bits.bit2	=	t[0].bits.bit6	^	t[2].bits.bit0;
+	t[2].bits.bit3	=	t[1].bits.bit1	^	t[1].bits.bit6;
+	t[2].bits.bit4	=	t[1].bits.bit3	^	t[2].bits.bit0;
+	t[2].bits.bit5	=	t[2].bits.bit1	^	y[2].bits.bit4;
+	t[2].bits.bit6	=	t[2].bits.bit2	^	y[2].bits.bit3;
+	t[2].bits.bit7	=	t[2].bits.bit3	^	y[2].bits.bit5;
+	t[3].bits.bit0	=	t[2].bits.bit4	^	y[2].bits.bit2;
+
+	t[3].bits.bit1	=	t[2].bits.bit5	^	t[2].bits.bit6;
+	t[3].bits.bit2	=	t[2].bits.bit5	&	t[2].bits.bit7;
+	t[3].bits.bit3	=	t[3].bits.bit0	^	t[3].bits.bit2;
+	t[3].bits.bit4	=	t[3].bits.bit1	&	t[3].bits.bit3;
+	t[3].bits.bit5	=	t[3].bits.bit4	^	t[2].bits.bit6;
+	t[3].bits.bit6	=	t[2].bits.bit7	^	t[3].bits.bit0;
+	t[3].bits.bit7	=	t[2].bits.bit6	^	t[3].bits.bit2;
+	t[4].bits.bit0	=	t[3].bits.bit7	&	t[3].bits.bit6;
+	t[4].bits.bit1	=	t[4].bits.bit0	^	t[3].bits.bit0;
+	t[4].bits.bit2	=	t[2].bits.bit7	^	t[4].bits.bit1;
+	t[4].bits.bit3	=	t[3].bits.bit3	^	t[4].bits.bit1;
+	t[4].bits.bit4	=	t[3].bits.bit0	&	t[4].bits.bit3;
+	t[4].bits.bit5	=	t[4].bits.bit4	^	t[4].bits.bit2;
+	t[4].bits.bit6	=	t[3].bits.bit3	^	t[4].bits.bit4;
+	t[4].bits.bit7	=	t[3].bits.bit5	&	t[4].bits.bit6;
+	t[5].bits.bit0	=	t[3].bits.bit1	^	t[4].bits.bit7;
+
+	t[5].bits.bit1	=	t[5].bits.bit0	^	t[4].bits.bit5;
+	t[5].bits.bit2	=	t[3].bits.bit5	^	t[4].bits.bit1;
+	t[5].bits.bit3	=	t[3].bits.bit5	^	t[5].bits.bit0;
+	t[5].bits.bit4	=	t[4].bits.bit1	^	t[4].bits.bit5;
+	t[5].bits.bit5	=	t[5].bits.bit2	^	t[5].bits.bit1;
+	z[0].bits.bit0	=	t[5].bits.bit4	&	y[1].bits.bit7;
+	z[0].bits.bit1	=	t[4].bits.bit5	&	y[0].bits.bit6;
+	z[0].bits.bit2	=	t[4].bits.bit1	&	x.bits.bit0;
+	z[0].bits.bit3	=	t[5].bits.bit3	&	y[2].bits.bit0;
+	z[0].bits.bit4	=	t[5].bits.bit0	&	y[0].bits.bit1;
+	z[0].bits.bit5	=	t[3].bits.bit5	&	y[0].bits.bit7;
+	z[0].bits.bit6	=	t[5].bits.bit2	&	y[1].bits.bit3;
+	z[0].bits.bit7	=	t[5].bits.bit5	&	y[2].bits.bit1;
+	z[1].bits.bit0	=	t[5].bits.bit1	&	y[1].bits.bit2;
+	z[1].bits.bit1	=	t[5].bits.bit4	&	y[1].bits.bit4;
+	z[1].bits.bit2	=	t[4].bits.bit5	&	y[0].bits.bit3;
+	z[1].bits.bit3	=	t[4].bits.bit1	&	y[0].bits.bit4;
+	z[1].bits.bit4	=	t[5].bits.bit3	&	y[1].bits.bit5;
+	z[1].bits.bit5	=	t[5].bits.bit0	&	y[0].bits.bit5;
+	z[1].bits.bit6	=	t[3].bits.bit5	&	y[0].bits.bit2;
+	z[1].bits.bit7	=	t[5].bits.bit2	&	y[1].bits.bit1;
+	z[2].bits.bit0	=	t[5].bits.bit5	&	y[1].bits.bit6;
+	z[2].bits.bit1	=	t[5].bits.bit1	&	y[1].bits.bit0;
+
+	t[5].bits.bit6	=	z[1].bits.bit7	^	z[2].bits.bit0;
+	t[5].bits.bit7	=	z[1].bits.bit2	^	z[1].bits.bit3;
+	t[6].bits.bit0	=	z[0].bits.bit5	^	z[1].bits.bit5;
+	t[6].bits.bit1	=	z[1].bits.bit1	^	z[1].bits.bit2;
+	t[6].bits.bit2	=	z[0].bits.bit2	^	z[1].bits.bit4;
+	t[6].bits.bit3	=	z[0].bits.bit2	^	z[0].bits.bit5;
+	t[6].bits.bit4	=	z[0].bits.bit7	^	z[1].bits.bit0;
+	t[6].bits.bit5	=	z[0].bits.bit0	^	z[0].bits.bit3;
+	t[6].bits.bit6	=	z[0].bits.bit6	^	z[0].bits.bit7;
+	t[6].bits.bit7	=	z[2].bits.bit0	^	z[2].bits.bit1;
+	t[7].bits.bit0	=	z[1].bits.bit4	^	t[6].bits.bit0;
+	t[7].bits.bit1	=	t[6].bits.bit2	^	t[6].bits.bit5;
+	t[7].bits.bit2	=	z[0].bits.bit4	^	t[5].bits.bit6;
+	t[7].bits.bit3	=	z[0].bits.bit3	^	t[6].bits.bit6;
+	t[7].bits.bit4	=	t[5].bits.bit6	^	t[7].bits.bit1;
+	t[7].bits.bit5	=	z[1].bits.bit6	^	t[7].bits.bit1;
+	t[7].bits.bit6	=	t[6].bits.bit4	^	t[7].bits.bit2;
+	t[7].bits.bit7	=	t[6].bits.bit1	^	t[7].bits.bit2;
+	t[8].bits.bit0	=	z[0].bits.bit4	^	t[7].bits.bit3;
+	t[8].bits.bit1	=	t[7].bits.bit5	^	t[7].bits.bit6;
+	t[8].bits.bit2	=	z[0].bits.bit1	^	t[7].bits.bit7;
+	s.bits.bit7	=	t[7].bits.bit3	^	t[7].bits.bit7;
+	s.bits.bit1	=	~t[7].bits.bit0	^	t[7].bits.bit6;
+	s.bits.bit0	=	~t[6].bits.bit0	^	t[7].bits.bit4;
+	t[8].bits.bit3	=	t[8].bits.bit0	^	t[8].bits.bit1;
+	s.bits.bit4	=	t[6].bits.bit5	^	t[8].bits.bit2;
+	s.bits.bit3	=	t[6].bits.bit3	^	t[8].bits.bit2;
+	s.bits.bit2	=	t[5].bits.bit7	^	t[8].bits.bit1;
+	s.bits.bit6	=	~t[8].bits.bit0	^	s.bits.bit4;
+	s.bits.bit5	=	~t[6].bits.bit7	^	t[8].bits.bit3;
+	
+	uint8_t SubByte;
+	SubByte = s.byte;
+	return SubByte;
 }
-
-
-inline void gf_2_4_mult(byte* q, byte a, byte b){
-	byte t;
-	t.bits.bit0 = a.bits.bit0^a.bits.bit3;
-	t.bits.bit1 = a.bits.bit2^a.bits.bit3;
-	t.bits.bit2 = a.bits.bit1^a.bits.bit2;
-	
-	q->bits.bit0 = (a.bits.bit0&b.bits.bit0)^(a.bits.bit3&b.bits.bit1)^(a.bits.bit2&b.bits.bit2)^(a.bits.bit1&b.bits.bit3);
-	q->bits.bit1 = (a.bits.bit1&b.bits.bit0)^(t.bits.bit0&b.bits.bit1)^(t.bits.bit1&b.bits.bit2)^(t.bits.bit2&b.bits.bit3);
-	q->bits.bit2 = (a.bits.bit2&b.bits.bit0)^(a.bits.bit1&b.bits.bit1)^(t.bits.bit0&b.bits.bit2)^(t.bits.bit1&b.bits.bit3);
-	q->bits.bit3 = (a.bits.bit3&b.bits.bit0)^(a.bits.bit2&b.bits.bit1)^(a.bits.bit1&b.bits.bit2)^(t.bits.bit0&b.bits.bit3);
-}
-
-inline void gf_2_4_inv(byte* q, byte a){
-	byte t;
-	t.bits.bit0 = a.bits.bit1^a.bits.bit2^a.bits.bit3^(a.bits.bit1&a.bits.bit2&a.bits.bit3);
-	
-	q->bits.bit0 = t.bits.bit0^a.bits.bit0^(a.bits.bit0&a.bits.bit2)^(a.bits.bit1&a.bits.bit2)^(a.bits.bit0&a.bits.bit1&a.bits.bit2);
-	q->bits.bit1 = (a.bits.bit0&a.bits.bit1)^(a.bits.bit0&a.bits.bit2)^(a.bits.bit1&a.bits.bit2)^a.bits.bit3^(a.bits.bit1&a.bits.bit3)^(a.bits.bit0&a.bits.bit1&a.bits.bit3);
-	q->bits.bit2 = (a.bits.bit0&a.bits.bit1)^a.bits.bit2^(a.bits.bit0&a.bits.bit2)^a.bits.bit3^(a.bits.bit0&a.bits.bit3)^(a.bits.bit0&a.bits.bit2&a.bits.bit3);
-	q->bits.bit3 = t.bits.bit0^(a.bits.bit0&a.bits.bit3)^(a.bits.bit1&a.bits.bit3)^(a.bits.bit2&a.bits.bit3);
-}
-
-inline void gf_2_4_mult_e(byte* q, byte a){
-	byte t;
-	t.bits.bit0 = a.bits.bit0^a.bits.bit1;
-	t.bits.bit1 = a.bits.bit2^a.bits.bit3;
-	
-	q->bits.bit0 = a.bits.bit1^t.bits.bit1;
-	q->bits.bit1 = t.bits.bit0;
-	q->bits.bit2 = t.bits.bit0^a.bits.bit2;
-	q->bits.bit3 = t.bits.bit0^t.bits.bit1;
-}
-
-inline void gf_map_2_8_to_2_4(byte* al, byte* ah, byte a){
-	byte t;	
-	t.bits.bit0 = a.bits.bit1^a.bits.bit7;
-	t.bits.bit1 = a.bits.bit5^a.bits.bit7;
-	t.bits.bit2 = a.bits.bit4^a.bits.bit6;
-	
-	al->bits.bit0 = t.bits.bit2^a.bits.bit0^a.bits.bit5;
-	al->bits.bit1 = a.bits.bit1^a.bits.bit2;
-	al->bits.bit2 = t.bits.bit0;
-	al->bits.bit3 = a.bits.bit2^a.bits.bit4;
-	
-	ah->bits.bit0 = t.bits.bit2^a.bits.bit5;
-	ah->bits.bit1 = t.bits.bit0^t.bits.bit2;
-	ah->bits.bit2 = t.bits.bit1^a.bits.bit2^a.bits.bit3;
-	ah->bits.bit3 = t.bits.bit1;
-}
-
-inline void gf_map_2_4_to_2_8(byte* a, byte al, byte ah){
-	byte t;	
-	t.bits.bit0 = al.bits.bit1^ah.bits.bit3;
-	t.bits.bit1 = ah.bits.bit0^ah.bits.bit1;
-	
-	a->bits.bit0 = al.bits.bit0^ah.bits.bit0;
-	a->bits.bit1 = t.bits.bit1^ah.bits.bit3;
-	a->bits.bit2 = t.bits.bit0^t.bits.bit1;
-	a->bits.bit3 = t.bits.bit1^al.bits.bit1^ah.bits.bit2;
-	a->bits.bit4 = t.bits.bit0 ^t.bits.bit1^al.bits.bit3;
-	a->bits.bit5 = t.bits.bit1^al.bits.bit2;
-	a->bits.bit6 = t.bits.bit0 ^al.bits.bit2^al.bits.bit3^ah.bits.bit0;
-	a->bits.bit7 = t.bits.bit1^al.bits.bit2^ah.bits.bit3;
-}
-
-inline void gf_2_8_inv(byte* q, byte a){
-	byte al, ah;
-	gf_map_2_8_to_2_4(&al, &ah, a);
-	
-	byte ah_sqr;
-	gf_2_4_square(&ah_sqr, ah);
-	byte ah_sqr_times_e;
-	gf_2_4_mult_e(&ah_sqr_times_e, ah_sqr);
-	byte ah_times_al;
-	gf_2_4_mult(&ah_times_al, ah, al);
-	byte al_sqr;
-	gf_2_4_square(&al_sqr, al);	
-	byte d_inv;
-	d_inv.byte = ah_sqr_times_e.byte^ah_times_al.byte^al_sqr.byte;	
-	byte d;
-	gf_2_4_inv(&d, d_inv);
-	
-	byte ah_prime;
-	gf_2_4_mult(&ah_prime, ah, d);
-	
-	byte ah_xor_al;
-	ah_xor_al.byte = ah.byte^al.byte;
-	byte al_prime;	
-	gf_2_4_mult(&al_prime, ah_xor_al, d);
-	
-	gf_map_2_4_to_2_8(q, al_prime, ah_prime);	
-}
-
-inline void aff_trans(byte* q, byte a){
-	byte t;
-	t.bits.bit0 = a.bits.bit0^a.bits.bit1;
-	t.bits.bit1 = a.bits.bit2^a.bits.bit3;
-	t.bits.bit2 = a.bits.bit4^a.bits.bit5;
-	t.bits.bit3 = a.bits.bit6^a.bits.bit7;
-	
-	q->bits.bit0 = (~a.bits.bit0)^t.bits.bit2^t.bits.bit3;
-	q->bits.bit1 = (~a.bits.bit5)^t.bits.bit0^t.bits.bit3;
-	q->bits.bit2 = a.bits.bit2^t.bits.bit0^t.bits.bit3;
-	q->bits.bit3 = a.bits.bit7^t.bits.bit0^t.bits.bit1;
-	q->bits.bit4 = a.bits.bit4^t.bits.bit0^t.bits.bit1;
-	q->bits.bit5 = (~a.bits.bit1)^t.bits.bit1^t.bits.bit2;
-	q->bits.bit6 = (~a.bits.bit6)^t.bits.bit1^t.bits.bit2;
-	q->bits.bit7 = a.bits.bit3^t.bits.bit2^t.bits.bit3;
-}
-
-#if USE_LOOKUP_TABLE_SBOX
+#else //COMPUTESBOX
 static uint8_t getSBoxValue(uint8_t num)
 {
   return sbox[num];
 }
-#else //USE_LOOKUP_TABLE_SBOX
-static uint8_t getSBoxValue(uint8_t num){
-	uint8_t SubByte;
-	byte q, a, a_inv;
-	
-	a.byte = num;
-	gf_2_8_inv(&a_inv, a);
-	aff_trans(&q, a_inv);
-	SubByte = q.byte;
-	
-	return SubByte;
-}
-#endif //USE_LOOKUP_TABLE_SBOX
+#endif //COMPUTESBOX
 
 // This function produces Nb(Nr+1) round keys. The round keys are used in each round to decrypt the states. 
 inline static void KeyExpansion(void)
@@ -405,7 +413,7 @@ inline static void BlockCopy(uint8_t* output, const uint8_t* input)
   }
 }
 
-void AES128_ECB_encrypt(const uint8_t* input, const uint8_t* key, uint8_t* output)
+inline static void AES128_ECB_encrypt(const uint8_t* input, const uint8_t* key, uint8_t* output)
 {
   // Copy input to output, and work in-memory on output
   BlockCopy(output, input);
