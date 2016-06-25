@@ -161,7 +161,7 @@ void gc_main(const int *g,  // Garbler's input array
 				
 	uint8_t num, SubByte;
 	
-	num = (unsigned char)((unsigned char)g[0]^(unsigned char)e[0]);
+	num = ((uint8_t)g[0]^(uint8_t)e[0]);
 	
 	SubByte = getSBoxValue(num);
 	

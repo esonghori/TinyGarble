@@ -272,7 +272,7 @@ int helping_car(vector<int> &port, bool PRV){
 		if (op[i] == 0){// initialize computation of one pair of intersections
 #if PRIVACY				
 			cout << "Garbler input: " << input_str << endl;
-			CHECK(GarbleStr(INTERSECTION_SCD, "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &output_str_int[0], h_connfd[0]));
+			CHECK(GarbleStr(INTERSECTION_SCD, "", "", "", input_str, 1, INTERSECTION_OUTPUT_MASK, 1, (OutputMode)0, 0, 0, &output_str_int[0], h_connfd[0]));
 			cout << "Garbler output: " << output_str_int[0] << endl;
 #else				
 			SendData(h_connfd[0], &(R[0].x), sizeof(double));
@@ -285,7 +285,7 @@ int helping_car(vector<int> &port, bool PRV){
 		else if (op[i] == 1){ // compute intersections		
 #if PRIVACY				
 			cout << "Evaluator input: " << input_str << endl;
-			CHECK(EvaluateStr(INTERSECTION_SCD, "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &output_str_int[1], h_connfd[1]));	
+			CHECK(EvaluateStr(INTERSECTION_SCD, "", "", "", input_str, 1, INTERSECTION_OUTPUT_MASK, 1, (OutputMode)0, 0, 0, &output_str_int[1], h_connfd[1]));	
 			cout << "Evaluator output: " << output_str_int[1] << endl;
 #else	
 			RecvData(h_connfd[1], &(R[1].x), sizeof(double));
@@ -303,7 +303,7 @@ int helping_car(vector<int> &port, bool PRV){
 		if (op[i] == 0){// check which one is valid	
 #if PRIVACY				
 			cout << "Garbler input: " << output_str_int[0] << endl;
-			CHECK(GarbleStr(INSIDE_SCD, "", output_str_int[1], 1, "1", 0, 0, 0, &in_range, h_connfd[0]));
+			CHECK(GarbleStr(INSIDE_SCD, "", "", "", output_str_int[1], 1, "1", 1, (OutputMode)0, 0, 0, &in_range, h_connfd[0]));
 			cout << "Garbler output: " << in_range << endl;
 #else			
 			RecvData(h_connfd[0], &(R[1].x), sizeof(double));
@@ -315,7 +315,7 @@ int helping_car(vector<int> &port, bool PRV){
 		else if (op[i] == 1){ // help check validity of the intersections
 #if PRIVACY				
 			cout << "Evaluator input: " << input_str << endl;
-			CHECK(EvaluateStr(INSIDE_SCD, "", input_str, 1, "1", 0, 0, 0, &in_range_dummy, h_connfd[1]));	
+			CHECK(EvaluateStr(INSIDE_SCD, "", "", "", input_str, 1, "1", 1, (OutputMode)0, 0, 0, &in_range_dummy, h_connfd[1]));	
 			cout << "Evaluator output: " << endl;
 #else	
 			SendData(h_connfd[1], &(R[0].x), sizeof(double));
@@ -424,12 +424,12 @@ void *int_GC(void* I){
 	
 	if (I_data->id == 0){
 		cout << "core " << I_data->id << " input:\t" << I_data->input_str << endl;
-		GarbleStr(INTERSECTION_SCD, "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		GarbleStr(INTERSECTION_SCD, "", "", "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 1, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
 		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
 	}
 	else {
 		cout << "core " << I_data->id << " input:\t" << I_data->input_str << endl;
-		EvaluateStr(INTERSECTION_SCD, "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		EvaluateStr(INTERSECTION_SCD, "", "", "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 1, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
 		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
 	}
 	
@@ -445,12 +445,12 @@ void *rng_GC(void* I){
 	
 	if (I_data->id == 0){
 		cout << "core " << I_data->id << " input:\t" << I_data->input_str_1 << endl;
-		GarbleStr(INSIDE_SCD, "", I_data->input_str_1, 1, "1", 0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		GarbleStr(INSIDE_SCD, "", "", "", I_data->input_str_1, 1, "1", 1, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
 		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
 	}
 	else {
 		cout << "core " << I_data->id << " input:\t" << I_data->input_str << endl;
-		EvaluateStr(INSIDE_SCD, "", I_data->input_str, 1, "1", 0, 0, 0, &in_range_dummy, I_data->h_connfd);
+		EvaluateStr(INSIDE_SCD, "", "", "", I_data->input_str, 1, "1", 1, (OutputMode)0, 0, 0, &in_range_dummy, I_data->h_connfd);
 	}
 	
 	pthread_mutex_lock(&running_mutex);

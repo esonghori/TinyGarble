@@ -5,6 +5,8 @@ add_executable(TriLoc
   "tri_loc_main.cpp"
   "$<TARGET_OBJECTS:Tri_Loc_Tri_Loc>"
   "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit>"
+  "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_Util>"
+  "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_High_Mem>"
   "$<TARGET_OBJECTS:Garbled_Circuit_Garbled_Circuit_Low_Mem>"
   "$<TARGET_OBJECTS:Crypto_BN>"
   "$<TARGET_OBJECTS:Crypto_OT>"

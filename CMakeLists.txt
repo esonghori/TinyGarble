@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.1.0 FATAL_ERROR)
 project (TinyGarble
   VERSION 3.0.0
-  LANGUAGES CXX)
+  LANGUAGES C CXX)
 
 ##############
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -41,6 +41,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
 ###############
 # Library
 
+## Thread
+find_package (Threads)
 ## Boost
 set (Boost_USE_STATIC_LIBS OFF)
 set (Boost_USE_MULTITHREADED ON)
@@ -82,3 +84,4 @@ add_subdirectory ("garbled_circuit")
 add_subdirectory ("scd")
 add_subdirectory ("tcpip")
 add_subdirectory ("util")
+add_subdirectory ("tri_loc")
