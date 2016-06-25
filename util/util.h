@@ -42,7 +42,7 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                        uint64_t clock_cycles, OutputMode output_mode,
                        string* output_str);
 					   
-string fromatGCInputString(vector<uint64_t>, vector<uint8_t>);
+string formatGCInputString(vector<uint64_t>, vector<uint8_t>);
 string towsComplement(string);
 string dec2bin(int64_t, uint8_t);
 int64_t bin2dec(string, bool);

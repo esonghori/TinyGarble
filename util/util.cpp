@@ -247,7 +247,7 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
   return SUCCESS;
 }
 
-string fromatGCInputString(vector<uint64_t> input, vector<uint8_t> bit_len){
+string formatGCInputString(vector<uint64_t> input, vector<uint8_t> bit_len){
 	string bin_input_str, input_str;
 	for (uint i = 0; i < input.size(); i++){
 		bin_input_str = bin_input_str + dec2bin(input[i], bit_len[i]);
