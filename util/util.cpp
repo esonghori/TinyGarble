@@ -256,6 +256,25 @@ string formatGCInputString(vector<uint64_t> input, vector<uint8_t> bit_len){
 	return input_str;
 }
 
+ void parseGCInputString(vector<int64_t> &output, string output_str, vector<int> bit_len, int offset){
+	string bin_output_str = hex2bin(output_str);
+	int no_of_outputs = output.size();
+	int len = offset;
+	int i;
+	for (i = 0; i < no_of_outputs; i++){
+		len += bit_len[i];
+	}
+	if (len > bin_output_str.length()) bin_output_str.insert(0, len-bin_output_str.length(), '0');
+	else if (len < bin_output_str.length()) bin_output_str = bin_output_str.substr(bin_output_str.length()-len, len);
+	
+	int cur = 0;
+	for (i = 0; i < no_of_outputs; i++){
+		output[i] = bin2dec(bin_output_str.substr(cur, bit_len[i]), true);
+		cur += bit_len[i];
+	}
+	
+}
+
 string towsComplement(string num){
 	string rnum(num);
 	size_t bit_len = num.length();	
@@ -277,28 +296,69 @@ string dec2bin(int64_t dec, uint8_t bit_len){
 }
 
 int64_t bin2dec(string bin, bool s){
-	bool neg;
+	bool neg = false;
 	if (s && (bin[0] == '1')) neg = true;
 	if (neg) bin = towsComplement(bin);	
-	int64_t dec = (int64_t)(std::bitset<64>(bin).to_ulong());	
+	int64_t dec = (int64_t)(std::bitset<64>(bin).to_ulong());
 	if (neg) dec = -dec;	
     return dec;
 }
 
-string hex2bin(string hex_, uint8_t bit_len){
-	std::stringstream stream;
-	stream << std::hex << std::setw(ceil(bit_len/4)) << std::setfill('0') << hex_;
-	int64_t u;
-	stream >> u;
-	string bin = dec2bin(u, bit_len);	
+string hex2bin(string hex_){
+	int len = hex_.length();
+	string bin("");
+	
+	for (int i = 0; i < len; i++){
+		char H = hex_.at(i);
+		string B;
+		if(H == '0') B = "0000";
+		else if(H == '1') B = "0001";
+		else if(H == '2') B = "0010";
+		else if(H == '3') B = "0011";
+		else if(H == '4') B = "0100";
+		else if(H == '5') B = "0101";
+		else if(H == '6') B = "0110";
+		else if(H == '7') B = "0111";
+		else if(H == '8') B = "1000";
+		else if(H == '9') B = "1001";
+		else if((H == 'a')||(H == 'A')) B = "1010";
+		else if((H == 'b')||(H == 'B')) B = "1011";
+		else if((H == 'c')||(H == 'C')) B = "1100";
+		else if((H == 'd')||(H == 'D')) B = "1101";
+		else if((H == 'e')||(H == 'E')) B = "1110";
+		else if((H == 'f')||(H == 'F')) B = "1111";
+		bin = bin + B;
+	}
 	return bin;
 }
 
 string bin2hex(string bin){
-	int64_t dec = (int64_t)(std::bitset<64>(bin).to_ulong());
-	std::stringstream stream;
-	stream << std::hex << dec;
-	string hex_ = stream.str();
+	int len = bin.length();
+	bin.insert(0, 4-len%4, '0');
+	len = bin.length();
+	string hex_("");
+	
+	for (int i = 0; i < len; i+=4){
+		string B = bin.substr(i, 4);
+		string H;
+		if(B == "0000") H = "0";
+		else if(B == "0001") H = "1";
+		else if(B == "0010") H = "2";
+		else if(B == "0011") H = "3";
+		else if(B == "0100") H = "4";
+		else if(B == "0101") H = "5";
+		else if(B == "0110") H = "6";
+		else if(B == "0111") H = "7";
+		else if(B == "1000") H = "8";
+		else if(B == "1001") H = "9";
+		else if(B == "1010") H = "a";
+		else if(B == "1011") H = "b";
+		else if(B == "1100") H = "c";
+		else if(B == "1101") H = "d";
+		else if(B == "1110") H = "e";
+		else if(B == "1111") H = "f";
+		hex_ = hex_ + H;
+	}
 	return hex_;
 }
 

@@ -150,9 +150,9 @@ int lost_car(vector<int> &port){
 	
 	print_rect(Q);	
 	
-	uint64_t output = (((uint8_t)Q.x) << BIT_LEN) | (((uint8_t)Q.y));
+/* 	uint64_t output = (((uint8_t)Q.x) << BIT_LEN) | (((uint8_t)Q.y));
 	string output_str_int = to_string_hex(output, ceil((2*BIT_LEN)/4));
-	cout << output_str_int << endl;
+	cout << output_str_int << endl; */
 	
 	for (id = 0; id < 3; id++)
 		ServerClose(connfd[id]);
@@ -208,36 +208,7 @@ int helping_car(vector<int> &port, bool PRV){
 			SendData(connfd, &done, sizeof(int));
 		}
 	}
-	
-	//triangle localization
-	vector <rect> M_1(2), M(2);
-	vector <rect> R(2);
-	vector <double> D(2);	
-	vector <int> in(2);
-	R[0] = get_loc(id);
-	D[0] = get_dist(id);
-	
-//#if PRIVACY	
-	uint64_t input = ((((uint16_t)R[0].x) & 0xFF) << (2*BIT_LEN+1)) | ((((uint16_t)R[0].y) & 0xFF) << (BIT_LEN+1)) | (((uint16_t)D[0]) & 0x1FF); 
-	string input_str = to_string_hex(input, ceil((3*BIT_LEN+1)/4));
-	cout << input_str << endl;
-	
-	vector<uint64_t> input_1(3);
-	vector<uint8_t> len_1(3);
-	input_1[0] = R[0].x;
-	input_1[1] = R[0].y;
-	input_1[2] = D[0];
-	len_1[0] = BIT_LEN;
-	len_1[1] = BIT_LEN;
-	len_1[2] = BIT_LEN+1;
-	string input_str_1 = formatGCInputString(input_1, len_1);
-	cout << input_str_1 << endl;
-	
-	
-	vector <string> output_str_int(2);
-	string in_range, in_range_dummy;
-//#endif	
-	
+
 	//set sequence of operation according to id
 	vector <int> op(2);
 	if (id == 0){
@@ -247,12 +218,35 @@ int helping_car(vector<int> &port, bool PRV){
 	else{
 		op[0] = 1;
 		op[1] = 0;
-	}
+	}	
 	
+	//triangle localization
+	vector <rect> M_1(2), M(2);
+	vector <rect> R(2);
+	vector <double> D(2);	
+	vector <int> in(2);
+	R[0] = get_loc(id);
+	D[0] = get_dist(id);
+
+#if PRIVACY	
+	vector<uint64_t> input(3);
+	vector<uint8_t> input_len(3);
+	input[0] = R[0].x;
+	input[1] = R[0].y;
+	input[2] = D[0];
+	input_len[0] = BIT_LEN;
+	input_len[1] = BIT_LEN;
+	input_len[2] = BIT_LEN+1;
+	string input_str = formatGCInputString(input, input_len);
+	cout << input_str << endl;	
 	
-	
+	vector <string> output_str_int(2);
+	string in_range, in_range_dummy;
+#endif	
+
+#if SINGLE_THREAD		
 	for (i = 0; i < 2; i++){		
-		if (op[i] == 0){// initialize computation of one pair of intersections
+		if (op[i] == 0){// initiate computation of one pair of intersections
 #if PRIVACY				
 			cout << "Garbler input: " << input_str << endl;
 			CHECK(GarbleStr(INTERSECTION_SCD, "", "", "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, (OutputMode)0, 0, 0, &output_str_int[0], h_connfd[0]));
@@ -285,7 +279,7 @@ int helping_car(vector<int> &port, bool PRV){
 	for (i = 0; i < 2; i++){		
 		if (op[i] == 0){// check which one is valid	
 #if PRIVACY				
-			cout << "Garbler input: " << output_str_int[0] << endl;
+			cout << "Garbler input: " << output_str_int[1] << endl;
 			CHECK(GarbleStr(INSIDE_SCD, "", "", "", output_str_int[1], 1, "1", 0, (OutputMode)0, 0, 0, &in_range, h_connfd[0]));
 			cout << "Garbler output: " << in_range << endl;
 #else			
@@ -308,21 +302,9 @@ int helping_car(vector<int> &port, bool PRV){
 		}
 	}
 
-	for (i = 0; i < 2; i++){		
-		if (op[i] == 0){ // receive validity info									
-			RecvData(h_connfd[0], &in[0], sizeof(int));
-		}
-		else if (op[i] == 1){ // send validity info	
-			SendData(h_connfd[1], &in[1], sizeof(int));
-		}
-	}		
-	
-	print_rect(M[0]);
-	print_rect(M[1]);
-	cout << !in[0] << " " << in[1] << endl;
+#else	//SINGLE_THREAD	
 
 #if PRIVACY
-#else
 	int_data *I_data = new int_data[2];	
 	pthread_t *threads = new pthread_t[2];
 
@@ -339,11 +321,14 @@ int helping_car(vector<int> &port, bool PRV){
 		pthread_create(&threads[i], NULL, int_GC, (void *)&I_data[i]);
 	}
 	
-	while (running_threads > 0);
+	while (running_threads > 0);	
+	
+	for (i = 0; i < 2; i++)
+		output_str_int[i] = I_data[i].output_str;
 	
 	for (i = 0; i < 2; i++){
 		I_data[i].input_str_1 = I_data[1].output_str;
-		I_data[i].h_connfd = h_connfd[1-i];
+		//I_data[i].h_connfd = h_connfd[1-i];
 	}
 	
 	for (i = 0; i < 2; i++){
@@ -353,9 +338,41 @@ int helping_car(vector<int> &port, bool PRV){
 		pthread_create(&threads[i], NULL, rng_GC, (void *)&I_data[i]);
 	}
 	
-	while (running_threads > 0);
+	while (running_threads > 0);	
 	
+	in_range = I_data[0].output_str;
 #endif
+#endif
+
+#if PRIVACY
+	vector<int> offset(2); //offset from right
+	offset[0] = 7*BIT_LEN+17;
+	offset[1] = 0;
+	vector<int64_t> output(2);
+	vector<int> olen(2);
+	olen[0] = 4*BIT_LEN+10;
+	olen[1] = 3*BIT_LEN+7;
+	for (i = 0; i < 2; i++){
+		parseGCInputString(output, output_str_int[i], olen, offset[i]);
+		M[i].x = output[0];
+		M[i].y = output[1];
+	}
+	
+	in[1] = atoi(in_range.c_str());
+#endif
+
+	for (i = 0; i < 2; i++){		
+		if (op[i] == 0){ // receive validity info									
+			RecvData(h_connfd[0], &in[0], sizeof(int));
+		}
+		else if (op[i] == 1){ // send validity info	
+			SendData(h_connfd[1], &in[1], sizeof(int));
+		}
+	}
+	
+	print_rect(M[0]);
+	print_rect(M[1]);
+	cout << !in[0] << " " << in[1] << endl;
 		
 	//secure sum protocol
 	

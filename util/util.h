@@ -43,10 +43,11 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                        string* output_str);
 					   
 string formatGCInputString(vector<uint64_t>, vector<uint8_t>);
+void parseGCInputString(vector<int64_t> &, string, vector<int>, int);
 string towsComplement(string);
 string dec2bin(int64_t, uint8_t);
 int64_t bin2dec(string, bool);
-string hex2bin(string, uint8_t);
+string hex2bin(string);
 string bin2hex(string);
 
 string ReadFileOrPassHex(string file_hex_str);

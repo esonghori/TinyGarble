@@ -4,7 +4,8 @@
 #include <vector>
 #include <cstring>
 
-#define PRIVACY 0
+#define SINGLE_THREAD 0
+#define PRIVACY 1
 #define BIT_LEN 8
 #define INTERSECTION_OUTPUT_MASK "3FFFFFFFFFFFFFFFFFE000000000000000000"  // (7*BIT_LEN+17 '1's)||(7*BIT_LEN+17 '0's) 
 	
