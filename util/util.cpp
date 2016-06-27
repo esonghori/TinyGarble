@@ -247,27 +247,27 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
   return SUCCESS;
 }
 
-string formatGCInputString(vector<uint64_t> input, vector<uint8_t> bit_len){
+string formatGCInputString(vector<uint64_t> input, vector<uint16_t> bit_len){
 	string bin_input_str, input_str;
-	for (uint i = 0; i < input.size(); i++){
+	for (uint64_t i = 0; i < input.size(); i++){
 		bin_input_str = bin_input_str + dec2bin(input[i], bit_len[i]);
 	}
 	input_str = bin2hex(bin_input_str);
 	return input_str;
 }
 
- void parseGCInputString(vector<int64_t> &output, string output_str, vector<int> bit_len, int offset){
+ void parseGCOutputString(vector<int64_t> &output, string output_str, vector<uint16_t> bit_len, uint16_t offset){
 	string bin_output_str = hex2bin(output_str);
-	int no_of_outputs = output.size();
-	int len = offset;
-	int i;
+	uint8_t no_of_outputs = output.size();
+	uint16_t len = offset;
+	int64_t i;
 	for (i = 0; i < no_of_outputs; i++){
 		len += bit_len[i];
 	}
 	if (len > bin_output_str.length()) bin_output_str.insert(0, len-bin_output_str.length(), '0');
 	else if (len < bin_output_str.length()) bin_output_str = bin_output_str.substr(bin_output_str.length()-len, len);
 	
-	int cur = 0;
+	uint16_t cur = 0;
 	for (i = 0; i < no_of_outputs; i++){
 		output[i] = bin2dec(bin_output_str.substr(cur, bit_len[i]), true);
 		cur += bit_len[i];
@@ -279,7 +279,7 @@ string towsComplement(string num){
 	string rnum(num);
 	size_t bit_len = num.length();	
 	bool invert = false;
-	for(int i = bit_len-1; i >= 0; i--){
+	for (int64_t i = bit_len-1; i >= 0; i--){
 		if(invert){
 			if (num[i] == '1') rnum[i] = '0';
 			else rnum[i] = '1';
@@ -289,7 +289,7 @@ string towsComplement(string num){
 	return rnum;
 }
 
-string dec2bin(int64_t dec, uint8_t bit_len){
+string dec2bin(int64_t dec, uint16_t bit_len){
 	string bin = std::bitset<64>(dec).to_string(); 
     bin = bin.substr(64-bit_len, bit_len);	
 	return bin;
@@ -305,10 +305,10 @@ int64_t bin2dec(string bin, bool s){
 }
 
 string hex2bin(string hex_){
-	int len = hex_.length();
+	uint16_t len = hex_.length();
 	string bin("");
 	
-	for (int i = 0; i < len; i++){
+	for (int64_t i = 0; i < len; i++){
 		char H = hex_.at(i);
 		string B;
 		if(H == '0') B = "0000";
@@ -333,12 +333,12 @@ string hex2bin(string hex_){
 }
 
 string bin2hex(string bin){
-	int len = bin.length();
+	uint16_t len = bin.length();
 	bin.insert(0, 4-len%4, '0');
 	len = bin.length();
 	string hex_("");
 	
-	for (int i = 0; i < len; i+=4){
+	for (int64_t i = 0; i < len; i+=4){
 		string B = bin.substr(i, 4);
 		string H;
 		if(B == "0000") H = "0";
@@ -360,6 +360,20 @@ string bin2hex(string bin){
 		hex_ = hex_ + H;
 	}
 	return hex_;
+}
+
+string formatGCOutputMask(uint16_t garbler_share, uint16_t evaluator_share, bool garbler_left){
+	string binOutputMask("");
+	if(garbler_left){
+		binOutputMask.insert(0, evaluator_share, '0');
+		binOutputMask.insert(0, garbler_share, '1');
+	}
+	else{
+		binOutputMask.insert(0, garbler_share, '1');
+		binOutputMask.insert(0, evaluator_share, '0');
+	}
+	string OutputMask = bin2hex(binOutputMask);
+	return OutputMask;
 }
 
 string ReadFileOrPassHex(string file_hex_str) {  // file address of or a hex string

@@ -8,23 +8,17 @@
 #include <pthread.h>
 #include "tri_loc/tri_loc.h"
 
-#include <boost/program_options.hpp>
-#include <boost/format.hpp>
-#include <cstdlib>
-#include <ctime>
-
-#include "crypto/OT_extension.h"
 #include "garbled_circuit/garbled_circuit.h"
-#include "scd/scd.h"
 #include "tcpip/tcpip.h"
 #include "util/util.h"
-#include "util/tinygarble_config.h"
 #include "util/log.h" 
 
 using namespace std;
 
+#if !SINGLE_THREAD
 pthread_mutex_t running_mutex = PTHREAD_MUTEX_INITIALIZER;
 volatile int running_threads  = 0;
+#endif
 
 void print_rect(rect R){	
 	cout << "<" << R.x << "," << R.y << ">\t\t";
@@ -64,7 +58,51 @@ double get_dist(int id){
 	return D[id];
 }
 
+#if PRIVACY	
+void *intersection_GC(void* I){
+	int_data *I_data;
+	I_data = (int_data*)I;
+	
+	if (I_data->id == 0){
+		cout << "core " << I_data->id << " input:\t" << I_data->input_str_0 << endl;
+		GarbleStr(INTERSECTION_SCD, "", "", "", I_data->input_str_0, 1, I_data->intersection_output_mask, 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
+	}
+	else {
+		cout << "core " << I_data->id << " input:\t" << I_data->input_str_0 << endl;
+		EvaluateStr(INTERSECTION_SCD, "", "", "", I_data->input_str_0, 1, I_data->intersection_output_mask, 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
+	}
+	
+	pthread_mutex_lock(&running_mutex);
+		running_threads--;
+	pthread_mutex_unlock(&running_mutex);
+	
+	return 0;
+}
 
+void *inside_GC(void* I){
+	int_data *I_data;
+	I_data = (int_data*)I;
+	string in_range_dummy;
+	
+	if (I_data->id == 0){
+		cout << "core " << I_data->id << " input:\t" << I_data->input_str_1 << endl;
+		GarbleStr(INSIDE_SCD, "", "", "", I_data->input_str_1, 1, "1", 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
+	}
+	else {
+		cout << "core " << I_data->id << " input:\t" << I_data->input_str_0 << endl;
+		EvaluateStr(INSIDE_SCD, "", "", "", I_data->input_str_0, 1, "1", 0, (OutputMode)0, 0, 0, &in_range_dummy, I_data->h_connfd);
+	}
+	
+	pthread_mutex_lock(&running_mutex);
+		running_threads--;
+	pthread_mutex_unlock(&running_mutex);
+	
+	return 0;
+}
+#else
 vector <rect> intersection (rect B, double rB, rect C, double rC){
 	
 	vector <rect> E(2);
@@ -99,6 +137,7 @@ bool inside (rect D, rect A, double rA){
 	
 	return in;
 }
+#endif
 
 int lost_car(vector<int> &port){
 	
@@ -150,10 +189,6 @@ int lost_car(vector<int> &port){
 	
 	print_rect(Q);	
 	
-/* 	uint64_t output = (((uint8_t)Q.x) << BIT_LEN) | (((uint8_t)Q.y));
-	string output_str_int = to_string_hex(output, ceil((2*BIT_LEN)/4));
-	cout << output_str_int << endl; */
-	
 	for (id = 0; id < 3; id++)
 		ServerClose(connfd[id]);
 	
@@ -164,7 +199,7 @@ int lost_car(vector<int> &port){
 	
 }
 
-int helping_car(vector<int> &port, bool PRV){
+int helping_car(vector<int> &port){
 	
 	string server_ip = "127.0.0.1";
 	int i;
@@ -230,18 +265,19 @@ int helping_car(vector<int> &port, bool PRV){
 
 #if PRIVACY	
 	vector<uint64_t> input(3);
-	vector<uint8_t> input_len(3);
+	vector<uint16_t> input_bit_len(3);
 	input[0] = R[0].x;
 	input[1] = R[0].y;
 	input[2] = D[0];
-	input_len[0] = BIT_LEN;
-	input_len[1] = BIT_LEN;
-	input_len[2] = BIT_LEN+1;
-	string input_str = formatGCInputString(input, input_len);
+	input_bit_len[0] = BIT_LEN;
+	input_bit_len[1] = BIT_LEN;
+	input_bit_len[2] = BIT_LEN+1;
+	string input_str = formatGCInputString(input, input_bit_len);
 	cout << input_str << endl;	
 	
 	vector <string> output_str_int(2);
 	string in_range, in_range_dummy;
+	string intersection_output_mask = formatGCOutputMask(7*BIT_LEN+17, 7*BIT_LEN+17, true);
 #endif	
 
 #if SINGLE_THREAD		
@@ -249,7 +285,7 @@ int helping_car(vector<int> &port, bool PRV){
 		if (op[i] == 0){// initiate computation of one pair of intersections
 #if PRIVACY				
 			cout << "Garbler input: " << input_str << endl;
-			CHECK(GarbleStr(INTERSECTION_SCD, "", "", "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, (OutputMode)0, 0, 0, &output_str_int[0], h_connfd[0]));
+			CHECK(GarbleStr(INTERSECTION_SCD, "", "", "", input_str, 1, intersection_output_mask, 0, (OutputMode)0, 0, 0, &output_str_int[0], h_connfd[0]));
 			cout << "Garbler output: " << output_str_int[0] << endl;
 #else				
 			SendData(h_connfd[0], &(R[0].x), sizeof(double));
@@ -262,7 +298,7 @@ int helping_car(vector<int> &port, bool PRV){
 		else if (op[i] == 1){ // compute intersections		
 #if PRIVACY				
 			cout << "Evaluator input: " << input_str << endl;
-			CHECK(EvaluateStr(INTERSECTION_SCD, "", "", "", input_str, 1, INTERSECTION_OUTPUT_MASK, 0, (OutputMode)0, 0, 0, &output_str_int[1], h_connfd[1]));	
+			CHECK(EvaluateStr(INTERSECTION_SCD, "", "", "", input_str, 1, intersection_output_mask, 0, (OutputMode)0, 0, 0, &output_str_int[1], h_connfd[1]));	
 			cout << "Evaluator output: " << output_str_int[1] << endl;
 #else	
 			RecvData(h_connfd[1], &(R[1].x), sizeof(double));
@@ -310,15 +346,16 @@ int helping_car(vector<int> &port, bool PRV){
 
 	for (i = 0; i < 2; i++){
 		I_data[i].id = i;
-		I_data[i].input_str = input_str;
+		I_data[i].input_str_0 = input_str;
 		I_data[i].h_connfd = h_connfd[i];
+		I_data[i].intersection_output_mask = intersection_output_mask;
 	}
 	
 	for (i = 0; i < 2; i++){
 		pthread_mutex_lock(&running_mutex);
 		running_threads++;
 		pthread_mutex_unlock(&running_mutex);
-		pthread_create(&threads[i], NULL, int_GC, (void *)&I_data[i]);
+		pthread_create(&threads[i], NULL, intersection_GC, (void *)&I_data[i]);
 	}
 	
 	while (running_threads > 0);	
@@ -328,14 +365,13 @@ int helping_car(vector<int> &port, bool PRV){
 	
 	for (i = 0; i < 2; i++){
 		I_data[i].input_str_1 = I_data[1].output_str;
-		//I_data[i].h_connfd = h_connfd[1-i];
 	}
 	
 	for (i = 0; i < 2; i++){
 		pthread_mutex_lock(&running_mutex);
 		running_threads++;
 		pthread_mutex_unlock(&running_mutex);
-		pthread_create(&threads[i], NULL, rng_GC, (void *)&I_data[i]);
+		pthread_create(&threads[i], NULL, inside_GC, (void *)&I_data[i]);
 	}
 	
 	while (running_threads > 0);	
@@ -345,15 +381,15 @@ int helping_car(vector<int> &port, bool PRV){
 #endif
 
 #if PRIVACY
-	vector<int> offset(2); //offset from right
+	vector<uint16_t> offset(2); //offset from right
 	offset[0] = 7*BIT_LEN+17;
 	offset[1] = 0;
 	vector<int64_t> output(2);
-	vector<int> olen(2);
-	olen[0] = 4*BIT_LEN+10;
-	olen[1] = 3*BIT_LEN+7;
+	vector<uint16_t> ourput_bit_len(2);
+	ourput_bit_len[0] = 4*BIT_LEN+10;
+	ourput_bit_len[1] = 3*BIT_LEN+7;
 	for (i = 0; i < 2; i++){
-		parseGCInputString(output, output_str_int[i], olen, offset[i]);
+		parseGCOutputString(output, output_str_int[i], ourput_bit_len, offset[i]);
 		M[i].x = output[0];
 		M[i].y = output[1];
 	}
@@ -416,44 +452,4 @@ int helping_car(vector<int> &port, bool PRV){
 	ClientClose(h_connfd[1]);
 	
 	return 0;
-}
-
-void *int_GC(void* I){
-	int_data *I_data;
-	I_data = (int_data*)I;
-	
-	if (I_data->id == 0){
-		cout << "core " << I_data->id << " input:\t" << I_data->input_str << endl;
-		GarbleStr(INTERSECTION_SCD, "", "", "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
-		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
-	}
-	else {
-		cout << "core " << I_data->id << " input:\t" << I_data->input_str << endl;
-		EvaluateStr(INTERSECTION_SCD, "", "", "", I_data->input_str, 1, INTERSECTION_OUTPUT_MASK, 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
-		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
-	}
-	
-	pthread_mutex_lock(&running_mutex);
-		running_threads--;
-	pthread_mutex_unlock(&running_mutex);
-}
-
-void *rng_GC(void* I){
-	int_data *I_data;
-	I_data = (int_data*)I;
-	string in_range_dummy;
-	
-	if (I_data->id == 0){
-		cout << "core " << I_data->id << " input:\t" << I_data->input_str_1 << endl;
-		GarbleStr(INSIDE_SCD, "", "", "", I_data->input_str_1, 1, "1", 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
-		cout << "core " << I_data->id << " output:\t" << I_data->output_str << endl;
-	}
-	else {
-		cout << "core " << I_data->id << " input:\t" << I_data->input_str << endl;
-		EvaluateStr(INSIDE_SCD, "", "", "", I_data->input_str, 1, "1", 0, (OutputMode)0, 0, 0, &in_range_dummy, I_data->h_connfd);
-	}
-	
-	pthread_mutex_lock(&running_mutex);
-		running_threads--;
-	pthread_mutex_unlock(&running_mutex);
 }

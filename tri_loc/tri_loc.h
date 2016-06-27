@@ -7,7 +7,6 @@
 #define SINGLE_THREAD 0
 #define PRIVACY 1
 #define BIT_LEN 8
-#define INTERSECTION_OUTPUT_MASK "3FFFFFFFFFFFFFFFFFE000000000000000000"  // (7*BIT_LEN+17 '1's)||(7*BIT_LEN+17 '0's) 
 	
 #define INTERSECTION_SCD "../../../TriLoc/Netlist/syn/intersections.scd"
 #define INSIDE_SCD "../../../TriLoc/Netlist/syn/inside.scd"
@@ -20,7 +19,7 @@ typedef struct rect{
 
 typedef struct int_data{
 	int id;
-	string input_str, input_str_1, output_str;
+	string input_str_0, input_str_1, output_str, intersection_output_mask;
 	int h_connfd;	
 }int_data;
 
@@ -30,13 +29,15 @@ void set_rect(rect&, rect);
 
 rect get_loc(int);
 double get_dist(int);
+#if PRIVACY	
+void *intersection_GC(void*);
+void *inside_GC(void*);
+#else
 vector <rect> intersection (rect, double, rect, double);
 bool inside (rect, rect, double);
-void *int_GC(void*);
-void *rng_GC(void*);
-
+#endif
 int lost_car(vector<int>&);
-int helping_car(vector<int>&, bool);
+int helping_car(vector<int>&);
 
 #endif
 

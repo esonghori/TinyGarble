@@ -42,13 +42,14 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                        uint64_t clock_cycles, OutputMode output_mode,
                        string* output_str);
 					   
-string formatGCInputString(vector<uint64_t>, vector<uint8_t>);
-void parseGCInputString(vector<int64_t> &, string, vector<int>, int);
+string formatGCInputString(vector<uint64_t>, vector<uint16_t>);
+void parseGCOutputString(vector<int64_t> &, string, vector<uint16_t>, uint16_t);
 string towsComplement(string);
-string dec2bin(int64_t, uint8_t);
+string dec2bin(int64_t, uint16_t);
 int64_t bin2dec(string, bool);
 string hex2bin(string);
 string bin2hex(string);
+string formatGCOutputMask(uint16_t , uint16_t , bool );
 
 string ReadFileOrPassHex(string file_hex_str);
 bool icompare(std::string const& a, std::string const& b);
