@@ -260,7 +260,7 @@ string formatGCInputString(vector<uint64_t> input, vector<uint16_t> bit_len){
 	string bin_output_str = hex2bin(output_str);
 	uint8_t no_of_outputs = output.size();
 	uint16_t len = offset;
-	int64_t i;
+	uint64_t i;
 	for (i = 0; i < no_of_outputs; i++){
 		len += bit_len[i];
 	}
@@ -308,7 +308,7 @@ string hex2bin(string hex_){
 	uint16_t len = hex_.length();
 	string bin("");
 	
-	for (int64_t i = 0; i < len; i++){
+	for (uint64_t i = 0; i < len; i++){
 		char H = hex_.at(i);
 		string B;
 		if(H == '0') B = "0000";
@@ -338,7 +338,7 @@ string bin2hex(string bin){
 	len = bin.length();
 	string hex_("");
 	
-	for (int64_t i = 0; i < len; i+=4){
+	for (uint64_t i = 0; i < len; i+=4){
 		string B = bin.substr(i, 4);
 		string H;
 		if(B == "0000") H = "0";
