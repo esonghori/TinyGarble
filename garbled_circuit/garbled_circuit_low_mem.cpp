@@ -1094,19 +1094,15 @@ int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
     if (output_vals[i] == 0) {
       BN_clear_bit(output_bn, output_bit_offset + i);
     } else if (output_vals[i] == 1) {
-      if (cid * garbled_circuit.output_size + i
-          < (uint64_t) BN_num_bits(output_mask_bn)
-          && BN_is_bit_set(output_mask_bn,
-                           cid * garbled_circuit.output_size + i) == 1) {
+      if (i < (uint64_t) BN_num_bits(output_mask_bn) && 
+	  BN_is_bit_set(output_mask_bn, i) == 1) {
         BN_set_bit(output_bn, output_bit_offset + i);
       }
     } else {
       short garble_output_type = get_LSB(output_labels[(i) * 2 + 0]);
       short eval_output_type;
-      if (cid * garbled_circuit.output_size + i
-          >= (uint64_t) BN_num_bits(output_mask_bn)
-          || BN_is_bit_set(output_mask_bn,
-                           cid * garbled_circuit.output_size + i) == 0) {
+      if (i >= (uint64_t) BN_num_bits(output_mask_bn)
+          || BN_is_bit_set(output_mask_bn, i) == 0) {
         CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
         BN_clear_bit(output_bn, output_bit_offset + i);
       } else {
@@ -1145,19 +1141,15 @@ int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
     if (output_vals[i] == 0) {
       BN_clear_bit(output_bn, output_bit_offset + i);
     } else if (output_vals[i] == 1) {
-      if (cid * garbled_circuit.output_size + i
-          >= (uint64_t) BN_num_bits(output_mask_bn)
-          && BN_is_bit_set(output_mask_bn,
-                           cid * garbled_circuit.output_size + i) == 0) {
+      if (i >= (uint64_t) BN_num_bits(output_mask_bn) &&
+	  BN_is_bit_set(output_mask_bn, i) == 0) {
         BN_set_bit(output_bn, output_bit_offset + i);
       }
     } else {
       short garble_output_type;
       short eval_output_type = get_LSB(output_labels[i]);
-      if (cid * garbled_circuit.output_size + i
-          >= (uint64_t) BN_num_bits(output_mask_bn)
-          || BN_is_bit_set(output_mask_bn,
-                           cid * garbled_circuit.output_size + i) == 0) {
+      if (i >= (uint64_t) BN_num_bits(output_mask_bn)
+          || BN_is_bit_set(output_mask_bn, i) == 0) {
         CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
         if (eval_output_type != garble_output_type) {
           BN_set_bit(output_bn, output_bit_offset + i);

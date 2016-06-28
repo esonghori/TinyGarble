@@ -225,15 +225,12 @@ uint8_t getSBoxValue(uint8_t num){
 	SubByte = s.byte;
 	return SubByte;
 }
-
-#else
-
+#else //COMPUTESBOX
 static uint8_t getSBoxValue(uint8_t num)
 {
   return sbox[num];
 }
-
-#endif
+#endif //COMPUTESBOX
 
 // This function produces Nb(Nr+1) round keys. The round keys are used in each round to decrypt the states. 
 inline static void KeyExpansion(void)

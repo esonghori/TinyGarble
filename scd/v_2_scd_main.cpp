@@ -33,7 +33,7 @@ using std::endl;
 int main(int argc, char** argv) {
   LogInitial(argc, argv);
 
-  string input_netlist_file;
+  string input_netlist_file, brist_input_netlist_file;
   string output_scd_file;
 
   boost::format fmter(
@@ -45,6 +45,9 @@ int main(int argc, char** argv) {
   ("help,h", "produce help message.")  //
   ("netlist,i", po::value<string>(&input_netlist_file),
    "Input netlist (verilog .v) file address.")  //
+  ("brist_netlist,b", po::value<string>(&brist_input_netlist_file),
+   "Input netlist (.txt) file address (in the format given by "
+   "www.cs.bris.ac.uk/Research/CryptographySecurity/MPC/).")  //
   ("scd,o", po::value<string>(&output_scd_file),
    "Output simple circuit description (scd) file address.");
 
@@ -64,22 +67,33 @@ int main(int argc, char** argv) {
     return FAILURE;
   }
 
-  if (vm.count("netlist") == 0 || vm.count("scd") == 0) {
-    std::cerr
-        << "ERROR: "
-        << "Both input netlist(-i) and output scd(-o) options must be indicated."
-        << endl;
+  if (output_scd_file.empty()) {
+    std::cerr << "ERROR: output scd (-o) flag must be indicated." << endl;
     std::cout << desc << endl;
-    return SUCCESS;
+    return FAILURE;
   }
 
   string out_mapping_filename = output_scd_file + ".map";
 
-  LOG(INFO) << "V2SCD " << input_netlist_file << " to " << output_scd_file
-            << endl;
-  if (Verilog2SCD(input_netlist_file, out_mapping_filename,
-                  output_scd_file) == FAILURE) {
-    LOG(ERROR) << "Verilog to SCD failed." << endl;
+  if (!input_netlist_file.empty()) {
+    LOG(INFO) << "V2SCD " << input_netlist_file << " to " << output_scd_file
+              << endl;
+    if (Verilog2SCD(input_netlist_file, out_mapping_filename,
+                    output_scd_file) == FAILURE) {
+      LOG(ERROR) << "Verilog to SCD failed." << endl;
+      return FAILURE;
+    }
+  } else if (!brist_input_netlist_file.empty()) {
+    LOG(INFO) << "Brist2SCD " << brist_input_netlist_file << " to "
+              << output_scd_file << endl;
+    if (Bris2SCD(brist_input_netlist_file, out_mapping_filename,
+                 output_scd_file) == FAILURE) {
+      LOG(ERROR) << "Brist netlist to SCD failed." << endl;
+      return FAILURE;
+    }
+  } else {
+    std::cerr << "ERROR: input netlist flags must be indicated." << endl;
+    std::cout << desc << endl;
     return FAILURE;
   }
 
