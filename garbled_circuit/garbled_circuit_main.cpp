@@ -189,7 +189,8 @@ int main(int argc, char* argv[]) {
    "which degrades the performance.")  //
   ("output_mask", po::value<string>(&output_mask)->default_value("0"),
    "Hexadecimal mask for output. 0 indicates that output belongs to Bob, "
-   "and 1 belongs to Alice.")  //
+   "and 1 belongs to Alice. It has the same length of the output for a "
+   "single clock in case of sequential circuits.")  //
   ("terminate_period,t",
    po::value<int64_t>(&terminate_period)->default_value(0),
    "Terminate signal reveal period: "
