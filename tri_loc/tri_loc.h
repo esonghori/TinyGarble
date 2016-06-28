@@ -8,8 +8,8 @@
 #define PRIVACY 1
 #define BIT_LEN 8
 	
-#define INTERSECTION_SCD "../../../TriLoc/Netlist/syn/intersections.scd"
-#define INSIDE_SCD "../../../TriLoc/Netlist/syn/inside.scd"
+#define INTERSECTION_SCD "../../../TriLoc/Netlist/syn/intersections_seq_8.scd"
+#define INSIDE_SCD "../../../TriLoc/Netlist/syn/inside_comb_8.scd"
 
 using namespace std;
 
