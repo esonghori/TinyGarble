@@ -65,12 +65,12 @@ void *intersection_GC(void* I){
 	
 	if (I_data->id == 0){
 		cout << "core " << I_data->id << " (Garbler) input:\t" << I_data->input_str_0 << endl;
-		GarbleStr(INTERSECTION_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+15, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		GarbleStr(INTERSECTION_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+14, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
 		cout << "core " << I_data->id << " (Garbler) output:\t" << I_data->output_str << endl;
 	}
 	else {
 		cout << "core " << I_data->id << "(Evaluator) input:\t\t" << I_data->input_str_0 << endl;
-		EvaluateStr(INTERSECTION_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+15, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
+		EvaluateStr(INTERSECTION_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+14, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
 		cout << "core " << I_data->id << "(Evaluator) output:\t" << I_data->output_str << endl;
 	}
 	
@@ -285,7 +285,7 @@ int helping_car(vector<int> &port){
 		if (op[i] == 0){// initiate computation of one pair of intersections
 #if PRIVACY				
 			cout << "Garbler input: " << input_str << endl;
-			CHECK(GarbleStr(INTERSECTION_SCD, "", "", input_str, "", 3*BIT_LEN+15, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[0], h_connfd[0]));
+			CHECK(GarbleStr(INTERSECTION_SCD, "", "", input_str, "", 3*BIT_LEN+14, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[0], h_connfd[0]));
 			cout << "Garbler output: " << output_str_int[0] << endl;
 #else				
 			SendData(h_connfd[0], &(R[0].x), sizeof(double));
@@ -298,7 +298,7 @@ int helping_car(vector<int> &port){
 		else if (op[i] == 1){ // compute intersections		
 #if PRIVACY				
 			cout << "Evaluator input: " << input_str << endl;
-			CHECK(EvaluateStr(INTERSECTION_SCD, "", "", input_str, "", 3*BIT_LEN+15, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[1], h_connfd[1]));	
+			CHECK(EvaluateStr(INTERSECTION_SCD, "", "", input_str, "", 3*BIT_LEN+14, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[1], h_connfd[1]));	
 			cout << "Evaluator output: " << output_str_int[1] << endl;
 #else	
 			RecvData(h_connfd[1], &(R[1].x), sizeof(double));
