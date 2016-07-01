@@ -65,12 +65,20 @@ void *intersection_GC(void* I){
 	
 	if (I_data->id == 0){
 		cout << "core " << I_data->id << " (Garbler) input:\t" << I_data->input_str_0 << endl;
-		GarbleStr(INTERSECTION_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+13, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
+#if SEQUENTIAL
+		GarbleStr(INTERSECTION_SEQ_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+13, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
+#else	
+		GarbleStr(INTERSECTION_COMB_SCD, "", "", "", I_data->input_str_0, 1, I_data->intersection_output_mask, 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+#endif
 		cout << "core " << I_data->id << " (Garbler) output:\t" << I_data->output_str << endl;
 	}
 	else {
 		cout << "core " << I_data->id << "(Evaluator) input:\t\t" << I_data->input_str_0 << endl;
-		EvaluateStr(INTERSECTION_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+13, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
+#if SEQUENTIAL
+		EvaluateStr(INTERSECTION_SEQ_SCD, "", "", I_data->input_str_0, "", 3*BIT_LEN+13, I_data->intersection_output_mask, 0, (OutputMode)2, 0, 0, &(I_data->output_str), I_data->h_connfd);
+#else	
+		EvaluateStr(INTERSECTION_COMB_SCD, "", "", "", I_data->input_str_0, 1, I_data->intersection_output_mask, 0, (OutputMode)0, 0, 0, &(I_data->output_str), I_data->h_connfd);
+#endif
 		cout << "core " << I_data->id << "(Evaluator) output:\t" << I_data->output_str << endl;
 	}
 	
@@ -187,13 +195,14 @@ int lost_car(vector<int> &port){
 	Q.x = (Q.x - M.x)/3;
 	Q.y = (Q.y - M.y)/3;
 	
+	cout << "\nLocation of lost car:";
 	print_rect(Q);	
 	
 	for (id = 0; id < 3; id++)
 		ServerClose(connfd[id]);
 	
 	delta_time = RDTSC - delta_time;	
-	cout << "total time(cc): " << delta_time << " second: " << (double)delta_time/(3.4e9) << endl; 
+	cout << "total time(cc): " << delta_time << " second: " << (double)delta_time/(3.4e9) << endl << endl; 
 	
 	return 0;
 	
@@ -285,7 +294,11 @@ int helping_car(vector<int> &port){
 		if (op[i] == 0){// initiate computation of one pair of intersections
 #if PRIVACY				
 			cout << "Garbler input: " << input_str << endl;
-			CHECK(GarbleStr(INTERSECTION_SCD, "", "", input_str, "", 3*BIT_LEN+13, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[0], h_connfd[0]));
+#if SEQUENTIAL
+			CHECK(GarbleStr(INTERSECTION_SEQ_SCD, "", "", input_str, "", 3*BIT_LEN+13, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[0], h_connfd[0]));
+#else
+			CHECK(GarbleStr(INTERSECTION_COMB_SCD, "", "", "", input_str, 1, intersection_output_mask, 0, (OutputMode)0, 0, 0, &output_str_int[0], h_connfd[0]));
+#endif
 			cout << "Garbler output: " << output_str_int[0] << endl;
 #else				
 			SendData(h_connfd[0], &(R[0].x), sizeof(double));
@@ -298,7 +311,11 @@ int helping_car(vector<int> &port){
 		else if (op[i] == 1){ // compute intersections		
 #if PRIVACY				
 			cout << "Evaluator input: " << input_str << endl;
-			CHECK(EvaluateStr(INTERSECTION_SCD, "", "", input_str, "", 3*BIT_LEN+13, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[1], h_connfd[1]));	
+#if SEQUENTIAL
+			CHECK(EvaluateStr(INTERSECTION_SEQ_SCD, "", "", input_str, "", 3*BIT_LEN+13, intersection_output_mask, 0, (OutputMode)2, 0, 0, &output_str_int[1], h_connfd[1]));
+#else	
+			CHECK(EvaluateStr(INTERSECTION_COMB_SCD, "", "", "", input_str, 1, intersection_output_mask, 0, (OutputMode)0, 0, 0, &output_str_int[1], h_connfd[1]));
+#endif	
 			cout << "Evaluator output: " << output_str_int[1] << endl;
 #else	
 			RecvData(h_connfd[1], &(R[1].x), sizeof(double));
@@ -406,9 +423,14 @@ int helping_car(vector<int> &port){
 		}
 	}
 	
+	cout << "\nIntersection computed as garbler: ";
 	print_rect(M[0]);
+	if (!in[0]) cout << "Intersection is in range" << endl;
+	else cout << "Intersection is not in range" << endl;
+	cout << "Intersection computed as evaluator: ";
 	print_rect(M[1]);
-	cout << !in[0] << " " << in[1] << endl;
+	if (in[1]) cout << "Intersection is in range" << endl << endl;
+	else cout << "Intersection is not in range" << endl << endl;
 		
 	//secure sum protocol
 	

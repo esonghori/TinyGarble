@@ -6,9 +6,11 @@
 
 #define SINGLE_THREAD 0
 #define PRIVACY 1
+#define SEQUENTIAL 1
 #define BIT_LEN 8
 	
-#define INTERSECTION_SCD "../../../TriLoc/Netlist/syn/intersections_seq_8.scd"
+#define INTERSECTION_SEQ_SCD "../../../TriLoc/Netlist/syn/intersections_seq_8.scd"	
+#define INTERSECTION_COMB_SCD "../../../TriLoc/Netlist/syn/intersections_comb_8.scd"
 #define INSIDE_SCD "../../../TriLoc/Netlist/syn/inside_comb_8.scd"
 
 using namespace std;
