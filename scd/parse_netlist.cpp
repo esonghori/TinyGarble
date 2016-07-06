@@ -17,6 +17,7 @@
 
 #include "scd/parse_netlist.h"
 
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 #include <fstream>
@@ -78,23 +79,11 @@ int ParseNetlist(const string &filename,
   bool is_left_assignmnet = false;
   bool is_inport = false;
   bool is_outport = false;
-  bool store_a = false;
-  bool store_b = false;
-  bool store_z = false;
-  bool store_d = false;
-  bool store_i = false;
-  bool store_q = false;
-  bool store_in0 = false;
-  bool store_in1 = false;
-  bool store_cin = false;
-  bool store_sel = false;
-  bool store_cout = false;
-  bool store_sum = false;
-  bool store_f = false;
   bool endoffile = false;
 
-  string A = "", B = "", D = "", I = "", IN0 = "", IN1 = "", SEL = "", CIN = "",
-      COUT = "", SUM = "", Z = "", Q = "", F = "";
+  map<string, string> port;
+  string port_key;
+  string port_value;
 
   while (!endoffile) {
     CHECK_EXPR_MSG(fin.good(), "File is broken, no endmodule found.");
@@ -110,142 +99,154 @@ int ParseNetlist(const string &filename,
           gate_type == NORGATE || gate_type == NORNGATE ||
           gate_type == XORGATE || gate_type == XNORGATE) {
 
-        CHECK_EXPR_MSG(A!="", "A is missing: " + line);
-        CHECK_EXPR_MSG(B!="", "B is missing: " + line);
-        CHECK_EXPR_MSG(Z!="", "Z is missing: " + line);
+        CHECK_EXPR_MSG(port.count("A") > 0 && port["A"]!="",
+            "A is missing: " + line);
+        CHECK_EXPR_MSG(port.count("B") > 0 && port["B"]!="",
+            "B is missing: " + line);
+        CHECK_EXPR_MSG(port.count("Z") > 0 && port["Z"]!="",
+            "Z is missing: " + line);
 
         ReadGateString g;
         g.type = gate_type;
-        g.input[0] = A;
-        g.input[1] = B;
-        g.output = Z;
+        g.input[0] = port["A"];
+        g.input[1] = port["B"];
+        g.output = port["Z"];
         read_circuit_string->gate_list_string.push_back(g);
-        A = "";
-        B = "";
-        Z = "";
+        port.clear();
         gate_type = INVALGATE;
       } else if(gate_type == NOTGATE) {
-        CHECK_EXPR_MSG(A!="", "A is missing: " + line);
-        CHECK_EXPR_MSG(Z!="", "Z is missing: " + line);
+        CHECK_EXPR_MSG(port.count("A") > 0 && port["A"]!="",
+            "A is missing: " + line);
+        CHECK_EXPR_MSG(port.count("Z") > 0 && port["Z"]!="",
+            "Z is missing: " + line);;
 
         ReadGateString g;
         g.type = gate_type;
-        g.input[0] = A;
+        g.input[0] = port["A"];
         g.input[1] = "";
-        g.output = Z;
+        g.output = port["Z"];
         read_circuit_string->gate_list_string.push_back(g);
-        A = "";
-        Z = "";
+        port.clear();
         gate_type = INVALGATE;
       } else if(gate_type == DFFGATE) {
-        CHECK_EXPR_MSG(D!="", "D is missing: " + line);
-        CHECK_EXPR_MSG(I!="", "I is missing: " + line);
-        CHECK_EXPR_MSG(Q!="", "Q is missing: " + line);
+        CHECK_EXPR_MSG(port.count("D") > 0 && port["D"]!="",
+            "D is missing: " + line);
+        CHECK_EXPR_MSG(port.count("I") > 0 && port["I"]!="",
+            "I is missing: " + line);
+        CHECK_EXPR_MSG(port.count("Q") > 0 && port["Q"]!="",
+            "Q is missing: " + line);
 
         ReadGateString g;
         g.type = gate_type;
-        g.input[0] = D;
-        g.input[1] = I;
-        g.output = Q;
+        g.input[0] = port["D"];
+        g.input[1] = port["I"];
+        g.output = port["Q"];
         read_circuit_string->dff_list_string.push_back(g);
-        D = "";
-        I = "";
-        Q = "";
+        port.clear();
         gate_type = INVALGATE;
       } else if (gate_type == MUXGATE) {
 
-        CHECK_EXPR_MSG(IN0!="", "IN0 is missing: " + line);
-        CHECK_EXPR_MSG(IN1!="", "IN1 is missing: " + line);
-        CHECK_EXPR_MSG(SEL!="", "SEL is missing: " + line);
-        CHECK_EXPR_MSG(F!="", "F is missing: " + line);
+        CHECK_EXPR_MSG(port.count("IN0") > 0 && port["IN0"]!="",
+            "IN0 is missing: " + line);
+        CHECK_EXPR_MSG(port.count("IN1") > 0 && port["IN1"]!="",
+            "IN1 is missing: " + line);
+        CHECK_EXPR_MSG(port.count("SEL") > 0 && port["SEL"]!="",
+            "SEL is missing: " + line);
+        CHECK_EXPR_MSG(port.count("F") > 0 && port["F"]!="",
+            "F is missing: " + line);
 
         ReadGateString g1, g2, g3;
 
         uint64_t gate_id = read_circuit_string->gate_list_string.size();
 
         g1.type = XORGATE;
-        g1.input[0] = IN0;
-        g1.input[1] = IN1;
+        g1.input[0] = port["IN0"];
+        g1.input[1] = port["IN1"];
         g1.output = "MUX_MID_1_" + std::to_string(gate_id);
 
         g2.type = ANDGATE;
-        g2.input[0] = SEL;
+        g2.input[0] = port["SEL"];
         g2.input[1] = g1.output;
         g2.output = "MUX_MID_2_" + std::to_string(gate_id);
 
         g3.type = XORGATE;
-        g3.input[0] = IN0;
+        g3.input[0] = port["IN0"];
         g3.input[1] = g2.output;
-        g3.output = F;
+        g3.output = port["F"];
 
         read_circuit_string->gate_list_string.push_back(g1);
         read_circuit_string->gate_list_string.push_back(g2);
         read_circuit_string->gate_list_string.push_back(g3);
 
-        IN0 = "";
-        IN1 = "";
-        SEL = "";
-        F = "";
+        port.clear();
         gate_type = INVALGATE;
 
       } else if (gate_type == HADDERGATE) {
-        CHECK_EXPR_MSG(IN0!="", "IN0 is missing: " + line);
-        CHECK_EXPR_MSG(IN1!="", "IN1 is missing: " + line);
-        CHECK_EXPR_MSG(SUM!="" || COUT !="", "SUM and COUT are missing: " + line);
 
-        if(SUM != "") {
+        CHECK_EXPR_MSG(port.count("IN0") > 0 && port["IN0"]!="",
+            "IN0 is missing: " + line);
+        CHECK_EXPR_MSG(port.count("IN1") > 0 && port["IN1"]!="",
+            "IN1 is missing: " + line);
+        CHECK_EXPR_MSG((port.count("SUM") > 0 && port["SUM"]!="") ||
+            (port.count("COUT") > 0 && port["COUT"]!=""),
+            "SUM or COUT is missing: " + line);
+
+        if(port.count("SUM") > 0 ) {
           ReadGateString g;
           g.type = XORGATE;
-          g.input[0] = IN0;
-          g.input[1] = IN1;
-          g.output = SUM;
+          g.input[0] = port["IN0"];
+          g.input[1] = port["IN1"];
+          g.output = port["SUM"];
           read_circuit_string->gate_list_string.push_back(g);
         }
-        if(COUT != "") {
+        if(port.count("COUT") > 0) {
           ReadGateString g;
           g.type = ANDGATE;
-          g.input[0] = IN0;
-          g.input[1] = IN1;
-          g.output = COUT;
+          g.input[0] = port["IN0"];
+          g.input[1] = port["IN1"];
+          g.output = port["COUT"];
           read_circuit_string->gate_list_string.push_back(g);
         }
 
-        IN0 = "";
-        IN1 = "";
-        SUM = "";
-        COUT = "";
+        port.clear();
         gate_type = INVALGATE;
       } else if (gate_type == FADDERGATE) {
-        CHECK_EXPR_MSG(IN0!="", "IN0 is missing: " + line);
-        CHECK_EXPR_MSG(IN1!="", "IN1 is missing: " + line);
-        CHECK_EXPR_MSG(CIN!="", "CIN is missing: " + line);
-        CHECK_EXPR_MSG(SUM!="" || COUT !="", "SUM and COUT are missing: " + line);
+
+        CHECK_EXPR_MSG(port.count("IN0") > 0 && port["IN0"]!="",
+            "IN0 is missing: " + line);
+        CHECK_EXPR_MSG(port.count("IN1") > 0 && port["IN1"]!="",
+            "IN1 is missing: " + line);
+        CHECK_EXPR_MSG(port.count("CIN") > 0 && port["CIN"]!="",
+            "CIN is missing: " + line);
+        CHECK_EXPR_MSG((port.count("SUM") > 0 && port["SUM"]!="") ||
+            (port.count("COUT") > 0 && port["COUT"]!=""),
+            "SUM or COUT is missing: " + line);
 
         uint64_t gate_id = read_circuit_string->gate_list_string.size();
 
         ReadGateString g1;
         g1.type = XORGATE;
-        g1.input[0] = IN0;
-        g1.input[1] = CIN;
+        g1.input[0] = port["IN0"];
+        g1.input[1] = port["CIN"];
         g1.output = "FADDER_MID_1_" + std::to_string(gate_id);
         read_circuit_string->gate_list_string.push_back(g1);
 
-        if(SUM != "") {
+        if(port.count("SUM") > 0) {
           ReadGateString g2;
 
           g2.type = XORGATE;
-          g2.input[0] = IN1;
+          g2.input[0] = port["IN1"];
           g2.input[1] = g1.output;
-          g2.output = SUM;
+          g2.output = port["SUM"];
 
           read_circuit_string->gate_list_string.push_back(g2);
         }
-        if(COUT != "") {
+        if(port.count("COUT") > 0) {
           ReadGateString g2,g3,g4;
 
           g2.type = XORGATE;
-          g2.input[0] = IN1;
-          g2.input[1] = CIN;
+          g2.input[0] = port["IN1"];
+          g2.input[1] = port["CIN"];
           g2.output = "FADDER_MID_2_" + std::to_string(gate_id);
 
           g3.type = ANDGATE;
@@ -254,19 +255,15 @@ int ParseNetlist(const string &filename,
           g3.output = "FADDER_MID_3_" + std::to_string(gate_id);
 
           g4.type = XORGATE;
-          g4.input[0] = CIN;
+          g4.input[0] = port["CIN"];
           g4.input[1] = g3.output;
-          g4.output = COUT;
+          g4.output = port["COUT"];
           read_circuit_string->gate_list_string.push_back(g2);
           read_circuit_string->gate_list_string.push_back(g3);
           read_circuit_string->gate_list_string.push_back(g4);
         }
 
-        IN0 = "";
-        IN1 = "";
-        CIN = "";
-        SUM = "";
-        COUT = "";
+        port.clear();
         gate_type = INVALGATE;
       } else {
         is_inport = 0;
@@ -372,70 +369,34 @@ int ParseNetlist(const string &filename,
     } else if(!str.compare("FADDER")) {
       gate_type = FADDERGATE;
     } else if (!str.compare(".A")) {
-      store_a = 1;
-    } else if(store_a) {
-      A = str;
-      store_a = 0;
+      port_key = "A";
     } else if (!str.compare(".B")) {
-      store_b = 1;
-    } else if(store_b) {
-      B = str;
-      store_b = 0;
+      port_key = "B";
     } else if(!str.compare(".D")) {
-      store_d = 1;
-    } else if(store_d) {
-      D = str;
-      store_d = 0;
+      port_key = "D";
     } else if(!str.compare(".I")) {
-      store_i = 1;
-    } else if(store_i) {
-      I = str;
-      store_i = 0;
+      port_key = "I";
     } else if (!str.compare(".Z")) {
-      store_z = 1;
-    } else if(store_z) {
-      Z = str;
-      store_z = 0;
+      port_key = "Z";
     } else if (!str.compare(".Q")) {
-      store_q = 1;
-    } else if(store_q) {
-      Q = str;
-      store_q = 0;
+      port_key = "Q";
     } else if (!str.compare(".IN0")) {
-      store_in0 = 1;
-    } else if(store_in0) {
-      IN0 = str;
-      store_in0 = 0;
+      port_key = "IN0";
     } else if (!str.compare(".IN1")) {
-      store_in1 = 1;
-    } else if(store_in1) {
-      IN1 = str;
-      store_in1 = 0;
+      port_key = "IN1";
     } else if (!str.compare(".CIN")) {
-      store_cin = 1;
-    } else if(store_cin) {
-      CIN = str;
-      store_cin = 0;
+      port_key = "CIN";
     } else if (!str.compare(".SEL") ) {
-      store_sel = 1;
-    } else if(store_sel) {
-      SEL = str;
-      store_sel = 0;
+      port_key = "SEL";
     } else if (!str.compare(".COUT")) {
-      store_cout = 1;
-    } else if(store_cout) {
-      COUT = str;
-      store_cout = 0;
+      port_key = "COUT";
     } else if ( !str.compare(".SUM")) {
-      store_sum = 1;
-    } else if(store_sum) {
-      SUM = str;
-      store_sum = 0;
+      port_key = "SUM";
     } else if (!str.compare(".F")) {
-      store_f = 1;
-    } else if(store_f) {
-      F = str;
-      store_f = 0;
+      port_key = "F";
+    } else if(port_key != "") {
+      port[port_key] = str;
+      port_key = "";
     }
   }
 }
