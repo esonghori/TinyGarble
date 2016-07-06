@@ -83,7 +83,6 @@ int ParseNetlist(const string &filename,
 
   map<string, string> port;
   string port_key;
-  string port_value;
 
   while (!endoffile) {
     CHECK_EXPR_MSG(fin.good(), "File is broken, no endmodule found.");
@@ -272,6 +271,7 @@ int ParseNetlist(const string &filename,
         is_left_assignmnet = false;
         is_right_assignmnet = false;
       }
+      port_key = "";
     } else if(!str.compare("endmodule")) {
       endoffile = true;
       break;
@@ -394,9 +394,19 @@ int ParseNetlist(const string &filename,
       port_key = "SUM";
     } else if (!str.compare(".F")) {
       port_key = "F";
-    } else if(port_key != "") {
-      port[port_key] = str;
+    } else if (!str.compare(".CLK")) {
       port_key = "";
+    } else if (!str.compare(".RST")) {
+      port_key = "";
+    } else if(port_key != "") {
+      // fix Synopsys 2015 bug:
+      // space after '['
+      if(str.at(0) =='[') {
+        port[port_key] += str;
+        port_key = "";
+      } else {
+        port[port_key] = str;
+      }
     }
   }
 }
