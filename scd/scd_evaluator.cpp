@@ -23,7 +23,14 @@
 #include "util/util.h"
 #include "scd/scd.h"
 
-int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
+/*--- Store internal values in csv file ---*/
+#include <boost/tokenizer.hpp>
+using boost::char_separator;
+using boost::tokenizer;
+/*--- x ---*/
+
+int EvalauatePlaintext(const string& scd_file_address, // Store internal values in csv file 
+						            const GarbledCircuit& garbled_circuit,
                        const BIGNUM* p_init, const BIGNUM* g_init,
                        const BIGNUM* e_init, const BIGNUM* p_input,
                        const BIGNUM* g_input, const BIGNUM* e_input,
@@ -37,6 +44,25 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
     *outputs = BN_new();
   }
   bn_expand(*outputs, (*clock_cycles) * garbled_circuit.output_size);
+
+/*--- Store internal values in csv file ---*/
+  string map_file_address(scd_file_address+".map");
+	  std::ifstream map_file(map_file_address);
+	  if (!map_file.is_open()) {
+	    LOG(ERROR) << "can't open " << map_file_address << endl;
+	    return FAILURE;
+	  }
+
+    string sim_file_address(scd_file_address+".csv");
+    std::ofstream sim_file(sim_file_address);
+    if (!sim_file.is_open()) {
+      LOG(ERROR) << "can't open " << sim_file_address << endl;
+      return FAILURE;
+    }	 
+
+  char_separator<char> sep(" \t");
+	string buf("_");
+  /*--- x ---*/
 
   for (uint64_t cid = 0; cid < (*clock_cycles); cid++) {  //for each clock cycle
     //dff initial value
@@ -176,14 +202,46 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
                    << *clock_cycles << "cc." << endl;
       }
     }
+
+  /*--- Store internal values in csv file ---*/
+	if (cid == 0){
+		sim_file << "cid, ";
+		while (getline(map_file, buf)){
+			tokenizer<char_separator<char>> tok(buf, sep);	
+			tokenizer<char_separator<char>>::iterator tok_it = tok.begin();
+			string wire_name(*(tok_it));
+			if(!wire_name.compare("terminate")) break;
+			sim_file << *tok_it << "\t";
+		}
+		sim_file << endl;
+		map_file.clear();
+		map_file.seekg(0, std::ios::beg);
+	}
+
+	sim_file << cid <<", ";
+	while (getline(map_file, buf)){
+		tokenizer<char_separator<char>> tok(buf, sep);	
+		tokenizer<char_separator<char>>::iterator tok_it = tok.begin();
+		string wire_name(*(tok_it));
+		if(!wire_name.compare("terminate")) break;
+		string index(*(++tok_it));
+		sim_file << wires[atoi(index.c_str())] << ", ";
+	}
+	sim_file << endl;
+
+	map_file.clear();
+	map_file.seekg(0, std::ios::beg);	
   }
+
+  map_file.close();
+  /*--- x ---*/
 
   delete[] wires;
 
   return SUCCESS;
 }
 
-int EvalauatePlaintextStr(const string& scd_file_address,
+int EvalauatePlaintextStr(const string& scd_file_address, // Store internal values in csv file 
                           const string& p_init_str, const string& g_init_str,
                           const string& e_init_str, const string& p_input_str,
                           const string& g_input_str, const string& e_input_str,
@@ -223,7 +281,8 @@ int EvalauatePlaintextStr(const string& scd_file_address,
   }
 
   BIGNUM* outputs = BN_new();
-  EvalauatePlaintext(garbled_circuit, p_init, g_init, e_init, p_input, g_input,
+  EvalauatePlaintext(scd_file_address, // Store internal values in csv file 
+                     garbled_circuit, p_init, g_init, e_init, p_input, g_input,
                      e_input, &clock_cycles, terminate_period, &outputs);
 
   OutputBN2StrHighMem(garbled_circuit, outputs, clock_cycles, output_mode,
