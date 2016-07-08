@@ -33,6 +33,9 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
   bool* wires = nullptr;
   CHECK_ALLOC(wires = new bool[garbled_circuit.get_wire_size()]);
 
+  bool* dff_latch = nullptr;
+  CHECK_ALLOC(dff_latch = new bool[garbled_circuit.dff_size]);
+
   if (*outputs == nullptr) {
     *outputs = BN_new();
   }
@@ -86,7 +89,10 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
           LOG(ERROR) << "Invalid D index: " << wire_index << endl;
           b = false;
         }
-        wires[dff_bias + i] = b;
+        dff_latch[i] = b;
+      }
+      for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+        wires[dff_bias + i] = dff_latch[i];
       }
     }
 
@@ -165,7 +171,7 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
         bool is_terminate = wires[garbled_circuit.terminate_id];
         if (is_terminate) {
           LOG(INFO) << "Terminated in " << cid + 1 << "cc out of "
-                    << *clock_cycles << "cc." << endl;
+              << *clock_cycles << "cc." << endl;
           *clock_cycles = cid + 1;
           break;
         }
@@ -173,12 +179,13 @@ int EvalauatePlaintext(const GarbledCircuit& garbled_circuit,
       //last clock cycle, not terminated
       if (cid == (*clock_cycles) - 1) {
         LOG(ERROR) << "Not enough clock cycles. Circuit is not terminated in "
-                   << *clock_cycles << "cc." << endl;
+            << *clock_cycles << "cc." << endl;
       }
     }
   }
 
   delete[] wires;
+  delete[] dff_latch;
 
   return SUCCESS;
 }

@@ -72,14 +72,11 @@ int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   }
   uint64_t ot_time = RDTSC - ot_start_time;
 
-  LOG(INFO)
-      << "Alice transfer labels time (cc) = "
-      << ot_time
+  LOG(INFO) << "Alice transfer labels time (cc) = " << ot_time
       << "\t(cc/bit) = "
       << ot_time
           / ((double) (garbled_circuit.e_init_size
-              + (*clock_cycles) * garbled_circuit.e_input_size))
-      << endl;
+              + (*clock_cycles) * garbled_circuit.e_input_size)) << endl;
 
   GarbleHighMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
                 global_key, R, clock_cycles, terminate_period, connfd,
@@ -118,14 +115,10 @@ int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                              input_labels, *clock_cycles, disable_OT, connfd));
   uint64_t ot_time = RDTSC - ot_start_time;
 
-  LOG(INFO)
-      << "Bob transfer labels time (cc) = "
-      << ot_time
-      << "\t(cc/bit) = "
+  LOG(INFO) << "Bob transfer labels time (cc) = " << ot_time << "\t(cc/bit) = "
       << ot_time
           / ((double) (garbled_circuit.e_init_size
-              + (*clock_cycles) * garbled_circuit.e_input_size))
-      << endl;
+              + (*clock_cycles) * garbled_circuit.e_input_size)) << endl;
 
   EvaluateHighMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
                   global_key, clock_cycles, terminate_period, connfd,
@@ -153,7 +146,6 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
   BlockPair *wires = nullptr;
   CHECK_ALLOC(wires = new BlockPair[garbled_circuit.get_wire_size()]);
-
   /*
    * The actual value of wire, 0,1 and unknown: -1.
    */
@@ -161,6 +153,15 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   CHECK_ALLOC(wires_val = new short[garbled_circuit.get_wire_size()]);
   for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
     wires_val[i] = SECRET;  // All wires are initialed with secret.
+  }
+
+
+  BlockPair *dff_latch = nullptr;
+  CHECK_ALLOC(dff_latch = new BlockPair[garbled_circuit.dff_size]);
+  short *dff_latch_val = nullptr;
+  CHECK_ALLOC(dff_latch_val = new short[garbled_circuit.dff_size]);
+  for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+    dff_latch_val[i] = SECRET;  // All wires are initialed with secret.
   }
 
   int *fanout = nullptr;
@@ -217,18 +218,23 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
         int64_t wire_index = garbled_circuit.D[i];
         if (wire_index == CONST_ZERO) {
-          wires_val[dff_bias + i] = 0;
+          dff_latch_val[i] = 0;
         } else if (wire_index == CONST_ONE) {
-          wires_val[dff_bias + i] = 1;
+          dff_latch_val[i] = 1;
         } else if (wire_index >= 0
             && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
-          wires[dff_bias + i].label0 = wires[wire_index].label0;
-          wires[dff_bias + i].label1 = wires[wire_index].label1;
-          wires_val[dff_bias + i] = wires_val[wire_index];
+          dff_latch[i].label0 = wires[wire_index].label0;
+          dff_latch[i].label1 = wires[wire_index].label1;
+          dff_latch_val[i] = wires_val[wire_index];
         } else {
           LOG(ERROR) << "Invalid D: " << wire_index << endl;
-          wires_val[dff_bias + i] = 0;  // Wire with invalid D values become 0.
+          dff_latch_val[i] = 0;  // Wire with invalid D values become 0.
         }
+      }
+      for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+        wires[dff_bias + i].label0 = dff_latch[i].label0;
+        wires[dff_bias + i].label1 = dff_latch[i].label1;
+        wires_val[dff_bias + i] = dff_latch_val[i];
       }
     }
     // inputs
@@ -245,8 +251,7 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
           * garbled_circuit.get_secret_input_size() + i) * 2 + 1];
       DUMP("input")
           << input_labels[(cid * garbled_circuit.get_secret_input_size() + i)
-              * 2 + 0]
-          << endl;
+              * 2 + 0] << endl;
     }
 
     for (uint64_t i = 0; i < garbled_circuit.gate_size; i++) {  //known value
@@ -397,39 +402,37 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
         if (is_terminate) {
           LOG(INFO) << "Alice Terminated in " << cid + 1 << "cc out of "
-                    << *clock_cycles << "cc." << endl;
+              << *clock_cycles << "cc." << endl;
           *clock_cycles = cid + 1;
           break;
         }
       }
       //last clock cycle, not terminated
       if (cid == (*clock_cycles) - 1) {
-        LOG(ERROR) << "Alice Not enough clock cycles. Circuit is not terminated in "
-                   << *clock_cycles << "cc." << endl;
+        LOG(ERROR)
+            << "Alice Not enough clock cycles. Circuit is not terminated in "
+            << *clock_cycles << "cc." << endl;
       }
     }
 
   }
 
-  LOG(INFO)
-      << "Non-secret skipped non-XOR gates = "
-      << num_skipped_non_xor_gates
-      << " out of "
-      << num_of_non_xor * (*clock_cycles)
-      << "\t ("
+  LOG(INFO) << "Non-secret skipped non-XOR gates = "
+      << num_skipped_non_xor_gates << " out of "
+      << num_of_non_xor * (*clock_cycles) << "\t ("
       << (100.0 * num_skipped_non_xor_gates)
-          / (num_of_non_xor * (*clock_cycles))
-      << "%)" << endl;
+          / (num_of_non_xor * (*clock_cycles)) << "%)" << endl;
 
   LOG(INFO) << "Total garbled non-XOR gates = "
-            << num_of_non_xor * (*clock_cycles) - num_skipped_non_xor_gates
-            << endl;
+      << num_of_non_xor * (*clock_cycles) - num_skipped_non_xor_gates << endl;
 
   LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Alice garbling time (cc) = " << garble_time << endl;
 
   delete[] wires;
   delete[] wires_val;
+  delete[] dff_latch;
+  delete[] dff_latch_val;
   delete[] fanout;
   delete[] garbled_tables;
   delete[] garbled_tables_temp;
@@ -446,11 +449,18 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
   block *wires = nullptr;
   CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
-
   short *wires_val = nullptr;
   CHECK_ALLOC(wires_val = new short[garbled_circuit.get_wire_size()]);
   for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
     wires_val[i] = SECRET;  // All wires are initialed with unknown.
+  }
+
+  block *dff_latch = nullptr;
+  CHECK_ALLOC(dff_latch = new block[garbled_circuit.dff_size]);
+  short *dff_latch_val = nullptr;
+  CHECK_ALLOC(dff_latch_val = new short[garbled_circuit.get_wire_size()]);
+  for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
+    dff_latch_val[i] = SECRET;  // All wires are initialed with unknown.
   }
 
   int *fanout = nullptr;
@@ -512,17 +522,21 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
         int64_t wire_index = garbled_circuit.D[i];
         if (wire_index == CONST_ZERO) {
-          wires_val[dff_bias + i] = 0;
+          dff_latch_val[i] = 0;
         } else if (wire_index == CONST_ONE) {
-          wires_val[dff_bias + i] = 1;
+          dff_latch_val[i] = 1;
         } else if (wire_index >= 0
             && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
-          wires[dff_bias + i] = wires[wire_index];
-          wires_val[dff_bias + i] = wires_val[wire_index];
+          dff_latch[i] = wires[wire_index];
+          dff_latch_val[i] = wires_val[wire_index];
         } else {
           LOG(ERROR) << "Invalid D: " << wire_index << endl;
-          wires_val[dff_bias + i] = 0;
+          dff_latch_val[i] = 0;
         }
+      }
+      for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+        wires[dff_bias + i] = dff_latch[i];
+        wires_val[dff_bias + i] = dff_latch_val[i];
       }
     }
     // inputs
@@ -648,7 +662,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       output_vals[cid * garbled_circuit.output_size + i] =
           wires_val[garbled_circuit.outputs[i]];
       DUMP("output") << output_labels[cid * garbled_circuit.output_size + i]
-                     << endl;
+          << endl;
     }
     eval_time += RDTSC - eval_start_time;
     CHECK_EXPR_MSG(garbled_table_ind == garbled_table_ind_rcv,
@@ -656,7 +670,7 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                    "by Alice and received by Bob are not equal.");
 
     for (uint64_t j = 0; j < garbled_table_ind; j++) {  // clear tables
-      garbled_tables[j].gid = (uint32_t) (-1);
+      garbled_tables[j].gid = (uint32_t)(-1);
     }
 
     //if has terminate signal
@@ -671,15 +685,16 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
         if (is_terminate) {
           LOG(INFO) << "Bob Terminated in " << cid + 1 << "cc out of "
-                    << *clock_cycles << "cc." << endl;
+              << *clock_cycles << "cc." << endl;
           *clock_cycles = cid + 1;
           break;
         }
       }
       //last clock cycle, not terminated
       if (cid == (*clock_cycles) - 1) {
-        LOG(ERROR) << "Bob Not enough clock cycles. Circuit is not terminated in "
-                   << *clock_cycles << "cc." << endl;
+        LOG(ERROR)
+            << "Bob Not enough clock cycles. Circuit is not terminated in "
+            << *clock_cycles << "cc." << endl;
       }
     }
   }
@@ -689,6 +704,8 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
   delete[] wires;
   delete[] wires_val;
+  delete[] dff_latch;
+  delete[] dff_latch_val;
   delete[] fanout;
   delete[] garbled_tables;
   return SUCCESS;
