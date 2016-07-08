@@ -72,6 +72,14 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     wires_val[i] = SECRET;  // All wires are initialed with unknown.
   }
 
+  BlockPair *dff_latch = nullptr;
+  CHECK_ALLOC(dff_latch = new BlockPair[garbled_circuit.dff_size]);
+  short *dff_latch_val = nullptr;
+  CHECK_ALLOC(dff_latch_val = new short[garbled_circuit.dff_size]);
+  for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+    dff_latch_val[i] = SECRET;  // All wires are initialed with secret.
+  }
+
   int *fanout = nullptr;
   CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
 
@@ -118,9 +126,9 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     {
       GarbleLowMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
                    garbled_tables_temp, garbled_tables, &garbled_table_ind, R,
-                   AES_Key, cid, connfd, wires, wires_val, fanout,
-                   &terminate_label, &terminate_val, output_labels,
-                   output_vals);
+                   AES_Key, cid, connfd, wires, wires_val, dff_latch,
+                   dff_latch_val, fanout, &terminate_label, &terminate_val,
+                   output_labels, output_vals);
     }
     garble_time += RDTSC - garble_start_time;
 
@@ -149,7 +157,7 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
         if (is_terminate) {
           LOG(INFO) << "Alice Terminated in " << cid + 1 << "cc out of "
-                    << *clock_cycles << "cc." << endl;
+              << *clock_cycles << "cc." << endl;
           *clock_cycles = cid + 1;
           break;
         }
@@ -164,28 +172,20 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
   }
 
-  LOG(INFO)
-      << "Alice transfer labels time (cc) = "
-      << ot_time
+  LOG(INFO) << "Alice transfer labels time (cc) = " << ot_time
       << "\t(cc/bit) = "
       << ot_time
           / ((double) (garbled_circuit.e_init_size
-              + (*clock_cycles) * garbled_circuit.e_input_size))
-      << endl;  //TODO:fix clock_cycle
+              + (*clock_cycles) * garbled_circuit.e_input_size)) << endl;  //TODO:fix clock_cycle
 
-  LOG(INFO)
-      << "Non-secret skipped non-XOR gates = "
-      << num_skipped_non_xor_gates
-      << " out of "
-      << num_of_non_xor * (*clock_cycles)
-      << "\t ("
+  LOG(INFO) << "Non-secret skipped non-XOR gates = "
+      << num_skipped_non_xor_gates << " out of "
+      << num_of_non_xor * (*clock_cycles) << "\t ("
       << (100.0 * num_skipped_non_xor_gates)
-          / (num_of_non_xor * (*clock_cycles))
-      << "%)" << endl;
+          / (num_of_non_xor * (*clock_cycles)) << "%)" << endl;
 
   LOG(INFO) << "Total garbled non-XOR gates = "
-            << num_of_non_xor * (*clock_cycles) - num_skipped_non_xor_gates
-            << endl;
+      << num_of_non_xor * (*clock_cycles) - num_skipped_non_xor_gates << endl;
 
   LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Alice garbling time (cc) = " << garble_time << endl;
@@ -196,6 +196,8 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   delete[] output_vals;
   delete[] wires;
   delete[] wires_val;
+  delete[] dff_latch;
+  delete[] dff_latch_val;
   delete[] fanout;
   delete[] garbled_tables;
   delete[] garbled_tables_temp;
@@ -218,6 +220,7 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   short terminate_val;
   block* output_labels = nullptr;
   short* output_vals = nullptr;
+
   block *wires = nullptr;
   CHECK_ALLOC(wires = new block[garbled_circuit.get_wire_size()]);
   short *wires_val = nullptr;
@@ -225,6 +228,15 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   for (uint64_t i = 0; i < garbled_circuit.get_wire_size(); i++) {
     wires_val[i] = SECRET;  // All wires are initialed with unknown.
   }
+
+  block *dff_latch = nullptr;
+  CHECK_ALLOC(dff_latch = new block[garbled_circuit.dff_size]);
+  short *dff_latch_val = nullptr;
+  CHECK_ALLOC(dff_latch_val = new short[garbled_circuit.dff_size]);
+  for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+    dff_latch_val[i] = SECRET;  // All wires are initialed with secret.
+  }
+
   int *fanout = nullptr;
   CHECK_ALLOC(fanout = new int[garbled_circuit.gate_size]);
 
@@ -272,8 +284,9 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       eval_time += EvaluateLowMem(garbled_circuit, p_init, p_input, init_labels,
                                   input_labels, garbled_tables,
                                   &garbled_table_ind, AES_Key, cid, connfd,
-                                  wires, wires_val, fanout, &terminate_label,
-                                  &terminate_val, output_labels, output_vals);
+                                  wires, wires_val, dff_latch, dff_latch_val,
+                                  fanout, &terminate_label, &terminate_val,
+                                  output_labels, output_vals);
     }
     eval_time += RDTSC - eval_start_time;
 
@@ -282,7 +295,7 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                    "by Alice and received by Bob are not equal.");
 
     for (uint64_t j = 0; j < garbled_table_ind; j++) {  // clear tables
-      garbled_tables[j].gid = (uint32_t) (-1);
+      garbled_tables[j].gid = (uint32_t)(-1);
     }
 
     CHECK(
@@ -300,7 +313,7 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
         if (is_terminate) {
           LOG(INFO) << "Bob Terminated in " << cid + 1 << "cc out of "
-                    << *clock_cycles << "cc." << endl;
+              << *clock_cycles << "cc." << endl;
           *clock_cycles = cid + 1;
           break;
         }
@@ -314,14 +327,10 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     }
   }
 
-  LOG(INFO)
-      << "Bob transfer labels time (cc) = "
-      << ot_time
-      << "\t(cc/bit) = "
+  LOG(INFO) << "Bob transfer labels time (cc) = " << ot_time << "\t(cc/bit) = "
       << ot_time
           / ((double) (garbled_circuit.e_init_size
-              + (*clock_cycles) * garbled_circuit.e_input_size))
-      << endl;  //TODO:fix clock_cycle
+              + (*clock_cycles) * garbled_circuit.e_input_size)) << endl;  //TODO:fix clock_cycle
 
   LOG(INFO) << "Bob communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Bob evaluation time (cc) = " << eval_time << endl;
@@ -332,6 +341,8 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   delete[] output_vals;
   delete[] wires;
   delete[] wires_val;
+  delete[] dff_latch;
+  delete[] dff_latch_val;
   delete[] fanout;
   delete[] garbled_tables;
 
@@ -343,9 +354,11 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                       GarbledTable* garbled_tables_temp,
                       GarbledTable* garbled_tables, uint64_t *garbled_table_ind,
                       block R, AES_KEY& AES_Key, uint64_t cid, int connfd,
-                      BlockPair *wires, short* wires_val, int* fanout,
+                      BlockPair* wires, short* wires_val, BlockPair* dff_latch,
+                      short* dff_latch_val, int* fanout,
                       BlockPair* terminate_label, short* terminate_val,
                       block* output_labels, short* output_vals) {
+
   uint64_t start_time = RDTSC;
 
   // init
@@ -382,17 +395,23 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
       int64_t wire_index = garbled_circuit.D[i];
       if (wire_index == CONST_ZERO) {
-        wires_val[dff_bias + i] = 0;
+        dff_latch_val[i] = 0;
       } else if (wire_index == CONST_ONE) {
-        wires_val[dff_bias + i] = 1;
+        dff_latch_val[i] = 1;
       } else if (wire_index >= 0
           && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
-        wires[dff_bias + i] = wires[wire_index];
-        wires_val[dff_bias + i] = wires_val[wire_index];
+        dff_latch[i].label0 = wires[wire_index].label0;
+        dff_latch[i].label1 = wires[wire_index].label1;
+        dff_latch_val[i] = wires_val[wire_index];
       } else {
         LOG(ERROR) << "Invalid D: " << wire_index << endl;
-        wires_val[dff_bias + i] = 0;
+        dff_latch_val[i] = 0;  // Wire with invalid D values become 0.
       }
+    }
+    for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+      wires[dff_bias + i].label0 = dff_latch[i].label0;
+      wires[dff_bias + i].label1 = dff_latch[i].label1;
+      wires_val[dff_bias + i] = dff_latch_val[i];
     }
   }
 
@@ -538,12 +557,12 @@ uint64_t GarbleLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   }
 
   uint64_t end_time = RDTSC;
-  
+
   if (*garbled_table_ind != 0) {
-   LOG(INFO) << "@" << cid << "\tgarbled_table_ind = " << *garbled_table_ind
-              << endl;
+    LOG(INFO) << "@" << cid << "\tgarbled_table_ind = " << *garbled_table_ind
+        << endl;
   }
-  
+
   return (end_time - start_time);
 }
 
@@ -552,9 +571,10 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                         block* input_labels, GarbledTable* garbled_tables,
                         uint64_t *garbled_table_ind, AES_KEY& AES_Key,
                         uint64_t cid, int connfd, block *wires,
-                        short* wires_val, int* fanout, block* terminate_label,
-                        short* terminate_val, block* output_labels,
-                        short* output_vals) {
+                        short* wires_val, block *dff_latch,
+                        short* dff_latch_val, int* fanout,
+                        block* terminate_label, short* terminate_val,
+                        block* output_labels, short* output_vals) {
   *garbled_table_ind = 0;
   uint64_t start_time = RDTSC;
 
@@ -591,17 +611,21 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
       int64_t wire_index = garbled_circuit.D[i];
       if (wire_index == CONST_ZERO) {
-        wires_val[dff_bias + i] = 0;
+        dff_latch_val[i] = 0;
       } else if (wire_index == CONST_ONE) {
-        wires_val[dff_bias + i] = 1;
+        dff_latch_val[i] = 1;
       } else if (wire_index >= 0
           && wire_index < (int64_t) garbled_circuit.get_wire_size()) {
-        wires[dff_bias + i] = wires[wire_index];
-        wires_val[dff_bias + i] = wires_val[wire_index];
+        dff_latch[i] = wires[wire_index];
+        dff_latch_val[i] = wires_val[wire_index];
       } else {
         LOG(ERROR) << "Invalid D: " << wire_index << endl;
-        wires_val[dff_bias + i] = 0;
+        dff_latch_val[i] = 0;
       }
+    }
+    for (uint64_t i = 0; i < garbled_circuit.dff_size; i++) {
+      wires[dff_bias + i] = dff_latch[i];
+      wires_val[dff_bias + i] = dff_latch_val[i];
     }
   }
 
@@ -1094,8 +1118,8 @@ int GarbleTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
     if (output_vals[i] == 0) {
       BN_clear_bit(output_bn, output_bit_offset + i);
     } else if (output_vals[i] == 1) {
-      if (i < (uint64_t) BN_num_bits(output_mask_bn) && 
-	  BN_is_bit_set(output_mask_bn, i) == 1) {
+      if (i < (uint64_t) BN_num_bits(output_mask_bn)
+          && BN_is_bit_set(output_mask_bn, i) == 1) {
         BN_set_bit(output_bn, output_bit_offset + i);
       }
     } else {
@@ -1141,8 +1165,8 @@ int EvaluateTransferOutputLowMem(const GarbledCircuit& garbled_circuit,
     if (output_vals[i] == 0) {
       BN_clear_bit(output_bn, output_bit_offset + i);
     } else if (output_vals[i] == 1) {
-      if (i >= (uint64_t) BN_num_bits(output_mask_bn) &&
-	  BN_is_bit_set(output_mask_bn, i) == 0) {
+      if (i >= (uint64_t) BN_num_bits(output_mask_bn)
+          && BN_is_bit_set(output_mask_bn, i) == 0) {
         BN_set_bit(output_bn, output_bit_offset + i);
       }
     } else {
