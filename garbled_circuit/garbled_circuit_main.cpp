@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
    "Hexadecimal init for initializing DFFs.")  //
   ("input", po::value<string>(&input_f_hex_str)->default_value("0"),
    "File or Hexadecimal input.")  //
-  ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1),
+  ("clock_cycles,c", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),
    "Directory for dumping memory hex files.")  //
