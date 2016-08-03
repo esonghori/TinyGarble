@@ -155,7 +155,6 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     wires_val[i] = SECRET;  // All wires are initialed with secret.
   }
 
-
   BlockPair *dff_latch = nullptr;
   CHECK_ALLOC(dff_latch = new BlockPair[garbled_circuit.dff_size]);
   short *dff_latch_val = nullptr;
@@ -382,10 +381,12 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     garble_time += RDTSC - garble_start_time;
 
     uint64_t comm_start_time = RDTSC;
-    CHECK(SendData(connfd, &garbled_table_ind, sizeof(uint64_t)));
-    CHECK(
-        SendData(connfd, garbled_tables,
-                 garbled_table_ind * sizeof(GarbledTable)));
+    {
+      CHECK(SendData(connfd, &garbled_table_ind, sizeof(uint64_t)));
+      CHECK(
+          SendData(connfd, garbled_tables,
+                   garbled_table_ind * sizeof(GarbledTable)));
+    }
     comm_time += RDTSC - comm_start_time;
 
     num_skipped_non_xor_gates += num_of_non_xor - garbled_table_ind;
@@ -481,10 +482,12 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     uint64_t garbled_table_ind = 0;
 
     uint64_t comm_start_time = RDTSC;
-    CHECK(RecvData(connfd, &garbled_table_ind_rcv, sizeof(uint64_t)));
-    CHECK(
-        RecvData(connfd, garbled_tables,
-                 garbled_table_ind_rcv * sizeof(GarbledTable)));
+    {
+      CHECK(RecvData(connfd, &garbled_table_ind_rcv, sizeof(uint64_t)));
+      CHECK(
+          RecvData(connfd, garbled_tables,
+                   garbled_table_ind_rcv * sizeof(GarbledTable)));
+    }
     comm_time += RDTSC - comm_start_time;
 
     uint64_t eval_start_time = RDTSC;
