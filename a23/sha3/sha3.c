@@ -44,7 +44,7 @@ static void *memcpy(void *dest, const void *src, size_t n) {
 
 #define sha3_256_hash_size  32
 #define sha3_max_permutation_size 25
-#define sha3_max_rate_in_qwords 24
+#define sha3_256_rate_in_qwords 17
 
 /**
  * SHA3 Algorithm context.
@@ -53,7 +53,7 @@ typedef struct sha3_ctx {
   /* 1600 bits algorithm hashing state */
   uint64_t hash[sha3_max_permutation_size];
   /* 1536-bit buffer for leftovers */
-  uint64_t message[sha3_max_rate_in_qwords];
+  uint64_t message[sha3_256_rate_in_qwords];
   /* count of bytes in the message[] buffer */
   uint32_t rest;
   /* size of a message block processed at once */
@@ -75,23 +75,12 @@ static uint64_t keccak_round_constants[NumberOfRounds] = {
   I64(0x8000000080008081), I64(0x8000000000008080), I64(0x0000000080000001), I64(0x8000000080008008)
 };
 
-/* Initializing a sha3 context for given number of output bits */
-static void rhash_keccak_init(unsigned bits) {
-  /* NB: The Keccak capacity parameter = bits * 2 */
-  //unsigned rate = 1600 - bits * 2; // for sha3-256: rate = 1600 - 512 = 1088
-
-  memset(&ctx, 0, sizeof(sha3_ctx));
-  //ctx.block_size = rate / 8; // for sha3-256: block_size = 1088 / 8 = 136 byte
-  //assert(rate <= 1600 && (rate % 64) == 0);
-}
-
 /**
  * Initialize context before calculating hash.
  *
- * @param ctx context to initialize
  */
 static void rhash_sha3_256_init() {
-  rhash_keccak_init(256);
+  // memset(&ctx, 0, sizeof(sha3_ctx));
 }
 #define BLOCK_SIZE 136
 
@@ -240,6 +229,8 @@ static uint32_t mod(uint32_t a, uint32_t b) {
 /**
  * Calculate message hash.
  * Can be called repeatedly with chunks of the message to be hashed.
+ * This sha3 method is crippled and only accepted message less than
+ * BLOCK_SIZE.
  *
  * @param msg message chunk
  * @param size length of the message chunk
@@ -247,7 +238,7 @@ static uint32_t mod(uint32_t a, uint32_t b) {
 static void rhash_sha3_update(const unsigned char *msg, size_t size) {
   size_t index = ctx.rest;
 
-  if (ctx.rest & SHA3_FINALIZED) return; /* too late for additional input */
+  //if (ctx.rest & SHA3_FINALIZED) return; /* too late for additional input */
   //ctx.rest = (unsigned)((ctx.rest + size) % BLOCK_SIZE);
   ctx.rest = mod(ctx.rest + size, BLOCK_SIZE);
 
@@ -258,26 +249,26 @@ static void rhash_sha3_update(const unsigned char *msg, size_t size) {
     if (size < left) return;
 
     /* process partial block */
-    rhash_sha3_256_process_block();
-    msg  += left;
-    size -= left;
+    // rhash_sha3_256_process_block();
+    // msg  += left;
+    // size -= left;
   }
-  while (size >= BLOCK_SIZE) {
-    // always aligned for g and e.
-    // uint64_t* aligned_message_block;
-    // if (IS_ALIGNED_64(msg)) {
-    //    // the most common case is processing of an already aligned message
-    //   //  without copying it 
-    //   aligned_message_block = (uint64_t*)msg;
-    // } else {
-    //   memcpy(ctx.message, msg, BLOCK_SIZE);
-    //   aligned_message_block = ctx.message;
-    // }
+  // while (size >= BLOCK_SIZE) {
+  //   // always aligned for g and e.
+  //   // uint64_t* aligned_message_block;
+  //   // if (IS_ALIGNED_64(msg)) {
+  //   //    // the most common case is processing of an already aligned message
+  //   //   //  without copying it 
+  //   //   aligned_message_block = (uint64_t*)msg;
+  //   // } else {
+  //   //   memcpy(ctx.message, msg, BLOCK_SIZE);
+  //   //   aligned_message_block = ctx.message;
+  //   // }
 
-    rhash_sha3_256_process_block();
-    msg  += BLOCK_SIZE;
-    size -= BLOCK_SIZE;
-  }
+  //   rhash_sha3_256_process_block();
+  //   msg  += BLOCK_SIZE;
+  //   size -= BLOCK_SIZE;
+  // }
   if (size) {
     memcpy(ctx.message, msg, size); /* save leftovers */
   }
@@ -292,7 +283,7 @@ static void rhash_sha3_final(unsigned char* result) {
   // for sha3-256: digest_length = 100 - 136/2 = 32 byte
   size_t digest_length = 100 - BLOCK_SIZE / 2;
 
-  if (!(ctx.rest & SHA3_FINALIZED)) {
+  //if (!(ctx.rest & SHA3_FINALIZED)) {
     /* clear the rest of the data queue */
     memset((char*)ctx.message + ctx.rest, 0, BLOCK_SIZE - ctx.rest);
     ((char*)ctx.message)[ctx.rest] |= 0x06;
@@ -300,11 +291,12 @@ static void rhash_sha3_final(unsigned char* result) {
 
     /* process final block */
     rhash_sha3_256_process_block();
-    ctx.rest = SHA3_FINALIZED; /* mark context as finalized */
-  }
+    //ctx.rest = SHA3_FINALIZED; /* mark context as finalized */
+  //}
 
   //assert(BLOCK_SIZE > digest_length);
-  if (result) me64_to_le_str(result, ctx.hash, digest_length);
+  //if (result) 
+  me64_to_le_str(result, ctx.hash, digest_length);
 }
 
 void gc_main(const int *g,  // Garbler's input array
