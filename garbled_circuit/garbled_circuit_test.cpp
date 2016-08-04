@@ -32,7 +32,7 @@
 
 using std::endl;
 
-#define TEST_REPEAT 3
+#define TEST_REPEAT 1
 
 void TestSetup() {
 }

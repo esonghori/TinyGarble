@@ -14,6 +14,7 @@ void gc_main(const int *g,  // Garbler's input array
   for(int i = 0; i < G_SIZE;i++) {
     // greater = (g[i] == e[i])?greater:(g[i] < e[i]);
     greater = SEL(g[i] == e[i], greater, g[i] < e[i]);
+    o[i] = g[i] ^ e[i]; // dummy operation to avoid bad resgiter allocation
   }
   o[0] = greater;
 }
