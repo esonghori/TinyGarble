@@ -80,7 +80,7 @@ else
     OPTIMIZE = -O3
 endif
 
- CFLAGS  = -c $(OPTIMIZE) -std=c99 -march=armv2a -mno-thumb-interwork -ffreestanding -fif-conversion2
+ CFLAGS  = -c $(OPTIMIZE) -std=gnu99 -march=armv2a -mno-thumb-interwork -ffreestanding -fif-conversion2
  DSFLAGS = -C -S -EL
  LDFLAGS = -Bstatic -Map $(MAP) --strip-debug --fix-v4bx
 
