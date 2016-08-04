@@ -122,15 +122,12 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     }
     ot_time += RDTSC - ot_start_time;
 
-    uint64_t garble_start_time = RDTSC;
-    {
-      GarbleLowMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
-                   garbled_tables_temp, garbled_tables, &garbled_table_ind, R,
-                   AES_Key, cid, connfd, wires, wires_val, dff_latch,
-                   dff_latch_val, fanout, &terminate_label, &terminate_val,
-                   output_labels, output_vals);
-    }
-    garble_time += RDTSC - garble_start_time;
+    garble_time += GarbleLowMem(garbled_circuit, p_init, p_input, init_labels,
+                                input_labels, garbled_tables_temp,
+                                garbled_tables, &garbled_table_ind, R, AES_Key,
+                                cid, connfd, wires, wires_val, dff_latch,
+                                dff_latch_val, fanout, &terminate_label,
+                                &terminate_val, output_labels, output_vals);
 
     num_skipped_non_xor_gates += num_of_non_xor - garbled_table_ind;
 
@@ -142,6 +139,7 @@ int GarbleBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                    garbled_table_ind * sizeof(GarbledTable)));
     }
     comm_time += RDTSC - comm_start_time;
+
     CHECK(
         GarbleTransferOutputLowMem(garbled_circuit, output_labels, output_vals,
                                    cid, output_mode, output_mask, output_bn,
@@ -279,16 +277,12 @@ int EvaluateBNLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
     }
     comm_time += RDTSC - comm_start_time;
 
-    uint64_t eval_start_time = RDTSC;
-    {
-      eval_time += EvaluateLowMem(garbled_circuit, p_init, p_input, init_labels,
-                                  input_labels, garbled_tables,
-                                  &garbled_table_ind, AES_Key, cid, connfd,
-                                  wires, wires_val, dff_latch, dff_latch_val,
-                                  fanout, &terminate_label, &terminate_val,
-                                  output_labels, output_vals);
-    }
-    eval_time += RDTSC - eval_start_time;
+    eval_time += EvaluateLowMem(garbled_circuit, p_init, p_input, init_labels,
+                                input_labels, garbled_tables,
+                                &garbled_table_ind, AES_Key, cid, connfd, wires,
+                                wires_val, dff_latch, dff_latch_val, fanout,
+                                &terminate_label, &terminate_val, output_labels,
+                                output_vals);
 
     CHECK_EXPR_MSG(garbled_table_ind == garbled_table_ind_rcv,
                    "Number of garbled tables generated "
@@ -578,7 +572,7 @@ uint64_t EvaluateLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   *garbled_table_ind = 0;
   uint64_t start_time = RDTSC;
 
-// init
+  // init
   uint64_t dff_bias = garbled_circuit.get_dff_lo_index();
   int64_t gate_bias = (int64_t) garbled_circuit.get_gate_lo_index();
   if (cid == 0) {

@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
        string(TINYGARBLE_BINARY_DIR)
            + "/scd/netlists/a23_gc_main_64_w_n_cc.scd"),
    "Simple circuit description (.scd) file address.")  //
-  ("clock_cycles", po::value<uint64_t>(&clock_cycles)->default_value(1000),
+  ("clock_cycles,c", po::value<uint64_t>(&clock_cycles)->default_value(1000),
    "Number of clock cycles to evaluate the circuit.")  //
   ("terminate_period,t",
    po::value<int64_t>(&terminate_period)->default_value(1),
