@@ -10,15 +10,22 @@ void sum_array(const int *g, const int *e, int *o);
 #ifdef __arm__
 void sum_array(const int *g, const int *e, int *o) {
   uint carry = 0;
-  for (uint i = 0; i < G_SIZE; ++i) {
+  for (uint i = 0; i < G_SIZE-1; ++i) {
     asm (
       "cmp %[d], #1\n\t"
       "adcs %[c], %[a], %[b]\n\t"
       "mov %[dd], #0\n\t"
       "movhs %[dd], #1"  :
-      [c] "=r" (o[i]), [dd] "=r" (carry)  : [a] "r" (g[i]), [b] "r" (e[i]), [d] "r" (carry)
+      [c] "=r" (o[i]), [dd] "=r" (carry) :
+      [a] "r" (g[i]), [b] "r" (e[i]), [d] "r" (carry)
     );
   }
+  asm (
+    "cmp %[d], #1\n\t"
+    "adc %[c], %[a], %[b]\n\t" :
+    [c] "=r" (o[G_SIZE-1]) :
+    [a] "r" (g[G_SIZE-1]), [b] "r" (e[G_SIZE-1]), [d] "r" (carry)
+  );
 }
 #else 
 void sum_array(const int *g, const int *e, int *o) {
