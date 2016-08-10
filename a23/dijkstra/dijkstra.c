@@ -9,7 +9,7 @@ int __attribute__((aligned(256))) graph[V][V];
 
 // A utility function to find the vertex with minimum distance value, from
 // the set of vertices not yet included in shortest path tree
-int minDistance(int dist[], int sptSet[]) {
+static int minDistance(int dist[], int sptSet[]) {
   // Initialize min value
   int min = INT_MAX, min_index;
 
@@ -30,7 +30,7 @@ int minDistance(int dist[], int sptSet[]) {
 
 // Function that implements Dijkstra's single source shortest path algorithm
 // for a graph represented using adjacency matrix representation
-void dijkstra(int src, int dist[]) {
+static void dijkstra(int src, int dist[]) {
   int sptSet[V];  // sptSet[i] will true if vertex i is included in shortest
                   // path tree or shortest distance from src to i is finalized
 
@@ -58,7 +58,7 @@ void dijkstra(int src, int dist[]) {
       // Update dist[v] only if is not in sptSet, there is an edge from
       // u to v, and total weight of path from src to  v through u is
       // smaller than current value of dist[v]
-      int closer = (dist[u] + graph[u][v] < dist[v]);
+      int closer = ((dist[u] + graph[u][v]) < dist[v]);
       int not_max = (dist[u] != INT_MAX);
       int not_spt = (sptSet[v] == 0);
       int connected = (graph[u][v] != 0);

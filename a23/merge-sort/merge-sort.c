@@ -1,10 +1,10 @@
-#define G_SIZE 31 // size of Garbler's input array
-#define E_SIZE 31 // size of Evaluator's input array
-#define O_SIZE 1 // size of output array
+#define G_SIZE 32 // size of Garbler's input array
+#define E_SIZE 32 // size of Evaluator's input array
+#define O_SIZE 32 // size of output array
 
-int b[G_SIZE]; // temporary array for mergesort
+int __attribute__((aligned(256))) b[G_SIZE]; // temporary array for mergesort
+int i, j, k, m;
 void mergesort(int* array, int l, int r) {
-  int i, j, k, m;
   if (r > l) {
     m = (r + l) / 2;
     mergesort(array, l, m);
@@ -24,17 +24,13 @@ void mergesort(int* array, int l, int r) {
 }
 
 void gc_main(const int *g,  // Garbler's input array
-             const int *e,           // Evaluator's input array
-             int *o                  // output array
+             const int *e,  // Evaluator's input array
+             int *o         // output array
             ) {
 
-  int array[G_SIZE];
-
   for (int i = 0; i < G_SIZE; ++i) {
-    array[i] = g[i] ^ e[i]; // xor-shared input
+    o[i] = g[i] ^ e[i]; // xor-shared input
   }
 
-  mergesort(array, 0, G_SIZE - 1);
-
-  o[0] = array[G_SIZE / 2];
+  mergesort(o, 0, G_SIZE - 1);
 }
