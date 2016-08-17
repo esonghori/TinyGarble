@@ -350,7 +350,7 @@ MU_TEST(A23MemTest1000cc) {
   mu_check(icompare(output_str, output_expected_str));
 }
 
-MU_TEST(A23Hamming1000cc) {
+MU_TEST(A23Hamming5000cc) {
   string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/a23_gc_main_64_w_n_cc.scd";
   OutputMode output_mode = OutputMode::last_clock;
@@ -372,7 +372,7 @@ MU_TEST(A23Hamming1000cc) {
 
   string output_str;
   int64_t terminate_period = 1;
-  uint64_t clock_cycles = 1000;
+  uint64_t clock_cycles = 5000;
 
   LOG(INFO) << "A32 Hamming Distance" << clock_cycles
             << "cc with terminate period 1" << endl;
@@ -483,7 +483,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(AES128Bit1cc);
   MU_RUN_TEST(AES128Bit11cc);
   MU_RUN_TEST(A23MemTest1000cc);
-  MU_RUN_TEST(A23Hamming1000cc);
+  MU_RUN_TEST(A23Hamming5000cc);
 //  MU_RUN_TEST(A23AES25000cc);
 //  MU_RUN_TEST(A23Dijkstra6000cc); //too time consuming
 }
