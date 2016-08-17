@@ -1,18 +1,9 @@
-#define G_SIZE 16 // size of Garbler's input array
-#define E_SIZE 16 // size of Evaluator's input array
+#define G_SIZE 2 // size of Garbler's input array
+#define E_SIZE 2 // size of Evaluator's input array
 #define O_SIZE 1 // size of output array
 
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
-
-static int hamming_half_byte(const uint8_t g, const uint8_t e) {
-  uint8_t t = g ^ e;
-  uint32_t retj = 0;
-  for (uint32_t i = 0; i < 4; i++) {
-    retj += (t & (1 << i)) >> i;
-  }
-  return retj;
-}
 
 static int log2(uint32_t a) {
   uint32_t l = 0;
