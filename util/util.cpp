@@ -351,12 +351,12 @@ string bin2hex(string bin){
 		else if(B == "0111") H = "7";
 		else if(B == "1000") H = "8";
 		else if(B == "1001") H = "9";
-		else if(B == "1010") H = "a";
-		else if(B == "1011") H = "b";
-		else if(B == "1100") H = "c";
-		else if(B == "1101") H = "d";
-		else if(B == "1110") H = "e";
-		else if(B == "1111") H = "f";
+		else if(B == "1010") H = "A";
+		else if(B == "1011") H = "B";
+		else if(B == "1100") H = "C";
+		else if(B == "1101") H = "D";
+		else if(B == "1110") H = "E";
+		else if(B == "1111") H = "F";
 		hex_ = hex_ + H;
 	}
 	return hex_;
