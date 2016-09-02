@@ -22,6 +22,8 @@
 #include <fstream>
 #include <string>
 #include <new>
+#include <string.h>
+
 
 #include "util/common.h"
 #include "crypto/block.h"
@@ -55,10 +57,11 @@ class DummyLog : public ostream {
 #endif
 
 #ifdef ENABLE_LOG
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define CHECK_ALLOC(X) try { X; } catch (std::bad_alloc& e) { \
     LOG(ERROR) << e.what() << std::endl; \
     return FAILURE; }
-#define LOG(X) LogStream((X)) << __FILE__ << ":" <<  __LINE__ << " \033[" \
+#define LOG(X) LogStream((X)) << __FILENAME__ << ":" <<  __LINE__ << " \033[" \
   << LOG_COLOR(X) << "m" << #X << "\033[0m: "
 #define CHECK_EXPR(X) if((X)==false) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
