@@ -2,7 +2,8 @@
 
 TinyGarble
 =======
-TinyGarble is a full implementation of Yao's Garbled Circuit (GC) protocol for
+TinyGarble is a full implementation of 
+[Yao's Garbled Circuit (GC) protocol](https://en.wikipedia.org/wiki/Garbled_Circuit) for
 two-party Secure Function Evaluation (SFE) in which the parties are able to
 execute any function on their private inputs and learn the output without
 leaking any information about their inputs.
