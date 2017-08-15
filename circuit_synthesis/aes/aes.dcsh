@@ -1,0 +1,34 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library ../lib/generic.sdb
+analyze -format verilog aes_1cc.v
+analyze -format verilog aes_11cc.v
+analyze -format verilog AddRoundKey.v
+analyze -format verilog SubBytes.v 
+analyze -format verilog ShiftRows.v 
+analyze -format verilog MixColumns.v 
+analyze -format verilog KeyExpansion.v
+analyze -format verilog KeyExpansionSeq.v
+
+elaborate aes_11cc -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/aes_11cc.v
+
+
+elaborate aes_1cc -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/aes_1cc.v
+
+
+exit

@@ -1,0 +1,14 @@
+read_verilog knns_seq_td.v taxicab_distance.v ../syn_lib/ADD.v  ../syn_lib/COMP.v  ../syn_lib/COUNT.v  ../syn_lib/FA.v  ../syn_lib/MULT.v  ../syn_lib/MUX.v  ../syn_lib/SUB.v
+
+synth -top k_nns_seq_td; flatten 
+
+proc; opt; fsm; opt; memory; opt;
+techmap -map ../lib/stdcells_S.v
+opt;
+dfflibmap -liberty ../lib/asic_cell_yosys_extended.lib
+#abc -liberty ../lib/asic_cell_yosys_extended.lib -script ../lib/script.abc
+abc -liberty ../lib/asic_cell_yosys_extended.lib 
+opt; clean; opt;
+write_verilog syn_yos/k_nns_seq_td_syn_yos.v
+
+

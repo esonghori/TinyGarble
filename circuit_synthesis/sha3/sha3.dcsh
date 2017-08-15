@@ -1,0 +1,39 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library ../lib/generic.sdb
+
+analyze -format verilog sha3_seq.v
+analyze -format verilog sha3_comb.v
+analyze -format verilog rconst.v
+analyze -format verilog round.v
+
+
+## It is better!
+#set_max_area 0
+#compile_ultra -exact_map -no_design_rule -area_high_effort_script
+
+
+#seq
+foreach cc {24} {
+elaborate sha3_seq -architecture verilog -library DEFAULT -update -parameters $cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/sha3_syn_$cc.v
+}
+
+##comb
+#elaborate sha3_comb -architecture verilog -library DEFAULT -update -parameters 1
+#set_max_area -ignore_tns 0 
+#set_flatten false -design *
+#set_structure -design * false
+#set_resource_allocation area_only
+#report_compile_options
+#compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+#write -hierarchy -format verilog -output syn/sha3_syn_1.v
+
+exit

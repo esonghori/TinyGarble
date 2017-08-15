@@ -1,0 +1,25 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library ../lib/generic.sdb
+set hdlin_while_loop_iterations 16384
+
+analyze -format verilog {a23_alu.v a23_decode.v a23_fetch.v  a23_register_bank.v a23_barrel_shift.v  a23_execute.v a23_multiply.v a23_core.v a23_mem.v a23_gc_main.v}
+
+set CODE_MEM_SIZE  64
+set G_MEM_SIZE     64
+set E_MEM_SIZE     64
+set OUT_MEM_SIZE   64
+set STACK_MEM_SIZE 64
+
+elaborate a23_gc_main -architecture verilog -library DEFAULT -update -parameters $CODE_MEM_SIZE,$G_MEM_SIZE,$E_MEM_SIZE,$OUT_MEM_SIZE,$STACK_MEM_SIZE
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization -map_effort high -area_effort high -no_design_rule
+check_design
+write -hierarchy -format verilog -output syn/a23_gc_main_${CODE_MEM_SIZE}_w_n_cc.v
+
+exit

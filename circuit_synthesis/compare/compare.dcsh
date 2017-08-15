@@ -1,0 +1,24 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library ../lib/generic.sdb
+set hdlin_while_loop_iterations 16384
+
+analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v}
+
+analyze -format verilog compare.v
+
+
+#n = 16384   
+foreach cc {16384} {
+elaborate compare -architecture verilog -library DEFAULT -update -parameters 16384,$cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/compare_syn_16384_$cc.v
+}
+
+exit

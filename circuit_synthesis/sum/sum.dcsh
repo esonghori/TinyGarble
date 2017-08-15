@@ -1,0 +1,26 @@
+set search_path [list . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library [concat ../lib/generic.sdb]
+set hdlin_while_loop_iterations 1024
+
+analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../syn_lib/SUB.v ../syn_lib/COMP.v ../syn_lib/MUX.v}
+
+
+analyze -format verilog sum.v
+
+foreach n {32} {
+foreach cc {32} {
+elaborate sum -architecture verilog -library DEFAULT -update -parameters $n,$cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure false -design *
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/sum_syn_$n\_$cc.v
+}
+}
+
+
+exit

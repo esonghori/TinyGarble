@@ -1,0 +1,29 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library ../lib/generic.sdb
+set hdlin_while_loop_iterations 16384
+
+analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../syn_lib/SUB.v ../syn_lib/COMP.v ../syn_lib/MUX.v}
+
+analyze -format verilog modexp_1_N.v
+analyze -format verilog modexp_2N_NN.v
+analyze -format verilog modmult.v
+
+
+
+#N = 1024
+foreach cc {2097152} {
+elaborate modexp_2N_NN -architecture verilog -library DEFAULT -update -parameters 1024,$cc
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort low -area_effort low -no_design_rule
+write -hierarchy -format verilog -output syn/modexp_syn_1024_$cc.v
+}
+
+
+exit
+
