@@ -24,15 +24,13 @@ protocol.
 
 TinyGarble general flow:
 1. Write a Verilog file (`.v`) describing the function.
-2. Synthesis the Verilog file using TinyGarble's *circuit synthesis* to generate
+2. Synthesis the Verilog file using TinyGarble's [*circuit synthesis*](circuit_synthesis/README.md) to generate
 a netlist Verilog file (`.v`).
 3. Translate the netlist file (`.v`) to a simple circuit description file
 (`.scd`) using TinyGarble's `V2SCD_Main` and then provide both parties with the
-file.
+file. (We have done these steps for a number of functions, and you can find their scd files after compiling in `bin/scd/netlists/`.)
 4. Execute `TinyGarble` using `--alice` flag on one party and `--bob` flag
 on the other plus other appropriate arguments.
-
-Any questions or comments: [Ebrahim Songhori](mailto:e.songhori@gmail.com)
 
 ## TinyGarble
 
