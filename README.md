@@ -27,8 +27,8 @@ TinyGarble general flow:
 2. Synthesis the Verilog file using TinyGarble's [*circuit synthesis*](circuit_synthesis/README.md) to generate
 a netlist Verilog file (`.v`).
 3. Translate the netlist file (`.v`) to a simple circuit description file
-(`.scd`) using TinyGarble's `V2SCD_Main` and then provide both parties with the
-file. (We have done these steps for a number of functions, and you can find their scd files after compiling in `bin/scd/netlists/`.)
+([SCD](scd/README.md)) using TinyGarble's `V2SCD_Main` and then provide both parties with the
+file. (We have done steps 1-3 for a number of functions, and you can find their scd files after compiling in `bin/scd/netlists/`.)
 4. Execute `TinyGarble` using `--alice` flag on one party and `--bob` flag
 on the other plus other appropriate arguments.
 
