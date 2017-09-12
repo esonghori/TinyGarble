@@ -539,6 +539,10 @@ int IdAssignment(const ReadCircuitString& read_circuit_string,
         pair<string, int64_t>(read_circuit_string.gate_list_string[i].output,
                               wire_index++));  // gates' output
   }
+  
+  read_circuit-> wire_size = wire_index;
+  cout << "wire_size: " << read_circuit-> wire_size << endl;
+  
   wire_name_table.insert(pair<string, int64_t>("", ((uint64_t) - 1)));
   wire_name_table.insert(pair<string, int64_t>("1'b0", CONST_ZERO));
   wire_name_table.insert(pair<string, int64_t>("1'b1", CONST_ONE));

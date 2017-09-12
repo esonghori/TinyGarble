@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
   LogInitial(argc, argv);
 
   string input_netlist_file, brist_input_netlist_file;
-  string output_scd_file;
+  string output_scd_file, output_bmr_file;
 
   boost::format fmter(
       "Verilog to SCD, TinyGarble version %1%.%2%.%3%.\nAllowed options");
@@ -49,7 +49,9 @@ int main(int argc, char** argv) {
    "Input netlist (.txt) file address (in the format given by "
    "www.cs.bris.ac.uk/Research/CryptographySecurity/MPC/).")  //
   ("scd,o", po::value<string>(&output_scd_file),
-   "Output simple circuit description (scd) file address.");
+   "Output simple circuit description (scd) file address.") //
+   ("bmr,m", po::value<string>(&output_bmr_file),
+   "Output bmr circuit file address.");
 
   po::variables_map vm;
   try {
@@ -67,23 +69,37 @@ int main(int argc, char** argv) {
     return FAILURE;
   }
 
-  if (output_scd_file.empty()) {
-    std::cerr << "ERROR: output scd (-o) flag must be indicated." << endl;
+  if (output_scd_file.empty() && output_bmr_file.empty()) {
+    std::cerr << "ERROR: either output scd (-o) or bmr (-m) flag must be indicated." << endl;
     std::cout << desc << endl;
     return FAILURE;
   }
+  
+  string out_mapping_filename;
+  if (output_scd_file.empty()) 	
+	out_mapping_filename = output_bmr_file + ".map";
+  else
+	out_mapping_filename = output_scd_file + ".map";
 
-  string out_mapping_filename = output_scd_file + ".map";
-
-  if (!input_netlist_file.empty()) {
-    LOG(INFO) << "V2SCD " << input_netlist_file << " to " << output_scd_file
-              << endl;
-    if (Verilog2SCD(input_netlist_file, out_mapping_filename,
-                    output_scd_file) == FAILURE) {
-      LOG(ERROR) << "Verilog to SCD failed." << endl;
-      return FAILURE;
+  if (!input_netlist_file.empty()){
+	if (output_scd_file.empty()){
+		LOG(INFO) << "V2BMR " << input_netlist_file << " to " << output_scd_file << endl;
+		if (Verilog2BMR(input_netlist_file, out_mapping_filename,
+						output_bmr_file) == FAILURE) {
+		  LOG(ERROR) << "Verilog to BMR failed." << endl;
+		  return FAILURE;
+		}
+	}
+	else{		
+		LOG(INFO) << "V2SCD " << input_netlist_file << " to " << output_scd_file << endl;
+		if (Verilog2SCD(input_netlist_file, out_mapping_filename,
+						output_scd_file) == FAILURE) {
+		  LOG(ERROR) << "Verilog to SCD failed." << endl;
+		  return FAILURE;
+		}
     }
-  } else if (!brist_input_netlist_file.empty()) {
+  }
+  else if (!brist_input_netlist_file.empty()) {
     LOG(INFO) << "Brist2SCD " << brist_input_netlist_file << " to "
               << output_scd_file << endl;
     if (Bris2SCD(brist_input_netlist_file, out_mapping_filename,

@@ -85,6 +85,7 @@ class ReadCircuit {
   uint64_t dff_size;
   uint64_t gate_size;
   uint64_t output_size;
+  uint64_t wire_size; // total number of wires as required by BMR inplementation in https://github.com/cryptobiu/Semi-Honest-BMR
   uint64_t terminate_id; // terminate signal id, 0 in case of no signal
 
   uint64_t get_init_input_size() const {
@@ -111,6 +112,8 @@ class ReadCircuit {
 };
 
 int Verilog2SCD(const string &in_file_name, const string& out_mapping_filename,
+                const string &out_file_name);
+int Verilog2BMR(const string &in_file_name, const string& out_mapping_filename,
                 const string &out_file_name);
 int Bris2SCD(const string &in_file_name, const string& out_mapping_filename,
              const string &out_file_name);
