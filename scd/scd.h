@@ -37,7 +37,6 @@
 int ReadSCD(const string& file_name, GarbledCircuit *garbled_circuit);
 
 int WriteSCD(const ReadCircuit &read_circuit, const string &file_name);
-int WriteBMRcircuit(const ReadCircuit &read_circuit, const string &file_name);
 
 
 #endif /* SCD_SCD_H_ */
