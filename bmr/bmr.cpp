@@ -51,18 +51,13 @@ int WriteBMRcircuit(const ReadBMRCircuit& read_circuit, const string &file_name)
     return -1;
   }
   
-  uint64_t no_parties = 3;
-  
   f << "# first row is comment" << endl;
-  f << read_circuit.gate_size << " " << no_parties << " " << read_circuit.wire_size << endl;
-  //for (uint64_t i = 0; i < no_parties; i++){
-	  f << "P" << 0 << " " << read_circuit.g_input_size << endl;
-	  for (uint64_t j = 0; j < read_circuit.g_input_size; j++)
+  f << read_circuit.gate_size << " " << read_circuit.no_of_parties << " " << read_circuit.wire_size << endl;
+  for (uint64_t i = 0; i < read_circuit.no_of_parties; i++){
+	  f << "P" << i << " " << read_circuit.input_size[i] << endl;
+	  for (uint64_t j = 0; j < read_circuit.input_size[i]; j++)
 		f << j << endl;
-	  f << "P" << 1 << " " << read_circuit.e_input_size << endl;
-	  for (uint64_t j = 0; j < read_circuit.e_input_size; j++)
-		f << j + read_circuit.g_input_size << endl;
-  //}
+  }
   f << "Out " << read_circuit.output_size << endl;
   for (uint64_t i = 0; i < read_circuit.output_size; i++){
     f << read_circuit.output_list[i] << endl;

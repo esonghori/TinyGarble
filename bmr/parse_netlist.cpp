@@ -73,6 +73,7 @@ int ParseNetlist(const string &filename,
     return -1;
   }
 
+  uint64_t no_of_parties = 0;
   short gate_type = INVALGATE;
   uint64_t no_of_bits = 0;
   bool is_right_assignmnet = false;
@@ -284,22 +285,12 @@ int ParseNetlist(const string &filename,
         string bits_str(*beg);
         no_of_bits = atoi(bits_str.c_str())+1;
       } else if(str.compare("clk") && str.compare("rst")) {
-        if(!str.compare("p_init")) {
-          read_circuit_string->p_init_size = (no_of_bits>0)?no_of_bits:1;
-        } else if(!str.compare("g_init")) {
-          read_circuit_string->g_init_size = (no_of_bits>0)?no_of_bits:1;
-        } else if(!str.compare("e_init")) {
-          read_circuit_string->e_init_size = (no_of_bits>0)?no_of_bits:1;
-        } else if(!str.compare("p_input")) {
-          read_circuit_string->p_input_size = (no_of_bits>0)?no_of_bits:1;
-        } else if(!str.compare("g_input")) {
-          read_circuit_string->g_input_size = (no_of_bits>0)?no_of_bits:1;
-        } else if(!str.compare("e_input")) {
-          read_circuit_string->e_input_size = (no_of_bits>0)?no_of_bits:1;
+        if(!str.compare("p" + std::to_string(no_of_parties) + "_input")) {
+          read_circuit_string->input_size.push_back(no_of_bits);
+		  no_of_parties++;
         } else {
           LOG(ERROR) << "The input name is not valid " << str << endl <<
-          "valid choice: { p_init, g_init, e_init, "
-          "p_input, g_input, e_input}: " << line << endl;
+          "valid choice: { p#_input}: " << line << endl;
           return FAILURE;
         }
       }
@@ -428,105 +419,22 @@ void AddWireArray(map<string, int64_t>& wire_name_table, const string& name,
   }
 }
 
-string GetBristWire(uint64_t w, uint64_t wire_size,
-                    const ReadBMRCircuitString& read_circuit_string) {
-  if (w < read_circuit_string.g_input_size) {
-    return "g_input[" + std::to_string(w) + "]";
-  } else if (w
-      < read_circuit_string.g_input_size + read_circuit_string.e_input_size) {
-    uint64_t ind = w - read_circuit_string.g_input_size;
-    return "e_input[" + std::to_string(ind) + "]";
-  } else if (w >= wire_size - read_circuit_string.output_size) {
-    uint64_t ind = w - wire_size + read_circuit_string.output_size;
-    return "o[" + std::to_string(ind) + "]";
-  }
-  return "w" + std::to_string(w);
-}
-
-int ParseBrisNetlist(const string &filename,
-                     ReadBMRCircuitString* read_circuit_string) {
-
-  ifstream fin(filename.c_str(), std::ios::in);
-  if (!fin.good()) {
-    LOG(ERROR) << "file not found:" << filename << endl;
-    return -1;
-  }
-
-  uint64_t gate_size, wire_size;
-  fin >> gate_size >> wire_size;
-
-  CHECK_EXPR_MSG(gate_size != 0 && wire_size != 0,
-                 "Number of gate or wire are zero.");
-
-  fin >> read_circuit_string->g_input_size >> read_circuit_string->e_input_size
-      >> read_circuit_string->output_size;
-
-  for (uint64_t gid = 0; gid < gate_size; gid++) {
-    string g_type;
-    uint64_t inpu_num, output_num, i0, i1, o;
-    //2 1 0 32 406 XOR
-    fin >> inpu_num >> output_num >> i0;
-    if (inpu_num == 1) {
-      i1 = 0;
-      fin >> o >> g_type;
-    } else if (inpu_num == 2) {
-      fin >> i1 >> o >> g_type;
-    }
-
-    ReadBMRGateString g;
-    g.input[0] = GetBristWire(i0, wire_size, *read_circuit_string);
-    if (inpu_num > 1) {
-      g.input[1] = GetBristWire(i1, wire_size, *read_circuit_string);
-    } else {
-      g.input[1] = "";
-    }
-    g.output = GetBristWire(o, wire_size, *read_circuit_string);
-
-    if (g_type == "INV") {
-      g.type = NOTGATE;
-    } else if (g_type == "XOR") {
-      g.type = XORGATE;
-    } else if (g_type == "AND") {
-      g.type = ANDGATE;
-    } else {
-      LOG(ERROR) << "Unknown gate type: " << g_type << endl;
-      return FAILURE;
-    }
-
-    read_circuit_string->gate_list_string.push_back(g);
-  }
-
-  return SUCCESS;
-}
-
 int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
                  ReadBMRCircuit* read_circuit) {
-  read_circuit->p_init_size = read_circuit_string.p_init_size;
-  read_circuit->g_init_size = read_circuit_string.g_init_size;
-  read_circuit->e_init_size = read_circuit_string.e_init_size;
-  read_circuit->p_input_size = read_circuit_string.p_input_size;
-  read_circuit->g_input_size = read_circuit_string.g_input_size;
-  read_circuit->e_input_size = read_circuit_string.e_input_size;
-
-  read_circuit->dff_size = read_circuit_string.dff_list_string.size();
+  
+  read_circuit->no_of_parties = read_circuit_string.input_size.size();
+  cout << "no_of_parties: " << read_circuit-> no_of_parties << endl;
+  
   read_circuit->gate_size = read_circuit_string.gate_list_string.size();
   read_circuit->output_size = read_circuit_string.output_size;
 
   int64_t wire_index = 0;
   map<string, int64_t> wire_name_table;
 
-  AddWireArray(wire_name_table, "p_init", read_circuit->p_init_size,
+  for (uint64_t i = 0; i < read_circuit->no_of_parties; i++) {
+	AddWireArray(wire_name_table, "p" + std::to_string(i) + "_input", read_circuit_string.input_size[i],
                &wire_index);
-  AddWireArray(wire_name_table, "g_init", read_circuit->g_init_size,
-               &wire_index);
-  AddWireArray(wire_name_table, "e_init", read_circuit->e_init_size,
-               &wire_index);
-  AddWireArray(wire_name_table, "p_input", read_circuit->p_input_size,
-               &wire_index);
-  AddWireArray(wire_name_table, "g_input", read_circuit->g_input_size,
-               &wire_index);
-  AddWireArray(wire_name_table, "e_input", read_circuit->e_input_size,
-               &wire_index);
+  }
 
   for (uint64_t i = 0; i < read_circuit->dff_size; i++) {
     wire_name_table.insert(
@@ -561,9 +469,14 @@ int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
     }
   }
 
+  read_circuit->input_size.resize(read_circuit->no_of_parties);
   read_circuit->gate_list.resize(read_circuit->gate_size);
   read_circuit->output_list.resize(read_circuit->output_size);
   read_circuit->dff_list.resize(read_circuit->dff_size);
+  
+  for (uint64_t i = 0; i < read_circuit->no_of_parties; i++) {
+	read_circuit->input_size[i] = read_circuit_string.input_size[i];
+  }
 
   for (uint64_t i = 0; i < read_circuit->gate_size; i++) {
     read_circuit->gate_list[i].type = read_circuit_string.gate_list_string[i]
