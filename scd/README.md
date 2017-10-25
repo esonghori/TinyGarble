@@ -21,10 +21,10 @@ It is also true for `o` port which will be provided at every clock cycle.
 
 ## Wire Indexing
 Wires are indexed according to this order:
-1- g_init
-2- e_init
-3- g_input
-4- e_input
+1- g_init  
+2- e_init  
+3- g_input  
+4- e_input  
 5- gates' output (A gate's output index is same as the gate's index plus the 
 	gate output offset which is equal to size of init and input wires.)  
 
