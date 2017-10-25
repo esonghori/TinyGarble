@@ -20,7 +20,7 @@ bit-width should be multiplied by number of clock cycles.
 It is also true for `o` port which will be provided at every clock cycle.
 
 ## Wire Indexing
-Wires are indexed according to this order:
+Wires are indexed according to this order:  
 1- g_init  
 2- e_init  
 3- g_input  
@@ -30,15 +30,15 @@ Wires are indexed according to this order:
 
 ## SCD Format
 Unlike JustGarble's SCD, TinyGarble's SCD is in ASCII format and human-readable.
-The format consists of seven lines:
+The format consists of seven lines:  
 1- `g_init_size`, `e_init_size`, `g_input_size`, `e_input_size`, 
-	`dff_size`, `output_size`, and `gate_size`.
-2- gate's `input0` index
-3- gate's `input1` index
-4- gate's `type` (defined in [util/common.h](util/common.h))
-5- `outputs` index
-6- Flip-Flop's `D` (data wire index) 
-7- Flip-Flop's `I` (initial value index chosen from `g_init` and `e_init`).
+	`dff_size`, `output_size`, and `gate_size`.  
+2- gate's `input0` index  
+3- gate's `input1` index  
+4- gate's `type` (defined in [util/common.h](util/common.h))  
+5- `outputs` index  
+6- Flip-Flop's `D` (data wire index)  
+7- Flip-Flop's `I` (initial value index chosen from `g_init` and `e_init`).  
 
 ## References
 - Mihir Bellare, Viet Tung Hoang, Sriram Keelveedhi, and Phillip Rogaway.
