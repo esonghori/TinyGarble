@@ -49,7 +49,7 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int GarbleStr(const string& scd_file_address, const string& p_init_str,
+int GarbleStr(const string& tgx_file_address, const string& p_init_str,
               const string& p_input_str, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
               const string& output_mask, int64_t terminate_period,
@@ -60,8 +60,8 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
   }
 
   GarbledCircuit garbled_circuit;
-  if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {
-    LOG(ERROR) << "Error while reading scd file: " << scd_file_address << endl;
+  if (ReadSCD(tgx_file_address, &garbled_circuit) == FAILURE) {
+    LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
     return FAILURE;
   }
   FillFanout(&garbled_circuit);
@@ -127,7 +127,7 @@ int GarbleStr(const string& scd_file_address, const string& p_init_str,
   return SUCCESS;
 }
 
-int EvaluateStr(const string& scd_file_address, const string& p_init_str,
+int EvaluateStr(const string& tgx_file_address, const string& p_init_str,
                 const string& p_input_str, const string& init_str,
                 const string& input_str, uint64_t clock_cycles,
                 const string& output_mask, int64_t terminate_period,
@@ -138,8 +138,8 @@ int EvaluateStr(const string& scd_file_address, const string& p_init_str,
   }
 
   GarbledCircuit garbled_circuit;
-  if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {
-    LOG(ERROR) << "Error while reading scd file: " << scd_file_address << endl;
+  if (ReadSCD(tgx_file_address, &garbled_circuit) == FAILURE) {
+    LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
     return FAILURE;
   }
   FillFanout(&garbled_circuit);
