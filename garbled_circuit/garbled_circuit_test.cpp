@@ -1148,8 +1148,7 @@ int main(int argc, char* argv[]) {
   srand(time(NULL));
   SrandSSE(time(NULL));
   MU_RUN_SUITE(TestSuite);
-  MU_REPORT()
-  ;
+  MU_REPORT();
   LogFinish();
   HashFinish();
   return SUCCESS;
