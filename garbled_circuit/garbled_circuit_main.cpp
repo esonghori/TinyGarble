@@ -50,14 +50,14 @@ namespace po = boost::program_options;
 using std::string;
 using std::vector;
 
-int CheckOptionsAlice(const string& scd_file_address, uint64_t clock_cycles,
+int CheckOptionsAlice(const string& tgx_file_address, uint64_t clock_cycles,
                       const string& output_mask, bool disable_OT,
                       bool low_mem_foot, int connfd) {
 
-  int size = scd_file_address.length();
+  int size = tgx_file_address.length();
   SendData(connfd, &size, sizeof(int));
   if (size > 0) {
-    SendData(connfd, scd_file_address.c_str(), size);
+    SendData(connfd, tgx_file_address.c_str(), size);
   }
 
   SendData(connfd, &clock_cycles, sizeof(uint64_t));
@@ -79,11 +79,11 @@ int CheckOptionsAlice(const string& scd_file_address, uint64_t clock_cycles,
   return status;
 }
 
-int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
+int CheckOptionsBob(const string& tgx_file_address, uint64_t clock_cycles,
                     const string& output_mask, bool disable_OT,
                     bool low_mem_foot, int connfd) {
 
-  string scd_file_address_;
+  string tgx_file_address_;
   uint64_t clock_cycles_;
   string output_mask_;
   bool disable_OT_;
@@ -94,11 +94,11 @@ int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
 
   RecvData(connfd, &size, sizeof(int));
   if (size <= 0) {
-    scd_file_address_ = "";
+    tgx_file_address_ = "";
   } else {
     buff = new char[size];
     RecvData(connfd, buff, size);
-    scd_file_address_ = string(buff);
+    tgx_file_address_ = string(buff);
     delete[] buff;
   }
 
@@ -118,7 +118,7 @@ int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
   RecvData(connfd, &low_mem_foot_, sizeof(bool));
 
   int status;
-  if (scd_file_address_ != scd_file_address || clock_cycles_ != clock_cycles
+  if (tgx_file_address_ != tgx_file_address || clock_cycles_ != clock_cycles
       || output_mask_ != output_mask || disable_OT_ != disable_OT
       || low_mem_foot_ != low_mem_foot) {
     LOG(ERROR) << "Alice's and Bob's options are not same." << endl;
@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
   SrandSSE(time(0));
 
   int port;
-  string scd_file_address;
+  string tgx_file_address;
   string server_ip;
   string p_init_f_hex_str;
   string p_input_f_hex_str;
@@ -162,10 +162,10 @@ int main(int argc, char* argv[]) {
   ("help,h", "produce help message")  //
   ("alice,a", "Run as Alice (server).")  //
   ("bob,b", "Run as Bob (client).")  //
-  ("scd_file,i",
-   po::value<string>(&scd_file_address)->default_value(
-       string(TINYGARBLE_BINARY_DIR) + "/scd/netlists/hamming_32bit_1cc.scd"),
-   "Simple circuit description (.scd) file address.")  //
+  ("tgx_file,i",
+   po::value<string>(&tgx_file_address)->default_value(
+       string(TINYGARBLE_BINARY_DIR) + "/scd/TGX/threeAdds.tgx"),
+   "TinyGarble extension (.tgx) file address.")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
   ("server_ip,s", po::value<string>(&server_ip)->default_value("127.0.0.1"),
    "Server's (Alice's) IP, required when running as Bob.")  //
@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        GarbleStr(scd_file_address, p_init_str, p_input_str, init_str,
+        GarbleStr(tgx_file_address, p_init_str, p_input_str, init_str,
                   input_str, clock_cycles, output_mask, terminate_period,
                   output_mode, disable_OT, low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
@@ -311,7 +311,7 @@ int main(int argc, char* argv[]) {
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        EvaluateStr(scd_file_address, p_init_str, p_input_str, init_str,
+        EvaluateStr(tgx_file_address, p_init_str, p_input_str, init_str,
                     input_str, clock_cycles, output_mask, terminate_period,
                     output_mode, disable_OT, low_mem_foot, &output_str, connfd));
     delta_time = RDTSC - delta_time;
