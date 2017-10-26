@@ -43,6 +43,20 @@
 #include <new>
 #include "util/log.h"
 
+int ReadTGX(const string& tgx_file_address, string& scd_file_address) {
+  std::ifstream f(tgx_file_address, std::ios::out);
+  if (!f.is_open()) {
+    LOG(ERROR) << "can't open " << tgx_file_address << endl;
+    return FAILURE;
+  }
+
+  f >> scd_file_address;
+
+  f.close();
+
+  return SUCCESS;
+}
+
 int ReadSCD(const string& file_name, GarbledCircuit* garbled_circuit) {
   std::ifstream f(file_name, std::ios::out);
   if (!f.is_open()) {

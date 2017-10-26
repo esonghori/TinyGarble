@@ -59,9 +59,19 @@ int GarbleStr(const string& tgx_file_address, const string& p_init_str,
     return FAILURE;
   }
 
+
+  //do parsing and create garbled_circuit_col (collection)
+  LOG(INFO)<<"TGX File: "<<tgx_file_address<<endl;
+  string scd_file_address;
+  if (ReadTGX(tgx_file_address, scd_file_address) == FAILURE) {
+      LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
+      return FAILURE;
+  }
+
+
   GarbledCircuit garbled_circuit;
-  if (ReadSCD(tgx_file_address, &garbled_circuit) == FAILURE) {
-    LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
+  if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {
+    LOG(ERROR) << "Error while reading scd file: " << scd_file_address << endl;
     return FAILURE;
   }
   FillFanout(&garbled_circuit);
@@ -137,9 +147,18 @@ int EvaluateStr(const string& tgx_file_address, const string& p_init_str,
     return FAILURE;
   }
 
+  //do parsing and create garbled_circuit_col (collection)
+  LOG(INFO)<<"TGX File: "<<tgx_file_address<<endl;
+  string scd_file_address=" ";
+  if (ReadTGX(tgx_file_address, scd_file_address) == FAILURE) {
+      LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
+      return FAILURE;
+  }
+
+
   GarbledCircuit garbled_circuit;
-  if (ReadSCD(tgx_file_address, &garbled_circuit) == FAILURE) {
-    LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
+  if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {
+    LOG(ERROR) << "Error while reading tgx file: " << scd_file_address << endl;
     return FAILURE;
   }
   FillFanout(&garbled_circuit);
