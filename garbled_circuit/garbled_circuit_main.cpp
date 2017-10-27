@@ -316,7 +316,7 @@ int main(int argc, char* argv[]) {
 		LOG(INFO) << "Total Alice time (cc) = " << delta_time << endl;
 		std::cout << output_str << endl;
 
-		garbledCircuitCollection.garbledCircuitIO.at(cirID).circuitOutput=output_str;
+		garbledCircuitCollection.garbledCircuitOutputs.push_back(output_str);
 
     }
 
@@ -400,11 +400,9 @@ int main(int argc, char* argv[]) {
 		LOG(INFO) << "Total Bob time (cc) = " << delta_time << endl;
 		std::cout << output_str << endl;
 
-		garbledCircuitCollection.garbledCircuitIO.at(cirID).circuitOutput=output_str;
+		garbledCircuitCollection.garbledCircuitOutputs.push_back(output_str);
 
     }
-
-
 
 
     ClientClose(connfd);

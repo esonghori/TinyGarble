@@ -234,7 +234,8 @@ typedef struct GarbledCircuitCollection {
   vector<string> scd_file_addresses;
   int circuitsNum;
   int circuitsLevel0Num;
-  vector<GarbledCircuitIO> garbledCircuitIO;
+//  vector<GarbledCircuitIO> garbledCircuitIO;
+  vector<string> garbledCircuitOutputs;
 
 } GarbledCircuitCollection;
 
