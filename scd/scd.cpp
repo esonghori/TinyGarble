@@ -43,16 +43,41 @@
 #include <new>
 #include "util/log.h"
 
-int ReadTGX(const string& tgx_file_address, string& scd_file_address) {
-  std::ifstream f(tgx_file_address, std::ios::out);
+
+//int ReadInputs(GarbledCircuitCollection& garbledCircuitCollection) {
+//
+//	for (i = 0; i < garbledCircuitCollection.circuitsLevel0Num; i++) {
+//		string input_hex = string(TINYGARBLE_SOURCE_DIR)
+//			  + "/bin/scd/TGX/inputs/g"+ i + ".txt";
+//
+//		std::ifstream f(input_hex, std::ios::out);
+//		if (!f.is_open()) {
+//		LOG(ERROR) << "can't open " << tgx_file_address << endl;
+//		return FAILURE;
+//		}
+//
+//		f >> garbledCircuitCollection.;
+//
+//		f.close();
+//	}
+//
+//  return SUCCESS;
+//}
+
+int ReadTGX(GarbledCircuitCollection& GCC) {
+  std::ifstream f(GCC.tgx_file_address, std::ios::out);
   if (!f.is_open()) {
-    LOG(ERROR) << "can't open " << tgx_file_address << endl;
+    LOG(ERROR) << "can't open " << GCC.tgx_file_address << endl;
     return FAILURE;
   }
-
-  f >> scd_file_address;
+  string line;
+  while (std::getline(f, line)) {
+        GCC.scd_file_addresses.push_back(line);
+  }
 
   f.close();
+
+  GCC.circuitsNum=GCC.scd_file_addresses.size();
 
   return SUCCESS;
 }

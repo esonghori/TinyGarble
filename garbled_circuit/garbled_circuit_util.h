@@ -38,11 +38,13 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 #include <openssl/bn.h>
 #include "crypto/block.h"
 #include "crypto/aes.h"
 
 using std::string;
+using std::vector;
 
 #define SECRET (-1)
 #define SECRET_INV (-2)
@@ -219,6 +221,26 @@ enum class OutputMode {
   separated_clock = 1,
   last_clock = 2
 };
+
+typedef struct GarbledCircuitIO {
+  string circuitInput;//probably useless
+  string circuitOutput;
+} GarbledCircuitIO;
+
+
+typedef struct GarbledCircuitCollection {
+  // GarbledCircuit* garbledCircuits; /*!< topologically sorted circuits */    this one seems to be a better solution?!
+  string tgx_file_address;
+  vector<string> scd_file_addresses;
+  int circuitsNum;
+  int circuitsLevel0Num;
+  vector<GarbledCircuitIO> garbledCircuitIO;
+
+} GarbledCircuitCollection;
+
+
+
+
 
 uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);

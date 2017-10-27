@@ -34,9 +34,11 @@
  * @see JustGarble paper.
  * @see TinyGarble paper.
  */
-int ReadTGX(const string& tgx_file_address,  string& scd_file_address);
+int ReadTGX(GarbledCircuitCollection&);
 
 int ReadSCD(const string& file_name, GarbledCircuit *garbled_circuit);
+
+int ReadInputs(GarbledCircuitCollection&);
 
 int WriteSCD(const ReadCircuit &read_circuit, const string &file_name);
 

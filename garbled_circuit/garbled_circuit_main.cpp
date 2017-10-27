@@ -37,6 +37,8 @@
 #include <boost/format.hpp>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
+#include <string>
 
 #include "crypto/OT_extension.h"
 #include "garbled_circuit/garbled_circuit.h"
@@ -48,6 +50,7 @@
 
 namespace po = boost::program_options;
 using std::string;
+using std::to_string;
 using std::vector;
 
 int CheckOptionsAlice(const string& tgx_file_address, uint64_t clock_cycles,
@@ -252,11 +255,10 @@ int main(int argc, char* argv[]) {
     return FAILURE;
   }
 
-  // Transferring file in to hex
-  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
-  string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
-  string init_str = ReadFileOrPassHex(init_f_hex_str);
-  string input_str = ReadFileOrPassHex(input_f_hex_str);
+
+
+  //------------------------------------------------------------------------------- ALICE
+
 
   if (vm.count("alice")) {
     // open the socket
@@ -271,19 +273,62 @@ int main(int argc, char* argv[]) {
     //    CheckOptionsAlice("", clock_cycles, output_mask, disable_OT,
     //                      low_mem_foot, connfd));
 
-    string output_str;
-    uint64_t delta_time = RDTSC;
-    CHECK(
-        GarbleStr(tgx_file_address, p_init_str, p_input_str, init_str,
-                  input_str, clock_cycles, output_mask, terminate_period,
-                  output_mode, disable_OT, low_mem_foot, &output_str, connfd));
-    delta_time = RDTSC - delta_time;
 
-    LOG(INFO) << "Alice's output = " << output_str << endl;
-    LOG(INFO) << "Total Alice time (cc) = " << delta_time << endl;
-    std::cout << output_str << endl;
+    //--------------------------------------------------------- Do parsing and create garbled_circuit_col (collection)
+    LOG(INFO)<<"TGX File: "<<tgx_file_address<<endl;
+
+    GarbledCircuitCollection garbledCircuitCollection;
+    garbledCircuitCollection.tgx_file_address = tgx_file_address;
+    garbledCircuitCollection.circuitsLevel0Num = 2;
+
+    if (ReadTGX(garbledCircuitCollection) == FAILURE) {
+            LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
+            return FAILURE;
+    }
+
+
+
+
+    for (int cirID = 0; cirID < 1; cirID++) {//garbledCircuitCollection.circuitsNum
+
+    	// Transferring file in to hex
+		string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+		string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
+		string init_str = ReadFileOrPassHex(init_f_hex_str);
+		input_f_hex_str= "bin/scd/TGX/inputs/g" + to_string(cirID) + ".txt";
+		string input_str = ReadFileOrPassHex(input_f_hex_str);
+
+		string output_str;
+
+
+		uint64_t delta_time = RDTSC;
+		CHECK(
+			GarbleStr(garbledCircuitCollection.scd_file_addresses.at(cirID), p_init_str, p_input_str, init_str,
+					  input_str, clock_cycles, output_mask, terminate_period,
+					  output_mode, disable_OT, low_mem_foot, &output_str, connfd));
+		delta_time = RDTSC - delta_time;
+
+
+
+
+
+		LOG(INFO) << "Alice's output = " << output_str << endl;
+		LOG(INFO) << "Total Alice time (cc) = " << delta_time << endl;
+		std::cout << output_str << endl;
+
+		garbledCircuitCollection.garbledCircuitIO.at(cirID).circuitOutput=output_str;
+
+    }
+
+
+
+
 
     ServerClose(connfd);
+
+    //------------------------------------------------------------------------------- BOB
+
+
   } else if (vm.count("bob")) {
 
     if (vm.count("server_ip")) {
@@ -308,17 +353,59 @@ int main(int argc, char* argv[]) {
     //    CheckOptionsBob("", clock_cycles, output_mask, disable_OT, low_mem_foot,
     //                    connfd));
 
-    string output_str;
-    uint64_t delta_time = RDTSC;
-    CHECK(
-        EvaluateStr(tgx_file_address, p_init_str, p_input_str, init_str,
-                    input_str, clock_cycles, output_mask, terminate_period,
-                    output_mode, disable_OT, low_mem_foot, &output_str, connfd));
-    delta_time = RDTSC - delta_time;
 
-    LOG(INFO) << "Bob's output = " << output_str << endl;
-    LOG(INFO) << "Total Bob time (cc) = " << delta_time << endl;
-    std::cout << output_str << endl;
+
+
+
+
+    //------------- Do parsing and create garbled_circuit_col (collection)
+    LOG(INFO)<<"TGX File: "<<tgx_file_address<<endl;
+
+    GarbledCircuitCollection garbledCircuitCollection;
+    garbledCircuitCollection.tgx_file_address = tgx_file_address;
+    garbledCircuitCollection.circuitsLevel0Num = 2;
+
+    if (ReadTGX(garbledCircuitCollection) == FAILURE) {
+            LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
+            return FAILURE;
+    }
+
+
+
+
+    for (int cirID = 0; cirID < 1; cirID++) {//garbledCircuitCollection.circuitsNum
+
+    	// Transferring file in to hex
+		string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+		string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
+		string init_str = ReadFileOrPassHex(init_f_hex_str);
+		input_f_hex_str= "bin/scd/TGX/inputs/e" + to_string(cirID) + ".txt";
+		string input_str = ReadFileOrPassHex(input_f_hex_str);
+
+		string output_str;
+
+
+		uint64_t delta_time = RDTSC;
+		CHECK(
+			EvaluateStr(garbledCircuitCollection.scd_file_addresses.at(cirID), p_init_str, p_input_str, init_str,
+				  input_str, clock_cycles, output_mask, terminate_period,
+				  output_mode, disable_OT, low_mem_foot, &output_str, connfd));
+		delta_time = RDTSC - delta_time;
+
+
+
+
+
+		LOG(INFO) << "Bob's output = " << output_str << endl;
+		LOG(INFO) << "Total Bob time (cc) = " << delta_time << endl;
+		std::cout << output_str << endl;
+
+		garbledCircuitCollection.garbledCircuitIO.at(cirID).circuitOutput=output_str;
+
+    }
+
+
+
 
     ClientClose(connfd);
   }

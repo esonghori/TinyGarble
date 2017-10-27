@@ -49,7 +49,7 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int GarbleStr(const string& tgx_file_address, const string& p_init_str,
+int GarbleStr(const string& scd_file_address, const string& p_init_str,
               const string& p_input_str, const string& init_str,
               const string& input_str, uint64_t clock_cycles,
               const string& output_mask, int64_t terminate_period,
@@ -59,22 +59,13 @@ int GarbleStr(const string& tgx_file_address, const string& p_init_str,
     return FAILURE;
   }
 
-
-  //do parsing and create garbled_circuit_col (collection)
-  LOG(INFO)<<"TGX File: "<<tgx_file_address<<endl;
-  string scd_file_address;
-  if (ReadTGX(tgx_file_address, scd_file_address) == FAILURE) {
-      LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
-      return FAILURE;
-  }
-
-
   GarbledCircuit garbled_circuit;
   if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {
     LOG(ERROR) << "Error while reading scd file: " << scd_file_address << endl;
     return FAILURE;
   }
   FillFanout(&garbled_circuit);
+
 
   if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
     LOG(ERROR) << "There is no terminate signal in the circuit."
@@ -137,7 +128,7 @@ int GarbleStr(const string& tgx_file_address, const string& p_init_str,
   return SUCCESS;
 }
 
-int EvaluateStr(const string& tgx_file_address, const string& p_init_str,
+int EvaluateStr(const string& scd_file_address, const string& p_init_str,
                 const string& p_input_str, const string& init_str,
                 const string& input_str, uint64_t clock_cycles,
                 const string& output_mask, int64_t terminate_period,
@@ -146,15 +137,6 @@ int EvaluateStr(const string& tgx_file_address, const string& p_init_str,
   if (clock_cycles == 0) {
     return FAILURE;
   }
-
-  //do parsing and create garbled_circuit_col (collection)
-  LOG(INFO)<<"TGX File: "<<tgx_file_address<<endl;
-  string scd_file_address=" ";
-  if (ReadTGX(tgx_file_address, scd_file_address) == FAILURE) {
-      LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
-      return FAILURE;
-  }
-
 
   GarbledCircuit garbled_circuit;
   if (ReadSCD(scd_file_address, &garbled_circuit) == FAILURE) {
