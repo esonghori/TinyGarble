@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
 
   string input_netlist_file, brist_input_netlist_file;
   string output_bmr_file;
+  uint64_t no_of_parties;
 
   boost::format fmter(
       "Verilog to BMR, TinyGarble version %1%.%2%.%3%.\nAllowed options");
@@ -46,6 +47,8 @@ int main(int argc, char** argv) {
   ("netlist,i", po::value<string>(&input_netlist_file),
    "Input netlist (verilog .v) file address.")  //
    ("bmr,b", po::value<string>(&output_bmr_file),
+   "Output bmr circuit file address.")  //
+   ("np,n", po::value<uint64_t>(&no_of_parties),
    "Output bmr circuit file address.");
 
   po::variables_map vm;
@@ -75,7 +78,7 @@ int main(int argc, char** argv) {
   if (!input_netlist_file.empty()){
 	LOG(INFO) << "V2BMR " << input_netlist_file << " to " << output_bmr_file << endl;
 	if (Verilog2BMR(input_netlist_file, out_mapping_filename,
-					output_bmr_file) == FAILURE) {
+					output_bmr_file, no_of_parties) == FAILURE) {
 	  LOG(ERROR) << "Verilog to BMR failed." << endl;
 	  return FAILURE;
 	}

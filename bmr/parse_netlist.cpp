@@ -73,7 +73,7 @@ int ParseNetlist(const string &filename,
     return -1;
   }
 
-  uint64_t no_of_parties = 0;
+  //uint64_t no_of_parties = 0;
   short gate_type = INVALGATE;
   uint64_t no_of_bits = 0;
   bool is_right_assignmnet = false;
@@ -285,12 +285,11 @@ int ParseNetlist(const string &filename,
         string bits_str(*beg);
         no_of_bits = atoi(bits_str.c_str())+1;
       } else if(str.compare("clk") && str.compare("rst")) {
-        if(!str.compare("p" + std::to_string(no_of_parties) + "_input")) {
-          read_circuit_string->input_size.push_back(no_of_bits);
-		  no_of_parties++;
+        if(!str.compare("p_input")) {
+		  read_circuit_string->input_size = no_of_bits;
         } else {
           LOG(ERROR) << "The input name is not valid " << str << endl <<
-          "valid choice: { p#_input}: " << line << endl;
+          "valid choice: p_input: " << line << endl;
           return FAILURE;
         }
       }
@@ -420,9 +419,9 @@ void AddWireArray(map<string, int64_t>& wire_name_table, const string& name,
 }
 
 int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
-                 ReadBMRCircuit* read_circuit) {
+                 ReadBMRCircuit* read_circuit, uint64_t no_of_parties) {
   
-  read_circuit->no_of_parties = read_circuit_string.input_size.size();
+  read_circuit->no_of_parties = no_of_parties; 
   cout << "no_of_parties: " << read_circuit-> no_of_parties << endl;
   
   read_circuit->gate_size = read_circuit_string.gate_list_string.size();
@@ -430,11 +429,16 @@ int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
 
   int64_t wire_index = 0;
   map<string, int64_t> wire_name_table;
-
-  for (uint64_t i = 0; i < read_circuit->no_of_parties; i++) {
-	AddWireArray(wire_name_table, "p" + std::to_string(i) + "_input", read_circuit_string.input_size[i],
+  
+  // need to edit this part later to support different bit-width for differnt parties
+  int64_t bits_per_party;
+  bits_per_party = read_circuit_string.input_size/no_of_parties;
+  if(read_circuit_string.input_size%no_of_parties) 
+	  LOG(ERROR) << "Input size should be an integer multiple of no of paties" << endl;
+  
+	AddWireArray(wire_name_table, "p_input", read_circuit_string.input_size,
                &wire_index);
-  }
+
 
   for (uint64_t i = 0; i < read_circuit->dff_size; i++) {
     wire_name_table.insert(
@@ -475,7 +479,7 @@ int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
   read_circuit->dff_list.resize(read_circuit->dff_size);
   
   for (uint64_t i = 0; i < read_circuit->no_of_parties; i++) {
-	read_circuit->input_size[i] = read_circuit_string.input_size[i];
+	read_circuit->input_size[i] = bits_per_party;
   }
 
   for (uint64_t i = 0; i < read_circuit->gate_size; i++) {

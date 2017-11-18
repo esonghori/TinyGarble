@@ -39,17 +39,18 @@ class ReadBMRCircuitString {
   vector<ReadBMRGateString> gate_list_string;
   vector<ReadBMRGateString> dff_list_string;
   vector<pair<string, string>> assignment_list_string;
-  vector<uint64_t> input_size;
+  uint64_t input_size;
   uint64_t output_size;
   bool     has_terminate; // has terminate signal
 
   ReadBMRCircuitString()
       : gate_list_string(0),
-        dff_list_string(0), 
-		input_size(0) {
-    output_size = 0;
-    has_terminate = false;
-  }
+        dff_list_string(0)
+		{ 
+			input_size = 0; 
+			output_size = 0;
+			has_terminate = false;
+		}
 };
 
 class ReadBMRGate {
@@ -98,5 +99,5 @@ class ReadBMRCircuit {
 };
 
 int Verilog2BMR(const string &in_file_name, const string& out_mapping_filename,
-                const string &out_file_name);
+                const string &out_file_name, uint64_t no_of_parties);
 #endif

@@ -25,7 +25,7 @@ string Type2StrGate(short itype);
 int ParseNetlist(const string &file_name,
                  ReadBMRCircuitString* read_circuit_string);
 int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
-                 ReadBMRCircuit* read_circuit);
+                 ReadBMRCircuit* read_circuit, uint64_t no_of_parties);
 int TopologicalSort(const ReadBMRCircuit &read_circuit,
                     vector<int64_t>* sorted_list,
                     const ReadBMRCircuitString& read_circuit_string);
