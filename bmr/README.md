@@ -1,49 +1,50 @@
-Simple Circuit Description (SCD)
+Circuit file for the BMR protocol
 =======
-The initial idea of a Simple Circuit Description (SCD) was proposed in JustGarble 
-paper (S&P'13) to represent a acyclic Boolean circuit. TinyGarble paper (S&P'15)
-proposed a modified version of SCD which supports a sequential circuit with 
-flip-flops.
+The generated circuit files follow the structure used in the implementation of the BMR protocol present [here](https://github.com/cryptobiu/Semi-Honest-BMR).
+The steps to compile the Verilog/VHDL design to Boolean logic through TinyGarble is similar for both JustGarble and BMR except the last step where the circuit file is written. 
 
 ## Circuit Format
-TinyGarble's V2SCD accepts Verilog netlist circuits with a special format. 
-The circuit's ports should be in {`clk`, `rst`, `g_init`, `e_init`, 
-`g_input`,`e_input`, `o`} where `clk` is clock cycle, `rst` is active high 
-reset, `g_init` is garbler's (Alice) initial values, `e_init` is evaluator's 
-(Bob) initial values, `g_input` is garbler's inputs, `e_input` is evaluator's 
-input, and `o` is the output port.
+Input bits from all the parties are concatenated to form a single input `p_input`. The distribution of the bits is given as an argument to the `V2BMR_Main` function. The module structure for N-bit input and M-bit output is as follows. 
+```
+module _name_ ( 
+  input [N-1:0] p_input,
+  output [M-1:0] o
+  );
+  
+  //description
+  
+endmodule 
+```
 
-`g_init` and `e_init` ports will be read only at the first clock cycle 
-and must be connected to Flip-Flops’ `I` (initial) ports.
-`g_input` and `e_input` posts will be read at every clock cycle, thus their 
-bit-width should be multiplied by number of clock cycles.
-It is also true for `o` port which will be provided at every clock cycle.
+## BMR Format
+```
+# first row is comment
+<No_of_gates> <No_of_parties> <No_of_wires>
+for n = 0 to No_of_parties-1
+	Pn <No_of_input_wires>
+	<indices of input wires that belong to Pn>
+endfor
+Out <No_of_output_wires>
+<indices of output wires>
+for g = 0 to No_of_gates-1
+	<index of input0 wire> <index of input1 wire>  <index of output wire> <truth table>
+endfor
+```
 
-## Wire Indexing
-Wires are indexed according to this order:
-1- g_init
-2- e_init
-3- g_input
-4- e_input
-5- gates' output (A gate's output index is same as the gate's index plus the 
-	gate output offset which is equal to size of init and input wires.)  
+## Usage
+```
+./V2BMR_Main 
 
-## SCD Format
-Unlike JustGarble's SCD, TinyGarble's SCD is in ASCII format and human-readable.
-The format consists of seven lines:
-1- `g_init_size`, `e_init_size`, `g_input_size`, `e_input_size`, 
-	`dff_size`, `output_size`, and `gate_size`.
-2- gate's `input0` index
-3- gate's `input1` index
-4- gate's `type` (defined in [util/common.h](util/common.h))
-5- `outputs` index
-6- Flip-Flop's `D` (data wire index) 
-7- Flip-Flop's `I` (initial value index chosen from `g_init` and `e_init`).
+  -h [ --help ]         produce help message.
+  -i [ --netlist ] arg  Input netlist (verilog .v) file address.
+  -b [ --bmr ] arg      Output bmr circuit file address.
+  -n [ --np ] arg       Number of parties.
+  -p [ --perparty ] arg No of bits for every party
+
+```
 
 ## References
-- Mihir Bellare, Viet Tung Hoang, Sriram Keelveedhi, and Phillip Rogaway.
-Efficient garbling from a fixed-key blockcipher. In <i>S&P</i>, pages 478–492.
-IEEE, 2013. 
+- Ben-Efraim, Aner, Yehuda Lindell, and Eran Omri. "Optimizing semi-honest secure multiparty computation for the internet." Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security. ACM, 2016. 
 - Ebrahim M. Songhori, Siam U. Hussain, Ahmad-Reza Sadeghi, Thomas Schneider
 and Farinaz Koushanfar, ["TinyGarble: Highly Compressed and Scalable Sequential
 Garbled Circuits."](http://esonghori.github.io/file/TinyGarble.pdf) <i>Security
