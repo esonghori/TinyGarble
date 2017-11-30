@@ -25,7 +25,7 @@
 using std::endl;
 
 int Verilog2BMR(const string &in_file_name, const string& out_mapping_filename,
-                const string &out_file_name, uint64_t no_of_parties) {
+                const string &out_file_name, uint64_t no_of_parties, vector<uint64_t> bits_per_party) {
 
   ReadBMRCircuitString read_circuit_string;
   ReadBMRCircuit read_circuit;
@@ -34,7 +34,7 @@ int Verilog2BMR(const string &in_file_name, const string& out_mapping_filename,
     LOG(ERROR) << "parsing verilog netlist failed." << endl;
     return FAILURE;
   }
-  if (IdAssignment(read_circuit_string, &read_circuit, no_of_parties) == FAILURE) {
+  if (IdAssignment(read_circuit_string, &read_circuit, no_of_parties, bits_per_party) == FAILURE) {
     LOG(ERROR) << "id assignment to netlist components failed." << endl;
     return FAILURE;
   }

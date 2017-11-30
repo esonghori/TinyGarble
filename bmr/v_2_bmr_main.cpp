@@ -35,7 +35,8 @@ int main(int argc, char** argv) {
 
   string input_netlist_file, brist_input_netlist_file;
   string output_bmr_file;
-  uint64_t no_of_parties;
+  uint64_t no_of_parties = 0;
+  vector<uint64_t> bits_per_party;
 
   boost::format fmter(
       "Verilog to BMR, TinyGarble version %1%.%2%.%3%.\nAllowed options");
@@ -46,10 +47,12 @@ int main(int argc, char** argv) {
   ("help,h", "produce help message.")  //
   ("netlist,i", po::value<string>(&input_netlist_file),
    "Input netlist (verilog .v) file address.")  //
-   ("bmr,b", po::value<string>(&output_bmr_file),
+  ("bmr,b", po::value<string>(&output_bmr_file),
    "Output bmr circuit file address.")  //
-   ("np,n", po::value<uint64_t>(&no_of_parties),
-   "Output bmr circuit file address.");
+  ("np,n", po::value<uint64_t>(&no_of_parties),
+   "Number of parties.") //
+  ("perparty,p", po::value<vector<uint64_t>>(&bits_per_party)->multitoken(), 
+   "No of bits for every party");
 
   po::variables_map vm;
   try {
@@ -74,11 +77,25 @@ int main(int argc, char** argv) {
   }
 
   string out_mapping_filename = output_bmr_file + ".map";
+  
+  if (no_of_parties <= 1 && bits_per_party.size() <= 1) {
+    std::cerr << "ERROR: Number of parties must be more than one. Please specify either (-n) or (-p)." << endl;
+    std::cout << desc << endl;
+    return FAILURE;
+  }  
+  
+  if (bits_per_party.size() > 0){
+	  if (no_of_parties > 0)
+		  LOG(INFO) << "Setting number of parties to " << bits_per_party.size() << " (size of the bits array)" << endl;
+	  no_of_parties = bits_per_party.size();	  	  
+  } 
+  else 
+	  LOG(INFO) << "Bits per party not specified, the input bits will be uniformly distributed among the parties " << endl;
 
   if (!input_netlist_file.empty()){
 	LOG(INFO) << "V2BMR " << input_netlist_file << " to " << output_bmr_file << endl;
 	if (Verilog2BMR(input_netlist_file, out_mapping_filename,
-					output_bmr_file, no_of_parties) == FAILURE) {
+					output_bmr_file, no_of_parties, bits_per_party) == FAILURE) {
 	  LOG(ERROR) << "Verilog to BMR failed." << endl;
 	  return FAILURE;
 	}

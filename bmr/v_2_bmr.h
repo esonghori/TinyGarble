@@ -99,5 +99,5 @@ class ReadBMRCircuit {
 };
 
 int Verilog2BMR(const string &in_file_name, const string& out_mapping_filename,
-                const string &out_file_name, uint64_t no_of_parties);
+                const string &out_file_name, uint64_t no_of_parties, vector<uint64_t> bits_per_party);
 #endif

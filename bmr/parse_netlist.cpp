@@ -419,10 +419,10 @@ void AddWireArray(map<string, int64_t>& wire_name_table, const string& name,
 }
 
 int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
-                 ReadBMRCircuit* read_circuit, uint64_t no_of_parties) {
+                 ReadBMRCircuit* read_circuit, uint64_t no_of_parties, vector<uint64_t> bits_per_party) {
   
   read_circuit->no_of_parties = no_of_parties; 
-  cout << "no_of_parties: " << read_circuit-> no_of_parties << endl;
+  LOG(INFO) << "Number of parties: " << read_circuit-> no_of_parties << endl;
   
   read_circuit->gate_size = read_circuit_string.gate_list_string.size();
   read_circuit->output_size = read_circuit_string.output_size;
@@ -431,10 +431,14 @@ int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
   map<string, int64_t> wire_name_table;
   
   // need to edit this part later to support different bit-width for differnt parties
-  int64_t bits_per_party;
-  bits_per_party = read_circuit_string.input_size/no_of_parties;
-  if(read_circuit_string.input_size%no_of_parties) 
-	  LOG(ERROR) << "Input size should be an integer multiple of no of paties" << endl;
+  if (bits_per_party.empty())
+	  bits_per_party.resize(no_of_parties, read_circuit_string.input_size/no_of_parties);
+	   
+	
+  if((uint64_t)(accumulate(bits_per_party.begin(), bits_per_party.end(), 0)) != read_circuit_string.input_size) {
+	  LOG(ERROR) << "Total number of input bits in the Verilog file (" << read_circuit_string.input_size << ") do not match with the arguments" << endl << "The number of input bits should be either an integer multiple of the number of parties, or equal to the sum of the elements of bits array" << endl;
+	  return FAILURE;
+  }
   
 	AddWireArray(wire_name_table, "p_input", read_circuit_string.input_size,
                &wire_index);
@@ -453,7 +457,7 @@ int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
   }
   
   read_circuit-> wire_size = wire_index;
-  cout << "wire_size: " << read_circuit-> wire_size << endl;
+  LOG(INFO) << "Number of wires in the circuit: " << read_circuit-> wire_size << endl;
   
   wire_name_table.insert(pair<string, int64_t>("", ((uint64_t) - 1)));
   wire_name_table.insert(pair<string, int64_t>("1'b0", CONST_ZERO));
@@ -479,7 +483,7 @@ int IdAssignment(const ReadBMRCircuitString& read_circuit_string,
   read_circuit->dff_list.resize(read_circuit->dff_size);
   
   for (uint64_t i = 0; i < read_circuit->no_of_parties; i++) {
-	read_circuit->input_size[i] = bits_per_party;
+	read_circuit->input_size[i] = bits_per_party[i];
   }
 
   for (uint64_t i = 0; i < read_circuit->gate_size; i++) {
