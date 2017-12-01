@@ -42,6 +42,7 @@ endfor
   -p [ --perparty ] arg No of bits for every party (seperated by space)
 
 ```
+If arguments to both -n and -p are specified, the argument to -n is ignored.
 
 ## References
 - Ben-Efraim, Aner, Yehuda Lindell, and Eran Omri. "Optimizing semi-honest secure multiparty computation for the internet." Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security. ACM, 2016. 
