@@ -39,7 +39,7 @@ endfor
   -i [ --netlist ] arg  Input netlist (verilog .v) file address.
   -b [ --bmr ] arg      Output bmr circuit file address.
   -n [ --np ] arg       Number of parties.
-  -p [ --perparty ] arg No of bits for every party
+  -p [ --perparty ] arg No of bits for every party (seperated by space)
 
 ```
 
