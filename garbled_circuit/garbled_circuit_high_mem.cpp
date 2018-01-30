@@ -59,6 +59,7 @@ int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   block* output_labels = nullptr;
   short* output_vals = nullptr;
 
+
   // allocate init and input values and translate form string
   CHECK(
       GarbleMakeLabels(garbled_circuit, &init_labels, &input_labels,
@@ -1017,6 +1018,8 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit,
                          int connfd) {
   BIGNUM* output_mask_bn = BN_new();
   BN_hex2bn(&output_mask_bn, output_mask.c_str());
+
+  LOG(INFO)<<"mask: "<< output_mask << endl;
 
   for (uint64_t cid = 0; cid < clock_cycles; cid++) {
     for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {

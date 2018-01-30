@@ -232,6 +232,7 @@ typedef struct GarbledCircuitCollection {
   // GarbledCircuit* garbledCircuits; /*!< topologically sorted circuits */    this one seems to be a better solution?!
   string tgx_file_address;
   vector<string> scd_file_addresses;
+  vector<bool> directInput;
   int circuitsNum;
   int circuitsLevel0Num;
 //  vector<GarbledCircuitIO> garbledCircuitIO;

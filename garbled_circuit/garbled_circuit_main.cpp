@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
   ("clock_cycles,c", po::value<uint64_t>(&clock_cycles)->default_value(1),
    "Number of clock cycles to evaluate the circuit.")  //
   ("dump_directory", po::value<string>(&dump_prefix)->default_value(""),
-   "Directory for dumping memory hex files.")  //
+  "Directory for dumping memory hex files.")  //
   ("disable_OT", "Disables Oblivious Transfer (OT) for transferring labels. "
    "WARNING: OT is crucial for GC security.")  //
   ("low_mem_foot", "Enables low memory footprint mode for circuits with "
@@ -192,8 +192,8 @@ int main(int argc, char* argv[]) {
    "which degrades the performance.")  //
   ("output_mask", po::value<string>(&output_mask)->default_value("0"),
    "Hexadecimal mask for output. 0 indicates that output belongs to Bob, "
-   "and 1 belongs to Alice. It has the same length of the output for a "
-   "single clock in case of sequential circuits.")  //
+   "and 1 belongs to Alice and 2 to both. It has the same length of "
+   "the output for a single clock in case of sequential circuits.")  //
   ("terminate_period,t",
    po::value<int64_t>(&terminate_period)->default_value(0),
    "Terminate signal reveal period: "
@@ -279,7 +279,10 @@ int main(int argc, char* argv[]) {
 
     GarbledCircuitCollection garbledCircuitCollection;
     garbledCircuitCollection.tgx_file_address = tgx_file_address;
-    garbledCircuitCollection.circuitsLevel0Num = 2;
+//    garbledCircuitCollection.circuitsLevel0Num = 2;
+    garbledCircuitCollection.directInput.push_back(true);
+    garbledCircuitCollection.directInput.push_back(true);
+    garbledCircuitCollection.directInput.push_back(false);
 
     if (ReadTGX(garbledCircuitCollection) == FAILURE) {
             LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
@@ -289,16 +292,25 @@ int main(int argc, char* argv[]) {
 
 
 
-    for (int cirID = 0; cirID < 1; cirID++) {//garbledCircuitCollection.circuitsNum
+    for (int cirID = 0; cirID < garbledCircuitCollection.circuitsNum; cirID++) {//garbledCircuitCollection.circuitsNum
 
     	// Transferring file in to hex
 		string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
 		string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
 		string init_str = ReadFileOrPassHex(init_f_hex_str);
-		input_f_hex_str= "bin/scd/TGX/inputs/g" + to_string(cirID) + ".txt";
-		string input_str = ReadFileOrPassHex(input_f_hex_str);
-
 		string output_str;
+
+
+		if (garbledCircuitCollection.directInput.at(cirID)){
+			input_f_hex_str = "bin/scd/TGX/inputs/g" + to_string(cirID) + ".txt";
+		}else{
+			input_f_hex_str = garbledCircuitCollection.garbledCircuitOutputs.at(0);
+		}
+
+
+		string input_str = ReadFileOrPassHex(input_f_hex_str);
+		LOG(INFO) << "current g input: " << input_str << endl;
+
 
 
 		uint64_t delta_time = RDTSC;
@@ -363,7 +375,10 @@ int main(int argc, char* argv[]) {
 
     GarbledCircuitCollection garbledCircuitCollection;
     garbledCircuitCollection.tgx_file_address = tgx_file_address;
-    garbledCircuitCollection.circuitsLevel0Num = 2;
+//    garbledCircuitCollection.circuitsLevel0Num = 2;
+    garbledCircuitCollection.directInput.push_back(true);
+    garbledCircuitCollection.directInput.push_back(true);
+    garbledCircuitCollection.directInput.push_back(false);
 
     if (ReadTGX(garbledCircuitCollection) == FAILURE) {
             LOG(ERROR) << "Error while reading tgx file: " << tgx_file_address << endl;
@@ -373,16 +388,24 @@ int main(int argc, char* argv[]) {
 
 
 
-    for (int cirID = 0; cirID < 1; cirID++) {//garbledCircuitCollection.circuitsNum
+    for (int cirID = 0; cirID < garbledCircuitCollection.circuitsNum; cirID++) {//garbledCircuitCollection.circuitsNum
 
     	// Transferring file in to hex
 		string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
 		string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
 		string init_str = ReadFileOrPassHex(init_f_hex_str);
-		input_f_hex_str= "bin/scd/TGX/inputs/e" + to_string(cirID) + ".txt";
-		string input_str = ReadFileOrPassHex(input_f_hex_str);
-
 		string output_str;
+
+
+		if (garbledCircuitCollection.directInput.at(cirID)){
+			input_f_hex_str = "bin/scd/TGX/inputs/e" + to_string(cirID) + ".txt";
+		}else{
+			input_f_hex_str = garbledCircuitCollection.garbledCircuitOutputs.at(1);
+		}
+
+
+		string input_str = ReadFileOrPassHex(input_f_hex_str);
+		LOG(INFO) << "current e input: " << input_str << endl;
 
 
 		uint64_t delta_time = RDTSC;
@@ -391,9 +414,6 @@ int main(int argc, char* argv[]) {
 				  input_str, clock_cycles, output_mask, terminate_period,
 				  output_mode, disable_OT, low_mem_foot, &output_str, connfd));
 		delta_time = RDTSC - delta_time;
-
-
-
 
 
 		LOG(INFO) << "Bob's output = " << output_str << endl;
