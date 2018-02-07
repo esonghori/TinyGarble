@@ -44,149 +44,191 @@
 #include "util/log.h"
 
 int ReadSCD(const string& file_name, GarbledCircuit* garbled_circuit) {
-  std::ifstream f(file_name, std::ios::out);
-  if (!f.is_open()) {
-    LOG(ERROR) << "can't open " << file_name << endl;
-    return FAILURE;
-  }
+	std::ifstream f(file_name, std::ios::out);
+	if (!f.is_open()) {
+		LOG(ERROR) << "can't open " << file_name << endl;
+		return FAILURE;
+	}
 
-  f >> garbled_circuit->p_init_size >> garbled_circuit->g_init_size
-      >> garbled_circuit->e_init_size >> garbled_circuit->p_input_size
-      >> garbled_circuit->g_input_size >> garbled_circuit->e_input_size
-      >> garbled_circuit->dff_size >> garbled_circuit->output_size
-      >> garbled_circuit->terminate_id >> garbled_circuit->gate_size;
+	f >> garbled_circuit->p_init_size >> garbled_circuit->g_init_size
+			>> garbled_circuit->e_init_size >> garbled_circuit->p_input_size
+			>> garbled_circuit->g_input_size >> garbled_circuit->e_input_size
+			>> garbled_circuit->dff_size >> garbled_circuit->output_size
+			>> garbled_circuit->terminate_id >> garbled_circuit->gate_size;
 
-  if (posix_memalign((void **) (&garbled_circuit->garbledGates), 128,
-                     sizeof(GarbledGate) * garbled_circuit->gate_size)) {
-    LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
-               << endl;
-    LOG(ERROR) << strerror(errno) << endl;
-    return FAILURE;
-  }
-  if (garbled_circuit->output_size > 0) {
-    if (posix_memalign((void **) (&garbled_circuit->outputs), 128,
-                       sizeof(int64_t) * garbled_circuit->output_size)) {
-      LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
-                 << endl;
-      LOG(ERROR) << strerror(errno) << endl;
-      return FAILURE;
-    }
-  } else {
-    garbled_circuit->outputs = nullptr;
-  }
-  if (garbled_circuit->dff_size > 0) {
-    try {
-      garbled_circuit->D = new int64_t[garbled_circuit->dff_size];
-      garbled_circuit->I = new int64_t[garbled_circuit->dff_size];
-    } catch (std::bad_alloc& e) {
-      LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory"
-                 << endl << e.what() << endl;
-      return FAILURE;
+	if (posix_memalign((void **) (&garbled_circuit->garbledGates), 128,
+			sizeof(GarbledGate) * garbled_circuit->gate_size)) {
+		LOG(ERROR)
+				<< "Linux is a cheap miser that refuses to give us memory"
+				<< endl;
+		LOG(ERROR) << strerror(errno) << endl;
+		return FAILURE;
+	}
+	if (garbled_circuit->output_size > 0) {
+		if (posix_memalign((void **) (&garbled_circuit->outputs), 128,
+				sizeof(int64_t) * garbled_circuit->output_size)) {
+			LOG(ERROR)
+					<< "Linux is a cheap miser that refuses to give us memory"
+					<< endl;
+			LOG(ERROR) << strerror(errno) << endl;
+			return FAILURE;
+		}
+	} else {
+		garbled_circuit->outputs = nullptr;
+	}
+	if (garbled_circuit->dff_size > 0) {
+		try {
+			garbled_circuit->D = new int64_t[garbled_circuit->dff_size];
+			garbled_circuit->I = new int64_t[garbled_circuit->dff_size];
+		} catch (std::bad_alloc& e) {
+			LOG(ERROR)
+					<< "Linux is a cheap miser that refuses to give us memory"
+					<< endl << e.what() << endl;
+			return FAILURE;
 
-    }
-  } else {
-    garbled_circuit->D = nullptr;
-    garbled_circuit->I = nullptr;
-  }
+		}
+	} else {
+		garbled_circuit->D = nullptr;
+		garbled_circuit->I = nullptr;
+	}
 
-  for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
-    garbled_circuit->garbledGates[i].output = garbled_circuit->get_gate_lo_index()
-        + i;
-  }
+	for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
+		garbled_circuit->garbledGates[i].output =
+				garbled_circuit->get_gate_lo_index() + i;
+	}
 
-  for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
-    f >> garbled_circuit->garbledGates[i].input0;
-  }
+	for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
+		f >> garbled_circuit->garbledGates[i].input0;
+	}
 
-  for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
-    f >> garbled_circuit->garbledGates[i].input1;
-  }
-  for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
-    f >> garbled_circuit->garbledGates[i].type;
-  }
-  for (uint64_t i = 0; i < garbled_circuit->output_size; i++) {
-    f >> garbled_circuit->outputs[i];
-  }
-  for (uint64_t i = 0; i < garbled_circuit->dff_size; i++) {
-    f >> garbled_circuit->D[i];
-  }
-  for (uint64_t i = 0; i < garbled_circuit->dff_size; i++) {
-    f >> garbled_circuit->I[i];
-  }
+	for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
+		f >> garbled_circuit->garbledGates[i].input1;
+	}
+	for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
+		f >> garbled_circuit->garbledGates[i].type;
+	}
+	for (uint64_t i = 0; i < garbled_circuit->output_size; i++) {
+		f >> garbled_circuit->outputs[i];
+	}
+	for (uint64_t i = 0; i < garbled_circuit->dff_size; i++) {
+		f >> garbled_circuit->D[i];
+	}
+	for (uint64_t i = 0; i < garbled_circuit->dff_size; i++) {
+		f >> garbled_circuit->I[i];
+	}
 
-  f.close();
+	f.close();
 
-  return SUCCESS;
+	return SUCCESS;
 }
 
 int WriteSCD(const ReadCircuit& read_circuit, const string &file_name) {
-  std::ofstream f(file_name.c_str(), std::ios::out);
-  if (!f.is_open()) {
-    LOG(ERROR) << "can't open " << file_name << endl;
-    return -1;
-  }
+	std::ofstream f(file_name.c_str(), std::ios::out);
+	if (!f.is_open()) {
+		LOG(ERROR) << "can't open " << file_name << endl;
+		return -1;
+	}
 
-  f << read_circuit.p_init_size << " " << read_circuit.g_init_size << " "
-    << read_circuit.e_init_size << " " << read_circuit.p_input_size << " "
-    << read_circuit.g_input_size << " " << read_circuit.e_input_size << " "
-    << read_circuit.dff_size << " " << read_circuit.output_size << " "
-    << read_circuit.terminate_id << " " << read_circuit.gate_size << endl;
+	f << read_circuit.p_init_size << " " << read_circuit.g_init_size << " "
+			<< read_circuit.e_init_size << " " << read_circuit.p_input_size
+			<< " " << read_circuit.g_input_size << " "
+			<< read_circuit.e_input_size << " " << read_circuit.dff_size << " "
+			<< read_circuit.output_size << " " << read_circuit.terminate_id
+			<< " " << read_circuit.gate_size << endl;
 
-  /*
-   * 1st input of each gate
-   */
-  for (uint64_t i = 0; i < read_circuit.gate_size; i++) {
-    int gindex = read_circuit.task_schedule[i];
-    f << read_circuit.gate_list[gindex].input[0] << " ";
-  }
-  f << endl;
-  /*
-   * 2nd input of each gate
-   */
-  for (uint64_t i = 0; i < read_circuit.gate_size; i++) {
-    int gindex = read_circuit.task_schedule[i];
-    f << read_circuit.gate_list[gindex].input[1] << " ";
-  }
-  f << endl;
-  /*
-   *type of each gate
-   */
-  for (uint64_t i = 0; i < read_circuit.gate_size; i++) {
-    int gindex = read_circuit.task_schedule[i];
-    f << (int) read_circuit.gate_list[gindex].type << " ";
-  }
-  f << endl;
-  /*
-   * outputs : output wire index
-   */
-  for (uint64_t i = 0; i < read_circuit.output_size; i++) {
-    f << read_circuit.output_list[i] << " ";
-  }
-  f << endl;
-  /*
-   * D : latch index
-   * it stores a wire index for DFF:
-   */
-  for (uint64_t i = 0; i < read_circuit.dff_size; i++) {
-    f << read_circuit.dff_list[i].input[0] << " ";  //D
-  }
-  f << endl;
-  /*
-   * I : initial value index
-   * it store the input index or constant value for each DFF.
-   * I[i] == CONST_ZERO (== -2) : it means the initial value of the DFF is zero.
-   * At the first cycle, Garbler should send token[0] to Evaluator.
-   * I[i] == CONST_ONE (== -3) : it means the initial value of the DFF is one.
-   * At the first cycle, Garbler should send token[1] to Evaluator.
-   * I[i] > 0 : it means the initial value of the DFF is value of actual
-   * circuit init port.
-   */
-  for (uint64_t i = 0; i < read_circuit.dff_size; i++) {
-    f << (int64_t) read_circuit.dff_list[i].input[1] << " ";  //I
-  }
-  f << endl;
+	/*
+	 * 1st input of each gate
+	 */
+	for (uint64_t i = 0; i < read_circuit.gate_size; i++) {
+		int gindex = read_circuit.task_schedule[i];
+		f << read_circuit.gate_list[gindex].input[0] << " ";
+	}
+	f << endl;
+	/*
+	 * 2nd input of each gate
+	 */
+	for (uint64_t i = 0; i < read_circuit.gate_size; i++) {
+		int gindex = read_circuit.task_schedule[i];
+		f << read_circuit.gate_list[gindex].input[1] << " ";
+	}
+	f << endl;
+	/*
+	 *type of each gate
+	 */
+	for (uint64_t i = 0; i < read_circuit.gate_size; i++) {
+		int gindex = read_circuit.task_schedule[i];
+		f << (int) read_circuit.gate_list[gindex].type << " ";
+	}
+	f << endl;
+	/*
+	 * outputs : output wire index
+	 */
+	for (uint64_t i = 0; i < read_circuit.output_size; i++) {
+		f << read_circuit.output_list[i] << " ";
+	}
+	f << endl;
+	/*
+	 * D : latch index
+	 * it stores a wire index for DFF:
+	 */
+	for (uint64_t i = 0; i < read_circuit.dff_size; i++) {
+		f << read_circuit.dff_list[i].input[0] << " ";  //D
+	}
+	f << endl;
+	/*
+	 * I : initial value index
+	 * it store the input index or constant value for each DFF.
+	 * I[i] == CONST_ZERO (== -2) : it means the initial value of the DFF is zero.
+	 * At the first cycle, Garbler should send token[0] to Evaluator.
+	 * I[i] == CONST_ONE (== -3) : it means the initial value of the DFF is one.
+	 * At the first cycle, Garbler should send token[1] to Evaluator.
+	 * I[i] > 0 : it means the initial value of the DFF is value of actual
+	 * circuit init port.
+	 */
+	for (uint64_t i = 0; i < read_circuit.dff_size; i++) {
+		f << (int64_t) read_circuit.dff_list[i].input[1] << " ";  //I
+	}
+	f << endl;
 
-  f.close();
+	f.close();
 
-  return 0;
+	return 0;
+}
+
+int ReadTGX(const string& file_name,
+		GarbledCircuitCollection* garbled_circuit_collection) {
+	std::ifstream f(file_name, std::ios::out);
+	if (!f.is_open()) {
+		LOG(ERROR) << "can't open " << file_name << endl;
+		return FAILURE;
+	}
+
+	LOG(INFO) << "can you reach here?";
+
+	f >> garbled_circuit_collection->number_of_circuits;
+
+	if (posix_memalign((void **) (&garbled_circuit_collection->garbled_circuits), 128,
+			sizeof(GarbledCircuit) * garbled_circuit_collection->number_of_circuits)) {
+		LOG(ERROR)
+				<< "Linux is a cheap miser that refuses to give us memory"
+				<< endl;
+		LOG(ERROR) << strerror(errno) << endl;
+		return FAILURE;
+	}
+
+	string scd_file;
+	for (int i=0 ; i<garbled_circuit_collection->number_of_circuits ; i++) {
+		f >> scd_file;
+		GarbledCircuit garbled_circuit;
+		if (ReadSCD(scd_file, &garbled_circuit) == FAILURE) {
+			LOG(ERROR) << "Error while reading scd file: " << scd_file
+					<< endl;
+			return FAILURE;
+		}
+		garbled_circuit_collection->garbled_circuits[i] = garbled_circuit;
+	}
+
+	f.close();
+
+	return SUCCESS;
 }

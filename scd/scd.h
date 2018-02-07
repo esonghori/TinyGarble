@@ -38,5 +38,6 @@ int ReadSCD(const string& file_name, GarbledCircuit *garbled_circuit);
 
 int WriteSCD(const ReadCircuit &read_circuit, const string &file_name);
 
+int ReadTGX(const string& file_name,GarbledCircuitCollection* garbled_circuit_collection);
 
 #endif /* SCD_SCD_H_ */

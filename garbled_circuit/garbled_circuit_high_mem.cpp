@@ -59,10 +59,10 @@ int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
   block* output_labels = nullptr;
   short* output_vals = nullptr;
 
-  // allocate init and input values and translate form string
+  // allocate init and input values and translate from string
   CHECK(
       GarbleMakeLabels(garbled_circuit, &init_labels, &input_labels,
-                       &output_labels, &output_vals, R, *clock_cycles));
+                       &output_labels, &output_vals, R, *clock_cycles, 1));
 
   uint64_t ot_start_time = RDTSC;
   {
@@ -940,7 +940,7 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
 
 int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, block** init_labels,
                      block** input_labels, block** output_labels,
-                     short** output_vals, block R, uint64_t clock_cycles) {
+                     short** output_vals, block R, uint64_t clock_cycles, int createMode) {
 
 // allocate and generate random init and inputs label pairs
   (*init_labels) = nullptr;
@@ -956,7 +956,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, block** init_labels,
   (*output_labels) = nullptr;
   (*output_vals) = nullptr;
 
-  if (garbled_circuit.get_input_size() > 0) {
+  if (garbled_circuit.get_input_size() > 0 && createMode == 1) {// create if not an intermediate circuit
     CHECK_ALLOC(
         (*input_labels) = new block[clock_cycles
             * garbled_circuit.get_input_size() * 2]);

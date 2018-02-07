@@ -132,6 +132,7 @@ int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
   return status;
 }
 
+
 int main(int argc, char* argv[]) {
 
   LogInitial(argc, argv);
@@ -277,6 +278,7 @@ int main(int argc, char* argv[]) {
         GarbleStr(scd_file_address, p_init_str, p_input_str, init_str,
                   input_str, clock_cycles, output_mask, terminate_period,
                   output_mode, disable_OT, low_mem_foot, &output_str, connfd));
+
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Alice's output = " << output_str << endl;
@@ -284,6 +286,7 @@ int main(int argc, char* argv[]) {
     std::cout << output_str << endl;
 
     ServerClose(connfd);
+
   } else if (vm.count("bob")) {
 
     if (vm.count("server_ip")) {
@@ -314,6 +317,7 @@ int main(int argc, char* argv[]) {
         EvaluateStr(scd_file_address, p_init_str, p_input_str, init_str,
                     input_str, clock_cycles, output_mask, terminate_period,
                     output_mode, disable_OT, low_mem_foot, &output_str, connfd));
+
     delta_time = RDTSC - delta_time;
 
     LOG(INFO) << "Bob's output = " << output_str << endl;

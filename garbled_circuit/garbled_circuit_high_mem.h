@@ -77,7 +77,7 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
                            bool disable_OT, int connfd);
 int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, block** init_labels,
                      block** input_labels, block** output_labels,
-                     short** output_vals, block R, uint64_t clock_cycles);
+                     short** output_vals, block R, uint64_t clock_cycles, int createMode);
 int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit,
                        block** init_labels, block** input_labels,
                        block** output_labels, short** output_vals,

@@ -90,6 +90,7 @@ typedef struct GarbledCircuit {
   uint64_t p_input_size;  // public input
   uint64_t g_input_size;  // garbler input
   uint64_t e_input_size;  // eval input
+  uint64_t i_input_size; // intermediate input
   uint64_t dff_size;
   uint64_t output_size;
   uint64_t terminate_id;  // terminate signal id, 0 in case of no signal
@@ -101,6 +102,9 @@ typedef struct GarbledCircuit {
    to D signal (Data) of DFF. */
   int64_t *I; /*!< p-length array of wire index corresponding
    to I signal (Initial) of DFF. */
+
+  block* output_labels;
+
 
   inline uint64_t get_init_size() const {
     return p_init_size + g_init_size + e_init_size;
@@ -127,6 +131,7 @@ typedef struct GarbledCircuit {
    * 3.p_input
    * 4.g_input
    * 5.e_input
+   * 6.i_input **do required changes
    * 6.dff
    * 7.gate
    */
@@ -211,6 +216,14 @@ typedef struct GarbledCircuit {
 
 } GarbledCircuit;
 
+
+typedef struct GarbledCircuitCollection {
+	uint64_t number_of_circuits;
+	GarbledCircuit* garbled_circuits;
+}GarbledCircuitCollection;
+
+
+
 /**
  * @brief Modes of printing output.
  */
@@ -219,6 +232,10 @@ enum class OutputMode {
   separated_clock = 1,
   last_clock = 2
 };
+
+//enum class CreateMode {
+//
+//};
 
 uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
