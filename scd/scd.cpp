@@ -207,8 +207,10 @@ int ReadTGX(const string& file_name,
 
 	f >> garbled_circuit_collection->number_of_circuits;
 
-	if (posix_memalign((void **) (&garbled_circuit_collection->garbled_circuits), 128,
-			sizeof(GarbledCircuit) * garbled_circuit_collection->number_of_circuits)) {
+	if (posix_memalign(
+			(void **) (&garbled_circuit_collection->garbled_circuits), 128,
+			sizeof(GarbledCircuit)
+					* garbled_circuit_collection->number_of_circuits)) {
 		LOG(ERROR)
 				<< "Linux is a cheap miser that refuses to give us memory"
 				<< endl;
@@ -217,7 +219,7 @@ int ReadTGX(const string& file_name,
 	}
 
 	string scd_file;
-	for (int i=0 ; i<garbled_circuit_collection->number_of_circuits ; i++) {
+	for (int i = 0; i < garbled_circuit_collection->number_of_circuits; i++) {
 		f >> scd_file;
 		GarbledCircuit garbled_circuit;
 		if (ReadSCD(scd_file, &garbled_circuit) == FAILURE) {
@@ -225,6 +227,17 @@ int ReadTGX(const string& file_name,
 					<< endl;
 			return FAILURE;
 		}
+
+
+		FillFanout(&garbled_circuit);
+
+////FIX needs to cop
+//		if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
+//			LOG(ERROR) << "There is no terminate signal in the circuit."
+//					" The terminate period should be 0." << endl;
+//			return FAILURE;
+//		}
+
 		garbled_circuit_collection->garbled_circuits[i] = garbled_circuit;
 	}
 

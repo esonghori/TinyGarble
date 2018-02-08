@@ -59,7 +59,7 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 		return FAILURE;
 	}
 
-	//Sadegh Edits
+
 	GarbledCircuitCollection garbled_circuit_collection;
 	if (ReadTGX(file_address, &garbled_circuit_collection) == FAILURE) {
 		LOG(ERROR) << "Error while reading tgx file: " << file_address
@@ -67,16 +67,10 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 		return FAILURE;
 	}
 
-	//Previous
+
 	GarbledCircuit garbled_circuit = garbled_circuit_collection.garbled_circuits[0];
 
-	FillFanout(&garbled_circuit);
 
-	if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
-		LOG(ERROR) << "There is no terminate signal in the circuit."
-				" The terminate period should be 0." << endl;
-		return FAILURE;
-	}
 
 	// parse init and input
 	BIGNUM* p_init = BN_new();
@@ -85,6 +79,8 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	BIGNUM* g_input = BN_new();
 	BIGNUM* output_bn = BN_new();
 
+
+	//FIX need to handle multiple inputs for different circuits
 	CHECK(
 			ParseInitInputStr(init_str, input_str, garbled_circuit.g_init_size,
 					garbled_circuit.g_input_size, clock_cycles, &g_init,
@@ -101,18 +97,20 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	block global_key = RandomBlock();
 	CHECK(SendData(connfd, &global_key, sizeof(block)));  // send global key
 
-	if (low_mem_foot && clock_cycles > 1) {
-		CHECK(
-				GarbleBNLowMem(garbled_circuit, p_init, p_input, g_init,
-						g_input, &clock_cycles, output_mask, terminate_period,
-						output_mode, output_bn, R, global_key, disable_OT,
-						connfd));
 
-		CHECK(
-				OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
-						output_mode, output_str));
-
-	} else {
+		//FIX need to handle low_mem
+//	if (low_mem_foot && clock_cycles > 1) {
+//		CHECK(
+//				GarbleBNLowMem(garbled_circuit, p_init, p_input, g_init,
+//						g_input, &clock_cycles, output_mask, terminate_period,
+//						output_mode, output_bn, R, global_key, disable_OT,
+//						connfd));
+//
+//		CHECK(
+//				OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
+//						output_mode, output_str));
+//
+//	} else {
 		CHECK(
 				GarbleBNHighMem(garbled_circuit, p_init, p_input, g_init,
 						g_input, &clock_cycles, output_mask, terminate_period,
@@ -121,7 +119,7 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 		CHECK(
 				OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
 						output_mode, output_str));
-	}
+//	}
 	BN_free(p_init);
 	BN_free(p_input);
 	BN_free(g_init);
@@ -143,7 +141,7 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 		return FAILURE;
 	}
 
-	//Sadegh Edits
+
 	GarbledCircuitCollection garbled_circuit_collection;
 	if (ReadTGX(file_address, &garbled_circuit_collection) == FAILURE) {
 		LOG(ERROR) << "Error while reading tgx file: " << file_address
@@ -151,7 +149,6 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 		return FAILURE;
 	}
 
-	//Previous
 	GarbledCircuit garbled_circuit = garbled_circuit_collection.garbled_circuits[0];
 
 	FillFanout(&garbled_circuit);
@@ -168,6 +165,7 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	BIGNUM* e_init = BN_new();
 	BIGNUM* e_input = BN_new();
 	BIGNUM* output_bn = BN_new();
+
 	CHECK(
 			ParseInitInputStr(init_str, input_str, garbled_circuit.e_init_size,
 					garbled_circuit.e_input_size, clock_cycles, &e_init,
@@ -181,15 +179,15 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	block global_key = RandomBlock();
 	CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
 
-	if (low_mem_foot && clock_cycles > 1) {
-		CHECK(
-				EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init,
-						e_input, &clock_cycles, output_mask, terminate_period,
-						output_mode, output_bn, global_key, disable_OT, connfd));
-		CHECK(
-				OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
-						output_mode, output_str));
-	} else {
+//	if (low_mem_foot && clock_cycles > 1) {
+//		CHECK(
+//				EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init,
+//						e_input, &clock_cycles, output_mask, terminate_period,
+//						output_mode, output_bn, global_key, disable_OT, connfd));
+//		CHECK(
+//				OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
+//						output_mode, output_str));
+//	} else {
 		CHECK(
 				EvaluateBNHighMem(garbled_circuit, p_init, p_input, e_init,
 						e_input, &clock_cycles, output_mask, terminate_period,
@@ -197,7 +195,8 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 		CHECK(
 				OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
 						output_mode, output_str));
-	}
+//	}
+
 	BN_free(p_init);
 	BN_free(p_input);
 	BN_free(e_init);

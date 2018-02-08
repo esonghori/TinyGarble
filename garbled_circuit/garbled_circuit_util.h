@@ -218,7 +218,7 @@ typedef struct GarbledCircuit {
 
 
 typedef struct GarbledCircuitCollection {
-	uint64_t number_of_circuits;
+	int number_of_circuits;
 	GarbledCircuit* garbled_circuits;
 }GarbledCircuitCollection;
 
