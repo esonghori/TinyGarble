@@ -69,8 +69,14 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	//FIX need to handle multiple circuits
 	FillFanout(&garbled_circuit_collection.garbled_circuits[0]);
 
-	GarbledCircuit garbled_circuit =
-			garbled_circuit_collection.garbled_circuits[0];
+
+	//FIX needs to handle terminate
+//	if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
+//		LOG(ERROR) << "There is no terminate signal in the circuit."
+//				" The terminate period should be 0." << endl;
+//		return FAILURE;
+//	}
+
 
 	// parse init and input
 	BIGNUM* p_init = BN_new();
@@ -81,12 +87,14 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 
 	//FIX need to handle multiple inputs for different circuits
 	CHECK(
-			ParseInitInputStr(init_str, input_str, garbled_circuit.g_init_size,
-					garbled_circuit.g_input_size, clock_cycles, &g_init,
-					&g_input));
+			ParseInitInputStr(init_str, input_str,
+					garbled_circuit_collection.garbled_circuits[0].g_init_size,
+					garbled_circuit_collection.garbled_circuits[0].g_input_size,
+					clock_cycles, &g_init, &g_input));
 	CHECK(
 			ParseInitInputStr(p_init_str, p_input_str,
-					garbled_circuit.p_init_size, garbled_circuit.p_input_size,
+					garbled_circuit_collection.garbled_circuits[0].p_init_size,
+					garbled_circuit_collection.garbled_circuits[0].p_input_size,
 					clock_cycles, &p_init, &p_input));
 
 	block R = RandomBlock();  // secret label
@@ -110,11 +118,11 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 //
 //	} else {
 	CHECK(
-			GarbleBNHighMem(garbled_circuit, p_init, p_input, g_init, g_input,
+			GarbleBNHighMem(garbled_circuit_collection, p_init, p_input, g_init, g_input,
 					&clock_cycles, output_mask, terminate_period, output_mode,
 					output_bn, R, global_key, disable_OT, connfd));
 	CHECK(
-			OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
+			OutputBN2StrHighMem(garbled_circuit_collection, output_bn, clock_cycles,
 					output_mode, output_str));
 //	}
 	BN_free(p_init);
@@ -123,7 +131,7 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	BN_free(g_input);
 	BN_free(output_bn);
 
-	RemoveGarbledCircuit(&garbled_circuit);
+//	RemoveGarbledCircuit(&garbled_circuit);
 
 	return SUCCESS;
 }
@@ -146,16 +154,15 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	}
 
 	//FIX need to handle multiple circuits
-	FillFanout (&garbled_circuit_collection.garbled_circuits[0]);
+	FillFanout(&garbled_circuit_collection.garbled_circuits[0]);
 
-	GarbledCircuit garbled_circuit =
-			garbled_circuit_collection.garbled_circuits[0];
 
-	if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
-		LOG(ERROR) << "There is no terminate signal in the circuit."
-				" The terminate period should be 0." << endl;
-		return FAILURE;
-	}
+	//FIX needs to handle terminate
+//	if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
+//		LOG(ERROR) << "There is no terminate signal in the circuit."
+//				" The terminate period should be 0." << endl;
+//		return FAILURE;
+//	}
 
 	// allocate init and input values and translate form string
 	BIGNUM* p_init = BN_new();
@@ -165,12 +172,14 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	BIGNUM* output_bn = BN_new();
 
 	CHECK(
-			ParseInitInputStr(init_str, input_str, garbled_circuit.e_init_size,
-					garbled_circuit.e_input_size, clock_cycles, &e_init,
-					&e_input));
+			ParseInitInputStr(init_str, input_str,
+					garbled_circuit_collection.garbled_circuits[0].e_init_size,
+					garbled_circuit_collection.garbled_circuits[0].e_input_size,
+					clock_cycles, &e_init, &e_input));
 	CHECK(
 			ParseInitInputStr(p_init_str, p_input_str,
-					garbled_circuit.p_init_size, garbled_circuit.p_input_size,
+					garbled_circuit_collection.garbled_circuits[0].p_init_size,
+					garbled_circuit_collection.garbled_circuits[0].p_input_size,
 					clock_cycles, &p_init, &p_input));
 
 	// global key
@@ -187,11 +196,11 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 //						output_mode, output_str));
 //	} else {
 	CHECK(
-			EvaluateBNHighMem(garbled_circuit, p_init, p_input, e_init, e_input,
+			EvaluateBNHighMem(garbled_circuit_collection, p_init, p_input, e_init, e_input,
 					&clock_cycles, output_mask, terminate_period, output_mode,
 					output_bn, global_key, disable_OT, connfd));
 	CHECK(
-			OutputBN2StrHighMem(garbled_circuit, output_bn, clock_cycles,
+			OutputBN2StrHighMem(garbled_circuit_collection, output_bn, clock_cycles,
 					output_mode, output_str));
 //	}
 
@@ -201,7 +210,7 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	BN_free(e_input);
 	BN_free(output_bn);
 
-	RemoveGarbledCircuit(&garbled_circuit);
+//	RemoveGarbledCircuit(&garbled_circuit);
 	return SUCCESS;
 }
 

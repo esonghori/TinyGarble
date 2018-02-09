@@ -233,8 +233,9 @@ int EvalauatePlaintextStr(const string& scd_file_address,
   EvalauatePlaintext(garbled_circuit, p_init, g_init, e_init, p_input, g_input,
                      e_input, &clock_cycles, terminate_period, &outputs);
 
-  OutputBN2StrHighMem(garbled_circuit, outputs, clock_cycles, output_mode,
-                      outputs_str);
+  //FIX needs to get a garbled_circuit_collection
+//  OutputBN2StrHighMem(garbled_circuit, outputs, clock_cycles, output_mode,
+//                      outputs_str);
   return SUCCESS;
 }
 
