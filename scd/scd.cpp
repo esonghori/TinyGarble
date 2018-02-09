@@ -34,7 +34,7 @@
  */
 
 #include "scd/scd.h"
-
+#include "garbled_circuit/garbled_circuit_util.h"
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
@@ -229,9 +229,7 @@ int ReadTGX(const string& file_name,
 		}
 
 
-		FillFanout(&garbled_circuit);
-
-////FIX needs to cop
+////FIX needs to cop with the terminate option
 //		if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
 //			LOG(ERROR) << "There is no terminate signal in the circuit."
 //					" The terminate period should be 0." << endl;
