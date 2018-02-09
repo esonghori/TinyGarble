@@ -239,6 +239,8 @@ enum class OutputMode {
 
 uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
+void RemoveGarbledCircuitCollection(GarbledCircuitCollection* garbled_circuit_collection);
+
 int ParseInitInputStr(const string& init_str, const string&input_str,
                       uint64_t init_size, uint64_t input_size,
                       uint64_t clock_cycles, BIGNUM** init, BIGNUM** input);

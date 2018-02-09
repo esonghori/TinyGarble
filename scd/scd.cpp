@@ -229,12 +229,6 @@ int ReadTGX(const string& file_name,
 		}
 
 
-////FIX needs to cop with the terminate option
-//		if (terminate_period != 0 && garbled_circuit.terminate_id == 0) {
-//			LOG(ERROR) << "There is no terminate signal in the circuit."
-//					" The terminate period should be 0." << endl;
-//			return FAILURE;
-//		}
 
 		garbled_circuit_collection->garbled_circuits[i] = garbled_circuit;
 	}

@@ -131,7 +131,7 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	BN_free(g_input);
 	BN_free(output_bn);
 
-//	RemoveGarbledCircuit(&garbled_circuit);
+	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 
 	return SUCCESS;
 }
@@ -186,6 +186,7 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	block global_key = RandomBlock();
 	CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
 
+	//FIX
 //	if (low_mem_foot && clock_cycles > 1) {
 //		CHECK(
 //				EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init,
@@ -210,7 +211,7 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	BN_free(e_input);
 	BN_free(output_bn);
 
-//	RemoveGarbledCircuit(&garbled_circuit);
+	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 	return SUCCESS;
 }
 
