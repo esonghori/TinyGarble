@@ -241,9 +241,7 @@ uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
 void RemoveGarbledCircuitCollection(GarbledCircuitCollection* garbled_circuit_collection);
 
-int ParseInitInputStr(const string& init_str, const string&input_str,
-                      uint64_t init_size, uint64_t input_size,
-                      uint64_t clock_cycles, BIGNUM** init, BIGNUM** input);
+int ParseInitInputStr(const string& init_str, const string&input_str, BIGNUM** init, BIGNUM** input);
 void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type,
                               short* output_value);
 void GarbleGate(BlockPair input0_labels, short input0_value,

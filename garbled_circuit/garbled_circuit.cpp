@@ -49,9 +49,7 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int GarbleStr(const string& file_address, const string& p_init_str,
-		const string& p_input_str, const string& init_str,
-		const string& input_str, uint64_t clock_cycles,
+int GarbleStr(const string& file_address, uint64_t clock_cycles,
 		const string& output_mask, int64_t terminate_period,
 		OutputMode output_mode, bool disable_OT, bool low_mem_foot,
 		string* output_str, int connfd) {
@@ -79,6 +77,7 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 //	}
 
 // parse init and input
+	//NEXT: read all files and store them in a struct and pass it to GarbleStr and EvaluatorStr
 	BIGNUM* p_init = BN_new();
 	BIGNUM* p_input = BN_new();
 	BIGNUM* g_init = BN_new();
@@ -86,18 +85,17 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	BIGNUM* output_bn = BN_new();
 
 	//FIX need to handle multiple inputs for different circuits
+	string init_str = "0";
+	string p_init_str = "0";
+	string p_input_str = "0";
+	string input_str  = ReadFileOrPassHex("./Inputs/0_g.txt");
+
 	//garbler input and init
 	CHECK(
-			ParseInitInputStr(init_str, input_str,
-					garbled_circuit_collection.garbled_circuits[0].g_init_size,
-					garbled_circuit_collection.garbled_circuits[0].g_input_size,
-					clock_cycles, &g_init, &g_input));
+			ParseInitInputStr(init_str, input_str, &g_init, &g_input));
 	//pubic input and init
 	CHECK(
-			ParseInitInputStr(p_init_str, p_input_str,
-					garbled_circuit_collection.garbled_circuits[0].p_init_size,
-					garbled_circuit_collection.garbled_circuits[0].p_input_size,
-					clock_cycles, &p_init, &p_input));
+			ParseInitInputStr(p_init_str, p_input_str, &p_init, &p_input));
 
 	block R = RandomBlock();  // secret label
 	*((short *) (&R)) |= 1;
@@ -138,9 +136,7 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	return SUCCESS;
 }
 
-int EvaluateStr(const string& file_address, const string& p_init_str,
-		const string& p_input_str, const string& init_str,
-		const string& input_str, uint64_t clock_cycles,
+int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 		const string& output_mask, int64_t terminate_period,
 		OutputMode output_mode, bool disable_OT, bool low_mem_foot,
 		string* output_str, int connfd) {
@@ -174,16 +170,15 @@ int EvaluateStr(const string& file_address, const string& p_init_str,
 	BIGNUM* e_input = BN_new();
 	BIGNUM* output_bn = BN_new();
 
+	string init_str = "0";
+	string p_init_str = "0";
+	string p_input_str = "0";
+	string input_str  = ReadFileOrPassHex("./Inputs/0_e.txt");
+
 	CHECK(
-			ParseInitInputStr(init_str, input_str,
-					garbled_circuit_collection.garbled_circuits[0].e_init_size,
-					garbled_circuit_collection.garbled_circuits[0].e_input_size,
-					clock_cycles, &e_init, &e_input));
+			ParseInitInputStr(init_str, input_str, &e_init, &e_input));
 	CHECK(
-			ParseInitInputStr(p_init_str, p_input_str,
-					garbled_circuit_collection.garbled_circuits[0].p_init_size,
-					garbled_circuit_collection.garbled_circuits[0].p_input_size,
-					clock_cycles, &p_init, &p_input));
+			ParseInitInputStr(p_init_str, p_input_str,&p_init, &p_input));
 
 	// global key
 	block global_key = RandomBlock();

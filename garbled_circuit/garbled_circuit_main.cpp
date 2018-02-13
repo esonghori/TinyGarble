@@ -50,14 +50,14 @@ namespace po = boost::program_options;
 using std::string;
 using std::vector;
 
-int CheckOptionsAlice(const string& scd_file_address, uint64_t clock_cycles,
+int CheckOptionsAlice(const string& file_address, uint64_t clock_cycles,
                       const string& output_mask, bool disable_OT,
                       bool low_mem_foot, int connfd) {
 
-  int size = scd_file_address.length();
+  int size = file_address.length();
   SendData(connfd, &size, sizeof(int));
   if (size > 0) {
-    SendData(connfd, scd_file_address.c_str(), size);
+    SendData(connfd, file_address.c_str(), size);
   }
 
   SendData(connfd, &clock_cycles, sizeof(uint64_t));
@@ -79,11 +79,11 @@ int CheckOptionsAlice(const string& scd_file_address, uint64_t clock_cycles,
   return status;
 }
 
-int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
+int CheckOptionsBob(const string& file_address, uint64_t clock_cycles,
                     const string& output_mask, bool disable_OT,
                     bool low_mem_foot, int connfd) {
 
-  string scd_file_address_;
+  string file_address_;
   uint64_t clock_cycles_;
   string output_mask_;
   bool disable_OT_;
@@ -94,11 +94,11 @@ int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
 
   RecvData(connfd, &size, sizeof(int));
   if (size <= 0) {
-    scd_file_address_ = "";
+    file_address_ = "";
   } else {
     buff = new char[size];
     RecvData(connfd, buff, size);
-    scd_file_address_ = string(buff);
+    file_address_ = string(buff);
     delete[] buff;
   }
 
@@ -118,7 +118,7 @@ int CheckOptionsBob(const string& scd_file_address, uint64_t clock_cycles,
   RecvData(connfd, &low_mem_foot_, sizeof(bool));
 
   int status;
-  if (scd_file_address_ != scd_file_address || clock_cycles_ != clock_cycles
+  if (file_address_ != file_address || clock_cycles_ != clock_cycles
       || output_mask_ != output_mask || disable_OT_ != disable_OT
       || low_mem_foot_ != low_mem_foot) {
     LOG(ERROR) << "Alice's and Bob's options are not same." << endl;
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
   SrandSSE(time(0));
 
   int port;
-  string scd_file_address;
+  string file_address;
   string server_ip;
   string p_init_f_hex_str;
   string p_input_f_hex_str;
@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
   ("alice,a", "Run as Alice (server).")  //
   ("bob,b", "Run as Bob (client).")  //
   ("scd_file,i",
-   po::value<string>(&scd_file_address)->default_value(
+   po::value<string>(&file_address)->default_value(
        string(TINYGARBLE_BINARY_DIR) + "/scd/netlists/hamming_32bit_1cc.scd"),
    "Simple circuit description (.scd) file address.")  //
   ("port,p", po::value<int>(&port)->default_value(1234), "socket port")  //
@@ -253,14 +253,14 @@ int main(int argc, char* argv[]) {
     return FAILURE;
   }
 
-  // Transferring file in to hex
-  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
-  string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
-  string init_str = ReadFileOrPassHex(init_f_hex_str);
-  string input_str;
+  // Transferring file in to hex DONT NEED ANYMORE
+//  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
+//  string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
+//  string init_str = ReadFileOrPassHex(init_f_hex_str);
+//  string input_str;
 
   if (vm.count("alice")) {
-	input_str  = ReadFileOrPassHex("./Inputs/0_g.txt");
+
     // open the socket
     int connfd;
     if ((connfd = ServerInit(port)) == -1) {
@@ -276,8 +276,7 @@ int main(int argc, char* argv[]) {
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        GarbleStr(scd_file_address, p_init_str, p_input_str, init_str,
-                  input_str, clock_cycles, output_mask, terminate_period,
+        GarbleStr(file_address, clock_cycles, output_mask, terminate_period,
                   output_mode, disable_OT, low_mem_foot, &output_str, connfd));
 
     delta_time = RDTSC - delta_time;
@@ -312,13 +311,12 @@ int main(int argc, char* argv[]) {
     //    CheckOptionsBob("", clock_cycles, output_mask, disable_OT, low_mem_foot,
     //                    connfd));
 
-    input_str  = ReadFileOrPassHex("./Inputs/0_e.txt");
+//    input_str  = ReadFileOrPassHex("./Inputs/0_e.txt");
 
     string output_str;
     uint64_t delta_time = RDTSC;
     CHECK(
-        EvaluateStr(scd_file_address, p_init_str, p_input_str, init_str,
-                    input_str, clock_cycles, output_mask, terminate_period,
+        EvaluateStr(file_address, clock_cycles, output_mask, terminate_period,
                     output_mode, disable_OT, low_mem_foot, &output_str, connfd));
 
     delta_time = RDTSC - delta_time;

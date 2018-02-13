@@ -75,8 +75,8 @@ void RemoveGarbledCircuitCollection(
 }
 
 int ParseInitInputStr(const string& init_str, const string&input_str,
-		uint64_t init_size, uint64_t input_size, uint64_t clock_cycles,
 		BIGNUM** init, BIGNUM** input) {
+
 	BN_hex2bn(init, init_str.c_str());
 	BN_hex2bn(input, input_str.c_str());
 
