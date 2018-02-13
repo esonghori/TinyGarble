@@ -272,4 +272,9 @@ int EvaluateTransferTerminate(const GarbledCircuit& garbled_circuit,
                               const block &terminate_label, short terminate_val,
                               bool* is_terminate, int connfd);
 
+//inline void PrintBlock(block var) {
+//	uint64_t *v64val = (uint64_t*) &var;
+//	LOG(ERROR) << sprintf("%.16llx %.16llx\n", v64val[1], v64val[0]);
+//}
+
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_UTIL_H_ */

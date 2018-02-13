@@ -203,8 +203,6 @@ int ReadTGX(const string& file_name,
 		return FAILURE;
 	}
 
-	LOG(INFO) << "can you reach here?";
-
 	f >> garbled_circuit_collection->number_of_circuits;
 
 	if (posix_memalign(
@@ -221,16 +219,12 @@ int ReadTGX(const string& file_name,
 	string scd_file;
 	for (int i = 0; i < garbled_circuit_collection->number_of_circuits; i++) {
 		f >> scd_file;
-		GarbledCircuit garbled_circuit;
-		if (ReadSCD(scd_file, &garbled_circuit) == FAILURE) {
+		if (ReadSCD(scd_file,
+				&garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
 			LOG(ERROR) << "Error while reading scd file: " << scd_file
 					<< endl;
 			return FAILURE;
 		}
-
-
-
-		garbled_circuit_collection->garbled_circuits[i] = garbled_circuit;
 	}
 
 	f.close();

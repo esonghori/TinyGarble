@@ -63,13 +63,13 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
 
 	// allocate init and input values and translate from string
 	CHECK(
-			GarbleMakeLabels(garbled_circuit, &init_labels, &input_labels,
+			GarbleMakeLabels(garbled_circuit_collection.garbled_circuits[0], &init_labels, &input_labels,
 					&output_labels, &output_vals, R, *clock_cycles, 1));
 
 	uint64_t ot_start_time = RDTSC;
 	{
 		CHECK(
-				GarbleTransferLabels(garbled_circuit, g_init, init_labels,
+				GarbleTransferLabels(garbled_circuit_collection.garbled_circuits[0], g_init, init_labels,
 						g_input, input_labels, *clock_cycles, disable_OT,
 						connfd));
 	}
@@ -82,11 +82,11 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
 							+ (*clock_cycles) * garbled_circuit.e_input_size))
 			<< endl;
 
-	GarbleHighMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
+	GarbleHighMem(garbled_circuit_collection.garbled_circuits[0], p_init, p_input, init_labels, input_labels,
 			global_key, R, clock_cycles, terminate_period, connfd,
 			output_labels, output_vals);
 	CHECK(
-			GarbleTransferOutput(garbled_circuit, output_labels, output_vals,
+			GarbleTransferOutput(garbled_circuit_collection.garbled_circuits[0], output_labels, output_vals,
 					*clock_cycles, output_mask, output_mode, output_bn, connfd));
 	delete[] init_labels;
 	delete[] input_labels;
@@ -974,7 +974,7 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
 
 int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, block** init_labels,
 		block** input_labels, block** output_labels, short** output_vals,
-		block R, uint64_t clock_cycles, int createMode) {
+		block R, uint64_t clock_cycles, int circuit_type) {
 
 // allocate and generate random init and inputs label pairs
 	(*init_labels) = nullptr;
@@ -991,21 +991,25 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, block** init_labels,
 	(*output_labels) = nullptr;
 	(*output_vals) = nullptr;
 
-	if (garbled_circuit.get_input_size() > 0 && createMode == 1) { // create if not an intermediate circuit
+	if (garbled_circuit.get_input_size() > 0) {
 		CHECK_ALLOC(
 				(*input_labels) = new block[clock_cycles
 						* garbled_circuit.get_input_size() * 2]);
-		for (uint cid = 0; cid < clock_cycles; cid++) {
-			for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
-				(*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2
-						+ 0] = RandomBlock();
-				(*input_labels)[(cid * garbled_circuit.get_input_size() + i) * 2
-						+ 1] = XorBlock(R,
-						(*input_labels)[(cid * garbled_circuit.get_input_size()
-								+ i) * 2 + 0]);
+		if (circuit_type == INPUT_CIRCUIT) {
+			for (uint cid = 0; cid < clock_cycles; cid++) {
+				for (uint i = 0; i < garbled_circuit.get_input_size(); i++) {
+					(*input_labels)[(cid * garbled_circuit.get_input_size() + i)
+							* 2 + 0] = RandomBlock();
+					(*input_labels)[(cid * garbled_circuit.get_input_size() + i)
+							* 2 + 1] = XorBlock(R,
+							(*input_labels)[(cid
+									* garbled_circuit.get_input_size() + i) * 2
+									+ 0]);
+				}
 			}
 		}
 	}
+
 	if (garbled_circuit.output_size > 0) {
 		CHECK_ALLOC(
 				(*output_labels) = new block[clock_cycles
