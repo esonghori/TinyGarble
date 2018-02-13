@@ -86,11 +86,13 @@ int GarbleStr(const string& file_address, const string& p_init_str,
 	BIGNUM* output_bn = BN_new();
 
 	//FIX need to handle multiple inputs for different circuits
+	//garbler input and init
 	CHECK(
 			ParseInitInputStr(init_str, input_str,
 					garbled_circuit_collection.garbled_circuits[0].g_init_size,
 					garbled_circuit_collection.garbled_circuits[0].g_input_size,
 					clock_cycles, &g_init, &g_input));
+	//pubic input and init
 	CHECK(
 			ParseInitInputStr(p_init_str, p_input_str,
 					garbled_circuit_collection.garbled_circuits[0].p_init_size,

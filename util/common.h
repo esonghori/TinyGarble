@@ -54,6 +54,7 @@ using std::endl;
 
 //type of circuits
 #define INPUT_CIRCUIT 1
+#define INTERMEDIATE_CIRCUIT 2
 
 // blocks
 #define MUXGATE 15

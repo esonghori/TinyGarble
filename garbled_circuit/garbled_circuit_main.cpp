@@ -257,9 +257,10 @@ int main(int argc, char* argv[]) {
   string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
   string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
   string init_str = ReadFileOrPassHex(init_f_hex_str);
-  string input_str = ReadFileOrPassHex(input_f_hex_str);
+  string input_str;
 
   if (vm.count("alice")) {
+	input_str  = ReadFileOrPassHex("./Inputs/0_g.txt");
     // open the socket
     int connfd;
     if ((connfd = ServerInit(port)) == -1) {
@@ -310,6 +311,8 @@ int main(int argc, char* argv[]) {
     //CHECK(
     //    CheckOptionsBob("", clock_cycles, output_mask, disable_OT, low_mem_foot,
     //                    connfd));
+
+    input_str  = ReadFileOrPassHex("./Inputs/0_e.txt");
 
     string output_str;
     uint64_t delta_time = RDTSC;
