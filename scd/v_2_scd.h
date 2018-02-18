@@ -42,6 +42,7 @@ class ReadCircuitString {
   uint64_t g_init_size;
   uint64_t e_init_size;
   uint64_t p_input_size;
+  uint64_t i_input_size;
   uint64_t g_input_size;
   uint64_t e_input_size;
   uint64_t output_size;
@@ -54,6 +55,7 @@ class ReadCircuitString {
     g_init_size = 0;
     e_init_size = 0;
     p_input_size = 0;
+    i_input_size = 0;
     g_input_size = 0;
     e_input_size = 0;
     output_size = 0;
@@ -80,6 +82,7 @@ class ReadCircuit {
   uint64_t g_init_size;
   uint64_t e_init_size;
   uint64_t p_input_size;
+  uint64_t i_input_size;
   uint64_t g_input_size;
   uint64_t e_input_size;
   uint64_t dff_size;
@@ -88,7 +91,7 @@ class ReadCircuit {
   uint64_t terminate_id; // terminate signal id, 0 in case of no signal
 
   uint64_t get_init_input_size() const {
-    return p_init_size + g_init_size + e_init_size + p_input_size + g_input_size
+    return p_init_size + g_init_size + e_init_size + p_input_size + i_input_size + g_input_size
         + e_input_size;
   }
 
@@ -101,6 +104,7 @@ class ReadCircuit {
     g_init_size = 0;
     e_init_size = 0;
     p_input_size = 0;
+    i_input_size = 0;
     g_input_size = 0;
     e_input_size = 0;
     dff_size = 0;

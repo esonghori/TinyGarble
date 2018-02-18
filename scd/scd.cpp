@@ -130,11 +130,12 @@ int WriteSCD(const ReadCircuit& read_circuit, const string &file_name) {
 	}
 
 	f << read_circuit.p_init_size << " " << read_circuit.g_init_size << " "
-			<< read_circuit.e_init_size << " " << read_circuit.p_input_size
-			<< " " << read_circuit.g_input_size << " "
-			<< read_circuit.e_input_size << " " << read_circuit.dff_size << " "
-			<< read_circuit.output_size << " " << read_circuit.terminate_id
-			<< " " << read_circuit.gate_size << endl;
+			<< read_circuit.e_init_size << " " << read_circuit.p_input_size << " "
+			<< read_circuit.i_input_size << " " << read_circuit.g_input_size
+			<< " " << read_circuit.e_input_size << " " << read_circuit.dff_size
+			<< " " << read_circuit.output_size << " "
+			<< read_circuit.terminate_id << " " << read_circuit.gate_size
+			<< endl;
 
 	/*
 	 * 1st input of each gate
