@@ -105,15 +105,24 @@ typedef struct GarbledCircuit {
 
 	block* output_labels;
 
-//	inline bool has_input() const {
-//		return p_init_size + g_init_size + e_init_size;
-//	}
+	/**
+	 * indexing structure:
+	 * 0.p_init
+	 * 1.g_init
+	 * 2.e_init
+	 * 3.p_input
+	 * 4.i_input
+	 * 5.g_input
+	 * 6.e_input
+	 * 7.dff
+	 * 8.gate
+	 */
 
 	inline uint64_t get_init_size() const {
 		return p_init_size + g_init_size + e_init_size;
 	}
 	inline uint64_t get_input_size() const {
-		return p_input_size + g_input_size + e_input_size;
+		return p_input_size + i_input_size + g_input_size + e_input_size;
 	}
 	inline uint64_t get_wire_size() const {
 		return get_init_size() + get_input_size() + dff_size + gate_size;
@@ -126,18 +135,6 @@ typedef struct GarbledCircuit {
 		return g_input_size + e_input_size;
 	}
 
-	/**
-	 * indexing structure:
-	 * 0.p_init
-	 * 1.g_init
-	 * 2.e_init
-	 * 3.p_input
-	 * 4.g_input
-	 * 5.e_input
-	 * 6.i_input **do required changes
-	 * 6.dff
-	 * 7.gate
-	 */
 	inline uint64_t get_init_lo_index() const {
 		return 0;
 	}
@@ -178,8 +175,15 @@ typedef struct GarbledCircuit {
 		return get_p_input_lo_index() + p_input_size;
 	}
 
-	inline uint64_t get_g_input_lo_index() const {
+	inline uint64_t get_i_input_lo_index() const {
 		return get_p_input_hi_index();
+	}
+	inline uint64_t get_i_input_hi_index() const {
+		return get_i_input_lo_index() + i_input_size;
+	}
+
+	inline uint64_t get_g_input_lo_index() const {
+		return get_i_input_hi_index();
 	}
 	inline uint64_t get_g_input_hi_index() const {
 		return get_g_input_lo_index() + g_input_size;
@@ -217,6 +221,10 @@ typedef struct GarbledCircuit {
 		return get_gate_hi_index();
 	}
 
+	inline bool has_input() const {
+		return (g_init_size + e_init_size + g_input_size + e_input_size) > 0;
+	}
+
 } GarbledCircuit;
 
 typedef struct CircuitIO {
@@ -225,7 +233,7 @@ typedef struct CircuitIO {
 	BIGNUM* party_init;
 	BIGNUM* party_input;
 	BIGNUM* output_bn;
-}CircuitIO;
+} CircuitIO;
 
 typedef struct GarbledCircuitCollection {
 	int number_of_circuits;
@@ -233,15 +241,11 @@ typedef struct GarbledCircuitCollection {
 	CircuitIO* circuit_ios;
 } GarbledCircuitCollection;
 
-
-
 /**
  * @brief Modes of printing output.
  */
 enum class OutputMode {
-	consecutive = 0,
-	separated_clock = 1,
-	last_clock = 2
+	consecutive = 0, separated_clock = 1, last_clock = 2
 };
 
 //enum class CreateMode {
