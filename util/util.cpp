@@ -193,10 +193,11 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
 
 int OutputBN2StrHighMem(
 		const GarbledCircuitCollection& garbled_circuit_collection,
-		BIGNUM* outputs, uint64_t clock_cycles, OutputMode output_mode,
+		uint64_t clock_cycles, OutputMode output_mode,
 		string *output_str) {
 	GarbledCircuit garbled_circuit =
-			garbled_circuit_collection.garbled_circuits[0];
+			garbled_circuit_collection.garbled_circuits[1];
+	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[1].output_bn;
 
 	(*output_str) = "";
 	if (output_mode == OutputMode::consecutive) {  // normal
@@ -260,7 +261,7 @@ string ReadFileOrPassHex(string file_hex_str) { // file address of or a hex stri
 		}
 		return hex_str;
 	} else {
-		return file_hex_str;
+		return "0";
 	}
 }
 

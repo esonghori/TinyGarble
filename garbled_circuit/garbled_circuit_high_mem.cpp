@@ -48,10 +48,12 @@
 #include "util/util.h"
 
 int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
-		BIGNUM* p_init, BIGNUM* p_input, BIGNUM* g_init, BIGNUM* g_input,
 		uint64_t* clock_cycles, const string& output_mask,
-		int64_t terminate_period, OutputMode output_mode, BIGNUM* output_bn,
+		int64_t terminate_period, OutputMode output_mode,
 		block R, block global_key, bool disable_OT, int connfd) {
+
+	BIGNUM* g_init = garbled_circuit_collection.circuit_ios[0].party_init;
+	BIGNUM* g_input = garbled_circuit_collection.circuit_ios[0].party_input;
 
 	block* init_labels = nullptr;
 	block* input_labels = nullptr;
@@ -78,8 +80,8 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
 //							+ (*clock_cycles) * garbled_circuit.e_input_size))
 //			<< endl;
 
-	GarbleHighMem(garbled_circuit_collection.garbled_circuits[0], p_init,
-			p_input, init_labels, input_labels, global_key, R, clock_cycles,
+	GarbleHighMem(garbled_circuit_collection.garbled_circuits[0], garbled_circuit_collection.circuit_ios[0].p_init,
+			garbled_circuit_collection.circuit_ios[0].p_input, init_labels, input_labels, global_key, R, clock_cycles,
 			terminate_period, connfd, output_labels, output_vals);
 
 	//no need to transfer output labels
@@ -102,15 +104,15 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
 	}
 
 	//garble circuit 1
-	GarbleHighMem(garbled_circuit_collection.garbled_circuits[1], p_init,
-			p_input, init_labels2, input_labels2, global_key, R, clock_cycles,
+	GarbleHighMem(garbled_circuit_collection.garbled_circuits[1], garbled_circuit_collection.circuit_ios[1].p_init,
+			garbled_circuit_collection.circuit_ios[1].p_input, init_labels2, input_labels2, global_key, R, clock_cycles,
 			terminate_period, connfd, output_labels2, output_vals2);
 
 	//transfer output
 	CHECK(
 			GarbleTransferOutput(garbled_circuit_collection.garbled_circuits[1],
 					output_labels2, output_vals2, *clock_cycles, output_mask,
-					output_mode, output_bn, connfd));
+					output_mode, garbled_circuit_collection.circuit_ios[1].output_bn, connfd));
 
 	delete[] init_labels;
 	delete[] input_labels;
@@ -121,10 +123,13 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
 
 int EvaluateBNHighMem(
 		const GarbledCircuitCollection& garbled_circuit_collection,
-		BIGNUM* p_init, BIGNUM* p_input, BIGNUM* e_init, BIGNUM* e_input,
 		uint64_t* clock_cycles, const string& output_mask,
-		int64_t terminate_period, OutputMode output_mode, BIGNUM* output_bn,
+		int64_t terminate_period, OutputMode output_mode,
 		block global_key, bool disable_OT, int connfd) {
+
+	BIGNUM* e_init = garbled_circuit_collection.circuit_ios[0].party_init;
+	BIGNUM* e_input = garbled_circuit_collection.circuit_ios[0].party_input;
+
 
 	block* init_labels = nullptr;
 	block* input_labels = nullptr;
@@ -154,8 +159,8 @@ int EvaluateBNHighMem(
 //							+ (*clock_cycles) * garbled_circuit.e_input_size))
 //			<< endl;
 
-	EvaluateHighMem(garbled_circuit_collection.garbled_circuits[0], p_init,
-			p_input, init_labels, input_labels, global_key, clock_cycles,
+	EvaluateHighMem(garbled_circuit_collection.garbled_circuits[0], garbled_circuit_collection.circuit_ios[0].p_init,
+			garbled_circuit_collection.circuit_ios[0].p_input, init_labels, input_labels, global_key, clock_cycles,
 			terminate_period, connfd, output_labels, output_vals);
 
 	//no need to transfer output labels
@@ -178,15 +183,15 @@ int EvaluateBNHighMem(
 				+ i] = input_labels2[i] = output_labels[i];
 	}
 
-	EvaluateHighMem(garbled_circuit_collection.garbled_circuits[1], p_init,
-			p_input, init_labels2, input_labels2, global_key, clock_cycles,
+	EvaluateHighMem(garbled_circuit_collection.garbled_circuits[1], garbled_circuit_collection.circuit_ios[1].p_init,
+			garbled_circuit_collection.circuit_ios[1].p_input, init_labels2, input_labels2, global_key, clock_cycles,
 			terminate_period, connfd, output_labels2, output_vals2);
 
 	CHECK(
 			EvaluateTransferOutput(
 					garbled_circuit_collection.garbled_circuits[1],
 					output_labels2, output_vals2, *clock_cycles, output_mask,
-					output_mode, output_bn, connfd));
+					output_mode, garbled_circuit_collection.circuit_ios[1].output_bn, connfd));
 
 	delete[] init_labels;
 	delete[] input_labels;

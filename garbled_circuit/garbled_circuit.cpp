@@ -64,9 +64,39 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 		return FAILURE;
 	}
 
+	garbled_circuit_collection.circuit_ios =
+			new CircuitIO[garbled_circuit_collection.number_of_circuits];
 	//FIX need to handle multiple circuits --- connection of public wires
 	for (int i = 0; i < garbled_circuit_collection.number_of_circuits; i++) {
 		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
+
+		char buffer1[50];
+		char buffer2[50];
+		garbled_circuit_collection.circuit_ios[i].p_init = BN_new();
+		garbled_circuit_collection.circuit_ios[i].p_input = BN_new();
+		sprintf(buffer1, "./Inputs/%d_p_init.txt", i);
+		sprintf(buffer2, "./Inputs/%d_p.txt", i);
+		string p_init_str = ReadFileOrPassHex(string(buffer1));
+		string p_input_str = ReadFileOrPassHex(string(buffer2));
+		CHECK(
+				ParseInitInputStr(p_init_str, p_input_str,
+						&garbled_circuit_collection.circuit_ios[i].p_init,
+						&garbled_circuit_collection.circuit_ios[i].p_input));
+
+		char buffer3[50];
+		char buffer4[50];
+		garbled_circuit_collection.circuit_ios[i].party_init = BN_new();
+		garbled_circuit_collection.circuit_ios[i].party_input = BN_new();
+		sprintf(buffer3, "./Inputs/%d_g_init.txt", i);
+		sprintf(buffer4, "./Inputs/%d_g.txt", i);
+		string init_str = ReadFileOrPassHex(string(buffer3));
+		string input_str = ReadFileOrPassHex(string(buffer4));
+		CHECK(
+				ParseInitInputStr(init_str, input_str,
+						&garbled_circuit_collection.circuit_ios[i].party_init,
+						&garbled_circuit_collection.circuit_ios[i].party_input));
+
+		garbled_circuit_collection.circuit_ios[i].output_bn = BN_new();
 	}
 
 	//FIX needs to handle terminate
@@ -75,27 +105,6 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 //				" The terminate period should be 0." << endl;
 //		return FAILURE;
 //	}
-
-// parse init and input
-	//NEXT: read all files and store them in a struct and pass it to GarbleStr and EvaluatorStr
-	BIGNUM* p_init = BN_new();
-	BIGNUM* p_input = BN_new();
-	BIGNUM* g_init = BN_new();
-	BIGNUM* g_input = BN_new();
-	BIGNUM* output_bn = BN_new();
-
-	//FIX need to handle multiple inputs for different circuits
-	string init_str = "0";
-	string p_init_str = "0";
-	string p_input_str = "0";
-	string input_str  = ReadFileOrPassHex("./Inputs/0_g.txt");
-
-	//garbler input and init
-	CHECK(
-			ParseInitInputStr(init_str, input_str, &g_init, &g_input));
-	//pubic input and init
-	CHECK(
-			ParseInitInputStr(p_init_str, p_input_str, &p_init, &p_input));
 
 	block R = RandomBlock();  // secret label
 	*((short *) (&R)) |= 1;
@@ -118,18 +127,13 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 //
 //	} else {
 	CHECK(
-			GarbleBNHighMem(garbled_circuit_collection, p_init, p_input, g_init,
-					g_input, &clock_cycles, output_mask, terminate_period,
-					output_mode, output_bn, R, global_key, disable_OT, connfd));
+			GarbleBNHighMem(garbled_circuit_collection, &clock_cycles,
+					output_mask, terminate_period, output_mode, R, global_key,
+					disable_OT, connfd));
 	CHECK(
-			OutputBN2StrHighMem(garbled_circuit_collection, output_bn,
-					clock_cycles, output_mode, output_str));
+			OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles,
+					output_mode, output_str));
 //	}
-	BN_free(p_init);
-	BN_free(p_input);
-	BN_free(g_init);
-	BN_free(g_input);
-	BN_free(output_bn);
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 
@@ -140,6 +144,7 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 		const string& output_mask, int64_t terminate_period,
 		OutputMode output_mode, bool disable_OT, bool low_mem_foot,
 		string* output_str, int connfd) {
+
 	if (clock_cycles == 0) {
 		return FAILURE;
 	}
@@ -151,9 +156,39 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 		return FAILURE;
 	}
 
+	garbled_circuit_collection.circuit_ios =
+			new CircuitIO[garbled_circuit_collection.number_of_circuits];
 	//FIX need to handle multiple circuits --- connection of public wires
 	for (int i = 0; i < garbled_circuit_collection.number_of_circuits; i++) {
 		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
+
+		char buffer1[50];
+		char buffer2[50];
+		garbled_circuit_collection.circuit_ios[i].p_init = BN_new();
+		garbled_circuit_collection.circuit_ios[i].p_input = BN_new();
+		sprintf(buffer1, "./Inputs/%d_p_init.txt", i);
+		sprintf(buffer2, "./Inputs/%d_p.txt", i);
+		string p_init_str = ReadFileOrPassHex(string(buffer1));
+		string p_input_str = ReadFileOrPassHex(string(buffer2));
+		CHECK(
+				ParseInitInputStr(p_init_str, p_input_str,
+						&garbled_circuit_collection.circuit_ios[i].p_init,
+						&garbled_circuit_collection.circuit_ios[i].p_input));
+
+		char buffer3[50];
+		char buffer4[50];
+		garbled_circuit_collection.circuit_ios[i].party_init = BN_new();
+		garbled_circuit_collection.circuit_ios[i].party_input = BN_new();
+		sprintf(buffer3, "./Inputs/%d_e_init.txt", i);
+		sprintf(buffer4, "./Inputs/%d_e.txt", i);
+		string init_str = ReadFileOrPassHex(string(buffer3));
+		string input_str = ReadFileOrPassHex(string(buffer4));
+		CHECK(
+				ParseInitInputStr(init_str, input_str,
+						&garbled_circuit_collection.circuit_ios[i].party_init,
+						&garbled_circuit_collection.circuit_ios[i].party_input));
+
+		garbled_circuit_collection.circuit_ios[i].output_bn = BN_new();
 	}
 
 	//FIX needs to handle terminate
@@ -162,23 +197,6 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 //				" The terminate period should be 0." << endl;
 //		return FAILURE;
 //	}
-
-	// allocate init and input values and translate form string
-	BIGNUM* p_init = BN_new();
-	BIGNUM* p_input = BN_new();
-	BIGNUM* e_init = BN_new();
-	BIGNUM* e_input = BN_new();
-	BIGNUM* output_bn = BN_new();
-
-	string init_str = "0";
-	string p_init_str = "0";
-	string p_input_str = "0";
-	string input_str  = ReadFileOrPassHex("./Inputs/0_e.txt");
-
-	CHECK(
-			ParseInitInputStr(init_str, input_str, &e_init, &e_input));
-	CHECK(
-			ParseInitInputStr(p_init_str, p_input_str,&p_init, &p_input));
 
 	// global key
 	block global_key = RandomBlock();
@@ -195,20 +213,13 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 //						output_mode, output_str));
 //	} else {
 	CHECK(
-			EvaluateBNHighMem(garbled_circuit_collection, p_init, p_input,
-					e_init, e_input, &clock_cycles, output_mask,
-					terminate_period, output_mode, output_bn, global_key,
+			EvaluateBNHighMem(garbled_circuit_collection, &clock_cycles,
+					output_mask, terminate_period, output_mode, global_key,
 					disable_OT, connfd));
 	CHECK(
-			OutputBN2StrHighMem(garbled_circuit_collection, output_bn,
-					clock_cycles, output_mode, output_str));
+			OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles,
+					output_mode, output_str));
 //	}
-
-	BN_free(p_init);
-	BN_free(p_input);
-	BN_free(e_init);
-	BN_free(e_input);
-	BN_free(output_bn);
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 	return SUCCESS;

@@ -72,6 +72,14 @@ void RemoveGarbledCircuitCollection(
 	for (int i = 0; i < garbled_circuit_collection->number_of_circuits; i++) {
 		RemoveGarbledCircuit(&garbled_circuit_collection->garbled_circuits[i]);
 	}
+	for (int i = 0; i < garbled_circuit_collection->number_of_circuits; i++) {
+		BN_free(garbled_circuit_collection->circuit_ios[i].p_init);
+		BN_free(garbled_circuit_collection->circuit_ios[i].p_input);
+		BN_free(garbled_circuit_collection->circuit_ios[i].party_init);
+		BN_free(garbled_circuit_collection->circuit_ios[i].party_input);
+		BN_free(garbled_circuit_collection->circuit_ios[i].output_bn);
+	}
+	delete [] garbled_circuit_collection->circuit_ios;
 }
 
 int ParseInitInputStr(const string& init_str, const string&input_str,

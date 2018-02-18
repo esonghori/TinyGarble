@@ -40,17 +40,15 @@
 #include "garbled_circuit/garbled_circuit_util.h"
 #include "crypto/aes.h"
 
-int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, BIGNUM* p_init,
-                    BIGNUM* p_input, BIGNUM* g_init, BIGNUM* g_input,
+int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
                     uint64_t* clock_cycles, const string& output_mask,
                     int64_t terminate_period, OutputMode output_mode,
-                    BIGNUM* output_bn, block R, block global_key,
+                    block R, block global_key,
                     bool disable_OT, int connfd);
-int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, BIGNUM* p_init,
-                      BIGNUM* p_input, BIGNUM* e_init, BIGNUM* e_input,
+int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
                       uint64_t* clock_cycles, const string& output_mask,
                       int64_t terminate_period, OutputMode output_mode,
-                      BIGNUM* output_bn, block global_key, bool disable_OT,
+                      block global_key, bool disable_OT,
                       int connfd);
 int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
                   BIGNUM* p_input, block* init_labels, block* input_labels,
