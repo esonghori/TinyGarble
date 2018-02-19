@@ -82,6 +82,13 @@ void RemoveGarbledCircuitCollection(
 	delete [] garbled_circuit_collection->circuit_ios;
 }
 
+void RemoveLabels (CircuitLabel& labels){
+	delete [] labels.init_labels;
+	delete [] labels.input_labels;
+	delete [] labels.output_labels;
+	delete [] labels.output_vals;
+}
+
 int ParseInitInputStr(const string& init_str, const string&input_str,
 		BIGNUM** init, BIGNUM** input) {
 

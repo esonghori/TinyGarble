@@ -235,27 +235,28 @@ typedef struct CircuitIO {
 	BIGNUM* output_bn;
 } CircuitIO;
 
+typedef struct CircuitLabel {
+	block* init_labels;
+	block* input_labels;
+	block* output_labels;
+	short* output_vals;
+} CircuitLabel;
+
 typedef struct GarbledCircuitCollection {
 	int number_of_circuits;
 	GarbledCircuit* garbled_circuits;
 	CircuitIO* circuit_ios;
 } GarbledCircuitCollection;
 
-/**
- * @brief Modes of printing output.
- */
 enum class OutputMode {
 	consecutive = 0, separated_clock = 1, last_clock = 2
 };
-
-//enum class CreateMode {
-//
-//};
 
 uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
 void RemoveGarbledCircuitCollection(
 		GarbledCircuitCollection* garbled_circuit_collection);
+void RemoveLabels (CircuitLabel& labels);
 
 int ParseInitInputStr(const string& init_str, const string&input_str,
 		BIGNUM** init, BIGNUM** input);
@@ -285,10 +286,5 @@ int GarbleTransferTerminate(const GarbledCircuit& garbled_circuit,
 int EvaluateTransferTerminate(const GarbledCircuit& garbled_circuit,
 		const block &terminate_label, short terminate_val, bool* is_terminate,
 		int connfd);
-
-//inline void PrintBlock(block var) {
-//	uint64_t *v64val = (uint64_t*) &var;
-//	LOG(ERROR) << sprintf("%.16llx %.16llx\n", v64val[1], v64val[0]);
-//}
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_UTIL_H_ */
