@@ -91,9 +91,6 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 		sprintf(buffer4, "./Inputs/%d_g.txt", i);
 		string init_str = ReadFileOrPassHex(string(buffer3));
 		string input_str = ReadFileOrPassHex(string(buffer4));
-
-		LOG(ERROR) << endl << i << "garble input: " << input_str << endl;
-
 		CHECK(
 				ParseInitInputStr(init_str, input_str,
 						&garbled_circuit_collection.circuit_ios[i].party_init,
@@ -188,10 +185,6 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 		sprintf(buffer4, "./Inputs/%d_e.txt", i);
 		string init_str = ReadFileOrPassHex(string(buffer3));
 		string input_str = ReadFileOrPassHex(string(buffer4));
-
-		LOG(ERROR) << endl << i << " eval input: " << input_str << endl;
-
-
 		CHECK(
 				ParseInitInputStr(init_str, input_str,
 						&garbled_circuit_collection.circuit_ios[i].party_init,

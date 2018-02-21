@@ -115,22 +115,22 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
 
 	//FIX replace with memcpy
 	//no need to transfer; both Garbler and Evaluator have input labels
-//	uint64_t label_offset =
-//			garbled_circuit_collection.garbled_circuits[2].get_i_input_lo_index()
-//					* 2; // 2 labels per bit
+	uint64_t label_offset =
+			garbled_circuit_collection.garbled_circuits[2].get_i_input_lo_index()
+					* 2; // 2 labels per bit
 	for (uint64_t i = 0;
 			i < garbled_circuit_collection.garbled_circuits[1].output_size * 2; //need to copy two labels per bit
 			i++) {
-		all_labels[2].input_labels[garbled_circuit_collection.garbled_circuits[1].output_size * 2 + i]  = all_labels[2].input_labels[i] =
+		all_labels[2].input_labels[label_offset + i] =
 				all_labels[1].output_labels[i];
 	} //copying both e_input and g_input
 
-//	CHECK(
-//			GarbleTransferLabels(garbled_circuit_collection.garbled_circuits[2],
-//					all_labels[2],
-//					garbled_circuit_collection.circuit_ios[2].party_init,
-//					garbled_circuit_collection.circuit_ios[2].party_input,
-//					*clock_cycles, disable_OT, connfd));
+	CHECK(
+			GarbleTransferLabels(garbled_circuit_collection.garbled_circuits[2],
+					all_labels[2],
+					garbled_circuit_collection.circuit_ios[2].party_init,
+					garbled_circuit_collection.circuit_ios[2].party_input,
+					*clock_cycles, disable_OT, connfd));
 
 	GarbleHighMem(garbled_circuit_collection.garbled_circuits[2], all_labels[2],
 			garbled_circuit_collection.circuit_ios[2].p_init,
@@ -217,23 +217,23 @@ int EvaluateBNHighMem(
 
 //FIX replace with memcpy
 //no need to transfer; both Garbler and Evaluator have input labels
-//	uint64_t label_offset =
-//			garbled_circuit_collection.garbled_circuits[2].get_i_input_lo_index();
-//	LOG(ERROR) << endl << "label offset: " << label_offset << endl;
+	uint64_t label_offset =
+			garbled_circuit_collection.garbled_circuits[2].get_i_input_lo_index();
+	LOG(ERROR) << endl << "label offset: " << label_offset << endl;
 	for (uint64_t i = 0;
 			i < garbled_circuit_collection.garbled_circuits[1].output_size;
 			i++) {
-		all_labels[2].input_labels[garbled_circuit_collection.garbled_circuits[1].output_size + i] = all_labels[2].input_labels[i] =
+		all_labels[2].input_labels[label_offset + i] =
 				all_labels[1].output_labels[i];
 	}
 
-//	CHECK(
-//			EvaluateTransferLabels(
-//					garbled_circuit_collection.garbled_circuits[2],
-//					all_labels[2],
-//					garbled_circuit_collection.circuit_ios[2].party_init,
-//					garbled_circuit_collection.circuit_ios[2].party_input,
-//					*clock_cycles, disable_OT, connfd));
+	CHECK(
+			EvaluateTransferLabels(
+					garbled_circuit_collection.garbled_circuits[2],
+					all_labels[2],
+					garbled_circuit_collection.circuit_ios[2].party_init,
+					garbled_circuit_collection.circuit_ios[2].party_input,
+					*clock_cycles, disable_OT, connfd));
 
 	EvaluateHighMem(garbled_circuit_collection.garbled_circuits[2],
 			all_labels[2], garbled_circuit_collection.circuit_ios[2].p_init,
@@ -1075,6 +1075,7 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit,
 
 	LOG(ERROR) << endl << "e init: " << garbled_circuit.e_init_size
 			<< "  | e input: " << garbled_circuit.e_input_size << endl;
+
 	if (disable_OT) {
 		// e_init
 		CHECK(SendBN(connfd, e_init));
