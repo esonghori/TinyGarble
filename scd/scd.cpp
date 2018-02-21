@@ -52,8 +52,8 @@ int ReadSCD(const string& file_name, GarbledCircuit* garbled_circuit) {
 
 	f >> garbled_circuit->p_init_size >> garbled_circuit->g_init_size
 			>> garbled_circuit->e_init_size >> garbled_circuit->p_input_size
-			>> garbled_circuit->i_input_size >> garbled_circuit->g_input_size
-			>> garbled_circuit->e_input_size >> garbled_circuit->dff_size
+			>> garbled_circuit->g_input_size >> garbled_circuit->e_input_size
+			>> garbled_circuit->i_input_size >> garbled_circuit->dff_size
 			>> garbled_circuit->output_size >> garbled_circuit->terminate_id
 			>> garbled_circuit->gate_size;
 
@@ -132,8 +132,8 @@ int WriteSCD(const ReadCircuit& read_circuit, const string &file_name) {
 
 	f << read_circuit.p_init_size << " " << read_circuit.g_init_size << " "
 			<< read_circuit.e_init_size << " " << read_circuit.p_input_size
-			<< " " << read_circuit.i_input_size << " "
-			<< read_circuit.g_input_size << " " << read_circuit.e_input_size
+			<< " " << read_circuit.g_input_size << " "
+			<< read_circuit.e_input_size << " " << read_circuit.i_input_size
 			<< " " << read_circuit.dff_size << " " << read_circuit.output_size
 			<< " " << read_circuit.terminate_id << " " << read_circuit.gate_size
 			<< endl;

@@ -193,11 +193,12 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
 
 int OutputBN2StrHighMem(
 		const GarbledCircuitCollection& garbled_circuit_collection,
-		uint64_t clock_cycles, OutputMode output_mode,
-		string *output_str) {
+		uint64_t clock_cycles, OutputMode output_mode, string *output_str) {
 	GarbledCircuit garbled_circuit =
-			garbled_circuit_collection.garbled_circuits[1];
-	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[1].output_bn;
+			garbled_circuit_collection.garbled_circuits[garbled_circuit_collection.number_of_circuits
+					- 1];
+	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[garbled_circuit_collection.number_of_circuits
+	                                     					- 1].output_bn;
 
 	(*output_str) = "";
 	if (output_mode == OutputMode::consecutive) {  // normal

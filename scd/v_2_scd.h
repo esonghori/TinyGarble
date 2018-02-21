@@ -42,9 +42,9 @@ class ReadCircuitString {
   uint64_t g_init_size;
   uint64_t e_init_size;
   uint64_t p_input_size;
-  uint64_t i_input_size;
   uint64_t g_input_size;
   uint64_t e_input_size;
+  uint64_t i_input_size;
   uint64_t output_size;
   bool     has_terminate; // has terminate signal
 
@@ -55,9 +55,9 @@ class ReadCircuitString {
     g_init_size = 0;
     e_init_size = 0;
     p_input_size = 0;
-    i_input_size = 0;
     g_input_size = 0;
     e_input_size = 0;
+    i_input_size = 0;
     output_size = 0;
     has_terminate = false;
   }
@@ -82,9 +82,9 @@ class ReadCircuit {
   uint64_t g_init_size;
   uint64_t e_init_size;
   uint64_t p_input_size;
-  uint64_t i_input_size;
   uint64_t g_input_size;
   uint64_t e_input_size;
+  uint64_t i_input_size;
   uint64_t dff_size;
   uint64_t gate_size;
   uint64_t output_size;
@@ -104,9 +104,9 @@ class ReadCircuit {
     g_init_size = 0;
     e_init_size = 0;
     p_input_size = 0;
-    i_input_size = 0;
     g_input_size = 0;
     e_input_size = 0;
+    i_input_size = 0;
     dff_size = 0;
     gate_size = 0;
     output_size = 0;

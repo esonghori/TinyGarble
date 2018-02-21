@@ -111,9 +111,9 @@ typedef struct GarbledCircuit {
 	 * 1.g_init
 	 * 2.e_init
 	 * 3.p_input
-	 * 4.i_input
-	 * 5.g_input
-	 * 6.e_input
+	 * 4.g_input
+	 * 5.e_input
+	 * 6.i_input
 	 * 7.dff
 	 * 8.gate
 	 */
@@ -122,7 +122,7 @@ typedef struct GarbledCircuit {
 		return p_init_size + g_init_size + e_init_size;
 	}
 	inline uint64_t get_input_size() const {
-		return p_input_size + i_input_size + g_input_size + e_input_size;
+		return p_input_size  + g_input_size + e_input_size + i_input_size;
 	}
 	inline uint64_t get_wire_size() const {
 		return get_init_size() + get_input_size() + dff_size + gate_size;
@@ -131,8 +131,9 @@ typedef struct GarbledCircuit {
 	inline uint64_t get_secret_init_size() const {
 		return g_init_size + e_init_size;
 	}
+
 	inline uint64_t get_secret_input_size() const {
-		return g_input_size + e_input_size;
+		return g_input_size + e_input_size + i_input_size;
 	}
 
 	inline uint64_t get_init_lo_index() const {
@@ -175,15 +176,8 @@ typedef struct GarbledCircuit {
 		return get_p_input_lo_index() + p_input_size;
 	}
 
-	inline uint64_t get_i_input_lo_index() const {
-		return get_p_input_hi_index();
-	}
-	inline uint64_t get_i_input_hi_index() const {
-		return get_i_input_lo_index() + i_input_size;
-	}
-
 	inline uint64_t get_g_input_lo_index() const {
-		return get_i_input_hi_index();
+		return get_p_input_hi_index();
 	}
 	inline uint64_t get_g_input_hi_index() const {
 		return get_g_input_lo_index() + g_input_size;
@@ -196,8 +190,15 @@ typedef struct GarbledCircuit {
 		return get_e_input_lo_index() + e_input_size;
 	}
 
-	inline uint64_t get_input_hi_index() const {
+	inline uint64_t get_i_input_lo_index() const {
 		return get_e_input_hi_index();
+	}
+	inline uint64_t get_i_input_hi_index() const {
+		return get_i_input_lo_index() + i_input_size;
+	}
+
+	inline uint64_t get_input_hi_index() const {
+		return get_i_input_hi_index();
 	}
 
 	inline uint64_t get_dff_lo_index() const {
@@ -256,7 +257,7 @@ uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
 void RemoveGarbledCircuitCollection(
 		GarbledCircuitCollection* garbled_circuit_collection);
-void RemoveLabels (CircuitLabel& labels);
+void RemoveLabels(CircuitLabel& labels);
 
 int ParseInitInputStr(const string& init_str, const string&input_str,
 		BIGNUM** init, BIGNUM** input);
