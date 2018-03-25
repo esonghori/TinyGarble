@@ -50,27 +50,18 @@ int ReadSCD(const string& file_name, GarbledCircuit* garbled_circuit) {
 		return FAILURE;
 	}
 
-	f >> garbled_circuit->p_init_size >> garbled_circuit->g_init_size
-			>> garbled_circuit->e_init_size >> garbled_circuit->p_input_size
-			>> garbled_circuit->g_input_size >> garbled_circuit->e_input_size
-			>> garbled_circuit->i_input_size >> garbled_circuit->dff_size
-			>> garbled_circuit->output_size >> garbled_circuit->terminate_id
-			>> garbled_circuit->gate_size;
+	f >> garbled_circuit->p_init_size >> garbled_circuit->g_init_size >> garbled_circuit->e_init_size >> garbled_circuit->p_input_size
+			>> garbled_circuit->g_input_size >> garbled_circuit->e_input_size >> garbled_circuit->i_input_size >> garbled_circuit->dff_size
+			>> garbled_circuit->output_size >> garbled_circuit->terminate_id >> garbled_circuit->gate_size;
 
-	if (posix_memalign((void **) (&garbled_circuit->garbledGates), 128,
-			sizeof(GarbledGate) * garbled_circuit->gate_size)) {
-		LOG(ERROR)
-				<< "Linux is a cheap miser that refuses to give us memory"
-				<< endl;
+	if (posix_memalign((void **) (&garbled_circuit->garbledGates), 128, sizeof(GarbledGate) * garbled_circuit->gate_size)) {
+		LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory" << endl;
 		LOG(ERROR) << strerror(errno) << endl;
 		return FAILURE;
 	}
 	if (garbled_circuit->output_size > 0) {
-		if (posix_memalign((void **) (&garbled_circuit->outputs), 128,
-				sizeof(int64_t) * garbled_circuit->output_size)) {
-			LOG(ERROR)
-					<< "Linux is a cheap miser that refuses to give us memory"
-					<< endl;
+		if (posix_memalign((void **) (&garbled_circuit->outputs), 128, sizeof(int64_t) * garbled_circuit->output_size)) {
+			LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory" << endl;
 			LOG(ERROR) << strerror(errno) << endl;
 			return FAILURE;
 		}
@@ -82,9 +73,7 @@ int ReadSCD(const string& file_name, GarbledCircuit* garbled_circuit) {
 			garbled_circuit->D = new int64_t[garbled_circuit->dff_size];
 			garbled_circuit->I = new int64_t[garbled_circuit->dff_size];
 		} catch (std::bad_alloc& e) {
-			LOG(ERROR)
-					<< "Linux is a cheap miser that refuses to give us memory"
-					<< endl << e.what() << endl;
+			LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory" << endl << e.what() << endl;
 			return FAILURE;
 
 		}
@@ -94,8 +83,7 @@ int ReadSCD(const string& file_name, GarbledCircuit* garbled_circuit) {
 	}
 
 	for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
-		garbled_circuit->garbledGates[i].output =
-				garbled_circuit->get_gate_lo_index() + i;
+		garbled_circuit->garbledGates[i].output = garbled_circuit->get_gate_lo_index() + i;
 	}
 
 	for (uint64_t i = 0; i < garbled_circuit->gate_size; i++) {
@@ -130,13 +118,9 @@ int WriteSCD(const ReadCircuit& read_circuit, const string &file_name) {
 		return -1;
 	}
 
-	f << read_circuit.p_init_size << " " << read_circuit.g_init_size << " "
-			<< read_circuit.e_init_size << " " << read_circuit.p_input_size
-			<< " " << read_circuit.g_input_size << " "
-			<< read_circuit.e_input_size << " " << read_circuit.i_input_size
-			<< " " << read_circuit.dff_size << " " << read_circuit.output_size
-			<< " " << read_circuit.terminate_id << " " << read_circuit.gate_size
-			<< endl;
+	f << read_circuit.p_init_size << " " << read_circuit.g_init_size << " " << read_circuit.e_init_size << " " << read_circuit.p_input_size << " "
+			<< read_circuit.g_input_size << " " << read_circuit.e_input_size << " " << read_circuit.i_input_size << " " << read_circuit.dff_size << " "
+			<< read_circuit.output_size << " " << read_circuit.terminate_id << " " << read_circuit.gate_size << endl;
 
 	/*
 	 * 1st input of each gate
@@ -197,8 +181,7 @@ int WriteSCD(const ReadCircuit& read_circuit, const string &file_name) {
 	return 0;
 }
 
-int ReadTGX(const string& file_name,
-		GarbledCircuitCollection* garbled_circuit_collection) {
+int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_collection) {
 	std::ifstream f(file_name, std::ios::out);
 	if (!f.is_open()) {
 		LOG(ERROR) << "can't open " << file_name << endl;
@@ -207,13 +190,9 @@ int ReadTGX(const string& file_name,
 
 	f >> garbled_circuit_collection->number_of_circuits;
 
-	if (posix_memalign(
-			(void **) (&garbled_circuit_collection->garbled_circuits), 128,
-			sizeof(GarbledCircuit)
-					* garbled_circuit_collection->number_of_circuits)) {
-		LOG(ERROR)
-				<< "Linux is a cheap miser that refuses to give us memory"
-				<< endl;
+	if (posix_memalign((void **) (&garbled_circuit_collection->garbled_circuits), 128,
+			sizeof(GarbledCircuit) * garbled_circuit_collection->number_of_circuits)) {
+		LOG(ERROR) << "Linux is a cheap miser that refuses to give us memory" << endl;
 		LOG(ERROR) << strerror(errno) << endl;
 		return FAILURE;
 	}
@@ -221,10 +200,8 @@ int ReadTGX(const string& file_name,
 	string scd_file;
 	for (int i = 0; i < garbled_circuit_collection->number_of_circuits; i++) {
 		f >> scd_file;
-		if (ReadSCD(scd_file,
-				&garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
-			LOG(ERROR) << "Error while reading scd file: " << scd_file
-					<< endl;
+		if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
+			LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
 			return FAILURE;
 		}
 	}

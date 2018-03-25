@@ -49,23 +49,19 @@
 #include "util/common.h"
 #include "util/util.h"
 
-int GarbleStr(const string& file_address, uint64_t clock_cycles,
-		const string& output_mask, int64_t terminate_period,
-		OutputMode output_mode, bool disable_OT, bool low_mem_foot,
-		string* output_str, int connfd) {
+int GarbleStr(const string& file_address, uint64_t clock_cycles, const string& output_mask, int64_t terminate_period, OutputMode output_mode, bool disable_OT,
+		bool low_mem_foot, string* output_str, int connfd) {
 	if (clock_cycles == 0) {
 		return FAILURE;
 	}
 
 	GarbledCircuitCollection garbled_circuit_collection;
 	if (ReadTGX(file_address, &garbled_circuit_collection) == FAILURE) {
-		LOG(ERROR) << "Error while reading tgx file: " << file_address
-				<< endl;
+		LOG(ERROR) << "Error while reading tgx file: " << file_address << endl;
 		return FAILURE;
 	}
 
-	garbled_circuit_collection.circuit_ios =
-			new CircuitIO[garbled_circuit_collection.number_of_circuits];
+	garbled_circuit_collection.circuit_ios = new CircuitIO[garbled_circuit_collection.number_of_circuits];
 	//FIX need to handle multiple circuits --- connection of public wires
 	for (int i = 0; i < garbled_circuit_collection.number_of_circuits; i++) {
 		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
@@ -78,10 +74,7 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 		sprintf(buffer2, "./Inputs/%d_p.txt", i);
 		string p_init_str = ReadFileOrPassHex(string(buffer1));
 		string p_input_str = ReadFileOrPassHex(string(buffer2));
-		CHECK(
-				ParseInitInputStr(p_init_str, p_input_str,
-						&garbled_circuit_collection.circuit_ios[i].p_init,
-						&garbled_circuit_collection.circuit_ios[i].p_input));
+		CHECK(ParseInitInputStr(p_init_str, p_input_str, &garbled_circuit_collection.circuit_ios[i].p_init, &garbled_circuit_collection.circuit_ios[i].p_input));
 
 		char buffer3[50];
 		char buffer4[50];
@@ -92,8 +85,7 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 		string init_str = ReadFileOrPassHex(string(buffer3));
 		string input_str = ReadFileOrPassHex(string(buffer4));
 		CHECK(
-				ParseInitInputStr(init_str, input_str,
-						&garbled_circuit_collection.circuit_ios[i].party_init,
+				ParseInitInputStr(init_str, input_str, &garbled_circuit_collection.circuit_ios[i].party_init,
 						&garbled_circuit_collection.circuit_ios[i].party_input));
 
 		garbled_circuit_collection.circuit_ios[i].output_bn = BN_new();
@@ -126,13 +118,8 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 //						output_mode, output_str));
 //
 //	} else {
-	CHECK(
-			GarbleBNHighMem(garbled_circuit_collection, &clock_cycles,
-					output_mask, terminate_period, output_mode, R, global_key,
-					disable_OT, connfd));
-	CHECK(
-			OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles,
-					output_mode, output_str));
+	CHECK(GarbleBNHighMem(garbled_circuit_collection, &clock_cycles, output_mask, terminate_period, output_mode, R, global_key, disable_OT, connfd));
+	CHECK(OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles, output_mode, output_str));
 //	}
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
@@ -140,12 +127,8 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles,
 	return SUCCESS;
 }
 
-
-
-int EvaluateStr(const string& file_address, uint64_t clock_cycles,
-		const string& output_mask, int64_t terminate_period,
-		OutputMode output_mode, bool disable_OT, bool low_mem_foot,
-		string* output_str, int connfd) {
+int EvaluateStr(const string& file_address, uint64_t clock_cycles, const string& output_mask, int64_t terminate_period, OutputMode output_mode, bool disable_OT,
+		bool low_mem_foot, string* output_str, int connfd) {
 
 	if (clock_cycles == 0) {
 		return FAILURE;
@@ -153,13 +136,11 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 
 	GarbledCircuitCollection garbled_circuit_collection;
 	if (ReadTGX(file_address, &garbled_circuit_collection) == FAILURE) {
-		LOG(ERROR) << "Error while reading tgx file: " << file_address
-				<< endl;
+		LOG(ERROR) << "Error while reading tgx file: " << file_address << endl;
 		return FAILURE;
 	}
 
-	garbled_circuit_collection.circuit_ios =
-			new CircuitIO[garbled_circuit_collection.number_of_circuits];
+	garbled_circuit_collection.circuit_ios = new CircuitIO[garbled_circuit_collection.number_of_circuits];
 	//FIX need to handle multiple circuits --- connection of public wires
 	for (int i = 0; i < garbled_circuit_collection.number_of_circuits; i++) {
 		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
@@ -172,10 +153,7 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 		sprintf(buffer2, "./Inputs/%d_p.txt", i);
 		string p_init_str = ReadFileOrPassHex(string(buffer1));
 		string p_input_str = ReadFileOrPassHex(string(buffer2));
-		CHECK(
-				ParseInitInputStr(p_init_str, p_input_str,
-						&garbled_circuit_collection.circuit_ios[i].p_init,
-						&garbled_circuit_collection.circuit_ios[i].p_input));
+		CHECK(ParseInitInputStr(p_init_str, p_input_str, &garbled_circuit_collection.circuit_ios[i].p_init, &garbled_circuit_collection.circuit_ios[i].p_input));
 
 		char buffer3[50];
 		char buffer4[50];
@@ -186,8 +164,7 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 		string init_str = ReadFileOrPassHex(string(buffer3));
 		string input_str = ReadFileOrPassHex(string(buffer4));
 		CHECK(
-				ParseInitInputStr(init_str, input_str,
-						&garbled_circuit_collection.circuit_ios[i].party_init,
+				ParseInitInputStr(init_str, input_str, &garbled_circuit_collection.circuit_ios[i].party_init,
 						&garbled_circuit_collection.circuit_ios[i].party_input));
 
 		garbled_circuit_collection.circuit_ios[i].output_bn = BN_new();
@@ -214,13 +191,8 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles,
 //				OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
 //						output_mode, output_str));
 //	} else {
-	CHECK(
-			EvaluateBNHighMem(garbled_circuit_collection, &clock_cycles,
-					output_mask, terminate_period, output_mode, global_key,
-					disable_OT, connfd));
-	CHECK(
-			OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles,
-					output_mode, output_str));
+	CHECK(EvaluateBNHighMem(garbled_circuit_collection, &clock_cycles, output_mask, terminate_period, output_mode, global_key, disable_OT, connfd));
+	CHECK(OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles, output_mode, output_str));
 //	}
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
