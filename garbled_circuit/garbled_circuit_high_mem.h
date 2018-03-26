@@ -60,6 +60,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 
 
 int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection, CircuitLabel* all_labels, int circuitID);
+int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection, CircuitLabel* all_labels, int circuitID);
 
 
 
