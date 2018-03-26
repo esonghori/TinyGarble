@@ -205,6 +205,7 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 
 	string newLine;
 	getline(f, newLine);
+
 	for (int i = 0; i < garbled_circuit_collection->number_of_circuits; i++) {
 		string scd_file;
 
@@ -212,19 +213,19 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		vector<string> parsedLine;
 		split(parsedLine, newLine, is_any_of(" "));
 
+		//newLine format: %i number_of_run %s scd_file %i intermediate_inputs_from
+
 		int n = parsedLine.size();
-		int io = n - 1;
+		int io = n - 2;
 
 		garbled_circuit_collection->i_circuit_inputs[i] = new int [io + 1];
+		garbled_circuit_collection->i_circuit_inputs[i][0] = io;
 
-		if (n > 1){
-			garbled_circuit_collection->i_circuit_inputs[i][0] = io;
-		}
-		for (int j = 1; j < n; j++){
-			garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j],nullptr);
+		for (int j = 1; j <= io; j++){ //iterating over circuit inputs matrix
+			garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j+1],nullptr);
 		}
 
-		scd_file = parsedLine[0];
+		scd_file = parsedLine[1];
 		if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
 			LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
 			return FAILURE;

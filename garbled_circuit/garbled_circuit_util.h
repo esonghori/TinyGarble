@@ -103,7 +103,7 @@ typedef struct GarbledCircuit {
 	int64_t *I; /*!< p-length array of wire index corresponding
 	 to I signal (Initial) of DFF. */
 
-	block* output_labels;
+//	block* output_labels;
 
 	/**
 	 * indexing structure:
