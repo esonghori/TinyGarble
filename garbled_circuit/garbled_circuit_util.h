@@ -247,6 +247,7 @@ typedef struct GarbledCircuitCollection {
 	int number_of_circuits;
 	GarbledCircuit* garbled_circuits;
 	CircuitIO* circuit_ios;
+	int** i_circuit_inputs;
 } GarbledCircuitCollection;
 
 enum class OutputMode {

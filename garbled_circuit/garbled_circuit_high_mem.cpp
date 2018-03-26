@@ -77,13 +77,11 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 	//------------------------------------------ Second Circuit
 	CHECK(GarbleMakeLabels(garbled_circuit_collection.garbled_circuits[1], all_labels[1], R, *clock_cycles));
 
-	//FIX replace with memcpy
-	//no need to transfer; both Garbler and Evaluator have input labels
-	for (uint64_t i = 0; i < garbled_circuit_collection.garbled_circuits[0].output_size * 2; //need to copy two labels per bit
-			i++) {
-		all_labels[1].input_labels[garbled_circuit_collection.garbled_circuits[0].output_size * 2 + i] = all_labels[1].input_labels[i] = all_labels[0]
-				.output_labels[i];
-	} //copying both e_input and g_input
+	CHECK(
+			GarbleTransferLabels(garbled_circuit_collection.garbled_circuits[1], all_labels[1], garbled_circuit_collection.circuit_ios[1].party_init,
+					garbled_circuit_collection.circuit_ios[1].party_input, *clock_cycles, disable_OT, connfd));
+
+	GarbleCopyLabels(garbled_circuit_collection, all_labels, 1);
 
 	GarbleHighMem(garbled_circuit_collection.garbled_circuits[1], all_labels[1], garbled_circuit_collection.circuit_ios[1].p_init,
 			garbled_circuit_collection.circuit_ios[1].p_input, global_key, R, clock_cycles, terminate_period, connfd);
@@ -792,6 +790,9 @@ int EvalauteOT(const GarbledCircuit& garbled_circuit, BIGNUM* e_init, block* ini
 
 int GarbleTransferLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, BIGNUM* g_init, BIGNUM* g_input, uint64_t clock_cycles, bool disable_OT,
 		int connfd) {
+	if (garbled_circuit.e_init_size == 0 && garbled_circuit.e_input_size == 0 && garbled_circuit.g_init_size == 0 && garbled_circuit.g_input_size == 0)
+		return 0;
+
 // g_init
 	for (uint i = 0; i < garbled_circuit.g_init_size; i++) {
 		if (i >= (uint) BN_num_bits(g_init) || BN_is_bit_set(g_init, i) == 0) {
@@ -944,6 +945,25 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labe
 		CHECK_ALLOC(labels.output_labels = new block[clock_cycles * garbled_circuit.output_size]);
 		CHECK_ALLOC(labels.output_vals = new short[clock_cycles * garbled_circuit.output_size]);
 	}
+	return SUCCESS;
+}
+
+int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection, CircuitLabel* all_labels, int circuitID) {
+
+	if (garbled_circuit_collection.garbled_circuits[circuitID].i_input_size == 0)
+		return SUCCESS;
+
+	//HERE
+
+
+	//FIX replace with memcpy
+	//no need to transfer; both Garbler and Evaluator have input labels
+	for (uint64_t i = 0; i < garbled_circuit_collection.garbled_circuits[0].output_size * 2; //need to copy two labels per bit
+			i++) {
+		all_labels[1].input_labels[garbled_circuit_collection.garbled_circuits[0].output_size * 2 + i] = all_labels[1].input_labels[i] = all_labels[0]
+				.output_labels[i];
+	} //copying both e_input and g_input
+
 	return SUCCESS;
 }
 
