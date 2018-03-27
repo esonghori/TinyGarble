@@ -871,19 +871,18 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 	labels.output_labels = nullptr;
 	labels.output_vals = nullptr;
 
-	if (garbled_circuit.get_init_size() > 0) {
-		CHECK_ALLOC(labels.init_labels = new block[garbled_circuit.get_init_size() * 2 * garbled_circuit.n_of_run]);
-		for (uint i = 0; i < garbled_circuit.get_init_size() * garbled_circuit.n_of_run; i++) {
+	if (garbled_circuit.get_secret_init_size() > 0) {
+		CHECK_ALLOC(labels.init_labels = new block[garbled_circuit.get_secret_init_size() * 2 * garbled_circuit.n_of_run]);
+		for (uint i = 0; i < garbled_circuit.get_secret_init_size() * garbled_circuit.n_of_run; i++) {
 			labels.init_labels[i * 2 + 0] = RandomBlock();
 			labels.init_labels[i * 2 + 1] = XorBlock(R, labels.init_labels[i * 2 + 0]);
 		}
 	}
 
-//FIX; we probably dont' need to create labels for p_input
 //FIX: don't make lables for i_input
-	if (garbled_circuit.get_input_size() > 0) {
-		CHECK_ALLOC(labels.input_labels = new block[clock_cycles * garbled_circuit.get_input_size() * 2 * garbled_circuit.n_of_run]);
-		for (uint i = 0; i < garbled_circuit.get_input_size() * clock_cycles * garbled_circuit.n_of_run; i++) {
+	if (garbled_circuit.get_secret_input_size() > 0) {
+		CHECK_ALLOC(labels.input_labels = new block[clock_cycles * garbled_circuit.get_secret_input_size() * 2 * garbled_circuit.n_of_run]);
+		for (uint i = 0; i < garbled_circuit.get_secret_input_size() * clock_cycles * garbled_circuit.n_of_run; i++) {
 			labels.input_labels[i * 2 + 0] = RandomBlock();
 			labels.input_labels[i * 2 + 1] = XorBlock(R, labels.input_labels[i * 2 + 0]);
 		}
@@ -903,12 +902,12 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labe
 	labels.output_labels = nullptr;
 	labels.output_vals = nullptr;
 
-	if (garbled_circuit.get_init_size() > 0) {
-		CHECK_ALLOC(labels.init_labels = new block[garbled_circuit.get_init_size() * garbled_circuit.n_of_run]);
+	if (garbled_circuit.get_secret_init_size() > 0) {
+		CHECK_ALLOC(labels.init_labels = new block[garbled_circuit.get_secret_init_size() * garbled_circuit.n_of_run]);
 	}
 
 	if (garbled_circuit.get_input_size() > 0) {
-		CHECK_ALLOC(labels.input_labels = new block[clock_cycles * garbled_circuit.get_input_size() * garbled_circuit.n_of_run]);
+		CHECK_ALLOC(labels.input_labels = new block[clock_cycles * garbled_circuit.get_secret_input_size() * garbled_circuit.n_of_run]);
 	}
 	if (garbled_circuit.output_size > 0) {
 		CHECK_ALLOC(labels.output_labels = new block[clock_cycles * garbled_circuit.output_size * garbled_circuit.n_of_run]);
@@ -923,26 +922,33 @@ int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection,
 		return SUCCESS;
 
 	//FIX replace with memcpy
-	//FIX does not care about clock cycles of current_circuit
-	//FIX input_size to secre_input_size
+	//FIX take care of clock cycles depending on the mode (every clk vs sync)
+	//FIX does not support multiple i inputs from different circuits
 
-	int n_of_depend = garbled_circuit_collection.i_circuit_inputs[circuitID][0];
 	int n_of_run = garbled_circuit_collection.n_of_run[circuitID];
+	GarbledCircuit& this_circuit = garbled_circuit_collection.garbled_circuits[circuitID];
+	int cpy_circuitID = garbled_circuit_collection.i_circuit_inputs[circuitID][1];
 
 	for (int r = 0; r < n_of_run; r++) {
-		int offset = garbled_circuit_collection.garbled_circuits[circuitID].get_i_input_lo_index() * 2
-				+ r * garbled_circuit_collection.garbled_circuits[circuitID].get_input_size() * 2;
+		int offset = (r * this_circuit.get_secret_input_size() + this_circuit.get_i_input_lo_index()) * 2;
+		int output_offset = 0;
 
-		for (int i = 1; i <= n_of_depend; i++) {
-			int cpy_circuit = garbled_circuit_collection.i_circuit_inputs[circuitID][i];
+		uint64_t input_size = this_circuit.i_input_size;
+		uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuitID].output_size;
+		uint64_t total_out_size = output_size * garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_run;
+		uint64_t total_in_size = input_size * n_of_run;
 
-			uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuit].output_size;
-
-			for (uint64_t i = 0; i < output_size * 2; i++) { // *2 labels per bit
-				all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuit].output_labels[i];
+		if (total_out_size == total_in_size) {
+			if (input_size > output_size) {
+				output_offset = r * output_size; //continue copying not broadcast
+			} else {
+				output_offset = r * input_size; //continue copying not broadcast
 			}
+		}
+		output_offset *= 2; //2 labels per bit
 
-			offset += output_size * 2;
+		for (uint64_t i = 0; i < input_size * 2; i++) { // *2 labels per bit
+			all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
 		}
 	}
 
@@ -954,22 +960,29 @@ int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collectio
 	if (garbled_circuit_collection.garbled_circuits[circuitID].i_input_size == 0)
 		return SUCCESS;
 
-	int n_of_depend = garbled_circuit_collection.i_circuit_inputs[circuitID][0];
 	int n_of_run = garbled_circuit_collection.n_of_run[circuitID];
+	GarbledCircuit& this_circuit = garbled_circuit_collection.garbled_circuits[circuitID];
+	int cpy_circuitID = garbled_circuit_collection.i_circuit_inputs[circuitID][1];
 
-	//FIX replace with memcpy
 	for (int r = 0; r < n_of_run; r++) {
-		int offset = garbled_circuit_collection.garbled_circuits[circuitID].get_i_input_lo_index()
-				+ r * garbled_circuit_collection.garbled_circuits[circuitID].get_input_size();
-		for (int i = 1; i <= n_of_depend; i++) {
-			int cpy_circuit = garbled_circuit_collection.i_circuit_inputs[circuitID][i];
-			uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuit].output_size;
+		int offset = (r * this_circuit.get_secret_input_size() + this_circuit.get_i_input_lo_index());
+		int output_offset = 0;
 
-			for (uint64_t i = 0; i < output_size; i++) { // 1 label per bit
-				all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuit].output_labels[i];
+		uint64_t input_size = this_circuit.i_input_size;
+		uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuitID].output_size;
+		uint64_t total_out_size = output_size * garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_run;
+		uint64_t total_in_size = input_size * n_of_run;
+
+		if (total_out_size == total_in_size) {
+			if (input_size > output_size) {
+				output_offset = r * output_size; //continue copying not broadcast
+			} else {
+				output_offset = r * input_size; //continue copying not broadcast
 			}
+		}
 
-			offset += output_size;
+		for (uint64_t i = 0; i < input_size; i++) { // 1 labels per bit
+			all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
 		}
 	}
 
