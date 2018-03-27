@@ -45,9 +45,9 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, uint64_t* clock_cycles, const string& output_mask, int64_t terminate_period,
 		OutputMode output_mode, block global_key, bool disable_OT, int connfd);
 int GarbleHighMem(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, BIGNUM* p_init, BIGNUM* p_input, block global_key, block R,
-		uint64_t* clock_cycles, int64_t terminate_period, int connfd);
+		uint64_t* clock_cycles, int64_t terminate_period, int connfd, int r);
 int EvaluateHighMem(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, BIGNUM* p_init, BIGNUM* p_input, block global_key, uint64_t* clock_cycles,
-		int64_t terminate_period, int connfd);
+		int64_t terminate_period, int connfd, int r);
 int GarbleOT(const GarbledCircuit& garbled_circuit, block* init_labels, block* input_labels, uint64_t clock_cycles, int connfd);
 int EvalauteOT(const GarbledCircuit& garbled_circuit, BIGNUM* e_init, block* init_labels, BIGNUM* e_input, block* input_labels, uint64_t clock_cycles,
 		int connfd);

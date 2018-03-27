@@ -64,7 +64,9 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles, const string& o
 	garbled_circuit_collection.circuit_ios = new CircuitIO[garbled_circuit_collection.number_of_circuits];
 	//FIX need to handle multiple circuits --- connection of public wires
 	for (int i = 0; i < garbled_circuit_collection.number_of_circuits; i++) {
-		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
+//		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
+
+		garbled_circuit_collection.garbled_circuits[i].n_of_run = garbled_circuit_collection.n_of_run[i];
 
 		char buffer1[50];
 		char buffer2[50];
@@ -105,22 +107,8 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles, const string& o
 	block global_key = RandomBlock();
 	CHECK(SendData(connfd, &global_key, sizeof(block)));  // send global key
 
-	//FIX need to handle low_mem
-//	if (low_mem_foot && clock_cycles > 1) {
-//		CHECK(
-//				GarbleBNLowMem(garbled_circuit, p_init, p_input, g_init,
-//						g_input, &clock_cycles, output_mask, terminate_period,
-//						output_mode, output_bn, R, global_key, disable_OT,
-//						connfd));
-//
-//		CHECK(
-//				OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
-//						output_mode, output_str));
-//
-//	} else {
 	CHECK(GarbleBNHighMem(garbled_circuit_collection, &clock_cycles, output_mask, terminate_period, output_mode, R, global_key, disable_OT, connfd));
 	CHECK(OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles, output_mode, output_str));
-//	}
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 
@@ -143,7 +131,9 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles, const string&
 	garbled_circuit_collection.circuit_ios = new CircuitIO[garbled_circuit_collection.number_of_circuits];
 	//FIX need to handle multiple circuits --- connection of public wires
 	for (int i = 0; i < garbled_circuit_collection.number_of_circuits; i++) {
-		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
+//		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
+
+		garbled_circuit_collection.garbled_circuits[i].n_of_run = garbled_circuit_collection.n_of_run[i];
 
 		char buffer1[50];
 		char buffer2[50];

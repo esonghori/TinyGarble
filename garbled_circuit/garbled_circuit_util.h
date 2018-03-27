@@ -102,6 +102,7 @@ typedef struct GarbledCircuit {
 	 to D signal (Data) of DFF. */
 	int64_t *I; /*!< p-length array of wire index corresponding
 	 to I signal (Initial) of DFF. */
+	int n_of_run;
 
 //	block* output_labels;
 
@@ -248,6 +249,7 @@ typedef struct GarbledCircuitCollection {
 	GarbledCircuit* garbled_circuits;
 	CircuitIO* circuit_ios;
 	int** i_circuit_inputs;
+	int* n_of_run;
 } GarbledCircuitCollection;
 
 enum class OutputMode {

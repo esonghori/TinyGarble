@@ -195,6 +195,7 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 
 	f >> garbled_circuit_collection->number_of_circuits;
 	garbled_circuit_collection->i_circuit_inputs = new int*[garbled_circuit_collection->number_of_circuits];
+	garbled_circuit_collection->n_of_run = new int [garbled_circuit_collection->number_of_circuits];
 
 	if (posix_memalign((void **) (&garbled_circuit_collection->garbled_circuits), 128,
 			sizeof(GarbledCircuit) * garbled_circuit_collection->number_of_circuits)) {
@@ -218,8 +219,11 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		int n = parsedLine.size();
 		int io = n - 2;
 
+		// store the number of run
 		garbled_circuit_collection->i_circuit_inputs[i] = new int [io + 1];
 		garbled_circuit_collection->i_circuit_inputs[i][0] = io;
+		garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0],nullptr);
+
 
 		for (int j = 1; j <= io; j++){ //iterating over circuit inputs matrix
 			garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j+1],nullptr);
