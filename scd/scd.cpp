@@ -196,6 +196,7 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 	f >> garbled_circuit_collection->number_of_circuits;
 	garbled_circuit_collection->i_circuit_inputs = new int*[garbled_circuit_collection->number_of_circuits];
 	garbled_circuit_collection->n_of_run = new int [garbled_circuit_collection->number_of_circuits];
+	garbled_circuit_collection->n_of_clk = new int [garbled_circuit_collection->number_of_circuits];
 
 	if (posix_memalign((void **) (&garbled_circuit_collection->garbled_circuits), 128,
 			sizeof(GarbledCircuit) * garbled_circuit_collection->number_of_circuits)) {
@@ -214,22 +215,25 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		vector<string> parsedLine;
 		split(parsedLine, newLine, is_any_of(" "));
 
-		//newLine format: %i number_of_run %s scd_file %i intermediate_inputs_from
+		//newLine format: %i number_of_run     %i number_of_clk    %s scd_file     %i intermediate_inputs_from
 
 		int n = parsedLine.size();
-		int io = n - 2;
+		int n_before_io = 3; //r clk scd_file
+		int io = n - n_before_io;
 
 		// store the number of run
 		garbled_circuit_collection->i_circuit_inputs[i] = new int [io + 1];
 		garbled_circuit_collection->i_circuit_inputs[i][0] = io;
 		garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0],nullptr);
+		garbled_circuit_collection->n_of_clk[i] = stoi(parsedLine[1],nullptr);
 
+//		LOG(ERROR)<<endl<<garbled_circuit_collection->i_circuit_inputs[i][0]<<endl<<garbled_circuit_collection->n_of_run[i]<<endl<<garbled_circuit_collection->n_of_clk[i]<<endl;
 
 		for (int j = 1; j <= io; j++){ //iterating over circuit inputs matrix
-			garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j+1],nullptr);
+			garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j+n_before_io-1],nullptr);
 		}
 
-		scd_file = parsedLine[1];
+		scd_file = parsedLine[n_before_io-1];
 		if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
 			LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
 			return FAILURE;

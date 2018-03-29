@@ -67,6 +67,7 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles, const string& o
 //		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
 
 		garbled_circuit_collection.garbled_circuits[i].n_of_run = garbled_circuit_collection.n_of_run[i];
+		garbled_circuit_collection.garbled_circuits[i].n_of_clk = garbled_circuit_collection.n_of_clk[i];
 
 		char buffer1[50];
 		char buffer2[50];
@@ -134,6 +135,7 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles, const string&
 //		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
 
 		garbled_circuit_collection.garbled_circuits[i].n_of_run = garbled_circuit_collection.n_of_run[i];
+		garbled_circuit_collection.garbled_circuits[i].n_of_clk = garbled_circuit_collection.n_of_clk[i];
 
 		char buffer1[50];
 		char buffer2[50];
