@@ -132,7 +132,6 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles, const string&
 	garbled_circuit_collection.circuit_ios = new CircuitIO[garbled_circuit_collection.number_of_circuits];
 	//FIX need to handle multiple circuits --- connection of public wires
 	for (int i = 0; i < garbled_circuit_collection.number_of_circuits; i++) {
-//		FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
 
 		garbled_circuit_collection.garbled_circuits[i].n_of_run = garbled_circuit_collection.n_of_run[i];
 		garbled_circuit_collection.garbled_circuits[i].n_of_clk = garbled_circuit_collection.n_of_clk[i];
@@ -173,19 +172,9 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles, const string&
 	block global_key = RandomBlock();
 	CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
 
-	//FIX
-//	if (low_mem_foot && clock_cycles > 1) {
-//		CHECK(
-//				EvaluateBNLowMem(garbled_circuit, p_init, p_input, e_init,
-//						e_input, &clock_cycles, output_mask, terminate_period,
-//						output_mode, output_bn, global_key, disable_OT, connfd));
-//		CHECK(
-//				OutputBN2StrLowMem(garbled_circuit, output_bn, clock_cycles,
-//						output_mode, output_str));
-//	} else {
 	CHECK(EvaluateBNHighMem(garbled_circuit_collection, &clock_cycles, output_mask, terminate_period, output_mode, global_key, disable_OT, connfd));
 	CHECK(OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles, output_mode, output_str));
-//	}
+
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 	return SUCCESS;

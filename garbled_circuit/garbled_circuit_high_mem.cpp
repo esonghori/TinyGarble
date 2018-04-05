@@ -49,7 +49,6 @@
 
 int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, uint64_t* clock_cycles, const string& output_mask, int64_t terminate_period,
 		OutputMode output_mode, block R, block global_key, bool disable_OT, int connfd) {
-
 	// ==> Assumption: we don't care about public values, clks, passing public value from one circuit to another, dependency only on previous circuit
 
 	int number_of_circuits = garbled_circuit_collection.number_of_circuits;
@@ -1036,7 +1035,6 @@ int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collectio
 int GarbleTransferOutput(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, const string& output_mask, OutputMode output_mode, BIGNUM* output_bn,
 		int connfd) {
 
-	//FIX need to take care of last layer having r > 1... commented for now      r * jump_size +
 	BIGNUM* output_mask_bn = BN_new();
 	BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
@@ -1044,36 +1042,36 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit, CircuitLabel& la
 	short* output_vals = labels.output_vals;
 	uint64_t clock_cycles = garbled_circuit.n_of_clk;
 
-//	uint64_t n_of_run = garbled_circuit.n_of_run;
-//	uint64_t jump_size = clock_cycles * garbled_circuit.output_size;
+	uint64_t n_of_run = garbled_circuit.n_of_run;
+	uint64_t jump_size = clock_cycles * garbled_circuit.output_size;
 
-//	for (uint64_t r = 0; r < n_of_run; r++) {
-	for (uint64_t cid = 0; cid < clock_cycles; cid++) {
-		for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
-			if (output_vals[ cid * garbled_circuit.output_size + i] == 0) {
-				BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
-			} else if (output_vals[cid * garbled_circuit.output_size + i] == 1) {
-				if (i < (uint64_t) BN_num_bits(output_mask_bn) && BN_is_bit_set(output_mask_bn, i) == 1) {
-					BN_set_bit(output_bn,cid * garbled_circuit.output_size + i);
-				}
-			} else {
-				short garble_output_type = get_LSB(output_labels[( cid * garbled_circuit.output_size + i) * 2 + 0]);
-				short eval_output_type;
-				if (i >= (uint64_t) BN_num_bits(output_mask_bn) || BN_is_bit_set(output_mask_bn, i) == 0) {
-					CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
-					BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
+	for (uint64_t r = 0; r < n_of_run; r++) {
+		for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+			for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
+				if (output_vals[r * jump_size + cid * garbled_circuit.output_size + i] == 0) {
+					BN_clear_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+				} else if (output_vals[r * jump_size + cid * garbled_circuit.output_size + i] == 1) {
+					if (i < (uint64_t) BN_num_bits(output_mask_bn) && BN_is_bit_set(output_mask_bn, i) == 1) {
+						BN_set_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+					}
 				} else {
-					CHECK(RecvData(connfd, &eval_output_type, sizeof(short)));
-					if (eval_output_type != garble_output_type) {
-						BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
+					short garble_output_type = get_LSB(output_labels[(r * jump_size + cid * garbled_circuit.output_size + i) * 2 + 0]);
+					short eval_output_type;
+					if (i >= (uint64_t) BN_num_bits(output_mask_bn) || BN_is_bit_set(output_mask_bn, i) == 0) {
+						CHECK(SendData(connfd, &garble_output_type, sizeof(short)));
+						BN_clear_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
 					} else {
-						BN_clear_bit(output_bn,  cid * garbled_circuit.output_size + i);
+						CHECK(RecvData(connfd, &eval_output_type, sizeof(short)));
+						if (eval_output_type != garble_output_type) {
+							BN_set_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+						} else {
+							BN_clear_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+						}
 					}
 				}
 			}
 		}
 	}
-//	}
 
 	BN_free(output_mask_bn);
 	return SUCCESS;
@@ -1089,36 +1087,36 @@ int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit, CircuitLabel& 
 	BIGNUM* output_mask_bn = BN_new();
 	BN_hex2bn(&output_mask_bn, output_mask.c_str());
 
-//	uint64_t n_of_run = garbled_circuit.n_of_run;
-//	uint64_t jump_size = clock_cycles * garbled_circuit.output_size;
+	uint64_t n_of_run = garbled_circuit.n_of_run;
+	uint64_t jump_size = clock_cycles * garbled_circuit.output_size;
 
-//	for (uint64_t r = 0; r < n_of_run; r++) {
-	for (uint64_t cid = 0; cid < clock_cycles; cid++) {
-		for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
-			if (output_vals[ cid * garbled_circuit.output_size + i] == 0) {
-				BN_clear_bit(output_bn,  cid * garbled_circuit.output_size + i);
-			} else if (output_vals[ cid * garbled_circuit.output_size + i] == 1) {
-				if (i >= (uint64_t) BN_num_bits(output_mask_bn) && BN_is_bit_set(output_mask_bn, i) == 0) {
-					BN_set_bit(output_bn,  cid * garbled_circuit.output_size + i);
-				}
-			} else {
-				short garble_output_type;
-				short eval_output_type = get_LSB(output_labels[cid * garbled_circuit.output_size + i]);
-				if (i >= (uint64_t) BN_num_bits(output_mask_bn) || BN_is_bit_set(output_mask_bn, i) == 0) {
-					CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
-					if (eval_output_type != garble_output_type) {
-						BN_set_bit(output_bn, cid * garbled_circuit.output_size + i);
-					} else {
-						BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
+	for (uint64_t r = 0; r < n_of_run; r++) {
+		for (uint64_t cid = 0; cid < clock_cycles; cid++) {
+			for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
+				if (output_vals[r * jump_size + cid * garbled_circuit.output_size + i] == 0) {
+					BN_clear_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+				} else if (output_vals[r * jump_size + cid * garbled_circuit.output_size + i] == 1) {
+					if (i >= (uint64_t) BN_num_bits(output_mask_bn) && BN_is_bit_set(output_mask_bn, i) == 0) {
+						BN_set_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
 					}
 				} else {
-					CHECK(SendData(connfd, &eval_output_type, sizeof(short)));
-					BN_clear_bit(output_bn, cid * garbled_circuit.output_size + i);
+					short garble_output_type;
+					short eval_output_type = get_LSB(output_labels[r * jump_size + cid * garbled_circuit.output_size + i]);
+					if (i >= (uint64_t) BN_num_bits(output_mask_bn) || BN_is_bit_set(output_mask_bn, i) == 0) {
+						CHECK(RecvData(connfd, &garble_output_type, sizeof(short)));
+						if (eval_output_type != garble_output_type) {
+							BN_set_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+						} else {
+							BN_clear_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+						}
+					} else {
+						CHECK(SendData(connfd, &eval_output_type, sizeof(short)));
+						BN_clear_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
+					}
 				}
 			}
 		}
 	}
-//	}
 
 	BN_free(output_mask_bn);
 	return SUCCESS;
