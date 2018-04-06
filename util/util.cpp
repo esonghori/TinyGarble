@@ -158,9 +158,8 @@ int Str2Block(const string &s, block* v) {
 	boost::erase_all(v_str, "_");
 
 	if (v_str.length() > sizeof(block) * 2) {
-		LOG(ERROR) << "Can not parse hex string to 128-bit block: " << v_str
-				<< endl << "string (len = " << v_str.length()
-				<< ") is longer than " << sizeof(block) * 2 << endl;
+		LOG(ERROR) << "Can not parse hex string to 128-bit block: " << v_str << endl << "string (len = " << v_str.length() << ") is longer than "
+				<< sizeof(block) * 2 << endl;
 		return FAILURE;
 	}
 
@@ -191,14 +190,9 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
 	return ret;
 }
 
-int OutputBN2StrHighMem(
-		const GarbledCircuitCollection& garbled_circuit_collection,
-		uint64_t clock_cycles, OutputMode output_mode, string *output_str) {
-	GarbledCircuit garbled_circuit =
-			garbled_circuit_collection.garbled_circuits[garbled_circuit_collection.number_of_circuits
-					- 1];
-	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[garbled_circuit_collection.number_of_circuits
-	                                     					- 1].output_bn;
+int OutputBN2StrHighMem(const GarbledCircuitCollection& garbled_circuit_collection, uint64_t clock_cycles, OutputMode output_mode, string *output_str) {
+	GarbledCircuit garbled_circuit = garbled_circuit_collection.garbled_circuits[garbled_circuit_collection.number_of_circuits - 1];
+	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[garbled_circuit_collection.number_of_circuits - 1].output_bn;
 
 	(*output_str) = "";
 	if (output_mode == OutputMode::consecutive) {  // normal
@@ -217,8 +211,7 @@ int OutputBN2StrHighMem(
 		BN_free(temp);
 	} else if (output_mode == OutputMode::last_clock) {  // only last clock
 		BIGNUM* temp = BN_new();
-		BN_rshift(temp, outputs,
-				(clock_cycles - 1) * garbled_circuit.output_size);
+		BN_rshift(temp, outputs, (clock_cycles - 1) * garbled_circuit.output_size);
 		BN_mask_bits(temp, garbled_circuit.output_size);
 		(*output_str) += BN_bn2hex(temp);
 		BN_free(temp);
@@ -226,8 +219,7 @@ int OutputBN2StrHighMem(
 	return SUCCESS;
 }
 
-int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-		uint64_t clock_cycles, OutputMode output_mode, string* output_str) {
+int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs, uint64_t clock_cycles, OutputMode output_mode, string* output_str) {
 	(*output_str) = "";
 	if (output_mode == OutputMode::consecutive) {  // normal
 		const char* output_c = BN_bn2hex(outputs);

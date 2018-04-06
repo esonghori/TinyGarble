@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
 			"single clock in case of sequential circuits.")  //
 	("terminate_period,t", po::value < int64_t > (&terminate_period)->default_value(0), "Terminate signal reveal period: "
 			"0: No termination or never reveal, T: Reveal every T clock cycle.")  //
-	("output_mode", po::value < string > (&output_mode_str), "output print mode: {0:consecutive, 1:separated_clock, "
+	("output_mode", po::value < string > (&output_mode_str)->default_value("2"), "output print mode: {0:consecutive, 1:separated_clock, "
 			"2:last_clock}, e.g., consecutive, 0, 1");
 
 	po::variables_map vm;

@@ -1079,6 +1079,7 @@ int GarbleTransferOutput(const GarbledCircuit& garbled_circuit, CircuitLabel& la
 
 int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, const string& output_mask, OutputMode output_mode, BIGNUM* output_bn,
 		int connfd) {
+	//FIX consider output_mode
 
 	block* output_labels = labels.output_labels;
 	short* output_vals = labels.output_vals;
