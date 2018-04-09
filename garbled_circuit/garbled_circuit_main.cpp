@@ -128,7 +128,6 @@ int CheckOptionsBob(const string& file_address, uint64_t clock_cycles, const str
 }
 
 int main(int argc, char* argv[]) {
-
 	LogInitial(argc, argv);
 	HashInit();
 	srand(time(0));
@@ -188,6 +187,7 @@ int main(int argc, char* argv[]) {
 			return SUCCESS;
 		}
 		po::notify(vm);
+
 	} catch (po::error& e) {
 		LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
 		std::cout << desc << endl;

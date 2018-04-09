@@ -364,6 +364,11 @@ void EvalGate(block input0_labels, short input0_value, block input1_labels,
 	*output_value = SECRET;
 	*output_labels = ZeroBlock();
 
+//	if (gid==4 && cid==1){
+//		LOG(ERROR)<<endl<<"Inside EvalGate| condition: "<< CmpBlock(input0_labels, input1_labels)
+//				<<endl<<input0_labels<<endl<<input1_labels<<endl;
+//	}
+
 	if (!IsSecret(input0_value) && !IsSecret(input1_value)) {
 		*output_value = GateOperator(type, input0_value, input1_value);
 	} else if (!IsSecret(input0_value)) {
@@ -428,6 +433,12 @@ void EvalGate(block input0_labels, short input0_value, block input1_labels,
 				block tweak1 = MakeBlock(cid, 2 * gid + 1);
 
 				block table[2];
+
+//				if ((*garbled_table_ind)==2 && gid <=10){
+//					LOG(ERROR)<<endl<<"Inside EvalGate| garbled_table_ind: "<<(*garbled_table_ind)<<"   .gid: "<<garbled_tables[(*garbled_table_ind)].gid<<"  gid: "<<gid<<endl<<endl<<endl;
+//				}
+
+
 				if (garbled_tables[(*garbled_table_ind)].gid == gid) { // correct table
 					table[0] = garbled_tables[(*garbled_table_ind)].row[0];
 					table[1] = garbled_tables[(*garbled_table_ind)].row[1];
@@ -646,3 +657,5 @@ int EvaluateTransferTerminate(const GarbledCircuit& garbled_circuit,
 
 	return SUCCESS;
 }
+
+

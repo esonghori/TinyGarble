@@ -124,7 +124,7 @@ typedef struct GarbledCircuit {
 		return p_init_size + g_init_size + e_init_size;
 	}
 	inline uint64_t get_input_size() const {
-		return p_input_size  + g_input_size + e_input_size + i_input_size;
+		return p_input_size + g_input_size + e_input_size + i_input_size;
 	}
 	inline uint64_t get_wire_size() const {
 		return get_init_size() + get_input_size() + dff_size + gate_size;
@@ -260,37 +260,22 @@ enum class OutputMode {
 
 uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
-void RemoveGarbledCircuitCollection(
-		GarbledCircuitCollection* garbled_circuit_collection);
+void RemoveGarbledCircuitCollection(GarbledCircuitCollection* garbled_circuit_collection);
 void RemoveLabels(CircuitLabel& labels);
 
-int ParseInitInputStr(const string& init_str, const string&input_str,
-		BIGNUM** init, BIGNUM** input);
-void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type,
-		short* output_value);
-void GarbleGate(BlockPair input0_labels, short input0_value,
-		BlockPair input1_labels, short input1_value, int type, uint64_t cid,
-		uint64_t gid, GarbledTable* garbled_tables, uint64_t* garbled_table_ind,
-		block R, AES_KEY AES_Key, BlockPair* output_labels,
-		short* output_value);
-void EvalGate(block input0_labels, short input0_value, block input1_labels,
-		short input1_value, int type, uint64_t cid, uint64_t gid,
-		GarbledTable* garbled_tables, uint64_t* garbled_table_ind,
-		AES_KEY AES_Key, block* output_labels, short* output_value);
+int ParseInitInputStr(const string& init_str, const string&input_str, BIGNUM** init, BIGNUM** input);
+void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type, short* output_value);
+void GarbleGate(BlockPair input0_labels, short input0_value, BlockPair input1_labels, short input1_value, int type, uint64_t cid, uint64_t gid,
+		GarbledTable* garbled_tables, uint64_t* garbled_table_ind, block R, AES_KEY AES_Key, BlockPair* output_labels, short* output_value);
+void EvalGate(block input0_labels, short input0_value, block input1_labels, short input1_value, int type, uint64_t cid, uint64_t gid,
+		GarbledTable* garbled_tables, uint64_t* garbled_table_ind, AES_KEY AES_Key, block* output_labels, short* output_value);
 int FillFanout(GarbledCircuit* garbled_circuit);
-void ReduceFanout(const GarbledCircuit& garbled_circuit, int *fanout,
-		int64_t wid, int64_t gate_bias);
+void ReduceFanout(const GarbledCircuit& garbled_circuit, int *fanout, int64_t wid, int64_t gate_bias);
 
-void PrintPredecessorsEval(const GarbledCircuit& garbled_circuit, block *wires,
-		int64_t cid, int64_t gid);
-void PrintPredecessorsGarble(const GarbledCircuit& garbled_circuit,
-		BlockPair *wires, int64_t cid, int64_t gid);
+void PrintPredecessorsEval(const GarbledCircuit& garbled_circuit, block *wires, int64_t cid, int64_t gid);
+void PrintPredecessorsGarble(const GarbledCircuit& garbled_circuit, BlockPair *wires, int64_t cid, int64_t gid);
 
-int GarbleTransferTerminate(const GarbledCircuit& garbled_circuit,
-		const BlockPair &terminate_label, short terminate_val,
-		bool* is_terminate, int connfd);
-int EvaluateTransferTerminate(const GarbledCircuit& garbled_circuit,
-		const block &terminate_label, short terminate_val, bool* is_terminate,
-		int connfd);
+int GarbleTransferTerminate(const GarbledCircuit& garbled_circuit, const BlockPair &terminate_label, short terminate_val, bool* is_terminate, int connfd);
+int EvaluateTransferTerminate(const GarbledCircuit& garbled_circuit, const block &terminate_label, short terminate_val, bool* is_terminate, int connfd);
 
 #endif /* GARBLED_CIRCUIT_GARBLED_CIRCUIT_UTIL_H_ */
