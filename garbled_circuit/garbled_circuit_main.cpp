@@ -231,6 +231,12 @@ int main(int argc, char* argv[]) {
 //  string init_str = ReadFileOrPassHex(init_f_hex_str);
 //  string input_str;
 
+//	int n = 10000;
+//	int s = 3500;
+//	LOG(INFO) << endl << n << endl;
+//	GarbleTable* gt;
+//	CHECK_ALLOC(gt = new GarbleTable[s]);
+
 	if (vm.count("alice")) {
 
 		// open the socket
@@ -247,12 +253,18 @@ int main(int argc, char* argv[]) {
 
 		string output_str;
 		uint64_t delta_time = RDTSC;
+
+//		for (int i = 0; i < n; i++)
+//			CHECK(SendData(connfd, gt, s * sizeof(GarbledTable)));
+
 		CHECK(GarbleStr(file_address, clock_cycles, output_mask, terminate_period, output_mode, disable_OT, low_mem_foot, &output_str, connfd));
 
 		delta_time = RDTSC - delta_time;
+		float timeS = ((float) delta_time / (4.2 * 1000000000.0)); //4.2GHz CPU
 
 		LOG(INFO) << "Alice's output = " << output_str << endl;
-		LOG(INFO) << "Total Alice time (cc) = " << delta_time << endl;
+		LOG(INFO) << "Total Alice time (s) = " << timeS << endl;
+//		LOG(INFO) << "Measured BW (Gbps) = " << ((float) n * s * 256 / timeS / (1000000000.0)) << endl;
 		std::cout << output_str << endl;
 
 		ServerClose(connfd);
@@ -279,10 +291,12 @@ int main(int argc, char* argv[]) {
 		//    CheckOptionsBob("", clock_cycles, output_mask, disable_OT, low_mem_foot,
 		//                    connfd));
 
-//    input_str  = ReadFileOrPassHex("./Inputs/0_e.txt");
-
 		string output_str;
 		uint64_t delta_time = RDTSC;
+
+//		for (int i = 0; i < n; i++)
+//			CHECK(RecvData(connfd, gt, s * sizeof(GarbledTable)));
+
 		CHECK(EvaluateStr(file_address, clock_cycles, output_mask, terminate_period, output_mode, disable_OT, low_mem_foot, &output_str, connfd));
 
 		delta_time = RDTSC - delta_time;
@@ -294,6 +308,7 @@ int main(int argc, char* argv[]) {
 		ClientClose(connfd);
 	}
 
+//	delete[] gt;
 	LogFinish();
 	HashFinish();
 	return SUCCESS;

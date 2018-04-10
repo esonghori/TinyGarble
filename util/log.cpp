@@ -100,7 +100,7 @@ void LogInitial(int argc, char *argv[]) {
 	if (log_2_std) {
 		log_map[INFO] = &std::cout;
 	} else {
-		string file_addresss_info = file_addresss_prefix + "-info.log";
+		string file_addresss_info = file_addresss_prefix + who + "-info.log";
 		log_map[INFO] = new std::ofstream(file_addresss_info.c_str(), std::ios::out);
 	}
 
