@@ -109,7 +109,7 @@ int GarbleStr(const string& file_address, uint64_t clock_cycles, const string& o
 	CHECK(SendData(connfd, &global_key, sizeof(block)));  // send global key
 
 	CHECK(GarbleBNHighMem(garbled_circuit_collection, &clock_cycles, output_mask, terminate_period, output_mode, R, global_key, disable_OT, connfd));
-	CHECK(OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles, output_mode, output_str));
+	CHECK(OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles, output_mode, output_str)); //output_str is brought to here and sent back... only usage in this func
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 
