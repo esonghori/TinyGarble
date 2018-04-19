@@ -195,14 +195,23 @@ int OutputBN2StrHighMem(const GarbledCircuitCollection& garbled_circuit_collecti
 	GarbledCircuit garbled_circuit = garbled_circuit_collection.garbled_circuits[garbled_circuit_collection.number_of_circuits - 1];
 	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[garbled_circuit_collection.number_of_circuits - 1].output_bn;
 
+	LOG(INFO)<<endl<<"inside output2str"<<endl;
+
 	(*output_str) = "";
 	if (output_mode == OutputMode::consecutive) {  // normal
+
 		const char* output_c = BN_bn2hex(outputs);
+
 		string output_str_ = output_c;
 		string output_0 = "";
-		for (uint64_t i = 0; i< garbled_circuit.output_size * garbled_circuit.n_of_clk * garbled_circuit.n_of_run /4 - output_str_.size(); i++)
+		uint64_t string_size = garbled_circuit.output_size * garbled_circuit.n_of_clk * garbled_circuit.n_of_run;
+		if (string_size%4 != 0)
+			string_size += (4 - string_size%4);
+		for (uint64_t i = 0; i< string_size /4 - output_str_.size(); i++)
 			output_0 += '0';
 		(*output_str) = output_0 + output_str_;
+
+
 	} else if (output_mode == OutputMode::separated_clock) { // Separated by clock
 		BIGNUM* temp = BN_new();
 		for (uint64_t i = 0; i < clock_cycles; i++) {
