@@ -251,6 +251,8 @@ typedef struct CircuitLabel {
 	block* init_labels;
 	block* input_labels;
 	block* output_labels;
+	block* input_matrix_labels;
+	block* filters_labels;
 	short* output_vals;
 } CircuitLabel;
 

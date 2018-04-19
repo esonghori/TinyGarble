@@ -220,6 +220,7 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		int n = parsedLine.size();
 
 		if (parsedLine[0] == string("conv")) {
+			garbled_circuit_collection->garbled_circuits[i].conv_layer = true;
 			uint64_t input_size = garbled_circuit_collection->garbled_circuits[i].input_matrix_size = stoi(parsedLine[1], nullptr);
 			uint64_t filter_size = garbled_circuit_collection->garbled_circuits[i].filter_size = stoi(parsedLine[2], nullptr);
 			uint64_t number_filters = garbled_circuit_collection->garbled_circuits[i].number_filters = stoi(parsedLine[3], nullptr);
