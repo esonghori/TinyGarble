@@ -98,6 +98,13 @@ typedef struct GarbledCircuit {
 	uint64_t terminate_id;  // terminate signal id, 0 in case of no signal
 	uint64_t gate_size;
 
+	bool conv_layer;
+	uint64_t input_matrix_size;
+	uint64_t filter_size;
+	uint64_t number_filters;
+	uint64_t stride_size;
+	uint64_t bit_length;
+
 	GarbledGate* garbledGates; /*!< topologically sorted gates */
 	int64_t *outputs; /*!< index of output wires */
 	int64_t *D; /*!< p-length array of wire index corresponding

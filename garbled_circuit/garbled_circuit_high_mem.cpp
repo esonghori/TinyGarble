@@ -920,6 +920,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 	labels.input_labels = nullptr;
 	labels.output_labels = nullptr;
 	labels.output_vals = nullptr;
+
 	int clock_cycles = garbled_circuit.n_of_clk;
 	int r = garbled_circuit.n_of_run;
 

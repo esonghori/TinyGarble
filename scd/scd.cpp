@@ -46,7 +46,6 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
-
 int ReadSCD(const string& file_name, GarbledCircuit* garbled_circuit) {
 	std::ifstream f(file_name, std::ios::out);
 	if (!f.is_open()) {
@@ -196,8 +195,8 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 
 	f >> garbled_circuit_collection->number_of_circuits;
 	garbled_circuit_collection->i_circuit_inputs = new int*[garbled_circuit_collection->number_of_circuits];
-	garbled_circuit_collection->n_of_run = new int [garbled_circuit_collection->number_of_circuits];
-	garbled_circuit_collection->n_of_clk = new int [garbled_circuit_collection->number_of_circuits];
+	garbled_circuit_collection->n_of_run = new int[garbled_circuit_collection->number_of_circuits];
+	garbled_circuit_collection->n_of_clk = new int[garbled_circuit_collection->number_of_circuits];
 
 	if (posix_memalign((void **) (&garbled_circuit_collection->garbled_circuits), 128,
 			sizeof(GarbledCircuit) * garbled_circuit_collection->number_of_circuits)) {
@@ -213,32 +212,55 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		string scd_file;
 
 		getline(f, newLine);
-		vector<string> parsedLine;
+		vector < string > parsedLine;
 		split(parsedLine, newLine, is_any_of(" "));
 
 		//newLine format: %i number_of_run     %i number_of_clk    %s scd_file     %i intermediate_inputs_from
 
 		int n = parsedLine.size();
-		int n_before_io = 3; //r clk scd_file
-		int io = n - n_before_io;
 
-		// store the number of run
-		garbled_circuit_collection->i_circuit_inputs[i] = new int [io + 1];
-		garbled_circuit_collection->i_circuit_inputs[i][0] = io;
-		garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0],nullptr);
-		garbled_circuit_collection->n_of_clk[i] = stoi(parsedLine[1],nullptr);
+		if (parsedLine[0] == string("conv")) {
+			uint64_t input_size = garbled_circuit_collection->garbled_circuits[i].input_matrix_size = stoi(parsedLine[1], nullptr);
+			uint64_t filter_size = garbled_circuit_collection->garbled_circuits[i].filter_size = stoi(parsedLine[2], nullptr);
+			uint64_t number_filters = garbled_circuit_collection->garbled_circuits[i].number_filters = stoi(parsedLine[3], nullptr);
+			garbled_circuit_collection->garbled_circuits[i].stride_size = stoi(parsedLine[4], nullptr);
+			uint64_t bit_length = garbled_circuit_collection->garbled_circuits[i].bit_length = stoi(parsedLine[5], nullptr);
+			garbled_circuit_collection->n_of_run[i] = number_filters * (input_size - filter_size + 1) * (input_size - filter_size + 1);
+			garbled_circuit_collection->n_of_clk[i] = 1;  // need to be updated to single MAC later on
+			uint64_t dot_size = filter_size * filter_size;
 
-//		LOG(ERROR)<<endl<<garbled_circuit_collection->i_circuit_inputs[i][0]<<endl<<garbled_circuit_collection->n_of_run[i]<<endl<<garbled_circuit_collection->n_of_clk[i]<<endl;
+			char buffer[200];
+			sprintf(buffer, "./scd/netlists/fxdBinDot_TGX%d_%d.scd", bit_length, dot_size);
+			scd_file = string(buffer);
 
-		for (int j = 1; j <= io; j++){ //iterating over circuit inputs matrix
-			garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j+n_before_io-1],nullptr);
+			if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
+				LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
+				return FAILURE;
+			}
+
+		} else {
+			int n_before_io = 3; //r clk scd_file
+			int io = n - n_before_io;
+
+			// store the number of run
+			garbled_circuit_collection->i_circuit_inputs[i] = new int[io + 1];
+			garbled_circuit_collection->i_circuit_inputs[i][0] = io;
+			garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0], nullptr);
+			garbled_circuit_collection->n_of_clk[i] = stoi(parsedLine[1], nullptr);
+
+			//		LOG(ERROR)<<endl<<garbled_circuit_collection->i_circuit_inputs[i][0]<<endl<<garbled_circuit_collection->n_of_run[i]<<endl<<garbled_circuit_collection->n_of_clk[i]<<endl;
+
+			for (int j = 1; j <= io; j++) { //iterating over circuit inputs matrix
+				garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j + n_before_io - 1], nullptr);
+			}
+
+			scd_file = parsedLine[n_before_io - 1];
+			if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
+				LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
+				return FAILURE;
+			}
 		}
 
-		scd_file = parsedLine[n_before_io-1];
-		if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
-			LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
-			return FAILURE;
-		}
 	}
 
 	f.close();
