@@ -51,39 +51,39 @@ using std::ifstream;
 static block cur_seed;
 
 void SrandSSE(unsigned int seed) {
-  cur_seed = _mm_set_epi32(seed, seed + 1, seed, seed + 1);
+	cur_seed = _mm_set_epi32(seed, seed + 1, seed, seed + 1);
 }
 
 block RandomBlock() {
 
-  block cur_seed_split;
-  block multiplier;
-  block adder;
-  block mod_mask;
-  //block sra_mask;
-  //block sseresult;
+	block cur_seed_split;
+	block multiplier;
+	block adder;
+	block mod_mask;
+	//block sra_mask;
+	//block sseresult;
 
-  static const unsigned int mult[4] = { 214013, 17405, 214013, 69069 };
-  static const unsigned int gadd[4] = { 2531011, 10395331, 13737667, 1 };
-  static const unsigned int mask[4] = { 0xFFFFFFFF, 0, 0xFFFFFFFF, 0 };
-  //static const unsigned int masklo[4] = { 0x00007FFF, 0x00007FFF, 0x00007FFF,
-  //  0x00007FFF };
+	static const unsigned int mult[4] = { 214013, 17405, 214013, 69069 };
+	static const unsigned int gadd[4] = { 2531011, 10395331, 13737667, 1 };
+	static const unsigned int mask[4] = { 0xFFFFFFFF, 0, 0xFFFFFFFF, 0 };
+	//static const unsigned int masklo[4] = { 0x00007FFF, 0x00007FFF, 0x00007FFF,
+	//  0x00007FFF };
 
-  adder = _mm_load_si128((block *) gadd);
-  multiplier = _mm_load_si128((block *) mult);
-  mod_mask = _mm_load_si128((block *) mask);
-  //sra_mask = _mm_load_si128((block *) masklo);
-  cur_seed_split = _mm_shuffle_epi32(cur_seed, _MM_SHUFFLE(2, 3, 0, 1));
-  cur_seed = _mm_mul_epu32(cur_seed, multiplier);
-  multiplier = _mm_shuffle_epi32(multiplier, _MM_SHUFFLE(2, 3, 0, 1));
-  cur_seed_split = _mm_mul_epu32(cur_seed_split, multiplier);
-  cur_seed = _mm_and_si128(cur_seed, mod_mask);
-  cur_seed_split = _mm_and_si128(cur_seed_split, mod_mask);
-  cur_seed_split = _mm_shuffle_epi32(cur_seed_split, _MM_SHUFFLE(2, 3, 0, 1));
-  cur_seed = _mm_or_si128(cur_seed, cur_seed_split);
-  cur_seed = _mm_add_epi32(cur_seed, adder);
+	adder = _mm_load_si128((block *) gadd);
+	multiplier = _mm_load_si128((block *) mult);
+	mod_mask = _mm_load_si128((block *) mask);
+	//sra_mask = _mm_load_si128((block *) masklo);
+	cur_seed_split = _mm_shuffle_epi32(cur_seed, _MM_SHUFFLE(2, 3, 0, 1));
+	cur_seed = _mm_mul_epu32(cur_seed, multiplier);
+	multiplier = _mm_shuffle_epi32(multiplier, _MM_SHUFFLE(2, 3, 0, 1));
+	cur_seed_split = _mm_mul_epu32(cur_seed_split, multiplier);
+	cur_seed = _mm_and_si128(cur_seed, mod_mask);
+	cur_seed_split = _mm_and_si128(cur_seed_split, mod_mask);
+	cur_seed_split = _mm_shuffle_epi32(cur_seed_split, _MM_SHUFFLE(2, 3, 0, 1));
+	cur_seed = _mm_or_si128(cur_seed, cur_seed_split);
+	cur_seed = _mm_add_epi32(cur_seed, adder);
 
-  return cur_seed;
+	return cur_seed;
 
 }
 /**
@@ -98,178 +98,189 @@ block RandomBlock() {
  *  111b -> OR
  */
 unsigned short Type2V(int gateType) {
-  if (gateType == ANDGATE) {
-    return 0b000;
-  } else if (gateType == ANDNGATE) {
-    return 0b010;
-  } else if (gateType == NANDGATE) {
-    return 0b100;
-  } else if (gateType == NANDNGATE) {
-    return 0b110;
-  } else if (gateType == ORGATE) {
-    return 0b111;
-  } else if (gateType == ORNGATE) {
-    return 0b101;
-  } else if (gateType == NORGATE) {
-    return 0b011;
-  } else if (gateType == NORNGATE) {
-    return 0b001;
-  }
-  return 0;
+	if (gateType == ANDGATE) {
+		return 0b000;
+	} else if (gateType == ANDNGATE) {
+		return 0b010;
+	} else if (gateType == NANDGATE) {
+		return 0b100;
+	} else if (gateType == NANDNGATE) {
+		return 0b110;
+	} else if (gateType == ORGATE) {
+		return 0b111;
+	} else if (gateType == ORNGATE) {
+		return 0b101;
+	} else if (gateType == NORGATE) {
+		return 0b011;
+	} else if (gateType == NORNGATE) {
+		return 0b001;
+	}
+	return 0;
 }
 
 bool GateOperator(int gateType, bool input0, bool input1 /* = false */) {
-  if (gateType == ANDGATE) {
-    return (input0 && input1);
-  } else if (gateType == ANDNGATE) {
-    return (input0 && !input1);
-  } else if (gateType == NANDGATE) {
-    return !(input0 && input1);
-  } else if (gateType == NANDNGATE) {
-    return !(input0 && !input1);
-  } else if (gateType == ORGATE) {
-    return (input0 || input1);
-  } else if (gateType == ORNGATE) {
-    return (input0 || !input1);
-  } else if (gateType == NORGATE) {
-    return !(input0 || input1);
-  } else if (gateType == NORNGATE) {
-    return !(input0 || !input1);
-  } else if (gateType == XORGATE) {
-    return (input0 != input1);
-  } else if (gateType == XNORGATE) {
-    return !(input0 != input1);
-  } else if (gateType == NOTGATE) {
-    return !input0;
-  }
-  LOG(ERROR) << "Unknown gate type " << gateType << endl;
-  return false;
+	if (gateType == ANDGATE) {
+		return (input0 && input1);
+	} else if (gateType == ANDNGATE) {
+		return (input0 && !input1);
+	} else if (gateType == NANDGATE) {
+		return !(input0 && input1);
+	} else if (gateType == NANDNGATE) {
+		return !(input0 && !input1);
+	} else if (gateType == ORGATE) {
+		return (input0 || input1);
+	} else if (gateType == ORNGATE) {
+		return (input0 || !input1);
+	} else if (gateType == NORGATE) {
+		return !(input0 || input1);
+	} else if (gateType == NORNGATE) {
+		return !(input0 || !input1);
+	} else if (gateType == XORGATE) {
+		return (input0 != input1);
+	} else if (gateType == XNORGATE) {
+		return !(input0 != input1);
+	} else if (gateType == NOTGATE) {
+		return !input0;
+	}
+	LOG(ERROR) << "Unknown gate type " << gateType << endl;
+	return false;
 }
 
 int Str2Block(const string &s, block* v) {
-  if (!v) {
-    LOG(ERROR) << "null pointer in strToBlock." << endl;
-    return FAILURE;
-  }
+	if (!v) {
+		LOG(ERROR) << "null pointer in strToBlock." << endl;
+		return FAILURE;
+	}
 
-  string v_str = s;
-  boost::erase_all(v_str, " ");
-  boost::erase_all(v_str, "\t");
-  boost::erase_all(v_str, "_");
+	string v_str = s;
+	boost::erase_all(v_str, " ");
+	boost::erase_all(v_str, "\t");
+	boost::erase_all(v_str, "_");
 
-  if (v_str.length() > sizeof(block) * 2) {
-    LOG(ERROR) << "Can not parse hex string to 128-bit block: " << v_str << endl
-               << "string (len = " << v_str.length() << ") is longer than "
-               << sizeof(block) * 2 << endl;
-    return FAILURE;
-  }
+	if (v_str.length() > sizeof(block) * 2) {
+		LOG(ERROR) << "Can not parse hex string to 128-bit block: " << v_str << endl << "string (len = " << v_str.length() << ") is longer than "
+				<< sizeof(block) * 2 << endl;
+		return FAILURE;
+	}
 
-  while (v_str.length() < sizeof(block) * 2) {
-    v_str.insert(0, "0");
-  }
-  string lo_str = v_str.substr(sizeof(block), sizeof(block));
-  string hi_str = v_str.substr(0, sizeof(block));
-  uint64_t lo, hi;
-  try {
-    lo = std::stoull(lo_str, nullptr, 16);
-    hi = std::stoull(hi_str, nullptr, 16);
-  } catch (std::exception& e) {
+	while (v_str.length() < sizeof(block) * 2) {
+		v_str.insert(0, "0");
+	}
+	string lo_str = v_str.substr(sizeof(block), sizeof(block));
+	string hi_str = v_str.substr(0, sizeof(block));
+	uint64_t lo, hi;
+	try {
+		lo = std::stoull(lo_str, nullptr, 16);
+		hi = std::stoull(hi_str, nullptr, 16);
+	} catch (std::exception& e) {
 
-    //LOG(ERROR) << "error in string to ull: " << endl;
-    return FAILURE;
-  }
+		//LOG(ERROR) << "error in string to ull: " << endl;
+		return FAILURE;
+	}
 
-  *v = MakeBlock(hi, lo);
+	*v = MakeBlock(hi, lo);
 
-  return SUCCESS;
+	return SUCCESS;
 }
 
 string to_string_hex(uint64_t v, int pad /* = 0 */) {
-  std::stringstream stream;
-  stream << std::hex << std::setw(pad) << std::setfill('0') << v;
-  string ret = stream.str();
-  return ret;
+	std::stringstream stream;
+	stream << std::hex << std::setw(pad) << std::setfill('0') << v;
+	string ret = stream.str();
+	return ret;
 }
 
-int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                        uint64_t clock_cycles, OutputMode output_mode,
-                        string *output_str) {
-  (*output_str) = "";
-  if (output_mode == OutputMode::consecutive) {  // normal
-    const char* output_c = BN_bn2hex(outputs);
-    (*output_str) = output_c;
-  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
-    BIGNUM* temp = BN_new();
-    for (uint64_t i = 0; i < clock_cycles; i++) {
-      BN_rshift(temp, outputs, i * garbled_circuit.output_size);
-      BN_mask_bits(temp, garbled_circuit.output_size);
-      (*output_str) += BN_bn2hex(temp);
-      if (i < clock_cycles - 1) {
-        (*output_str) += "\n";
-      }
-    }
-    BN_free(temp);
-  } else if (output_mode == OutputMode::last_clock) {  // only last clock
-    BIGNUM* temp = BN_new();
-    BN_rshift(temp, outputs, (clock_cycles - 1) * garbled_circuit.output_size);
-    BN_mask_bits(temp, garbled_circuit.output_size);
-    (*output_str) += BN_bn2hex(temp);
-    BN_free(temp);
-  }
-  return SUCCESS;
+int OutputBN2StrHighMem(const GarbledCircuitCollection& garbled_circuit_collection, uint64_t clock_cycles, OutputMode output_mode, string *output_str) {
+
+	GarbledCircuit garbled_circuit = garbled_circuit_collection.garbled_circuits[garbled_circuit_collection.number_of_circuits - 1];
+	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[garbled_circuit_collection.number_of_circuits - 1].output_bn;
+
+	LOG(INFO)<<endl<<"inside output2str"<<endl;
+
+	(*output_str) = "";
+	if (output_mode == OutputMode::consecutive) {  // normal
+
+		const char* output_c = BN_bn2hex(outputs);
+
+		string output_str_ = output_c;
+		string output_0 = "";
+		uint64_t string_size = garbled_circuit.output_size * garbled_circuit.n_of_clk * garbled_circuit.n_of_run;
+		if (string_size%4 != 0)
+			string_size += (4 - string_size%4);
+		for (uint64_t i = 0; i< string_size /4 - output_str_.size(); i++)
+			output_0 += '0';
+		(*output_str) = output_0 + output_str_;
+
+
+	} else if (output_mode == OutputMode::separated_clock) { // Separated by clock
+		BIGNUM* temp = BN_new();
+		for (uint64_t i = 0; i < clock_cycles; i++) {
+			BN_rshift(temp, outputs, i * garbled_circuit.output_size);
+			BN_mask_bits(temp, garbled_circuit.output_size);
+			(*output_str) += BN_bn2hex(temp);
+			if (i < clock_cycles - 1) {
+				(*output_str) += "\n";
+			}
+		}
+		BN_free(temp);
+	} else if (output_mode == OutputMode::last_clock) {  // only last clock
+		BIGNUM* temp = BN_new();
+		BN_rshift(temp, outputs, (clock_cycles - 1) * garbled_circuit.output_size);
+		BN_mask_bits(temp, garbled_circuit.output_size);
+		(*output_str) += BN_bn2hex(temp);
+		BN_free(temp);
+	}
+	return SUCCESS;
 }
 
-int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
-                       uint64_t clock_cycles, OutputMode output_mode,
-                       string* output_str) {
-  (*output_str) = "";
-  if (output_mode == OutputMode::consecutive) {  // normal
-    const char* output_c = BN_bn2hex(outputs);
-    (*output_str) = output_c;
-  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
-    BIGNUM* temp = BN_new();
-    for (uint64_t i = 0; i < clock_cycles; i++) {
-      BN_rshift(temp, outputs, i * garbled_circuit.output_size);
-      BN_mask_bits(temp, garbled_circuit.output_size);
-      (*output_str) += BN_bn2hex(temp);
-      if (i < clock_cycles - 1) {
-        (*output_str) += "\n";
-      }
-    }
-    BN_free(temp);
-  } else if (output_mode == OutputMode::last_clock) {  // only last clock
-    (*output_str) += BN_bn2hex(outputs);
-  }
+int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs, uint64_t clock_cycles, OutputMode output_mode, string* output_str) {
+	(*output_str) = "";
+	if (output_mode == OutputMode::consecutive) {  // normal
+		const char* output_c = BN_bn2hex(outputs);
+		(*output_str) = output_c;
+	} else if (output_mode == OutputMode::separated_clock) { // Separated by clock
+		BIGNUM* temp = BN_new();
+		for (uint64_t i = 0; i < clock_cycles; i++) {
+			BN_rshift(temp, outputs, i * garbled_circuit.output_size);
+			BN_mask_bits(temp, garbled_circuit.output_size);
+			(*output_str) += BN_bn2hex(temp);
+			if (i < clock_cycles - 1) {
+				(*output_str) += "\n";
+			}
+		}
+		BN_free(temp);
+	} else if (output_mode == OutputMode::last_clock) {  // only last clock
+		(*output_str) += BN_bn2hex(outputs);
+	}
 
-  return SUCCESS;
+	return SUCCESS;
 }
 
-string ReadFileOrPassHex(string file_hex_str) {  // file address of or a hex string
+string ReadFileOrPassHex(string file_hex_str) { // file address of or a hex string
 
-  ifstream fin;
-  fin.open(file_hex_str);
-  if (fin.is_open()) {
-    string hex_str = "";
-    string line;
-    while (std::getline(fin, line)) {
-      hex_str = line + hex_str;
-    }
-    return hex_str;
-  } else {
-    return file_hex_str;
-  }
+	ifstream fin;
+	fin.open(file_hex_str);
+	if (fin.is_open()) {
+		string hex_str = "";
+		string line;
+		while (std::getline(fin, line)) {
+			hex_str = line + hex_str;
+		}
+		return hex_str;
+	} else {
+		return "0";
+	}
 }
-
 
 bool icompare_pred(unsigned char a, unsigned char b) {
-  return std::tolower(a) == std::tolower(b);
+	return std::tolower(a) == std::tolower(b);
 }
 
 bool icompare(std::string const& a, std::string const& b) {
-  if (a.length() == b.length()) {
-    return std::equal(b.begin(), b.end(), a.begin(), icompare_pred);
-  } else {
-    return false;
-  }
+	if (a.length() == b.length()) {
+		return std::equal(b.begin(), b.end(), a.begin(), icompare_pred);
+	} else {
+		return false;
+	}
 }
 

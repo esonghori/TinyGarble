@@ -55,8 +55,7 @@ GCTestStruct MakeGCTestStruct(const string& scd_file_address,
 int Alice(const void* data, int connfd) {
   GCTestStruct* gc_data = (GCTestStruct*) data;
   string output_str;
-  int ret = GarbleStr(gc_data->scd_file_address, gc_data->p_init,
-                      gc_data->p_input, gc_data->init, gc_data->input,
+  int ret = GarbleStr(gc_data->scd_file_address,
                       gc_data->clock_cycles, gc_data->output_mask,
                       gc_data->terminate_period, gc_data->output_mode,
                       gc_data->disable_OT, gc_data->low_mem_foot, &output_str,
@@ -81,8 +80,7 @@ int Alice(const void* data, int connfd) {
 int Bob(const void *data, int connfd) {
   GCTestStruct* gc_data = (GCTestStruct*) data;
   string output_str;
-  int ret = EvaluateStr(gc_data->scd_file_address, gc_data->p_init,
-                        gc_data->p_input, gc_data->init, gc_data->input,
+  int ret = EvaluateStr(gc_data->scd_file_address,
                         gc_data->clock_cycles, gc_data->output_mask,
                         gc_data->terminate_period, gc_data->output_mode,
                         gc_data->disable_OT, gc_data->low_mem_foot, &output_str,

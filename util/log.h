@@ -61,8 +61,9 @@ class DummyLog : public ostream {
 #define CHECK_ALLOC(X) try { X; } catch (std::bad_alloc& e) { \
     LOG(ERROR) << e.what() << std::endl; \
     return FAILURE; }
-#define LOG(X) LogStream((X)) << __FILENAME__ << ":" <<  __LINE__ << " \033[" \
-  << LOG_COLOR(X) << "m" << #X << "\033[0m: "
+/* #define LOG(X) LogStream((X)) << __FILENAME__ << ":" <<  __LINE__ << " \033[" \
+  << LOG_COLOR(X) << "m" << #X << "\033[0m: " */
+#define LOG(X) LogStream((X))
 #define CHECK_EXPR(X) if((X)==false) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
 #define CHECK_EXPR_MSG(X, Y) if((X)==false) { LOG(ERROR) << (#X) << " failed: \"" \

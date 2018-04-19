@@ -292,6 +292,8 @@ int ParseNetlist(const string &filename,
           read_circuit_string->e_init_size = (no_of_bits>0)?no_of_bits:1;
         } else if(!str.compare("p_input")) {
           read_circuit_string->p_input_size = (no_of_bits>0)?no_of_bits:1;
+        } else if(!str.compare("i_input")) {
+                  read_circuit_string->i_input_size = (no_of_bits>0)?no_of_bits:1;
         } else if(!str.compare("g_input")) {
           read_circuit_string->g_input_size = (no_of_bits>0)?no_of_bits:1;
         } else if(!str.compare("e_input")) {
@@ -299,7 +301,7 @@ int ParseNetlist(const string &filename,
         } else {
           LOG(ERROR) << "The input name is not valid " << str << endl <<
           "valid choice: { p_init, g_init, e_init, "
-          "p_input, g_input, e_input}: " << line << endl;
+          "p_input, i_input, g_input, e_input}: " << line << endl;
           return FAILURE;
         }
       }
@@ -505,6 +507,7 @@ int IdAssignment(const ReadCircuitString& read_circuit_string,
   read_circuit->g_init_size = read_circuit_string.g_init_size;
   read_circuit->e_init_size = read_circuit_string.e_init_size;
   read_circuit->p_input_size = read_circuit_string.p_input_size;
+  read_circuit->i_input_size = read_circuit_string.i_input_size;
   read_circuit->g_input_size = read_circuit_string.g_input_size;
   read_circuit->e_input_size = read_circuit_string.e_input_size;
 
@@ -523,6 +526,8 @@ int IdAssignment(const ReadCircuitString& read_circuit_string,
                &wire_index);
   AddWireArray(wire_name_table, "p_input", read_circuit->p_input_size,
                &wire_index);
+  AddWireArray(wire_name_table, "i_input", read_circuit->i_input_size,
+		&wire_index);
   AddWireArray(wire_name_table, "g_input", read_circuit->g_input_size,
                &wire_index);
   AddWireArray(wire_name_table, "e_input", read_circuit->e_input_size,

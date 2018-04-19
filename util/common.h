@@ -52,6 +52,10 @@ using std::endl;
 #define NOTGATE 12
 #define DFFGATE (-1)
 
+//type of circuits
+#define INPUT_CIRCUIT 1
+#define INTERMEDIATE_CIRCUIT 2
+
 // blocks
 #define MUXGATE 15
 #define HADDERGATE 16

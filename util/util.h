@@ -33,7 +33,7 @@ unsigned short Type2V(int gateType);
 bool GateOperator(int gateType, bool input0, bool input1 = false);
 int Str2Block(const string &s, block* v);
 string to_string_hex(uint64_t v, int pad = 0);
-int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+int OutputBN2StrHighMem(const GarbledCircuitCollection& garbled_circuit_collection,
                         uint64_t clock_cycles, OutputMode output_mode,
                         string *output_str);
 int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,

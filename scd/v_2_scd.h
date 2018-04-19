@@ -44,6 +44,7 @@ class ReadCircuitString {
   uint64_t p_input_size;
   uint64_t g_input_size;
   uint64_t e_input_size;
+  uint64_t i_input_size;
   uint64_t output_size;
   bool     has_terminate; // has terminate signal
 
@@ -56,6 +57,7 @@ class ReadCircuitString {
     p_input_size = 0;
     g_input_size = 0;
     e_input_size = 0;
+    i_input_size = 0;
     output_size = 0;
     has_terminate = false;
   }
@@ -82,13 +84,14 @@ class ReadCircuit {
   uint64_t p_input_size;
   uint64_t g_input_size;
   uint64_t e_input_size;
+  uint64_t i_input_size;
   uint64_t dff_size;
   uint64_t gate_size;
   uint64_t output_size;
   uint64_t terminate_id; // terminate signal id, 0 in case of no signal
 
   uint64_t get_init_input_size() const {
-    return p_init_size + g_init_size + e_init_size + p_input_size + g_input_size
+    return p_init_size + g_init_size + e_init_size + p_input_size + i_input_size + g_input_size
         + e_input_size;
   }
 
@@ -103,6 +106,7 @@ class ReadCircuit {
     p_input_size = 0;
     g_input_size = 0;
     e_input_size = 0;
+    i_input_size = 0;
     dff_size = 0;
     gate_size = 0;
     output_size = 0;

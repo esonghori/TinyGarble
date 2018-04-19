@@ -72,39 +72,38 @@ typedef __m128i block;
 #define MakeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
 #define DoubleBlock(B) _mm_slli_epi64(B,1)
 
-
 static inline block Double_Block(block bl) {
-  const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
-  __m128i tmp = _mm_srai_epi32(bl, 31);
-  tmp = _mm_and_si128(tmp, mask);
-  tmp = _mm_shuffle_epi32(tmp, _MM_SHUFFLE(2, 1, 0, 3));
-  bl = _mm_slli_epi32(bl, 1);
-  return _mm_xor_si128(bl, tmp);
+	const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
+	__m128i tmp = _mm_srai_epi32(bl, 31);
+	tmp = _mm_and_si128(tmp, mask);
+	tmp = _mm_shuffle_epi32(tmp, _MM_SHUFFLE(2, 1, 0, 3));
+	bl = _mm_slli_epi32(bl, 1);
+	return _mm_xor_si128(bl, tmp);
 }
 static inline block SlowDouble_Block(block bl) {
-  int i;
-  __m128i tmp = _mm_srai_epi32(bl, 31);
-  for (i = 0; i < 1; i++) {
-    const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
-    tmp = _mm_and_si128(tmp, mask);
-    tmp = _mm_shuffle_epi32(tmp, _MM_SHUFFLE(2, 1, 0, 3));
-    bl = _mm_slli_epi32(bl, 1);
-  }
-  return _mm_xor_si128(bl, tmp);
+	int i;
+	__m128i tmp = _mm_srai_epi32(bl, 31);
+	for (i = 0; i < 1; i++) {
+		const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
+		tmp = _mm_and_si128(tmp, mask);
+		tmp = _mm_shuffle_epi32(tmp, _MM_SHUFFLE(2, 1, 0, 3));
+		bl = _mm_slli_epi32(bl, 1);
+	}
+	return _mm_xor_si128(bl, tmp);
 }
 
 static inline block LeftShift(block bl) {
-  const __m128i mask = _mm_set_epi32(0, 0, (1 << 31), 0);
-  __m128i tmp = _mm_and_si128(bl, mask);
-  bl = _mm_slli_epi64(bl, 1);
-  return _mm_xor_si128(bl, tmp);
+	const __m128i mask = _mm_set_epi32(0, 0, (1 << 31), 0);
+	__m128i tmp = _mm_and_si128(bl, mask);
+	bl = _mm_slli_epi64(bl, 1);
+	return _mm_xor_si128(bl, tmp);
 }
 
 static inline block RightShift(block bl) {
-  const __m128i mask = _mm_set_epi32(0, 1, 0, 0);
-  __m128i tmp = _mm_and_si128(bl, mask);
-  bl = _mm_slli_epi64(bl, 1);
-  return _mm_xor_si128(bl, tmp);
+	const __m128i mask = _mm_set_epi32(0, 1, 0, 0);
+	__m128i tmp = _mm_and_si128(bl, mask);
+	bl = _mm_slli_epi64(bl, 1);
+	return _mm_xor_si128(bl, tmp);
 }
 
 #define ADD128(out, in1, in2)                      \
