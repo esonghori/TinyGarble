@@ -140,7 +140,6 @@ int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection
 			EvaluateHighMem(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].p_init,
 					garbled_circuit_collection.circuit_ios[i].p_input, global_key, terminate_period, connfd, r);
 		}
-		LOG(INFO) << endl << "Eval" << endl;
 
 	}
 
@@ -795,11 +794,11 @@ int EvalauteOT(const GarbledCircuit& garbled_circuit, BIGNUM* e_init, block* ini
 			CHECK(OTRecv(select, message_len, connfd, message));
 		}
 
-//		LOG(ERROR) << endl << endl << "message"<<endl;
-//		for (uint64_t k = 0; k < message_len; k++) {
-//			LOG(ERROR) << endl << message[k];
-//		}
-//		LOG(ERROR)<<"end of message"<<endl;
+		LOG(ERROR) << endl << endl << "message"<<endl;
+		for (uint64_t k = 0; k < message_len; k++) {
+			LOG(ERROR) << endl << message[k];
+		}
+		LOG(ERROR)<<"end of message"<<endl;
 
 		uint64_t dim = garbled_circuit.input_matrix_size - garbled_circuit.filter_size + 1;
 
