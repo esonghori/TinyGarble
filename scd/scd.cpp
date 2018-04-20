@@ -233,35 +233,49 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			garbled_circuit_collection->i_circuit_inputs[i][0] = 0;
 
 			char buffer[200];
-			sprintf(buffer, "./scd/netlists/fxdBinDot_TGX%d_%d.scd", bit_length, dot_size);
+			sprintf(buffer, "./scd/netlists/fxdBinDot_TGX%d_%d.scd", (int) bit_length, (int) dot_size);
 			scd_file = string(buffer);
 
-			if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
-				LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
-				return FAILURE;
-			}
-
 		} else {
+			garbled_circuit_collection->garbled_circuits[i].conv_layer = false;
+
 			int n_before_io = 3; //r clk scd_file
 			int io = n - n_before_io;
 
-			// store the number of run
-			garbled_circuit_collection->i_circuit_inputs[i] = new int[io + 1];
-			garbled_circuit_collection->i_circuit_inputs[i][0] = io;
 			garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0], nullptr);
 			garbled_circuit_collection->n_of_clk[i] = stoi(parsedLine[1], nullptr);
 
-			//		LOG(ERROR)<<endl<<garbled_circuit_collection->i_circuit_inputs[i][0]<<endl<<garbled_circuit_collection->n_of_run[i]<<endl<<garbled_circuit_collection->n_of_clk[i]<<endl;
-
-			for (int j = 1; j <= io; j++) { //iterating over circuit inputs matrix
-				garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j + n_before_io - 1], nullptr);
+			// store the number of run
+			if (io == 0) {
+				garbled_circuit_collection->i_circuit_inputs[i] = new int[2];
+				garbled_circuit_collection->i_circuit_inputs[i][0] = 1;
+				garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
+			} else {
+				garbled_circuit_collection->i_circuit_inputs[i] = new int[io + 1];
+				garbled_circuit_collection->i_circuit_inputs[i][0] = io;
+				//		LOG(ERROR)<<endl<<garbled_circuit_collection->i_circuit_inputs[i][0]<<endl<<garbled_circuit_collection->n_of_run[i]<<endl<<garbled_circuit_collection->n_of_clk[i]<<endl;
+				for (int j = 1; j <= io; j++) { //iterating over circuit inputs matrix
+					garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j + n_before_io - 1], nullptr);
+				}
 			}
 
 			scd_file = parsedLine[n_before_io - 1];
-			if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
-				LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
-				return FAILURE;
+			if (scd_file == string("CMPS")) {
+				char buffer[200];
+				int bit_length = 8;
+				char t = 'R';
+				if (i > 0) {
+					t = 'I';
+				}
+				sprintf(buffer, "./scd/netlists/CMPS%c%d.scd", t, bit_length);
+				scd_file = string(buffer);
 			}
+
+		}
+
+		if (ReadSCD(scd_file, &garbled_circuit_collection->garbled_circuits[i]) == FAILURE) {
+			LOG(ERROR) << "Error while reading scd file: " << scd_file << endl;
+			return FAILURE;
 		}
 
 	}

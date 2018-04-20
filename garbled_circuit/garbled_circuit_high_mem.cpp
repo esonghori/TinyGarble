@@ -70,15 +70,15 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 		LOG(INFO) << endl << "after Transfer labels" << endl;
 
 		LOG(ERROR) << endl << "Labels after transfer| Garbler" << endl;
-		GarbledCircuit gc = garbled_circuit_collection.garbled_circuits[0];
+		GarbledCircuit gc = garbled_circuit_collection.garbled_circuits[i];
 		uint64_t r = gc.n_of_run;
 		uint64_t clk = gc.n_of_clk;
 
-		LOG(ERROR) << endl << r << " " << clk << "  " << gc.get_secret_input_size() << " " << gc.g_input_size << " " << gc.e_input_size << endl;
+//		LOG(ERROR) << endl << r << " " << clk << "  " << gc.get_secret_input_size() << " " << gc.g_input_size << " " << gc.e_input_size << endl;
 
-		for (uint64_t k = 0; k < r * clk * gc.get_secret_input_size() * 2; k++) {
-			LOG(ERROR) << endl << all_labels[0].input_labels[k];
-		}
+//		for (uint64_t k = 0; k < r * clk * gc.get_secret_input_size() * 2; k++) {
+//			LOG(ERROR) << endl << all_labels[0].input_labels[k];
+//		}
 
 //		LOG(ERROR) << endl << endl;
 //		for (uint64_t k = 0; k < gc.input_matrix_size * gc.input_matrix_size * gc.bit_length * 2; k++) {
@@ -131,9 +131,9 @@ int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection
 		uint64_t r = gc.n_of_run;
 		uint64_t clk = gc.n_of_clk;
 
-		for (uint64_t k = 0; k < r * clk * gc.get_secret_input_size(); k++) {
-			LOG(ERROR) << endl << all_labels[0].input_labels[k];
-		}
+//		for (uint64_t k = 0; k < r * clk * gc.get_secret_input_size(); k++) {
+//			LOG(ERROR) << endl << all_labels[0].input_labels[k];
+//		}
 
 		for (uint64_t r = 0; r < garbled_circuit_collection.garbled_circuits[i].n_of_run; r++) {
 			FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
@@ -1041,10 +1041,12 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 
 	int clock_cycles = garbled_circuit.n_of_clk;
 	int r = garbled_circuit.n_of_run;
-	uint64_t dim = garbled_circuit.input_matrix_size - garbled_circuit.filter_size + 1;
+
 	CHECK_ALLOC(labels.input_labels = new block[r * clock_cycles * garbled_circuit.get_secret_input_size() * 2]);
 
 	if (garbled_circuit.conv_layer) {
+		uint64_t dim = garbled_circuit.input_matrix_size - garbled_circuit.filter_size + 1;
+
 		CHECK_ALLOC(labels.filters_labels = new block[garbled_circuit.number_filters * garbled_circuit.g_input_size * 2]);
 
 		//create g labels
@@ -1108,6 +1110,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 
 		//FIX: don't make lables for i_input
 		if (garbled_circuit.get_secret_input_size() > 0) {
+//			LOG(ERROR)<< endl << r * clock_cycles * garbled_circuit.get_secret_input_size() * 2 <<endl;
 			CHECK_ALLOC(labels.input_labels = new block[r * clock_cycles * garbled_circuit.get_secret_input_size() * 2]);
 			for (uint i = 0; i < r * clock_cycles * garbled_circuit.get_secret_input_size(); i++) {
 				labels.input_labels[i * 2 + 0] = RandomBlock();
@@ -1159,6 +1162,8 @@ int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection,
 	if (garbled_circuit_collection.garbled_circuits[circuitID].i_input_size == 0)
 		return SUCCESS;
 
+	LOG(ERROR)<< endl << "in Copy labels"<<endl;
+
 //FIX replace with memcpy
 //FIX does not support multiple i inputs from different circuits
 //NOTE our policy is to cpy only the last clk labels
@@ -1181,6 +1186,7 @@ int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection,
 			uint64_t ratio = output_size / input_size;
 
 			if (input_size >= output_size) {
+				LOG(ERROR)<<endl<<"we should be here by now"<<endl;
 				output_offset = r * (output_size * n_of_clk); //continue copying not broadcast
 				output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
 				output_offset *= 2; //2 labels per bit
@@ -1236,6 +1242,7 @@ int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collectio
 			uint64_t ratio = output_size / input_size;
 
 			if (input_size >= output_size) {
+				LOG(ERROR)<<endl<< " eval should be here"<<endl;
 				output_offset = r * (output_size * n_of_clk); //continue copying not broadcast
 				output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
 			} else {
@@ -1243,7 +1250,7 @@ int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collectio
 				output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
 			}
 
-			for (uint64_t i = 0; i < input_size; i++) { // *2 labels per bit
+			for (uint64_t i = 0; i < input_size; i++) { // *1 labels per bit
 				all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
 			}
 		} else { //if not, out cannot be bigger than in: out smaller than in: broadcast, start output_offset from the beginning
