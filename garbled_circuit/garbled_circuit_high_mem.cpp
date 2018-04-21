@@ -57,7 +57,7 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 //	LOG(INFO) << endl << "inside garble " << number_of_circuits << endl;
 	for (int i = 0; i < number_of_circuits; i++) {
 
-		CHECK(GarbleMakeLabels(garbled_circuit_collection.garbled_circuits[i], all_labels[i], R));
+		CHECK(GarbleMakeLabels(garbled_circuit_collection.garbled_circuits[i], all_labels, R));
 
 //		LOG(INFO) << endl << "after Make labels" << endl;
 		GarbleCopyLabels(garbled_circuit_collection, all_labels, i);
@@ -1039,11 +1039,15 @@ int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& 
 	return SUCCESS;
 }
 
-int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, block R) {
+int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_labels, block R) {
 
 // RULE: TODO new block unless output of previous circuit is a direct input to the next circuit
 
 // allocate and generate random init and inputs label pairs
+
+	uint64_t circuitID = garbled_circuit.circuitID;
+	CircuitLabel& labels = all_labels[circuitID];
+
 	labels.init_labels = nullptr;
 	labels.input_labels = nullptr;
 	labels.output_labels = nullptr;
@@ -1078,12 +1082,18 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 		}
 
 		//create e labels
-		CHECK_ALLOC(
-				labels.input_matrix_labels = new block[garbled_circuit.input_matrix_size * garbled_circuit.input_matrix_size * garbled_circuit.bit_length * 2]);
-		for (uint64_t i = 0; i < garbled_circuit.input_matrix_size * garbled_circuit.input_matrix_size * garbled_circuit.bit_length; i++) {
-			labels.input_matrix_labels[i * 2 + 0] = RandomBlock();
-			labels.input_matrix_labels[i * 2 + 1] = XorBlock(R, labels.input_matrix_labels[i * 2 + 0]);
+		if (garbled_circuit.circuitID == 0) { //FIX if input has multiple channels
+			CHECK_ALLOC(
+					labels.input_matrix_labels = new block[garbled_circuit.input_matrix_size * garbled_circuit.input_matrix_size * garbled_circuit.bit_length
+							* 2]);
+			for (uint64_t i = 0; i < garbled_circuit.input_matrix_size * garbled_circuit.input_matrix_size * garbled_circuit.bit_length; i++) {
+				labels.input_matrix_labels[i * 2 + 0] = RandomBlock();
+				labels.input_matrix_labels[i * 2 + 1] = XorBlock(R, labels.input_matrix_labels[i * 2 + 0]);
+			}
+		} else {
+			labels.input_matrix_labels = all_labels[circuitID - 1].output_labels;
 		}
+
 		//distribute e labels based on the convolution order
 		for (uint64_t i = 0; i < dim; i++) {
 			for (uint64_t j = 0; j < dim; j++) { // one conv starting at (i,j)
@@ -1095,9 +1105,10 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 					for (uint64_t pi = 0; pi < garbled_circuit.filter_size; pi++) { //filling out one pixel which is b bit and two labels per bit
 						for (uint64_t pj = 0; pj < garbled_circuit.filter_size; pj++) {
 
-							uint64_t pixStartInd = ((i + pi) * garbled_circuit.input_matrix_size + j + pj) * garbled_circuit.bit_length * 2;
+							uint64_t pixStartInd = ((i + pi) * garbled_circuit.input_matrix_size + j + pj) * garbled_circuit.bit_length
+									* garbled_circuit.input_number_channels * 2;
 
-							for (uint64_t b = 0; b < garbled_circuit.bit_length; b++) { // copying all labels for 1 pixel e.g. 16 labels
+							for (uint64_t b = 0; b < garbled_circuit.bit_length * garbled_circuit.input_number_channels; b++) { // copying all labels for 1 pixel e.g. 16 labels
 //								LOG(ERROR) << endl << convStartInd << "   " << pixStartInd + b * 2 + 0;
 
 								labels.input_labels[convStartInd + (pi * garbled_circuit.filter_size + pj) * garbled_circuit.bit_length * 2 + b * 2 + 0] =
@@ -1153,8 +1164,11 @@ int EvaluateMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labe
 		CHECK_ALLOC(labels.init_labels = new block[garbled_circuit.get_secret_init_size() * garbled_circuit.n_of_run]);
 	}
 
-	if (garbled_circuit.conv_layer) {
+	if (garbled_circuit.type == string("conv") && garbled_circuit.circuitID == 0) {
 		CHECK_ALLOC(labels.input_matrix_labels = new block[garbled_circuit.input_matrix_size * garbled_circuit.input_matrix_size * garbled_circuit.bit_length]);
+	}
+
+	if (garbled_circuit.type == string("conv")) {
 		CHECK_ALLOC(labels.filters_labels = new block[garbled_circuit.number_filters * garbled_circuit.g_input_size]);
 	}
 
@@ -1204,7 +1218,7 @@ int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection,
 							uint64_t Ind = iInd * dim + jInd;
 							Ind = Ind * number_filters + f;
 							//2 labels per bit (index)
-							LOG(ERROR)<<endl<<counter<<" "<<Ind;
+							LOG(ERROR) << endl << counter << " " << Ind;
 							all_labels[circuitID].input_labels[counter * 2 + 0] = all_labels[cpy_circuitID].output_labels[Ind * 2 + 0];
 							all_labels[circuitID].input_labels[counter * 2 + 1] = all_labels[cpy_circuitID].output_labels[Ind * 2 + 1];
 							counter++;
@@ -1272,7 +1286,61 @@ int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collectio
 	int n_of_run = this_circuit.n_of_run;
 	int n_of_clk = garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_clk; // number of clk for previous circuit (copy_from circuit)
 
-	if (this_circuit.type == string("MaxPool")) {
+	if (this_circuit.type == string("conv")) {
+		GarbledCircuit& garbled_circuit = this_circuit;
+		uint64_t circuitID = garbled_circuit.circuitID;
+		CircuitLabel& labels = all_labels[circuitID];
+
+		uint64_t dim = garbled_circuit.input_matrix_size - garbled_circuit.filter_size + 1;
+
+//		CHECK_ALLOC(labels.filters_labels = new block[garbled_circuit.number_filters * garbled_circuit.g_input_size * 2]);
+//
+//		//create g labels
+//		for (uint64_t i = 0; i < garbled_circuit.number_filters * garbled_circuit.g_input_size; i++) {
+//			labels.filters_labels[i * 2 + 0] = RandomBlock();
+//			labels.filters_labels[i * 2 + 1] = XorBlock(R, labels.filters_labels[i * 2 + 0]);
+//		}
+//		//copy g labels
+//		for (uint64_t j = 0; j < uint64_t(r); j++) {
+//			for (uint64_t i = 0; i < garbled_circuit.g_input_size; i++) { //16 bit * 2 labels per bit
+//				labels.input_labels[j * garbled_circuit.get_secret_input_size() * 2 + i * 2 + 0] = labels.filters_labels[(j % garbled_circuit.number_filters)
+//						* garbled_circuit.g_input_size * 2 + i * 2 + 0];
+//
+//				labels.input_labels[j * garbled_circuit.get_secret_input_size() * 2 + i * 2 + 1] = labels.filters_labels[(j % garbled_circuit.number_filters)
+//						* garbled_circuit.g_input_size * 2 + i * 2 + 1];
+//			}
+//		}
+
+		//create e labels
+		labels.input_matrix_labels = all_labels[circuitID - 1].output_labels;
+
+		//distribute e labels based on the convolution order
+		for (uint64_t i = 0; i < dim; i++) {
+			for (uint64_t j = 0; j < dim; j++) { // one conv starting at (i,j)
+
+				for (uint64_t f = 0; f < garbled_circuit.number_filters; f++) { // for each filter
+					uint64_t convStartInd = ((i * dim + j) * garbled_circuit.number_filters * garbled_circuit.get_secret_input_size()
+							+ f * garbled_circuit.get_secret_input_size() + garbled_circuit.g_input_size);
+
+					for (uint64_t pi = 0; pi < garbled_circuit.filter_size; pi++) { //filling out one pixel which is b bit and two labels per bit
+						for (uint64_t pj = 0; pj < garbled_circuit.filter_size; pj++) {
+
+							uint64_t pixStartInd = ((i + pi) * garbled_circuit.input_matrix_size + j + pj) * garbled_circuit.bit_length
+									* garbled_circuit.input_number_channels;
+
+							for (uint64_t b = 0; b < garbled_circuit.bit_length * garbled_circuit.input_number_channels; b++) { // copying all labels for 1 pixel e.g. 16 labels
+								//								LOG(ERROR) << endl << convStartInd << "   " << pixStartInd + b * 2 + 0;
+
+								labels.input_labels[convStartInd + (pi * garbled_circuit.filter_size + pj) * garbled_circuit.bit_length + b] = labels
+										.input_matrix_labels[pixStartInd + b];
+							}
+						}
+					}
+				}
+			}
+		}
+
+	} else if (this_circuit.type == string("MaxPool")) {
 		uint64_t number_filters = garbled_circuit_collection.garbled_circuits[circuitID - 2].number_filters;
 		uint64_t dim = garbled_circuit_collection.garbled_circuits[circuitID - 2].output_matrix_size;
 		uint64_t max_pool_size = garbled_circuit_collection.garbled_circuits[circuitID].max_pool_size;

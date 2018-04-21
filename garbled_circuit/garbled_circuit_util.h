@@ -97,6 +97,7 @@ typedef struct GarbledCircuit {
 	uint64_t output_size;
 	uint64_t terminate_id;  // terminate signal id, 0 in case of no signal
 	uint64_t gate_size;
+	uint64_t circuitID;
 
 	string type;
 	uint64_t max_pool_size;
@@ -104,6 +105,7 @@ typedef struct GarbledCircuit {
 
 	bool conv_layer;
 	uint64_t input_matrix_size;
+	uint64_t input_number_channels;
 	uint64_t output_matrix_size;
 	uint64_t filter_size;
 	uint64_t number_filters;

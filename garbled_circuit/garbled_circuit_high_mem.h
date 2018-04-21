@@ -53,7 +53,7 @@ int EvalauteOT(const GarbledCircuit& garbled_circuit, BIGNUM* e_init, block* ini
 		int connfd);
 int GarbleTransferLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, BIGNUM* g_init, BIGNUM* g_input, bool disable_OT, int connfd);
 int EvaluateTransferLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, BIGNUM* e_init, BIGNUM* e_input, bool disable_OT, int connfd);
-int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, block R);
+int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_labels, block R);
 
 int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection, CircuitLabel* all_labels, int circuitID);
 int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection, CircuitLabel* all_labels, int circuitID);
