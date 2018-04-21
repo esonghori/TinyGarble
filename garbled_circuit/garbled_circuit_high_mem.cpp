@@ -1204,6 +1204,7 @@ int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection,
 							uint64_t Ind = iInd * dim + jInd;
 							Ind = Ind * number_filters + f;
 							//2 labels per bit (index)
+							LOG(ERROR)<<endl<<counter<<" "<<Ind;
 							all_labels[circuitID].input_labels[counter * 2 + 0] = all_labels[cpy_circuitID].output_labels[Ind * 2 + 0];
 							all_labels[circuitID].input_labels[counter * 2 + 1] = all_labels[cpy_circuitID].output_labels[Ind * 2 + 1];
 							counter++;
