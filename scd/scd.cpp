@@ -220,8 +220,10 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		int n = parsedLine.size();
 
 		if (parsedLine[0] == string("conv")) {
+			garbled_circuit_collection->garbled_circuits[i].type = string("conv");
 			garbled_circuit_collection->garbled_circuits[i].conv_layer = true;
 			uint64_t input_size = garbled_circuit_collection->garbled_circuits[i].input_matrix_size = stoi(parsedLine[1], nullptr);
+
 			uint64_t filter_size = garbled_circuit_collection->garbled_circuits[i].filter_size = stoi(parsedLine[2], nullptr);
 			uint64_t number_filters = garbled_circuit_collection->garbled_circuits[i].number_filters = stoi(parsedLine[3], nullptr);
 			garbled_circuit_collection->garbled_circuits[i].stride_size = stoi(parsedLine[4], nullptr);
@@ -231,6 +233,8 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			uint64_t dot_size = filter_size * filter_size;
 			garbled_circuit_collection->i_circuit_inputs[i] = new int[1];
 			garbled_circuit_collection->i_circuit_inputs[i][0] = 0;
+
+			garbled_circuit_collection->garbled_circuits[i].output_matrix_size = (input_size - filter_size + 1);
 
 			char buffer[200];
 			sprintf(buffer, "./scd/netlists/fxdBinDot_TGX%d_%d.scd", (int) bit_length, (int) dot_size);
@@ -245,8 +249,10 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0], nullptr);
 			garbled_circuit_collection->n_of_clk[i] = stoi(parsedLine[1], nullptr);
 
+			scd_file = parsedLine[n_before_io - 1];
+
 			// store the number of run
-			if (io == 0) {
+			if (io == 0 || scd_file == string("MaxPool")) {
 				garbled_circuit_collection->i_circuit_inputs[i] = new int[2];
 				garbled_circuit_collection->i_circuit_inputs[i][0] = 1;
 				garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
@@ -259,8 +265,10 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 				}
 			}
 
-			scd_file = parsedLine[n_before_io - 1];
+
+
 			if (scd_file == string("CMPS")) {
+				garbled_circuit_collection->garbled_circuits[i].type = string("act");
 				char buffer[200];
 				int bit_length = 8;
 				char t = 'R';
@@ -268,6 +276,15 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 					t = 'I';
 				}
 				sprintf(buffer, "./scd/netlists/CMPS%c%d.scd", t, bit_length);
+				scd_file = string(buffer);
+			}
+
+			if (scd_file == string("MaxPool")) {
+				garbled_circuit_collection->garbled_circuits[i].type = string("MaxPool");
+				garbled_circuit_collection->garbled_circuits[i].max_pool_size = stoi(parsedLine[3], nullptr); // r clk name size
+				char buffer[200];
+				int bit_length = 4;
+				sprintf(buffer, "./scd/netlists/maxPool%d.scd", bit_length);
 				scd_file = string(buffer);
 			}
 

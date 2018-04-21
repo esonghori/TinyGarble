@@ -54,31 +54,27 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 	int number_of_circuits = garbled_circuit_collection.number_of_circuits;
 	CircuitLabel all_labels[number_of_circuits];
 
-	LOG(INFO) << endl << "inside garble " << number_of_circuits << endl;
+//	LOG(INFO) << endl << "inside garble " << number_of_circuits << endl;
 	for (int i = 0; i < number_of_circuits; i++) {
 
 		CHECK(GarbleMakeLabels(garbled_circuit_collection.garbled_circuits[i], all_labels[i], R));
 
-		LOG(INFO) << endl << "after Make labels" << endl;
+//		LOG(INFO) << endl << "after Make labels" << endl;
 		GarbleCopyLabels(garbled_circuit_collection, all_labels, i);
-		LOG(INFO) << endl << "after Copy labels" << endl;
+//		LOG(INFO) << endl << "after Copy labels" << endl;
 
 		CHECK(
 				GarbleTransferLabels(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].party_init,
 						garbled_circuit_collection.circuit_ios[i].party_input, disable_OT, connfd));
 
-		LOG(INFO) << endl << "after Transfer labels" << endl;
+//		LOG(INFO) << endl << "after Transfer labels" << endl;
 
-		LOG(ERROR) << endl << "Labels after transfer| Garbler" << endl;
+//		LOG(ERROR) << endl << "Labels after transfer| Garbler" << endl;
 		GarbledCircuit gc = garbled_circuit_collection.garbled_circuits[i];
 		uint64_t r = gc.n_of_run;
 		uint64_t clk = gc.n_of_clk;
 
 //		LOG(ERROR) << endl << r << " " << clk << "  " << gc.get_secret_input_size() << " " << gc.g_input_size << " " << gc.e_input_size << endl;
-
-//		for (uint64_t k = 0; k < r * clk * gc.get_secret_input_size() * 2; k++) {
-//			LOG(ERROR) << endl << all_labels[0].input_labels[k];
-//		}
 
 //		LOG(ERROR) << endl << endl;
 //		for (uint64_t k = 0; k < gc.input_matrix_size * gc.input_matrix_size * gc.bit_length * 2; k++) {
@@ -90,14 +86,30 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 			GarbleHighMem(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].p_init,
 					garbled_circuit_collection.circuit_ios[i].p_input, global_key, R, terminate_period, connfd, r);
 		}
-		LOG(INFO) << endl << "after garble" << endl;
+//		LOG(INFO) << endl << "after garble" << endl;
+
+		if (i == 1) { // output of CMP
+			LOG(ERROR) << endl << "output labels of CMP: " << endl;
+			for (uint64_t k = 0; k < garbled_circuit_collection.garbled_circuits[i].n_of_run * garbled_circuit_collection.garbled_circuits[i].output_size * 2;
+					k++) {
+				LOG(ERROR) << endl << all_labels[i].output_labels[k];
+			}
+		}
+
+		if (i == 2) { // output of CMP
+			LOG(ERROR) << endl << "input labels of MaxPool: " << endl;
+			for (uint64_t k = 0; k < garbled_circuit_collection.garbled_circuits[1].n_of_run * garbled_circuit_collection.garbled_circuits[1].output_size * 2;
+					k++) {
+				LOG(ERROR) << endl << all_labels[i].input_labels[k];
+			}
+		}
 	}
 
 	CHECK(
 			GarbleTransferOutput(garbled_circuit_collection.garbled_circuits[number_of_circuits - 1], all_labels[number_of_circuits - 1], output_mask,
 					output_mode, garbled_circuit_collection.circuit_ios[number_of_circuits - 1].output_bn, connfd));
 
-	LOG(INFO) << endl << "transfer output" << endl;
+//	LOG(INFO) << endl << "transfer output" << endl;
 	for (int i = 0; i < number_of_circuits; i++) {
 		RemoveLabels(all_labels[i]);
 	}
@@ -1056,7 +1068,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel& labels
 		}
 		//copy g labels
 		for (uint64_t j = 0; j < uint64_t(r); j++) {
-			for (uint64_t i = 0; i < garbled_circuit.g_input_size; i++) {
+			for (uint64_t i = 0; i < garbled_circuit.g_input_size; i++) { //16 bit * 2 labels per bit
 				labels.input_labels[j * garbled_circuit.get_secret_input_size() * 2 + i * 2 + 0] = labels.filters_labels[(j % garbled_circuit.number_filters)
 						* garbled_circuit.g_input_size * 2 + i * 2 + 0];
 
@@ -1162,7 +1174,7 @@ int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection,
 	if (garbled_circuit_collection.garbled_circuits[circuitID].i_input_size == 0)
 		return SUCCESS;
 
-	LOG(ERROR)<< endl << "in Copy labels"<<endl;
+//	LOG(ERROR) << endl << "in Copy labels" << endl;
 
 //FIX replace with memcpy
 //FIX does not support multiple i inputs from different circuits
@@ -1170,50 +1182,79 @@ int GarbleCopyLabels(const GarbledCircuitCollection& garbled_circuit_collection,
 
 	GarbledCircuit& this_circuit = garbled_circuit_collection.garbled_circuits[circuitID];
 	int cpy_circuitID = garbled_circuit_collection.i_circuit_inputs[circuitID][1];
+	GarbledCircuit& cpy_circuit = garbled_circuit_collection.garbled_circuits[cpy_circuitID];
 	int n_of_run = this_circuit.n_of_run;
 	int n_of_clk = garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_clk; // number of clk for previous circuit (copy_from circuit)
 
-	for (int r = 0; r < n_of_run; r++) {
-		int offset = (r * this_circuit.get_secret_input_size() + this_circuit.get_i_input_lo_index()) * 2;
-		int output_offset = 0;
+	if (this_circuit.type == string("MaxPool")) {
+		uint64_t number_filters = garbled_circuit_collection.garbled_circuits[circuitID - 2].number_filters;
+		uint64_t dim = garbled_circuit_collection.garbled_circuits[circuitID - 2].output_matrix_size;
+		uint64_t max_pool_size = garbled_circuit_collection.garbled_circuits[circuitID].max_pool_size;
+		uint64_t max_output_size = dim / max_pool_size;
+		garbled_circuit_collection.garbled_circuits[circuitID].max_output_size = max_output_size;
 
-		uint64_t input_size = this_circuit.i_input_size;
-		uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuitID].output_size;
-		uint64_t total_out_size = output_size * garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_run;
-		uint64_t total_in_size = input_size * n_of_run;
-
-		if (total_out_size == total_in_size) {
-			uint64_t ratio = output_size / input_size;
-
-			if (input_size >= output_size) {
-				LOG(ERROR)<<endl<<"we should be here by now"<<endl;
-				output_offset = r * (output_size * n_of_clk); //continue copying not broadcast
-				output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
-				output_offset *= 2; //2 labels per bit
-			} else {
-				output_offset = (r % ratio) * input_size + (r / ratio) * (output_size * n_of_clk); //extract mode
-				output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
-				output_offset *= 2; //2 labels per bit
-			}
-
-			for (uint64_t i = 0; i < input_size * 2; i++) { // *2 labels per bit
-				all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
-			}
-		} else { //if not, out cannot be bigger than in: out smaller than in: broadcast, start output_offset from the beginning
-			// Broadcast
-			//FIX not sure, need to debug
-			uint64_t ratio = input_size / output_size;
-			uint64_t output_offset_start = r * ratio * output_size * n_of_clk;
-			for (uint64_t j = 0; j < ratio; j++) {
-				output_offset = output_offset_start + j * (output_size * n_of_clk) + (n_of_clk - 1) * output_size;
-				output_offset *= 2; //2 labels per bit
-				for (uint64_t i = 0; i < output_size * 2; i++) { // *2 labels per bit
-					all_labels[circuitID].input_labels[offset + j * (output_size * 2) + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
+		uint64_t counter = 0;
+		for (uint64_t i = 0; i < max_output_size; i++) {
+			for (uint64_t j = 0; j < max_output_size; j++) {
+				for (uint64_t f = 0; f < number_filters; f++) {
+					for (uint64_t mi = 0; mi < max_pool_size; mi++) {
+						for (uint64_t mj = 0; mj < max_pool_size; mj++) {
+							uint64_t iInd = i * max_pool_size + mi;
+							uint64_t jInd = j * max_pool_size + mj;
+							uint64_t Ind = iInd * dim + jInd;
+							Ind = Ind * number_filters + f;
+							//2 labels per bit (index)
+							all_labels[circuitID].input_labels[counter * 2 + 0] = all_labels[cpy_circuitID].output_labels[Ind * 2 + 0];
+							all_labels[circuitID].input_labels[counter * 2 + 1] = all_labels[cpy_circuitID].output_labels[Ind * 2 + 1];
+							counter++;
+						}
+					}
 				}
+			}
+		}
+
+	} else {
+		for (int r = 0; r < n_of_run; r++) {
+			int offset = (r * this_circuit.get_secret_input_size() + this_circuit.get_i_input_lo_index()) * 2;
+			int output_offset = 0;
+
+			uint64_t input_size = this_circuit.i_input_size;
+			uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuitID].output_size;
+			uint64_t total_out_size = output_size * garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_run;
+			uint64_t total_in_size = input_size * n_of_run;
+
+			if (total_out_size == total_in_size) {
+				uint64_t ratio = output_size / input_size;
+
+				if (input_size >= output_size) {
+					output_offset = r * (output_size * n_of_clk); //continue copying not broadcast
+					output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
+					output_offset *= 2; //2 labels per bit
+				} else {
+					output_offset = (r % ratio) * input_size + (r / ratio) * (output_size * n_of_clk); //extract mode
+					output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
+					output_offset *= 2; //2 labels per bit
+				}
+
+				for (uint64_t i = 0; i < input_size * 2; i++) { // *2 labels per bit
+					all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
+				}
+			} else { //if not, out cannot be bigger than in: out smaller than in: broadcast, start output_offset from the beginning
+				// Broadcast
+				//FIX not sure, need to debug
+				uint64_t ratio = input_size / output_size;
+				uint64_t output_offset_start = r * ratio * output_size * n_of_clk;
+				for (uint64_t j = 0; j < ratio; j++) {
+					output_offset = output_offset_start + j * (output_size * n_of_clk) + (n_of_clk - 1) * output_size;
+					output_offset *= 2; //2 labels per bit
+					for (uint64_t i = 0; i < output_size * 2; i++) { // *2 labels per bit
+						all_labels[circuitID].input_labels[offset + j * (output_size * 2) + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
+					}
+				}
+
 			}
 
 		}
-
 	}
 
 	return SUCCESS;
@@ -1226,50 +1267,78 @@ int EvaluateCopyLabels(const GarbledCircuitCollection& garbled_circuit_collectio
 
 	GarbledCircuit& this_circuit = garbled_circuit_collection.garbled_circuits[circuitID];
 	int cpy_circuitID = garbled_circuit_collection.i_circuit_inputs[circuitID][1];
+	GarbledCircuit& cpy_circuit = garbled_circuit_collection.garbled_circuits[cpy_circuitID];
 	int n_of_run = this_circuit.n_of_run;
 	int n_of_clk = garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_clk; // number of clk for previous circuit (copy_from circuit)
 
-	for (int r = 0; r < n_of_run; r++) {
-		int offset = (r * this_circuit.get_secret_input_size() + this_circuit.get_i_input_lo_index());
-		int output_offset = 0;
+	if (this_circuit.type == string("MaxPool")) {
+		uint64_t number_filters = garbled_circuit_collection.garbled_circuits[circuitID - 2].number_filters;
+		uint64_t dim = garbled_circuit_collection.garbled_circuits[circuitID - 2].output_matrix_size;
+		uint64_t max_pool_size = garbled_circuit_collection.garbled_circuits[circuitID].max_pool_size;
+		uint64_t max_output_size = dim / max_pool_size;
+		garbled_circuit_collection.garbled_circuits[circuitID].max_output_size = max_output_size;
 
-		uint64_t input_size = this_circuit.i_input_size;
-		uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuitID].output_size;
-		uint64_t total_out_size = output_size * garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_run;
-		uint64_t total_in_size = input_size * n_of_run;
-
-		if (total_out_size == total_in_size) {
-			uint64_t ratio = output_size / input_size;
-
-			if (input_size >= output_size) {
-				LOG(ERROR)<<endl<< " eval should be here"<<endl;
-				output_offset = r * (output_size * n_of_clk); //continue copying not broadcast
-				output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
-			} else {
-				output_offset = (r % ratio) * input_size + (r / ratio) * (output_size * n_of_clk); //extract mode
-				output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
-			}
-
-			for (uint64_t i = 0; i < input_size; i++) { // *1 labels per bit
-				all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
-			}
-		} else { //if not, out cannot be bigger than in: out smaller than in: broadcast, start output_offset from the beginning
-			// Broadcast
-			//FIX not sure, need to debug
-			uint64_t ratio = input_size / output_size;
-			uint64_t output_offset_start = r * ratio * output_size * n_of_clk;
-			for (uint64_t j = 0; j < ratio; j++) {
-				output_offset = output_offset_start + j * (output_size * n_of_clk) + (n_of_clk - 1) * output_size;
-
-				for (uint64_t i = 0; i < output_size; i++) { // *2 labels per bit
-					all_labels[circuitID].input_labels[offset + j * (output_size) + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
+		uint64_t counter = 0;
+		for (uint64_t i = 0; i < max_output_size; i++) {
+			for (uint64_t j = 0; j < max_output_size; j++) {
+				for (uint64_t f = 0; f < number_filters; f++) {
+					for (uint64_t mi = 0; mi < max_pool_size; mi++) {
+						for (uint64_t mj = 0; mj < max_pool_size; mj++) {
+							uint64_t iInd = i * max_pool_size + mi;
+							uint64_t jInd = j * max_pool_size + mj;
+							uint64_t Ind = iInd * dim + jInd;
+							Ind = Ind * number_filters + f;
+							//1 label per bit (index)
+							all_labels[circuitID].input_labels[counter] = all_labels[cpy_circuitID].output_labels[Ind];
+							counter++;
+						}
+					}
 				}
+			}
+		}
+
+	} else {
+
+		for (int r = 0; r < n_of_run; r++) {
+			int offset = (r * this_circuit.get_secret_input_size() + this_circuit.get_i_input_lo_index());
+			int output_offset = 0;
+
+			uint64_t input_size = this_circuit.i_input_size;
+			uint64_t output_size = garbled_circuit_collection.garbled_circuits[cpy_circuitID].output_size;
+			uint64_t total_out_size = output_size * garbled_circuit_collection.garbled_circuits[cpy_circuitID].n_of_run;
+			uint64_t total_in_size = input_size * n_of_run;
+
+			if (total_out_size == total_in_size) {
+				uint64_t ratio = output_size / input_size;
+
+				if (input_size >= output_size) {
+					output_offset = r * (output_size * n_of_clk); //continue copying not broadcast
+					output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
+				} else {
+					output_offset = (r % ratio) * input_size + (r / ratio) * (output_size * n_of_clk); //extract mode
+					output_offset += (n_of_clk - 1) * output_size; //extract only the last clock
+				}
+
+				for (uint64_t i = 0; i < input_size; i++) { // *1 labels per bit
+					all_labels[circuitID].input_labels[offset + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
+				}
+			} else { //if not, out cannot be bigger than in: out smaller than in: broadcast, start output_offset from the beginning
+				// Broadcast
+				//FIX not sure, need to debug
+				uint64_t ratio = input_size / output_size;
+				uint64_t output_offset_start = r * ratio * output_size * n_of_clk;
+				for (uint64_t j = 0; j < ratio; j++) {
+					output_offset = output_offset_start + j * (output_size * n_of_clk) + (n_of_clk - 1) * output_size;
+
+					for (uint64_t i = 0; i < output_size; i++) { // *2 labels per bit
+						all_labels[circuitID].input_labels[offset + j * (output_size) + i] = all_labels[cpy_circuitID].output_labels[output_offset + i];
+					}
+				}
+
 			}
 
 		}
-
 	}
-
 	return SUCCESS;
 }
 
