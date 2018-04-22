@@ -233,8 +233,9 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			garbled_circuit_collection->n_of_run[i] = number_filters * (input_size - filter_size + 1) * (input_size - filter_size + 1);
 			garbled_circuit_collection->n_of_clk[i] = 1;  // need to be updated to single MAC later on
 			uint64_t dot_size = filter_size * filter_size;
-			garbled_circuit_collection->i_circuit_inputs[i] = new int[1];
+			garbled_circuit_collection->i_circuit_inputs[i] = new int[2];
 			garbled_circuit_collection->i_circuit_inputs[i][0] = 0;
+			garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
 
 			garbled_circuit_collection->garbled_circuits[i].output_matrix_size = (input_size - filter_size + 1);
 
