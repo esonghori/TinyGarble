@@ -89,8 +89,8 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 		}
 		LOG(ERROR) << endl << "after garble" << endl;
 
-		if (i == 3) {
-			LOG(ERROR) << endl << "output labels of conv|   r: " << garbled_circuit_collection.garbled_circuits[i].n_of_run << "   o size: "
+		if (i == 1) {
+			LOG(ERROR) << endl << "output labels of cmp|   r: " << garbled_circuit_collection.garbled_circuits[i].n_of_run << "   o size: "
 					<< garbled_circuit_collection.garbled_circuits[i].output_size << endl;
 			for (uint64_t k = 0; k < garbled_circuit_collection.garbled_circuits[i].n_of_run * garbled_circuit_collection.garbled_circuits[i].output_size * 2;
 					k++) {
@@ -98,8 +98,8 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 			}
 		}
 
-		if (i == 4) {
-			LOG(ERROR) << endl << "input labels of CMP|   r: " << garbled_circuit_collection.garbled_circuits[i].n_of_run << endl;
+		if (i == 2) {
+			LOG(ERROR) << endl << "input labels of maxpool|   r: " << garbled_circuit_collection.garbled_circuits[i].n_of_run << endl;
 			for (uint64_t k = 0;
 					k < garbled_circuit_collection.garbled_circuits[i].n_of_run * garbled_circuit_collection.garbled_circuits[i].get_secret_input_size() * 2;
 					k++) {
