@@ -262,7 +262,7 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			scd_file = parsedLine[n_before_io - 1];
 
 			// store the number of run
-			if (io == 0 || scd_file == string("MaxPool")) {
+			if (io == 0 || scd_file == string("MaxPool") || scd_file == string("CMPS") || scd_file == string("CMP")) {
 				garbled_circuit_collection->i_circuit_inputs[i] = new int[2];
 				garbled_circuit_collection->i_circuit_inputs[i][0] = 1;
 				garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
@@ -275,15 +275,21 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 				}
 			}
 
-			if (scd_file == string("CMPS")) {
+			if (scd_file == string("CMPS") || scd_file == string("CMP")) {
 				garbled_circuit_collection->garbled_circuits[i].type = string("act");
 				char buffer[200];
-				int bit_length = 8;
+				int bit_length = stoi(parsedLine[3], nullptr);
 				char t = 'R';
 				if (i > 0) {
 					t = 'I';
 				}
-				sprintf(buffer, "./scd/netlists/CMPS%c%d.scd", t, bit_length);
+
+				if (i>1){
+					sprintf(buffer, "./scd/netlists/CMP%c%d.scd", t, bit_length);
+				}else{
+					sprintf(buffer, "./scd/netlists/CMPS%c%d.scd", t, bit_length);
+				}
+
 				scd_file = string(buffer);
 			}
 
