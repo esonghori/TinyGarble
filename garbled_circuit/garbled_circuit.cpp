@@ -173,9 +173,9 @@ int EvaluateStr(const string& file_address, uint64_t clock_cycles, const string&
 	CHECK(RecvData(connfd, &global_key, sizeof(block)));  // receive global key
 
 	CHECK(EvaluateBNHighMem(garbled_circuit_collection, &clock_cycles, output_mask, terminate_period, output_mode, global_key, disable_OT, connfd));
-	LOG(INFO)<<endl<<"before output2str"<<endl;
+//	LOG(INFO)<<endl<<"before output2str"<<endl;
 	CHECK(OutputBN2StrHighMem(garbled_circuit_collection, clock_cycles, output_mode, output_str));
-	LOG(INFO)<<endl<<"after output2str"<<endl;
+//	LOG(INFO)<<endl<<"after output2str"<<endl;
 
 	RemoveGarbledCircuitCollection(&garbled_circuit_collection);
 	return SUCCESS;
