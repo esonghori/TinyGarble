@@ -195,7 +195,7 @@ int OutputBN2StrHighMem(const GarbledCircuitCollection& garbled_circuit_collecti
 	GarbledCircuit garbled_circuit = garbled_circuit_collection.garbled_circuits[garbled_circuit_collection.number_of_circuits - 1];
 	BIGNUM* outputs = garbled_circuit_collection.circuit_ios[garbled_circuit_collection.number_of_circuits - 1].output_bn;
 
-	LOG(INFO)<<endl<<"inside output2str"<<endl;
+//	LOG(INFO)<<endl<<"inside output2str"<<endl;
 
 	(*output_str) = "";
 	if (output_mode == OutputMode::consecutive) {  // normal

@@ -54,21 +54,21 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 	int number_of_circuits = garbled_circuit_collection.number_of_circuits;
 	CircuitLabel all_labels[number_of_circuits];
 
-	LOG(ERROR) << endl << "inside garble " << number_of_circuits << endl;
+//	LOG(ERROR) << endl << "inside garble " << number_of_circuits << endl;
 	for (int i = 0; i < number_of_circuits; i++) {
 
 		CHECK(GarbleMakeLabels(garbled_circuit_collection.garbled_circuits[i], all_labels, R));
 
-		LOG(ERROR) << endl << "after Make labels" << endl;
+//		LOG(ERROR) << endl << "after Make labels" << endl;
 
 		GarbleCopyLabels(garbled_circuit_collection, all_labels, i);
-		LOG(ERROR) << endl << "after Copy labels" << endl;
+//		LOG(ERROR) << endl << "after Copy labels" << endl;
 
 		CHECK(
 				GarbleTransferLabels(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].party_init,
 						garbled_circuit_collection.circuit_ios[i].party_input, disable_OT, connfd));
 
-		LOG(ERROR) << endl << "after Transfer labels" << endl;
+//		LOG(ERROR) << endl << "after Transfer labels" << endl;
 
 //		LOG(ERROR) << endl << "Labels after transfer| Garbler" << endl;
 //		GarbledCircuit gc = garbled_circuit_collection.garbled_circuits[i];
@@ -87,7 +87,7 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 			GarbleHighMem(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].p_init,
 					garbled_circuit_collection.circuit_ios[i].p_input, global_key, R, terminate_period, connfd, r);
 		}
-		LOG(ERROR) << endl << "after garble" << endl;
+//		LOG(ERROR) << endl << "after garble" << endl;
 
 //		if (i == 1) {
 //			LOG(ERROR) << endl << "output labels of cmp|   r: " << garbled_circuit_collection.garbled_circuits[i].n_of_run << "   o size: "
@@ -124,7 +124,7 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, uint64_t* clock_cycles, const string& output_mask, int64_t terminate_period,
 		OutputMode output_mode, block global_key, bool disable_OT, int connfd) {
 
-	LOG(ERROR) << endl << "Inside Eval" << endl;
+//	LOG(ERROR) << endl << "Inside Eval" << endl;
 	int number_of_circuits = garbled_circuit_collection.number_of_circuits;
 	CircuitLabel all_labels[number_of_circuits];
 
@@ -134,16 +134,16 @@ int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection
 //				<<"   "<<garbled_circuit_collection.garbled_circuits[i].output_size;
 
 		CHECK(EvaluateMakeLabels(garbled_circuit_collection.garbled_circuits[i], all_labels[i]));
-		LOG(ERROR) << endl << "after Make labels" << endl;
+//		LOG(ERROR) << endl << "after Make labels" << endl;
 
 		EvaluateCopyLabels(garbled_circuit_collection, all_labels, i);
-		LOG(ERROR) << endl << "after Copy" << endl;
+//		LOG(ERROR) << endl << "after Copy" << endl;
 
 		CHECK(
 				EvaluateTransferLabels(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].party_init,
 						garbled_circuit_collection.circuit_ios[i].party_input, disable_OT, connfd));
 
-		LOG(ERROR) << endl << "after Transfer labels" << endl;
+//		LOG(ERROR) << endl << "after Transfer labels" << endl;
 
 //		LOG(ERROR) << endl << "Labels after transfer| Evaluator" << endl;
 //		GarbledCircuit gc = garbled_circuit_collection.garbled_circuits[0];
@@ -161,7 +161,7 @@ int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection
 					garbled_circuit_collection.circuit_ios[i].p_input, global_key, terminate_period, connfd, r);
 		}
 
-		LOG(ERROR) << endl << "after evaluating" << endl;
+//		LOG(ERROR) << endl << "after evaluating" << endl;
 
 	}
 
@@ -171,7 +171,7 @@ int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection
 			EvaluateTransferOutput(garbled_circuit_collection.garbled_circuits[number_of_circuits - 1], all_labels[number_of_circuits - 1], output_mask,
 					output_mode, garbled_circuit_collection.circuit_ios[number_of_circuits - 1].output_bn, connfd));
 
-	LOG(INFO) << endl << "Transfer output" << endl;
+//	LOG(INFO) << endl << "Transfer output" << endl;
 
 	for (int i = 0; i < number_of_circuits; i++) {
 		RemoveLabels(all_labels[i]);
@@ -1160,7 +1160,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_la
 	}
 
 	if (garbled_circuit.output_size > 0) {
-		LOG(ERROR) << endl << "output size" << garbled_circuit.output_size;
+//		LOG(ERROR) << endl << "output size" << garbled_circuit.output_size;
 		CHECK_ALLOC(labels.output_labels = new block[r * clock_cycles * garbled_circuit.output_size * 2]);
 		CHECK_ALLOC(labels.output_vals = new short[r * clock_cycles * garbled_circuit.output_size]);
 	}
@@ -1541,7 +1541,7 @@ int EvaluateTransferOutput(const GarbledCircuit& garbled_circuit, CircuitLabel& 
 	for (uint64_t r = 0; r < n_of_run; r++) {
 		for (uint64_t cid = 0; cid < clock_cycles; cid++) {
 			for (uint64_t i = 0; i < garbled_circuit.output_size; i++) {
-				LOG(INFO) << endl << output_vals[r * jump_size + cid * garbled_circuit.output_size + i] << endl;
+//				LOG(INFO) << endl << output_vals[r * jump_size + cid * garbled_circuit.output_size + i] << endl;
 				if (output_vals[r * jump_size + cid * garbled_circuit.output_size + i] == 0) {
 					BN_clear_bit(output_bn, r * jump_size + cid * garbled_circuit.output_size + i);
 				} else if (output_vals[r * jump_size + cid * garbled_circuit.output_size + i] == 1) {
