@@ -104,13 +104,16 @@ typedef struct GarbledCircuit {
 	uint64_t max_output_size;
 
 	bool conv_layer;
+	bool OCA;
+	uint64_t bit_length;
 	uint64_t input_matrix_size;
 	uint64_t input_number_channels;
 	uint64_t output_matrix_size;
+	uint64_t output_bit_length;
 	uint64_t filter_size;
 	uint64_t number_filters;
 	uint64_t stride_size;
-	uint64_t bit_length;
+
 
 	GarbledGate* garbledGates; /*!< topologically sorted gates */
 	int64_t *outputs; /*!< index of output wires */

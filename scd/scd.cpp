@@ -38,6 +38,7 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -236,12 +237,21 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			garbled_circuit_collection->i_circuit_inputs[i] = new int[2];
 			garbled_circuit_collection->i_circuit_inputs[i][0] = 0;
 			garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
+			uint64_t cc = 1<<bit_length;
+			uint64_t output_bit_length = garbled_circuit_collection->garbled_circuits[i].output_bit_length = ceil(log2(cc * input_number_channels * filter_size * filter_size + 1));
+
+			garbled_circuit_collection->garbled_circuits[i].OCA = false;
+			if (n==8){//conv 28 1 5 16 1 8 OCA
+				if (parsedLine[7] == string("OCA")){
+					garbled_circuit_collection->garbled_circuits[i].OCA = true;
+				}
+			}
 
 			garbled_circuit_collection->garbled_circuits[i].output_matrix_size = (input_size - filter_size + 1);
 
 			if (i == 0) {
 				char buffer[200];
-				sprintf(buffer, "./scd/netlists/fxdBinDot_TGX%d_%d.scd", (int) bit_length, (int) dot_size);
+				sprintf(buffer, "./scd/netlists/fxdBinDot%d_%d.scd", (int) bit_length, (int) dot_size);
 				scd_file = string(buffer);
 			} else {
 				char buffer[200];
