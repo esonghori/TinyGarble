@@ -194,7 +194,15 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		return FAILURE;
 	}
 
-	f >> garbled_circuit_collection->number_of_circuits;
+	string line_temp;
+	int number_of_lines = 0;
+	while (std::getline(f, line_temp))
+		++number_of_lines;
+	garbled_circuit_collection->number_of_circuits = number_of_lines - 1;
+	//reset f
+	f.clear();
+	f.seekg(0, std::ios::beg);
+
 	garbled_circuit_collection->i_circuit_inputs = new int*[garbled_circuit_collection->number_of_circuits];
 	garbled_circuit_collection->n_of_run = new int[garbled_circuit_collection->number_of_circuits];
 	garbled_circuit_collection->n_of_clk = new int[garbled_circuit_collection->number_of_circuits];
@@ -207,7 +215,7 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 	}
 
 	string newLine;
-	getline(f, newLine);
+//	getline(f, newLine);
 
 	getline(f, newLine);
 	vector < string > parsedLine;
@@ -218,11 +226,11 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 
 	for (int i = 0; i < garbled_circuit_collection->number_of_circuits; i++) {
 		string scd_file;
-
+		vector < string > parsedLine;
 		getline(f, newLine);
 		split(parsedLine, newLine, is_any_of(" "));
 
-		//newLine format: %i number_of_run     %i number_of_clk    %s scd_file     %i intermediate_inputs_from
+		//newLine format: %name Window_Size #filter stride PAD?N/Y
 
 		int n = parsedLine.size();
 		garbled_circuit_collection->garbled_circuits[i].circuitID = i;
@@ -231,13 +239,21 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			garbled_circuit_collection->garbled_circuits[i].type = string("conv");
 			garbled_circuit_collection->garbled_circuits[i].conv_layer = true;
 
+			if (i > 0) {  //this conv layer is not an input layer... calculate parameters
+				garbled_circuit_collection->garbled_circuits[i].input_matrix_size = garbled_circuit_collection->garbled_circuits[i - 1].output_matrix_size;
+				garbled_circuit_collection->garbled_circuits[i].input_number_channels = garbled_circuit_collection->garbled_circuits[i - 1]
+						.input_number_channels;
+				garbled_circuit_collection->garbled_circuits[i].bit_length = 1;
+
+			}
+
 			uint64_t input_size = garbled_circuit_collection->garbled_circuits[i].input_matrix_size;
 			uint64_t input_number_channels = garbled_circuit_collection->garbled_circuits[i].input_number_channels;
 			uint64_t bit_length = garbled_circuit_collection->garbled_circuits[i].bit_length;
 
 			uint64_t filter_size = garbled_circuit_collection->garbled_circuits[i].filter_size = stoi(parsedLine[1], nullptr);
 			uint64_t number_filters = garbled_circuit_collection->garbled_circuits[i].number_filters = stoi(parsedLine[2], nullptr);
-			garbled_circuit_collection->garbled_circuits[i].stride_size = stoi(parsedLine[3], nullptr);
+			uint64_t stride = garbled_circuit_collection->garbled_circuits[i].stride_size = stoi(parsedLine[3], nullptr);
 
 			garbled_circuit_collection->n_of_run[i] = number_filters * (input_size - filter_size + 1) * (input_size - filter_size + 1);
 			garbled_circuit_collection->n_of_clk[i] = 1;  // need to be updated to single MAC later on
@@ -247,7 +263,7 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			garbled_circuit_collection->i_circuit_inputs[i][0] = 0;
 			garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
 
-			uint64_t cc = 1 << bit_length;
+			uint64_t cc = (1 << bit_length) - 1;
 			uint64_t output_bit_length = garbled_circuit_collection->garbled_circuits[i].output_bit_length = ceil(
 					log2(cc * input_number_channels * filter_size * filter_size + 1));
 
@@ -258,7 +274,11 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 				}
 			}
 
-			garbled_circuit_collection->garbled_circuits[i].output_matrix_size = (input_size - filter_size + 1);
+			if (parsedLine[4] == string("N")) {
+				garbled_circuit_collection->garbled_circuits[i].output_matrix_size = (input_size - filter_size) / stride + 1;
+			} else {
+				garbled_circuit_collection->garbled_circuits[i].output_matrix_size = input_size;
+			}
 
 			if (i == 0) {
 				char buffer[200];
@@ -274,32 +294,38 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 		} else {
 			garbled_circuit_collection->garbled_circuits[i].conv_layer = false;
 
-			int n_before_io = 3; //r clk scd_file
-			int io = n - n_before_io;
-
-			garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0], nullptr);
-			garbled_circuit_collection->n_of_clk[i] = stoi(parsedLine[1], nullptr);
-
-			scd_file = parsedLine[n_before_io - 1];
+//			int n_before_io = 3;
+//			int io = n - n_before_io;
+//
+//			garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[0], nullptr);
+			garbled_circuit_collection->n_of_clk[i] = 1;
+//
+//			scd_file = parsedLine[n_before_io - 1];
 
 			// store the number of run
-			if (io == 0 || scd_file == string("MaxPool") || scd_file == string("CMPS") || scd_file == string("CMP") || scd_file == string("FC")) { //even though there is a number after name... set dependencies to i-1
-				garbled_circuit_collection->i_circuit_inputs[i] = new int[2];
-				garbled_circuit_collection->i_circuit_inputs[i][0] = 1;
-				garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
-			} else {
-				garbled_circuit_collection->i_circuit_inputs[i] = new int[io + 1];
-				garbled_circuit_collection->i_circuit_inputs[i][0] = io;
-				//		LOG(ERROR)<<endl<<garbled_circuit_collection->i_circuit_inputs[i][0]<<endl<<garbled_circuit_collection->n_of_run[i]<<endl<<garbled_circuit_collection->n_of_clk[i]<<endl;
-				for (int j = 1; j <= io; j++) { //iterating over circuit inputs matrix
-					garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j + n_before_io - 1], nullptr);
-				}
-			}
+//			if (io == 0 || scd_file == string("MaxPool") || scd_file == string("CMPS") || scd_file == string("CMP") || scd_file == string("FC")) { //even though there is a number after name... set dependencies to i-1
+			garbled_circuit_collection->i_circuit_inputs[i] = new int[2];
+			garbled_circuit_collection->i_circuit_inputs[i][0] = 1;
+			garbled_circuit_collection->i_circuit_inputs[i][1] = i - 1;
+//			} else {
+//				garbled_circuit_collection->i_circuit_inputs[i] = new int[io + 1];
+//				garbled_circuit_collection->i_circuit_inputs[i][0] = io;
+//				//		LOG(ERROR)<<endl<<garbled_circuit_collection->i_circuit_inputs[i][0]<<endl<<garbled_circuit_collection->n_of_run[i]<<endl<<garbled_circuit_collection->n_of_clk[i]<<endl;
+//				for (int j = 1; j <= io; j++) { //iterating over circuit inputs matrix
+//					garbled_circuit_collection->i_circuit_inputs[i][j] = stoi(parsedLine[j + n_before_io - 1], nullptr);
+//				}
+//			}
 
-			if (scd_file == string("CMPS") || scd_file == string("CMP")) {
+			if (parsedLine[0] == string("ACT")) {
 				garbled_circuit_collection->garbled_circuits[i].type = string("act");
+				garbled_circuit_collection->n_of_run[i] = garbled_circuit_collection->n_of_run[i - 1];
+				int bit_length = garbled_circuit_collection->garbled_circuits[i - 1].output_bit_length;
+				garbled_circuit_collection->garbled_circuits[i].number_filters = garbled_circuit_collection->garbled_circuits[i].input_number_channels =
+						garbled_circuit_collection->garbled_circuits[i - 1].number_filters;
+				garbled_circuit_collection->garbled_circuits[i].output_matrix_size = garbled_circuit_collection->garbled_circuits[i - 1].output_matrix_size;
+
 				char buffer[200];
-				int bit_length = stoi(parsedLine[3], nullptr);
+
 				char t = 'R';
 				if (i > 0) {
 					t = 'I';
@@ -314,19 +340,27 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 				scd_file = string(buffer);
 			}
 
-			if (scd_file == string("MaxPool")) {
+			if (parsedLine[0] == string("MAXPOOL")) {
 				garbled_circuit_collection->garbled_circuits[i].type = string("MaxPool");
-				garbled_circuit_collection->garbled_circuits[i].max_pool_size = stoi(parsedLine[3], nullptr); // r clk name size
+				int mps = garbled_circuit_collection->garbled_circuits[i].max_pool_size = stoi(parsedLine[1], nullptr); // name size
+				garbled_circuit_collection->n_of_run[i] = garbled_circuit_collection->n_of_run[i - 1] / mps / mps;
+				garbled_circuit_collection->garbled_circuits[i].number_filters = garbled_circuit_collection->garbled_circuits[i].input_number_channels =
+						garbled_circuit_collection->garbled_circuits[i - 1].number_filters;
+				garbled_circuit_collection->garbled_circuits[i].output_matrix_size = garbled_circuit_collection->garbled_circuits[i - 1].output_matrix_size
+						/ mps;
+
 				char buffer[200];
-				int bit_length = 4;
-				sprintf(buffer, "./scd/netlists/maxPool%d.scd", bit_length);
+				sprintf(buffer, "./scd/netlists/maxPool%d.scd", mps * mps);
 				scd_file = string(buffer);
 			}
 
-			if (scd_file == string("FC")) {
+			if (parsedLine[0] == string("FC")) {
 				garbled_circuit_collection->garbled_circuits[i].type = string("FC");
 				char buffer[200];
-				int popCountSize = stoi(parsedLine[3], nullptr); // r clk name size
+				garbled_circuit_collection->n_of_run[i] = stoi(parsedLine[1], nullptr); // name output_size
+				int popCountSize = garbled_circuit_collection->n_of_run[i - 1];
+				garbled_circuit_collection->garbled_circuits[i].output_bit_length = ceil(log2(popCountSize + 1));
+
 				sprintf(buffer, "./scd/netlists/XnorPopCount%d.scd", popCountSize);
 				scd_file = string(buffer);
 			}
