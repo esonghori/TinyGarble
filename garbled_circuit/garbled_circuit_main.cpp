@@ -228,12 +228,6 @@ int main(int argc, char* argv[]) {
 		return FAILURE;
 	}
 
-	// Transferring file in to hex DONT NEED ANYMORE
-//  string p_init_str = ReadFileOrPassHex(p_init_f_hex_str);
-//  string p_input_str = ReadFileOrPassHex(p_input_f_hex_str);
-//  string init_str = ReadFileOrPassHex(init_f_hex_str);
-//  string input_str;
-
 //	int n = 10000;
 //	int s = 3500;
 //	LOG(INFO) << endl << n << endl;
@@ -241,7 +235,6 @@ int main(int argc, char* argv[]) {
 //	CHECK_ALLOC(gt = new GarbleTable[s]);
 
 	if (vm.count("alice")) {
-
 		// open the socket
 		int connfd;
 		if ((connfd = ServerInit(port)) == -1) {
@@ -254,8 +247,19 @@ int main(int argc, char* argv[]) {
 		//    CheckOptionsAlice("", clock_cycles, output_mask, disable_OT,
 		//                      low_mem_foot, connfd));
 
+//		uint32_t message_len = 16 * 25 * 576 / 8;
+////		uint32_t message_len = 28 * 28 * 8;
+//		block **message = nullptr;
+//		CHECK_ALLOC(message = new block*[message_len]);
+//		for (uint32_t i = 0; i < message_len; i++) {
+//			CHECK_ALLOC(message[i] = new block[2]);
+//		}
+
 		string output_str;
 		uint64_t delta_time = RDTSC;
+
+//		for (int i = 0; i < 10; i++)
+//			OTExtSend(message, message_len, connfd);
 
 //		for (int i = 0; i < n; i++)
 //			CHECK(SendData(connfd, gt, s * sizeof(GarbledTable)));
@@ -263,12 +267,12 @@ int main(int argc, char* argv[]) {
 		CHECK(GarbleStr(file_address, clock_cycles, output_mask, terminate_period, output_mode, disable_OT, low_mem_foot, &output_str, connfd));
 
 		delta_time = RDTSC - delta_time;
-		float timeS = ((float) delta_time / (4.2 * 1000000000.0)); //4.2GHz CPU
+		float timeS = ((float) delta_time / (3.8 * 1000000000.0));	//4.2GHz CPU
 
 		LOG(INFO) << "Alice's output = " << output_str << endl;
 		LOG(INFO) << "Total Alice time (s) = " << timeS << endl;
-//		LOG(INFO) << "Measured BW (Gbps) = " << ((float) n * s * 256 / timeS / (1000000000.0)) << endl;
 		std::cout << output_str << endl;
+//		LOG(INFO) << "Measured BW (Gbps) = " << ((float) n * s * 256 / timeS / (1000000000.0)) << endl;
 
 		ServerClose(connfd);
 
@@ -294,8 +298,18 @@ int main(int argc, char* argv[]) {
 		//    CheckOptionsBob("", clock_cycles, output_mask, disable_OT, low_mem_foot,
 		//                    connfd));
 
+//		bool *select = nullptr;
+//		block *message = nullptr;
+//		uint32_t message_len = 16 * 25 * 576 / 8;
+////		uint32_t message_len = 28 * 28 * 8;
+//		CHECK_ALLOC(select = new bool[message_len]);
+//		CHECK_ALLOC(message = new block[message_len]);
+
 		string output_str;
 		uint64_t delta_time = RDTSC;
+//
+//		for (int i = 0; i < 10; i++)
+//			OTExtRecv(select, message_len, connfd, message);
 
 //		for (int i = 0; i < n; i++)
 //			CHECK(RecvData(connfd, gt, s * sizeof(GarbledTable)));
@@ -306,7 +320,8 @@ int main(int argc, char* argv[]) {
 
 		LOG(INFO) << "Bob's output = " << output_str << endl;
 		LOG(INFO) << "Total Bob time (cc) = " << delta_time << endl;
-		std::cout << output_str << endl;
+		std::cout << output_str << endl;  // writes output to the file Bob.txt
+
 
 		ClientClose(connfd);
 	}

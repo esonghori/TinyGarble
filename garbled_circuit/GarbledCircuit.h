@@ -8,16 +8,16 @@
 #ifndef GARBLEDCIRCUIT_H_
 #define GARBLEDCIRCUIT_H_
 
-#include <string>
-
-using std::string;
-
-class GarbledCircuit {
-public:
-	GarbledCircuit();
-	virtual ~GarbledCircuit();
-
-	string netlistFile;
-};
+//#include <string>
+//
+//using std::string;
+//
+//class GarbledCircuit {
+//public:
+//	GarbledCircuit();
+//	virtual ~GarbledCircuit();
+//
+//	string netlistFile;
+//};
 
 #endif /* GARBLEDCIRCUIT_H_ */

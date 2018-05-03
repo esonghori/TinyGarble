@@ -106,6 +106,9 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 //				LOG(ERROR) << endl << all_labels[i].input_labels[k];
 //			}
 //		}
+		if (i != 0) {
+			RemoveLabels(all_labels[i - 1], garbled_circuit_collection.garbled_circuits[i - 1]);
+		}
 	}
 
 //	number_of_circuits--;
@@ -114,9 +117,11 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 					output_mode, garbled_circuit_collection.circuit_ios[number_of_circuits - 1].output_bn, connfd));
 
 //	LOG(INFO) << endl << "transfer output" << endl;
-	for (int i = 0; i < number_of_circuits; i++) {
-		RemoveLabels(all_labels[i]);
-	}
+//	for (int i = 0; i < number_of_circuits; i++) {
+//		RemoveLabels(all_labels[i], garbled_circuit_collection.garbled_circuits[i]);
+//	}
+
+	RemoveLabels(all_labels[number_of_circuits - 1], garbled_circuit_collection.garbled_circuits[number_of_circuits - 1]);
 
 	return SUCCESS;
 }
@@ -163,6 +168,10 @@ int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection
 
 //		LOG(ERROR) << endl << "after evaluating" << endl;
 
+		if (i != 0) {
+			RemoveLabels(all_labels[i - 1], garbled_circuit_collection.garbled_circuits[i - 1]);
+		}
+
 	}
 
 	//FIX output when number of run for the last circuit is >1
@@ -173,9 +182,11 @@ int EvaluateBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection
 
 //	LOG(INFO) << endl << "Transfer output" << endl;
 
-	for (int i = 0; i < number_of_circuits; i++) {
-		RemoveLabels(all_labels[i]);
-	}
+//	for (int i = 0; i < number_of_circuits; i++) {
+//		RemoveLabels(all_labels[i], garbled_circuit_collection.garbled_circuits[i]);
+//	}
+
+	RemoveLabels(all_labels[number_of_circuits - 1], garbled_circuit_collection.garbled_circuits[number_of_circuits - 1]);
 
 	return SUCCESS;
 }

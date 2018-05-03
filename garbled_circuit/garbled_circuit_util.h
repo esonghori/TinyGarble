@@ -288,10 +288,10 @@ typedef struct GarbledCircuitIO {
 
 
 
-uint64_t NumOfNonXor(const GarbledCircuit& garbled_circui);
+uint64_t NumOfNonXor(const GarbledCircuit& garbled_circuit);
 void RemoveGarbledCircuit(GarbledCircuit *garbled_circuit);
 void RemoveGarbledCircuitCollection(GarbledCircuitCollection* garbled_circuit_collection);
-void RemoveLabels(CircuitLabel& labels);
+void RemoveLabels(CircuitLabel& labels, GarbledCircuit& garbled_circuit);
 
 int ParseInitInputStr(const string& init_str, const string&input_str, BIGNUM** init, BIGNUM** input);
 void GarbleEvalGateKnownValue(short input0_value, short input1_value, int type, short* output_value);
