@@ -104,7 +104,6 @@ typedef struct GarbledCircuit {
 	uint64_t max_output_size;
 
 	bool conv_layer;
-	bool OCA;
 	uint64_t bit_length;
 	uint64_t input_matrix_size;
 	uint64_t input_number_channels;

@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
 		//    CheckOptionsAlice("", clock_cycles, output_mask, disable_OT,
 		//                      low_mem_foot, connfd));
 
-//		uint32_t message_len = 16 * 25 * 576 / 8;
+//		uint32_t message_len = 16 * 25 * 576 / 8 * 2;
 ////		uint32_t message_len = 28 * 28 * 8;
 //		block **message = nullptr;
 //		CHECK_ALLOC(message = new block*[message_len]);
@@ -258,7 +258,7 @@ int main(int argc, char* argv[]) {
 		string output_str;
 		uint64_t delta_time = RDTSC;
 
-//		for (int i = 0; i < 10; i++)
+//		for (int i = 0; i < 10; i++) ////     10 ****** OCA not 1!
 //			OTExtSend(message, message_len, connfd);
 
 //		for (int i = 0; i < n; i++)
@@ -300,7 +300,7 @@ int main(int argc, char* argv[]) {
 
 //		bool *select = nullptr;
 //		block *message = nullptr;
-//		uint32_t message_len = 16 * 25 * 576 / 8;
+//		uint32_t message_len = 16 * 25 * 576 / 8 * 2;
 ////		uint32_t message_len = 28 * 28 * 8;
 //		CHECK_ALLOC(select = new bool[message_len]);
 //		CHECK_ALLOC(message = new block[message_len]);

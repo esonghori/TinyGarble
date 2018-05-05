@@ -267,10 +267,29 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 			uint64_t output_bit_length = garbled_circuit_collection->garbled_circuits[i].output_bit_length = ceil(
 					log2(cc * input_number_channels * filter_size * filter_size + 1));
 
-			garbled_circuit_collection->garbled_circuits[i].OCA = false;
 			if (n == 6) {  //conv 5 16 1 N OCA
 				if (parsedLine[5] == string("OCA")) {
-					garbled_circuit_collection->garbled_circuits[i].OCA = true;
+					garbled_circuit_collection->garbled_circuits[i].type = string("oca");
+					garbled_circuit_collection->garbled_circuits[i].conv_layer = false;
+
+					garbled_circuit_collection->n_of_run[i] = garbled_circuit_collection->n_of_run[i - 1];
+					int bit_length = garbled_circuit_collection->garbled_circuits[i - 1].output_bit_length;
+					garbled_circuit_collection->garbled_circuits[i].number_filters = garbled_circuit_collection->garbled_circuits[i].input_number_channels =
+							garbled_circuit_collection->garbled_circuits[i - 1].number_filters;
+					garbled_circuit_collection->garbled_circuits[i].output_matrix_size = garbled_circuit_collection->garbled_circuits[i - 1].output_matrix_size;
+
+					char buffer[200];
+
+					char t = 'R';
+					if (i > 0) {
+						t = 'I';
+					}
+
+					if (i > 1) {
+						sprintf(buffer, "./scd/netlists/CMP%c%d.scd", t, bit_length);
+					} else {
+						sprintf(buffer, "./scd/netlists/CMPS%c%d.scd", t, bit_length);
+					}
 				}
 			}
 
@@ -282,7 +301,11 @@ int ReadTGX(const string& file_name, GarbledCircuitCollection* garbled_circuit_c
 
 			if (i == 0) {
 				char buffer[200];
-				sprintf(buffer, "./scd/netlists/fxdBinDot%d_%d.scd", (int) bit_length, (int) dot_size);
+				if (garbled_circuit_collection->garbled_circuits[i].type == string("oca")) {
+					sprintf(buffer, "./scd/netlists/sum%d.scd", (int) bit_length);
+				} else {
+					sprintf(buffer, "./scd/netlists/fxdBinDot%d_%d.scd", (int) bit_length, (int) dot_size);
+				}
 				scd_file = string(buffer);
 			} else {
 				char buffer[200];

@@ -451,13 +451,11 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, CircuitLabel& labels, B
 
 	}
 
-	LOG(INFO) << "Non-secret skipped non-XOR gates = " << num_skipped_non_xor_gates << " out of " << num_of_non_xor * (clock_cycles) << "\t ("
-			<< (100.0 * num_skipped_non_xor_gates) / (num_of_non_xor * (clock_cycles)) << "%)" << endl;
-
-	LOG(INFO) << "Total garbled non-XOR gates = " << num_of_non_xor * (clock_cycles) - num_skipped_non_xor_gates << endl;
-
-	LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
-	LOG(INFO) << "Alice garbling time (cc) = " << garble_time << endl;
+//	LOG(INFO) << "Non-secret skipped non-XOR gates = " << num_skipped_non_xor_gates << " out of " << num_of_non_xor * (clock_cycles) << "\t ("
+//			<< (100.0 * num_skipped_non_xor_gates) / (num_of_non_xor * (clock_cycles)) << "%)" << endl;
+//	LOG(INFO) << "Total garbled non-XOR gates = " << num_of_non_xor * (clock_cycles) - num_skipped_non_xor_gates << endl;
+//	LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
+//	LOG(INFO) << "Alice garbling time (cc) = " << garble_time << endl;
 
 	delete[] wires;
 	delete[] wires_val;
@@ -722,8 +720,8 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, CircuitLabel& labels,
 		}
 	}
 
-	LOG(INFO) << "Bob communication time (cc) = " << comm_time << endl;
-	LOG(INFO) << "Bob evaluation time (cc) = " << eval_time << endl;
+//	LOG(INFO) << "Bob communication time (cc) = " << comm_time << endl;
+//	LOG(INFO) << "Bob evaluation time (cc) = " << eval_time << endl;
 
 	delete[] wires;
 	delete[] wires_val;
@@ -1086,12 +1084,12 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_la
 
 		CHECK_ALLOC(labels.filters_labels = new block[garbled_circuit.number_filters * garbled_circuit.g_input_size * 2]);
 
-		//create g labels
+		//create g filter labels
 		for (uint64_t i = 0; i < garbled_circuit.number_filters * garbled_circuit.g_input_size; i++) {
 			labels.filters_labels[i * 2 + 0] = RandomBlock();
 			labels.filters_labels[i * 2 + 1] = XorBlock(R, labels.filters_labels[i * 2 + 0]);
 		}
-		//copy g labels
+		//copy g filter labels
 		for (uint64_t j = 0; j < uint64_t(r); j++) {
 			for (uint64_t i = 0; i < garbled_circuit.g_input_size; i++) { //16 bit * 2 labels per bit
 				labels.input_labels[j * garbled_circuit.get_secret_input_size() * 2 + i * 2 + 0] = labels.filters_labels[(j % garbled_circuit.number_filters)
@@ -1102,7 +1100,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_la
 			}
 		}
 
-		//create e labels
+		//create e image labels: copy from previous layer
 		if (garbled_circuit.circuitID != 0) {
 			labels.input_matrix_labels = all_labels[circuitID - 1].output_labels;
 		}
@@ -1159,7 +1157,7 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_la
 			}
 		}
 
-		//FIX: don't make lables for i_input
+
 		if (garbled_circuit.get_secret_input_size() > 0) {
 //			LOG(ERROR)<< endl << r * clock_cycles * garbled_circuit.get_secret_input_size() * 2 <<endl;
 			CHECK_ALLOC(labels.input_labels = new block[r * clock_cycles * garbled_circuit.get_secret_input_size() * 2]);
@@ -1171,7 +1169,6 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_la
 	}
 
 	if (garbled_circuit.output_size > 0) {
-//		LOG(ERROR) << endl << "output size" << garbled_circuit.output_size;
 		CHECK_ALLOC(labels.output_labels = new block[r * clock_cycles * garbled_circuit.output_size * 2]);
 		CHECK_ALLOC(labels.output_vals = new short[r * clock_cycles * garbled_circuit.output_size]);
 	}
