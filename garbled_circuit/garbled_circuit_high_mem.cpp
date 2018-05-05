@@ -1157,13 +1157,16 @@ int GarbleMakeLabels(const GarbledCircuit& garbled_circuit, CircuitLabel* all_la
 			}
 		}
 
-
 		if (garbled_circuit.get_secret_input_size() > 0) {
 //			LOG(ERROR)<< endl << r * clock_cycles * garbled_circuit.get_secret_input_size() * 2 <<endl;
 			CHECK_ALLOC(labels.input_labels = new block[r * clock_cycles * garbled_circuit.get_secret_input_size() * 2]);
-			for (uint i = 0; i < r * clock_cycles * garbled_circuit.get_secret_input_size(); i++) {
-				labels.input_labels[i * 2 + 0] = RandomBlock();
-				labels.input_labels[i * 2 + 1] = XorBlock(R, labels.input_labels[i * 2 + 0]);
+
+			for (int r_ind = 0; r_ind < r; r_ind++) {
+				int offset = r_ind * garbled_circuit.get_secret_input_size() * 2;
+				for (uint i = 0; i < garbled_circuit.get_e_input_hi_index(); i++) {
+					labels.input_labels[offset + i * 2 + 0] = RandomBlock();
+					labels.input_labels[offset + i * 2 + 1] = XorBlock(R, labels.input_labels[offset + i * 2 + 0]);
+				}
 			}
 		}
 	}
