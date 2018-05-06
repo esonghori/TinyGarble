@@ -57,13 +57,16 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 //	LOG(ERROR) << endl << "inside garble " << number_of_circuits << endl;
 	for (int i = 0; i < number_of_circuits; i++) {
 
+		LOG(INFO)<<endl<<"GarbleMakeLabels "<<RDTSC;
 		CHECK(GarbleMakeLabels(garbled_circuit_collection.garbled_circuits[i], all_labels, R));
 
 //		LOG(ERROR) << endl << "after Make labels" << endl;
 
+		LOG(INFO)<<endl<<"GarbleCopyLabels "<<RDTSC;
 		GarbleCopyLabels(garbled_circuit_collection, all_labels, i);
 //		LOG(ERROR) << endl << "after Copy labels" << endl;
 
+		LOG(INFO)<<endl<<"GarbleTransferLabels "<<RDTSC;
 		CHECK(
 				GarbleTransferLabels(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].party_init,
 						garbled_circuit_collection.circuit_ios[i].party_input, disable_OT, connfd));
@@ -82,6 +85,7 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 //			LOG(ERROR) << endl << all_labels[0].input_matrix_labels[k];
 //		}
 
+		LOG(INFO)<<endl<<"GarbleHighMem "<<RDTSC;
 		for (uint64_t r = 0; r < garbled_circuit_collection.garbled_circuits[i].n_of_run; r++) {
 			FillFanout(&garbled_circuit_collection.garbled_circuits[i]);
 			GarbleHighMem(garbled_circuit_collection.garbled_circuits[i], all_labels[i], garbled_circuit_collection.circuit_ios[i].p_init,
@@ -112,6 +116,7 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 	}
 
 //	number_of_circuits--;
+	LOG(INFO)<<endl<<"GarbleTransferOutput "<<RDTSC;
 	CHECK(
 			GarbleTransferOutput(garbled_circuit_collection.garbled_circuits[number_of_circuits - 1], all_labels[number_of_circuits - 1], output_mask,
 					output_mode, garbled_circuit_collection.circuit_ios[number_of_circuits - 1].output_bn, connfd));
@@ -121,6 +126,7 @@ int GarbleBNHighMem(const GarbledCircuitCollection& garbled_circuit_collection, 
 //		RemoveLabels(all_labels[i], garbled_circuit_collection.garbled_circuits[i]);
 //	}
 
+	LOG(INFO)<<endl<<"RemoveLabels "<<RDTSC;
 	RemoveLabels(all_labels[number_of_circuits - 1], garbled_circuit_collection.garbled_circuits[number_of_circuits - 1]);
 
 	return SUCCESS;

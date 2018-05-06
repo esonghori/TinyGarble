@@ -241,13 +241,13 @@ int main(int argc, char* argv[]) {
 			LOG(ERROR) << "Cannot open the socket in port " << port << endl;
 			return FAILURE;
 		}
-		LOG(INFO) << "Open Alice's server on port: " << port << endl;
+//		LOG(INFO) << "Open Alice's server on port: " << port << endl;
 
 		//CHECK(
 		//    CheckOptionsAlice("", clock_cycles, output_mask, disable_OT,
 		//                      low_mem_foot, connfd));
 
-//		uint32_t message_len = 16 * 25 * 576 / 8 * 2;
+//		uint32_t message_len = 16 * 25 * 576 / 8;
 ////		uint32_t message_len = 28 * 28 * 8;
 //		block **message = nullptr;
 //		CHECK_ALLOC(message = new block*[message_len]);
@@ -258,20 +258,22 @@ int main(int argc, char* argv[]) {
 		string output_str;
 		uint64_t delta_time = RDTSC;
 
-//		for (int i = 0; i < 10; i++) ////     10 ****** OCA not 1!
+//		for (int i = 0; i < 1; i++) ////     10 ****** OCA not 1!
 //			OTExtSend(message, message_len, connfd);
 
 //		for (int i = 0; i < n; i++)
 //			CHECK(SendData(connfd, gt, s * sizeof(GarbledTable)));
 
+		LOG(INFO)<<"GarbleStr "<<RDTSC;
 		CHECK(GarbleStr(file_address, clock_cycles, output_mask, terminate_period, output_mode, disable_OT, low_mem_foot, &output_str, connfd));
 
 		delta_time = RDTSC - delta_time;
 		float timeS = ((float) delta_time / (3.8 * 1000000000.0));	//4.2GHz CPU
 
-		LOG(INFO) << "Alice's output = " << output_str << endl;
-		LOG(INFO) << "Total Alice time (s) = " << timeS << endl;
-		std::cout << output_str << endl;
+		LOG(INFO)<<"End "<<RDTSC;
+//		LOG(INFO) << "Alice's output = " << output_str << endl;
+//		LOG(INFO) << "Total Alice time (s) = " << timeS << endl;
+//		std::cout << output_str << endl;
 //		LOG(INFO) << "Measured BW (Gbps) = " << ((float) n * s * 256 / timeS / (1000000000.0)) << endl;
 
 		ServerClose(connfd);
@@ -300,15 +302,15 @@ int main(int argc, char* argv[]) {
 
 //		bool *select = nullptr;
 //		block *message = nullptr;
-//		uint32_t message_len = 16 * 25 * 576 / 8 * 2;
+//		uint32_t message_len = 16 * 25 * 576 / 8;
 ////		uint32_t message_len = 28 * 28 * 8;
 //		CHECK_ALLOC(select = new bool[message_len]);
 //		CHECK_ALLOC(message = new block[message_len]);
 
 		string output_str;
 		uint64_t delta_time = RDTSC;
-//
-//		for (int i = 0; i < 10; i++)
+////
+//		for (int i = 0; i < 1; i++)
 //			OTExtRecv(select, message_len, connfd, message);
 
 //		for (int i = 0; i < n; i++)
