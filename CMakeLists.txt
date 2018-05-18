@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.1.0 FATAL_ERROR)
 project (TinyGarble
   VERSION 3.0.0
-  LANGUAGES C CXX)
+  LANGUAGES CXX)
 
 ##############
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
