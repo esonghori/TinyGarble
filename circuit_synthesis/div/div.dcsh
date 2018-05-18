@@ -1,0 +1,18 @@
+set search_path [list . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library [concat ../lib/generic.sdb]
+set hdlin_while_loop_iterations 1024
+
+analyze -format verilog div_r.v
+
+elaborate div_r -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0
+set_flatten false -design *
+set_structure false -design *
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/div_r_syn_comb.v
+
+exit

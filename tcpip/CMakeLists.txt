@@ -13,7 +13,6 @@ add_executable(TCPIP_Test
 if (Boost_FOUND)
   target_link_libraries(TCPIP_Test ${Boost_LIBRARIES})
 endif (Boost_FOUND)
-target_link_libraries(TCPIP_Test -lrt)
 
 add_test (TCPIP_TCPIP_Test
   TCPIP_Test --log2std)

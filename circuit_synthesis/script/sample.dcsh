@@ -1,0 +1,11 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library ../lib/generic.sdb
+analyze -format verilog SAMLPE.v
+foreach cc {1 2 4 8 16 32 64 128 256 512 1024} {
+elaborate SAMLPE -architecture verilog -library DEFAULT -update -parameters $cc
+set_max_area 0
+compile_ultra -exact_map -no_design_rule -area_high_effort_script
+write -hierarchy -format verilog -output SAMLPE_syn_$cc.v
+}

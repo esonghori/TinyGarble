@@ -14,7 +14,6 @@ endif (Boost_FOUND)
 if (OPENSSL_FOUND)
 	target_link_libraries(Util_Test ${OPENSSL_LIBRARIES})
 endif (OPENSSL_FOUND)
-target_link_libraries(Util_Test -lrt)
 
 add_test (Util_Util_Test
   Util_Test --log2std)

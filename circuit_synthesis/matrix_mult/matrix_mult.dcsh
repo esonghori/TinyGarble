@@ -1,0 +1,27 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library ../lib/dff_full/dff_full.db
+set symbol_library ../lib/generic.sdb
+set hdlin_while_loop_iterations 16384
+
+analyze -format verilog {../syn_lib/FA.v ../syn_lib/ADD.v ../syn_lib/MULT.v ../syn_lib/MUX.v}
+
+foreach p {0 1 2 3} {
+analyze -format verilog matrix_mult_N_M_${p}.v
+}
+
+set bits 32
+#foreach p {3} {
+foreach n {3} {
+elaborate matrix_mult_N_M_3 -architecture verilog -library DEFAULT -update -parameters $n,$bits
+set_max_area -ignore_tns 0 
+set_flatten false -design *
+set_structure -design * false
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all -boundary_optimization  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/matrix_mult_nxn_${bits}bit_n${p}cc.v
+#}
+}
+
+exit

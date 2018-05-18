@@ -1,0 +1,46 @@
+set search_path [concat . ../lib/dff_full/]
+set target_library ../lib/dff_full/dff_full.db
+set link_library [concat ../lib/dff_full/dff_full.db standard.sldb dw_foundation.sldb]
+set symbol_library [concat ../lib/generic.sdb]
+set synthetic_library [concat standard.sldb dw_foundation.sldb $synthetic_library]
+set hdlin_while_loop_iterations 1024
+
+analyze -format verilog {float_add.v float_mul.v float_cmp.v float_div.v}
+
+elaborate float_add -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0
+set_flatten false -design *
+set_structure false -design *
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/float_add_syn_32_1cc.v
+
+elaborate float_mul -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0
+set_flatten false -design *
+set_structure false -design *
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/float_mul_syn_32_1cc.v
+
+elaborate float_cmp -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0
+set_flatten false -design *
+set_structure false -design *
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/float_cmp_syn_32_1cc.v
+
+elaborate float_div -architecture verilog -library DEFAULT -update
+set_max_area -ignore_tns 0
+set_flatten false -design *
+set_structure false -design *
+set_resource_allocation area_only
+report_compile_options
+compile -ungroup_all  -map_effort high -area_effort high -no_design_rule
+write -hierarchy -format verilog -output syn/float_div_syn_32_1cc.v
+
+exit
