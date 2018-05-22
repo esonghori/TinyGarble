@@ -44,6 +44,13 @@ int ServerOpenSocket(int port) {
     LOG(ERROR) << strerror(errno) << endl;
     return FAILURE;
   }
+  
+  int enable = 1;
+  if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0){
+    LOG(ERROR) << strerror(errno) << endl;
+    return FAILURE;
+  }
+  
   bzero((char *) &serv_addr, sizeof(serv_addr));
 
   serv_addr.sin_family = AF_INET;
