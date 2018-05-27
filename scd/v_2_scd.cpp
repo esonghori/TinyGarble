@@ -17,92 +17,76 @@
 
 #include "scd/v_2_scd.h"
 
-#include <boost/program_options.hpp>
-#include <boost/format.hpp>
-#include <iostream>
-#include <fstream>
-#include "scd/scd.h"
 #include "scd/parse_netlist.h"
+#include "scd/scd.h"
+#include "scd/scheduling.h"
 #include "util/log.h"
 
-namespace po = boost::program_options;
-using std::ofstream;
 using std::endl;
 
-int Verilog2SCD(const string &infilename, const string &outfilename) {
+int Verilog2SCD(const string &in_file_name, const string& out_mapping_filename,
+                const string &out_file_name) {
 
-  ReadCircuitString readCircuitString;
-  ReadCircuit readCircuit;
+  ReadCircuitString read_circuit_string;
+  ReadCircuit read_circuit;
 
-  if (ParseNetlist(infilename, readCircuitString) == -1) {
+  if (ParseNetlist(in_file_name, &read_circuit_string) == FAILURE) {
     LOG(ERROR) << "parsing verilog netlist failed." << endl;
-    return -1;
+    return FAILURE;
   }
-  if (IdAssignment(readCircuitString, readCircuit) == -1) {
+  if (IdAssignment(read_circuit_string, &read_circuit) == FAILURE) {
     LOG(ERROR) << "id assignment to netlist components failed." << endl;
-    return -1;
+    return FAILURE;
   }
-  if (TopologicalSort(readCircuit) == -1) {
+  if (SortNetlist(&read_circuit, read_circuit_string) == FAILURE) {
     LOG(ERROR) << "topological sort failed." << endl;
-    return -1;
+    return FAILURE;
   }
 
-  if (WriteSCD(readCircuit, outfilename) == -1) {
+  if (WriteMapping(read_circuit_string, read_circuit,
+                   out_mapping_filename) == FAILURE) {
+    LOG(ERROR) << "Write mapping failed." << endl;
+    return FAILURE;
+  }
+
+  if (WriteSCD(read_circuit, out_file_name) == FAILURE) {
     LOG(ERROR) << "write result to SCD file failed." << endl;
-    return -1;
+    return FAILURE;
   }
 
-  return 0;
+  return SUCCESS;
 }
 
-int main(int argc, char** argv) {
-  LogInitial(argc, argv);
+int Bris2SCD(const string &in_file_name, const string& out_mapping_filename,
+             const string &out_file_name) {
 
-  string input_netlist_file;
-  string output_scd_file;
+  ReadCircuitString read_circuit_string;
+  ReadCircuit read_circuit;
 
-  boost::format fmter(
-      "Read Netlist, TinyGarble version %1%.%2%.%3%.\nAllowed options");
-  fmter % TinyGarble_VERSION_MAJOR % TinyGarble_VERSION_MINOR
-      % TinyGarble_VERSION_PATCH;
-  po::options_description desc(fmter.str());
-  desc.add_options()  //
-  ("help,h", "produce help message.")  //
-  ("netlist,i", po::value<string>(&input_netlist_file),
-   "Input netlist (verilog .v) file address.")  //
-  ("scd,o", po::value<string>(&output_scd_file),
-   "Output simple circuit description (scd) file address.");
-
-  po::variables_map vm;
-  try {
-    po::parsed_options parsed = po::command_line_parser(argc, argv).options(
-        desc).allow_unregistered().run();
-    po::store(parsed, vm);
-    if (vm.count("help")) {
-      std::cout << desc << endl;
-      return 0;
-    }
-    po::notify(vm);
-  } catch (po::error& e) {
-    LOG(ERROR) << "ERROR: " << e.what() << endl << endl;
-    std::cout << desc << endl;
-    return -1;
+  if (ParseBrisNetlist(in_file_name, &read_circuit_string) == FAILURE) {
+    LOG(ERROR) << "parsing verilog netlist failed." << endl;
+    return FAILURE;
+  }
+  if (IdAssignment(read_circuit_string, &read_circuit) == FAILURE) {
+    LOG(ERROR) << "id assignment to netlist components failed." << endl;
+    return FAILURE;
+  }
+  if (SortNetlist(&read_circuit, read_circuit_string) == FAILURE) {
+    LOG(ERROR) << "topological sort failed." << endl;
+    return FAILURE;
   }
 
-  if (vm.count("netlist") == 0 || vm.count("scd") == 0) {
-    std::cerr
-        << "ERROR: "
-        << "Both input netlist(-i) and output scd(-o) options must be indicated."
-        << endl;
-    std::cout << desc << endl;
-    return 0;
+  if (WriteMapping(read_circuit_string, read_circuit,
+                   out_mapping_filename) == FAILURE) {
+    LOG(ERROR) << "Write mapping failed." << endl;
+    return FAILURE;
   }
 
-  if (Verilog2SCD(input_netlist_file, output_scd_file) == -1) {
-    LOG(ERROR) << "Verilog to SCD failed." << endl;
-    return -1;
+  if (WriteSCD(read_circuit, out_file_name) == FAILURE) {
+    LOG(ERROR) << "write result to SCD file failed." << endl;
+    return FAILURE;
   }
 
-  LogFinish();
-  return 0;
+  return SUCCESS;
 }
+

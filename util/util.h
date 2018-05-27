@@ -20,23 +20,48 @@
 #define UTIL_UTIL_H_
 
 #include "garbled_circuit/garbled_circuit.h"
+#include "garbled_circuit/garbled_circuit_low_mem.h"
 #include "crypto/block.h"
 #include <openssl/bn.h>
+#include <vector>
 #include <ostream>
 #include <string>
 
 using std::string;
+using std::vector;
 
 block RandomBlock();
+void printBlock(block var);
+void printBlock(block var, std::ofstream& fout);
 void SrandSSE(unsigned int seed);
 unsigned short Type2V(int gateType);
 bool GateOperator(int gateType, bool input0, bool input1 = false);
 int Str2Block(const string &s, block* v);
 string to_string_hex(uint64_t v, int pad = 0);
-
+#if 0
+int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                        uint64_t clock_cycles, OutputMode output_mode,
+                        string *output_str);
+int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                       uint64_t clock_cycles, OutputMode output_mode,
+                       string* output_str);
+#else
 int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                  uint64_t clock_cycles, int output_mode, string *output_str);
 int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                        uint64_t clock_cycles, int output_mode,
                        string* output_str);
+#endif					   
+string formatGCInputString(vector<uint64_t>, vector<uint16_t>);
+void parseGCOutputString(vector<int64_t> &, string, vector<uint16_t>, uint16_t);
+string towsComplement(string);
+string dec2bin(int64_t, uint16_t);
+int64_t bin2dec(string, bool);
+string hex2bin(string);
+string bin2hex(string);
+string formatGCOutputMask(uint16_t , uint16_t , bool );
+
+string ReadFileOrPassHex(string file_hex_str);
+bool icompare(std::string const& a, std::string const& b);
+
 #endif /* UTIL_UTIL_H_ */

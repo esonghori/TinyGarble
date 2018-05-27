@@ -36,14 +36,22 @@
 #include "util/util.h"
 
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdint.h>
 #include <iomanip>
 #include <sstream>
+#include <bitset>
+#include <cstdlib> 
+#include <vector>
+#include <fstream>
 #include "crypto/aes.h"
 #include "util/common.h"
 #include "util/log.h"
+
+using std::ifstream;
+using std::ofstream;
 
 static block cur_seed;
 
@@ -82,6 +90,19 @@ block RandomBlock() {
 
   return cur_seed;
 
+}
+
+void printBlock(block var)
+{
+    uint16_t *val = (uint16_t*) &var;
+    LOG(INFO) << boost::format{"%04X%04X%04X%04X%04X%04X%04X%04X"}%val[7]%val[6]%val[5]%val[4]%val[3]%val[2]%val[1]%val[0] << endl;
+}
+
+
+void printBlock(block var, ofstream& fout)
+{
+    uint16_t *val = (uint16_t*) &var;
+    fout << boost::format{"%04X%04X%04X%04X%04X%04X%04X%04X"}%val[7]%val[6]%val[5]%val[4]%val[3]%val[2]%val[1]%val[0] << endl;
 }
 /**
  * \brief constant v value based on gate Type
@@ -188,6 +209,60 @@ string to_string_hex(uint64_t v, int pad /* = 0 */) {
   return ret;
 }
 
+#if 0
+int OutputBN2StrHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                        uint64_t clock_cycles, OutputMode output_mode,
+                        string *output_str) {
+  (*output_str) = "";
+  if (output_mode == OutputMode::consecutive) {  // normal
+    const char* output_c = BN_bn2hex(outputs);
+    (*output_str) = output_c;
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
+    BIGNUM* temp = BN_new();
+    for (uint64_t i = 0; i < clock_cycles; i++) {
+      BN_rshift(temp, outputs, i * garbled_circuit.output_size);
+      BN_mask_bits(temp, garbled_circuit.output_size);
+      (*output_str) += BN_bn2hex(temp);
+      if (i < clock_cycles - 1) {
+        (*output_str) += "\n";
+      }
+    }
+    BN_free(temp);
+  } else if (output_mode == OutputMode::last_clock) {  // only last clock
+    BIGNUM* temp = BN_new();
+    BN_rshift(temp, outputs, (clock_cycles - 1) * garbled_circuit.output_size);
+    BN_mask_bits(temp, garbled_circuit.output_size);
+    (*output_str) += BN_bn2hex(temp);
+    BN_free(temp);
+  }
+  return SUCCESS;
+}
+
+int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
+                       uint64_t clock_cycles, OutputMode output_mode,
+                       string* output_str) {
+  (*output_str) = "";
+  if (output_mode == OutputMode::consecutive) {  // normal
+    const char* output_c = BN_bn2hex(outputs);
+    (*output_str) = output_c;
+  } else if (output_mode == OutputMode::separated_clock) {  // Separated by clock
+    BIGNUM* temp = BN_new();
+    for (uint64_t i = 0; i < clock_cycles; i++) {
+      BN_rshift(temp, outputs, i * garbled_circuit.output_size);
+      BN_mask_bits(temp, garbled_circuit.output_size);
+      (*output_str) += BN_bn2hex(temp);
+      if (i < clock_cycles - 1) {
+        (*output_str) += "\n";
+      }
+    }
+    BN_free(temp);
+  } else if (output_mode == OutputMode::last_clock) {  // only last clock
+    (*output_str) += BN_bn2hex(outputs);
+  }
+
+  return SUCCESS;
+}
+#else
 int OutputBN2Str(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
                  uint64_t clock_cycles, int output_mode, string *output_str) {
   (*output_str) = "";
@@ -239,3 +314,163 @@ int OutputBN2StrLowMem(const GarbledCircuit& garbled_circuit, BIGNUM* outputs,
 
   return SUCCESS;
 }
+#endif
+
+string formatGCInputString(vector<uint64_t> input, vector<uint16_t> bit_len){
+	string bin_input_str, input_str;
+	for (uint64_t i = 0; i < input.size(); i++){
+		bin_input_str = bin_input_str + dec2bin(input[i], bit_len[i]);
+	}
+	input_str = bin2hex(bin_input_str);
+	return input_str;
+}
+
+ void parseGCOutputString(vector<int64_t> &output, string output_str, vector<uint16_t> bit_len, uint16_t offset){
+	string bin_output_str = hex2bin(output_str);
+	uint8_t no_of_outputs = output.size();
+	uint16_t len = offset;
+	uint64_t i;
+	for (i = 0; i < no_of_outputs; i++){
+		len += bit_len[i];
+	}
+	if (len > bin_output_str.length()) bin_output_str.insert(0, len-bin_output_str.length(), '0');
+	else if (len < bin_output_str.length()) bin_output_str = bin_output_str.substr(bin_output_str.length()-len, len);
+	
+	uint16_t cur = 0;
+	for (i = 0; i < no_of_outputs; i++){
+		output[i] = bin2dec(bin_output_str.substr(cur, bit_len[i]), true);
+		cur += bit_len[i];
+	}
+	
+}
+
+string towsComplement(string num){
+	string rnum(num);
+	size_t bit_len = num.length();	
+	bool invert = false;
+	for (int64_t i = bit_len-1; i >= 0; i--){
+		if(invert){
+			if (num[i] == '1') rnum[i] = '0';
+			else rnum[i] = '1';
+		}
+		if(num[i] == '1') invert = true;
+	}	
+	return rnum;
+}
+
+string dec2bin(int64_t dec, uint16_t bit_len){
+	string bin = std::bitset<64>(dec).to_string(); 
+    bin = bin.substr(64-bit_len, bit_len);	
+	return bin;
+}
+
+int64_t bin2dec(string bin, bool s){
+	bool neg = false;
+	if (s && (bin[0] == '1')) neg = true;
+	if (neg) bin = towsComplement(bin);	
+	int64_t dec = (int64_t)(std::bitset<64>(bin).to_ulong());
+	if (neg) dec = -dec;	
+    return dec;
+}
+
+string hex2bin(string hex_){
+	uint16_t len = hex_.length();
+	string bin("");
+	
+	for (uint64_t i = 0; i < len; i++){
+		char H = hex_.at(i);
+		string B;
+		if(H == '0') B = "0000";
+		else if(H == '1') B = "0001";
+		else if(H == '2') B = "0010";
+		else if(H == '3') B = "0011";
+		else if(H == '4') B = "0100";
+		else if(H == '5') B = "0101";
+		else if(H == '6') B = "0110";
+		else if(H == '7') B = "0111";
+		else if(H == '8') B = "1000";
+		else if(H == '9') B = "1001";
+		else if((H == 'a')||(H == 'A')) B = "1010";
+		else if((H == 'b')||(H == 'B')) B = "1011";
+		else if((H == 'c')||(H == 'C')) B = "1100";
+		else if((H == 'd')||(H == 'D')) B = "1101";
+		else if((H == 'e')||(H == 'E')) B = "1110";
+		else if((H == 'f')||(H == 'F')) B = "1111";
+		bin = bin + B;
+	}
+	return bin;
+}
+
+string bin2hex(string bin){
+	uint16_t len = bin.length();
+	bin.insert(0, 4-len%4, '0');
+	len = bin.length();
+	string hex_("");
+	
+	for (uint64_t i = 0; i < len; i+=4){
+		string B = bin.substr(i, 4);
+		string H;
+		if(B == "0000") H = "0";
+		else if(B == "0001") H = "1";
+		else if(B == "0010") H = "2";
+		else if(B == "0011") H = "3";
+		else if(B == "0100") H = "4";
+		else if(B == "0101") H = "5";
+		else if(B == "0110") H = "6";
+		else if(B == "0111") H = "7";
+		else if(B == "1000") H = "8";
+		else if(B == "1001") H = "9";
+		else if(B == "1010") H = "A";
+		else if(B == "1011") H = "B";
+		else if(B == "1100") H = "C";
+		else if(B == "1101") H = "D";
+		else if(B == "1110") H = "E";
+		else if(B == "1111") H = "F";
+		hex_ = hex_ + H;
+	}
+	return hex_;
+}
+
+string formatGCOutputMask(uint16_t garbler_share, uint16_t evaluator_share, bool garbler_left){
+	string binOutputMask("");
+	if(garbler_left){
+		binOutputMask.insert(0, evaluator_share, '0');
+		binOutputMask.insert(0, garbler_share, '1');
+	}
+	else{
+		binOutputMask.insert(0, garbler_share, '1');
+		binOutputMask.insert(0, evaluator_share, '0');
+	}
+	string OutputMask = bin2hex(binOutputMask);
+	return OutputMask;
+}
+
+string ReadFileOrPassHex(string file_hex_str) {  // file address of or a hex string
+
+  ifstream fin;
+  fin.open(file_hex_str);
+  if (fin.is_open()) {
+    string hex_str = "";
+    string line;
+    while (std::getline(fin, line)) {
+      hex_str = line + hex_str;
+    }
+    return hex_str;
+  } else {
+    return file_hex_str;
+  }
+}
+
+
+bool icompare_pred(unsigned char a, unsigned char b) {
+  return std::tolower(a) == std::tolower(b);
+}
+
+bool icompare(std::string const& a, std::string const& b) {
+  if (a.length() == b.length()) {
+    return std::equal(b.begin(), b.end(), a.begin(), icompare_pred);
+  } else {
+    return false;
+  }
+}
+

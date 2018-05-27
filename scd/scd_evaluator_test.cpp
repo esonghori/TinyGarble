@@ -42,7 +42,7 @@ uint32_t HammingDistance(uint32_t x, uint32_t y) {
 }
 
 MU_TEST(Sum1Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_nbit_ncc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
@@ -72,7 +72,7 @@ MU_TEST(Sum1Bit) {
 }
 
 MU_TEST(Mux8Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/mux_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
@@ -103,7 +103,7 @@ MU_TEST(Mux8Bit) {
 }
 
 MU_TEST(Sum8Bit) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
@@ -132,7 +132,7 @@ MU_TEST(Sum8Bit) {
 }
 
 MU_TEST(Hamming32Bit1cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_1cc.scd";
   int output_mode = 0;  // normal mode
   string g_init_str = "";
@@ -163,7 +163,7 @@ MU_TEST(Hamming32Bit1cc) {
 }
 
 MU_TEST(Hamming32Bit8cc) {
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   int output_mode = 2;  // print the last cycle
   string g_init_str = "";

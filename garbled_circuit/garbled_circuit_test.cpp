@@ -122,7 +122,7 @@ MU_TEST(Mux8Bit) {
 
   LOG(INFO) << "Test Mux 8-bit 1cc" << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/mux_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
@@ -166,7 +166,7 @@ MU_TEST(Sum1Bit) {
 
   LOG(INFO) << "Test Sum 8-bit 8cc" << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_nbit_ncc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
@@ -210,7 +210,7 @@ MU_TEST(Sum8Bit) {
 
   LOG(INFO) << "Test Sum 8-Bit 1cc" << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_8bit_1cc.scd";
   string g_init_str = "0";
   string e_init_str = "0";
@@ -252,7 +252,7 @@ MU_TEST(Hamming32Bit1cc) {
 
   LOG(INFO) << "Test Hamming 32-bit 1cc" << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_1cc.scd";
   int output_mode = 0;  // normal mode
   string g_init_str = "";
@@ -295,7 +295,7 @@ MU_TEST(Hamming32Bit8cc) {
 
   LOG(INFO) << "Test Hamming 32-bit 8cc" << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   int output_mode = 2;  // print the last cycle
   string g_init_str = "";
@@ -339,7 +339,7 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
 
   LOG(INFO) << "Test Hamming 32-bit 8cc Disabled OT" << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   int output_mode = 2;  // print the last cycle
   string g_init_str = "";
@@ -382,7 +382,7 @@ MU_TEST(Hamming32Bit8ccDisabledOT) {
 MU_TEST(Hamming32Bit8ccWithMask) {
   LOG(INFO) << "Test Hamming 32-bit 8cc with output mask" << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   int output_mode = 2;  // print the last cycle
   string g_init_str = "";
@@ -433,7 +433,7 @@ MU_TEST(Hamming32Bit8ccDisabledOTLowMem) {
   LOG(INFO) << "Test Hamming 32-bit 8cc Disabled OT with Low Memory Footprint"
             << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   int output_mode = 2;  // print the last cycle
   string g_init_str = "";
@@ -478,7 +478,7 @@ MU_TEST(Hamming32Bit8ccLowMem) {
   LOG(INFO) << "Test Hamming 32-bit 8cc Disabled OT with Low Memory Footprint"
             << endl;
 
-  string scd_file_address = string(TINYGARBLE_SOURCE_DIR)
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/hamming_32bit_8cc.scd";
   int output_mode = 2;  // print the last cycle
   string g_init_str = "";

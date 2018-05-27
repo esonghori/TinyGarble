@@ -964,13 +964,11 @@ int GarbleStr(const string& scd_file_address, const string& init_str,
       }
       ot_time += RDTSC - ot_start_time;
 
-      uint64_t garble_start_time = RDTSC;
-      {
-        GarbleLowMem(garbled_circuit, const_labels, init_labels, input_labels,
+
+        garble_time += GarbleLowMem(garbled_circuit, const_labels, init_labels, input_labels,
                      garbled_tables, R, AES_Key, cid, connfd, wires,
                      output_labels);
-      }
-      garble_time += RDTSC - garble_start_time;
+
 
       uint64_t comm_start_time = RDTSC;
       {
@@ -1124,13 +1122,11 @@ int EvaluateStr(const string& scd_file_address, const string& init_str,
       }
       comm_time += RDTSC - comm_start_time;
 
-      uint64_t eval_start_time = RDTSC;
-      {
+      
         eval_time += EvaluateLowMem(garbled_circuit, const_labels, init_labels,
                                     input_labels, garbled_tables, AES_Key, cid,
                                     connfd, wires, output_labels);
-      }
-      eval_time += RDTSC - eval_start_time;
+      
 
       CHECK(
           EvaluateTransferOutputLowMem(garbled_circuit, output_labels, cid,
