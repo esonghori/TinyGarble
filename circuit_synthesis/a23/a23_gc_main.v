@@ -10,12 +10,16 @@ module a23_gc_main
 (
   input                           clk,
   input                           rst,
-  input  [CODE_MEM_SIZE*32-1:0]   p_init,
-  input  [G_MEM_SIZE   *32-1:0]   g_init,
+  input  [(CODE_MEM_SIZE + G_MEM_SIZE)   *32-1:0]   g_init,
   input  [E_MEM_SIZE   *32-1:0]   e_init,
   output [OUT_MEM_SIZE *32-1:0]   o,
   output                          terminate
 );
+
+wire  [CODE_MEM_SIZE*32-1:0]   g_init_0;
+wire  [G_MEM_SIZE   *32-1:0]   g_init_1;
+assign g_init_0 = g_init[(CODE_MEM_SIZE + G_MEM_SIZE)   *32-1 : G_MEM_SIZE   *32]; //p_init
+assign g_init_1 = g_init[G_MEM_SIZE   *32-1:0]; //g_init
 
 wire   [31:0]             m_address;
 wire   [31:0]             m_write;
@@ -48,8 +52,8 @@ u_a23_mem
   .i_clk              (clk              ),
   .i_rst              (rst              ),
 
-  .p_init             (p_init           ),
-  .g_init             (g_init           ),
+  .p_init             (g_init_0           ),
+  .g_init             (g_init_1           ),
   .e_init             (e_init           ),
   .o                  (o                ),
 
