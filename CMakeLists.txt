@@ -36,7 +36,7 @@ set(CMAKE_CXX_FLAGS
 
 # set -lrt for minunit testing lib.
 if (UNIX)
-  set(CMAKE_CXX_STANDARD_LIBRARIES -lrt)
+  set(CMAKE_CXX_STANDARD_LIBRARIES -lrt -lpthread -ldl)
 endif (UNIX)
 
 set (CMAKE_CXX_STANDARD 11)
