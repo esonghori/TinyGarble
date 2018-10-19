@@ -44,25 +44,33 @@ library(demo) {
 		area: 5;
 		pin(A) { direction: input; }
 		pin(B) { direction: input; }
-		pin(Z) { direction: output; function: "(A'+B)'"; }
+		pin(Z) { direction: output; function: "(A+B')'"; }
 	}	
 	cell(ORN) {
 		area: 5;
 		pin(A) { direction: input; }
 		pin(B) { direction: input; }
-		pin(Z) { direction: output; function: "(A'+B)"; }
+		pin(Z) { direction: output; function: "(A+B')"; }
 	}	
 	cell(NANDN) {
 		area: 5;
 		pin(A) { direction: input; }
 		pin(B) { direction: input; }
-		pin(Z) { direction: output; function: "(A'&B)'"; }
+		pin(Z) { direction: output; function: "(A&B')'"; }
 	}	
 	cell(ANDN) {
 		area: 5;
 		pin(A) { direction: input; }
 		pin(B) { direction: input; }
-		pin(Z) { direction: output; function: "(A'&B)"; }
+		pin(Z) { direction: output; function: "(A&B')"; }
+	}
+	cell(FADDER) {
+		area: 5;
+		pin(IN0) { direction: input; }
+		pin(IN1) { direction: input; }
+		pin(CIN) { direction: input; }
+		pin(COUT) { direction: output; function: "((CIN*IN0)+(CIN*IN1)+(IN0*IN1))"; }
+		pin(SUM) { direction: output; function: "IN0^IN1^CIN"; }
 	}
 	cell(DFF) {
 	    area: 0;
