@@ -73,6 +73,20 @@ library(demo) {
 		pin(SUM) { direction: output; function: "IN0^IN1^CIN"; }
 	}
 	cell(DFF) {
+    area: 0;
+    ff("IQ", "IQN") { clocked_on: CLK;
+                  next_state: D;
+                      preset: I;
+                       clear: RST; }
+    pin(CLK) { direction: input;
+                 clock: true; }
+    pin(D) { direction: input; }
+    pin(Q) { direction: output;
+              function: "IQ"; }
+    pin(I) { direction: input; }
+    pin(RST) { direction: input; }
+    }
+	/*cell(DFF) {
 	    area: 0;
 	    ff(IQ, IQN) { clocked_on: CLK;
 		          next_state: D;
@@ -83,5 +97,5 @@ library(demo) {
 	    pin(Q) { direction: output;
 		      function: "IQ"; }
 	    pin(RST) { direction: input; }
-	  }
+	  }*/
 }

@@ -1,9 +1,11 @@
+read_verilog ../syn_lib/*.v
 read_verilog sum.v 
 hierarchy -check -top sum
-proc; opt; fsm; opt; memory; opt;
-techmap -map ../lib/stdcells_S.v
-opt
+proc; fsm; flatten; opt;
+techmap; opt; 
 dfflibmap -liberty ../lib/asic_cell_yosys_extended.lib
-abc -liberty ../lib/asic_cell_yosys_extended.lib -script ../lib/script.abc
-opt; clean; opt;
-write_verilog syn_yos/sum_syn_yos.v
+abc -liberty ../lib/asic_cell_yosys_extended.lib -script ../lib/script.abc; 
+opt; clean; 
+opt_clean -purge
+stat -liberty ../lib/asic_cell_yosys_extended.lib
+write_verilog -noattr -noexpr sum_syn_yos.v
