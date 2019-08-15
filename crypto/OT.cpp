@@ -45,8 +45,8 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
   BN_CHECK(RSA_check_key(rsa));
   BN_free(rsa_exponent);
   
+  //https://wiki.openssl.org/index.php/OpenSSL_1.1.0_Changes  
   const BIGNUM *rsa_n, *rsa_e, *rsa_d;
-
   RSA_get0_key(rsa, &rsa_n, &rsa_e, &rsa_d);
 
   // 1.1. send public portion to Bob (receiver)

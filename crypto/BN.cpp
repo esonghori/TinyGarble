@@ -94,6 +94,8 @@ void BNToBlock(const BIGNUM *a, block *w) {
   delete[] a_byte;
 }
 
+//https://github.com/TheHolyRogerCoin/vanitygen-plus/commit/0563feb2bd0d2be5ab6d5981e3a9d150576818d7
+
 int SendBN(int connf, const BIGNUM *bignum) {
   if (bignum == nullptr) {
     LOG(ERROR) << "bignum pointer is null" << endl;

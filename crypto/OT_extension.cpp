@@ -61,6 +61,7 @@ int HashBN(BIGNUM* r, uint32_t bits, uint32_t tweak, const BIGNUM* v) {
   BN_CHECK(EVP_DigestInit_ex(mdctx, md, NULL));
   BN_CHECK(EVP_DigestUpdate(mdctx, &tweak, sizeof(uint32_t)));
 
+  //https://github.com/TheHolyRogerCoin/vanitygen-plus/commit/0563feb2bd0d2be5ab6d5981e3a9d150576818d7
   int v_words = BN_num_bytes(v);
   
   unsigned char* v_arr = new unsigned char[v_words];
