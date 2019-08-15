@@ -62,15 +62,19 @@ int HashBN(BIGNUM* r, uint32_t bits, uint32_t tweak, const BIGNUM* v) {
   BN_CHECK(EVP_DigestUpdate(mdctx, &tweak, sizeof(uint32_t)));
 
   int v_words = BN_num_bytes(v);
+  
+  unsigned char* v_arr = new unsigned char[v_words];
+  BN_bn2bin(v, v_arr);
+  
   int diff_words = v_words - (int) SEC_K_BIT / 8;
   if (diff_words <= 0) {
-    BN_CHECK(EVP_DigestUpdate(mdctx, v->d, v_words));
+    BN_CHECK(EVP_DigestUpdate(mdctx, /*v->d*/v_arr, v_words));
     for (int i = 0; i < -diff_words; i++) {
       char c = 0;
       BN_CHECK(EVP_DigestUpdate(mdctx, &c, 1));
     }
   } else {
-    BN_CHECK(EVP_DigestUpdate(mdctx, v->d+diff_words, SEC_K_BIT/8));
+    BN_CHECK(EVP_DigestUpdate(mdctx, /*v->d*/v_arr+diff_words, SEC_K_BIT/8));
   }
   unsigned char md_value[EVP_MAX_MD_SIZE];
   uint32_t md_len;

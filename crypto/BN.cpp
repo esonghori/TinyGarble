@@ -99,12 +99,17 @@ int SendBN(int connf, const BIGNUM *bignum) {
     LOG(ERROR) << "bignum pointer is null" << endl;
     return FAILURE;
   }
-  CHECK(SendData(connf, (void * ) &bignum->top, sizeof(int)));
+  /*CHECK(SendData(connf, (void * ) &bignum->top, sizeof(int)));
   CHECK(SendData(connf, (void * ) &bignum->dmax, sizeof(int)));
   CHECK(SendData(connf, (void * ) &bignum->neg, sizeof(int)));
   CHECK(SendData(connf, (void * ) &bignum->flags, sizeof(int)));
-  CHECK(SendData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));
-
+  CHECK(SendData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));*/
+  int size = BN_num_bytes(bignum);
+  unsigned char* bn_arr = new unsigned char[size];
+  BN_bn2bin(bignum, bn_arr);
+  CHECK(SendData(connf, &size, sizeof(int)));
+  CHECK(SendData(connf, bn_arr, size));
+  delete bn_arr;
   return SUCCESS;
 }
 int RecvBN(int connf, BIGNUM *bignum) {
@@ -112,12 +117,18 @@ int RecvBN(int connf, BIGNUM *bignum) {
     LOG(ERROR) << "bignum pointer is null" << endl;
     return FAILURE;
   }
-  CHECK(RecvData(connf, (void * ) &bignum->top, sizeof(int)));
+  /*CHECK(RecvData(connf, (void * ) &bignum->top, sizeof(int)));
   CHECK(RecvData(connf, (void * ) &bignum->dmax, sizeof(int)));
   CHECK(RecvData(connf, (void * ) &bignum->neg, sizeof(int)));
   CHECK(RecvData(connf, (void * ) &bignum->flags, sizeof(int)));
   bignum->d = new BN_ULONG[bignum->dmax];
-  CHECK(RecvData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));
+  CHECK(RecvData(connf, bignum->d, bignum->dmax * sizeof(BN_ULONG)));*/
+  int size;
+  CHECK(RecvData(connf, &size, sizeof(int)));
+  unsigned char* bn_arr = new unsigned char[size];
+  CHECK(RecvData(connf, bn_arr, size));
+  BN_bin2bn(bn_arr, size, bignum);
+  delete bn_arr;
   return SUCCESS;
 }
 

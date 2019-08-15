@@ -45,8 +45,11 @@ int EvalauatePlaintext(const string& scd_file_address, // Store internal values 
 
   if (*outputs == nullptr) {
     *outputs = BN_new();
-  }
-  bn_expand(*outputs, (*clock_cycles) * garbled_circuit.output_size);
+  }  
+  //bn_expand(*outputs, (*clock_cycles) * garbled_circuit.output_size);
+  unsigned char* outputs_arr = new unsigned char[(*clock_cycles) * garbled_circuit.output_size];
+  memset(outputs_arr, 0, (*clock_cycles) * garbled_circuit.output_size);
+  BN_bin2bn(outputs_arr, (*clock_cycles) * garbled_circuit.output_size, *outputs);
 
 /*--- Store internal values in csv file ---*/
   string map_file_address(scd_file_address+".map");

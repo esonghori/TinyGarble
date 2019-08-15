@@ -44,10 +44,14 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
   BN_CHECK(RSA_generate_key_ex(rsa, RSA_BITS, rsa_exponent, nullptr));
   BN_CHECK(RSA_check_key(rsa));
   BN_free(rsa_exponent);
+  
+  const BIGNUM *rsa_n, *rsa_e, *rsa_d;
+
+  RSA_get0_key(rsa, &rsa_n, &rsa_e, &rsa_d);
 
   // 1.1. send public portion to Bob (receiver)
-  CHECK(SendBN(connfd, rsa->n));
-  CHECK(SendBN(connfd, rsa->e));
+  CHECK(SendBN(connfd, rsa_n));
+  CHECK(SendBN(connfd, rsa_e));
 
   // 2. generate two messages
   BIGNUM ***x = new BIGNUM**[m_len];
@@ -71,10 +75,10 @@ int OTSendBN(const BIGNUM* const * const * m, uint32_t m_len, int connfd) {
     CHECK(RecvBN(connfd, v));
 
     BN_CHECK(BN_sub(temp, v, x[i][0]));  // temp = v - x0
-    BN_CHECK(BN_mod_exp(k0, temp, rsa->d, rsa->n, ctx));  // k0 = (v - x0)^d mod N
+    BN_CHECK(BN_mod_exp(k0, temp, rsa_d, rsa_n, ctx));  // k0 = (v - x0)^d mod N
 
     BN_CHECK(BN_sub(temp, v, x[i][1]));  // temp = v - x1
-    BN_CHECK(BN_mod_exp(k1, temp, rsa->d, rsa->n, ctx));  // k1 = (v - x0)^d mod N
+    BN_CHECK(BN_mod_exp(k1, temp, rsa_d, rsa_n, ctx));  // k1 = (v - x0)^d mod N
 
     BN_CHECK(BN_add(k0, k0, m[i][0]));
     CHECK(SendBN(connfd, k0));  // send m0' = m0 + k0
