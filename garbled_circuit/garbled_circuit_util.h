@@ -49,6 +49,8 @@ using std::string;
 
 #define IsSecret(X) ((X) < 0)
 
+#define  TIMING_EVAL 0
+
 /**
  * @brief Used to store two labels.
  */

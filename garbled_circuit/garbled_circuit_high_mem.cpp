@@ -76,7 +76,10 @@ int GarbleBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       << "\t(cc/bit) = "
       << ot_time
           / ((double) (garbled_circuit.e_init_size
-              + (*clock_cycles) * garbled_circuit.e_input_size)) << endl;
+              + (*clock_cycles) * garbled_circuit.e_input_size)) << endl;			  
+#if  TIMING_EVAL	
+	cout << ot_time << "\t";
+#endif
 
   GarbleHighMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
                 global_key, R, clock_cycles, terminate_period, connfd,
@@ -119,6 +122,9 @@ int EvaluateBNHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
       << ot_time
           / ((double) (garbled_circuit.e_init_size
               + (*clock_cycles) * garbled_circuit.e_input_size)) << endl;
+#if  TIMING_EVAL
+	cout << ot_time << "\t";
+#endif
 
   EvaluateHighMem(garbled_circuit, p_init, p_input, init_labels, input_labels,
                   global_key, clock_cycles, terminate_period, connfd,
@@ -429,6 +435,9 @@ int GarbleHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
   LOG(INFO) << "Alice communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Alice garbling time (cc) = " << garble_time << endl;
+#if  TIMING_EVAL 
+  cout << comm_time << "\t" << garble_time << "\t";
+#endif
 
   delete[] wires;
   delete[] wires_val;
@@ -704,6 +713,10 @@ int EvaluateHighMem(const GarbledCircuit& garbled_circuit, BIGNUM* p_init,
 
   LOG(INFO) << "Bob communication time (cc) = " << comm_time << endl;
   LOG(INFO) << "Bob evaluation time (cc) = " << eval_time << endl;
+  
+#if  TIMING_EVAL
+  cout << comm_time << "\t" << eval_time << "\t";
+#endif
 
   delete[] wires;
   delete[] wires_val;

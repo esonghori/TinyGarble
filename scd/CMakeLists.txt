@@ -97,3 +97,7 @@ configure_file(
 add_custom_command(TARGET V2SCD_Main
                    COMMAND
                    sh ${CMAKE_CURRENT_BINARY_DIR}/V2SCD_ALL.sh)
+configure_file(
+  "benchmarks.txt.in"
+  "benchmarks.txt"
+  @ONLY)

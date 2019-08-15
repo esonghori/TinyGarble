@@ -6,7 +6,7 @@ add_library (Garbled_Circuit_Garbled_Circuit_Low_Mem OBJECT
   "garbled_circuit_low_mem.cpp")
 add_library (Garbled_Circuit_Garbled_Circuit OBJECT
   "garbled_circuit.cpp")
-  add_library (Garbled_Circuit_Garbled_Circuit_Testing OBJECT
+add_library (Garbled_Circuit_Garbled_Circuit_Testing OBJECT
   "garbled_circuit_testing.cpp")
 
 add_executable(TinyGarble
@@ -28,6 +28,13 @@ if (OPENSSL_FOUND)
 endif (OPENSSL_FOUND)
 if (Boost_FOUND)
   target_link_libraries(TinyGarble ${Boost_LIBRARIES})
+endif (Boost_FOUND)
+
+add_executable(eval_TinyGarble
+  "eval_garbled_circuit.cpp")
+
+if (Boost_FOUND)
+  target_link_libraries(eval_TinyGarble ${Boost_LIBRARIES})
 endif (Boost_FOUND)
 
 add_executable(A23_Test

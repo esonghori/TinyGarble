@@ -1,0 +1,10 @@
+@CMAKE_CURRENT_BINARY_DIR@/netlists/sum_nbit_ncc.scd			256		0	SUM 	256
+@CMAKE_CURRENT_BINARY_DIR@/netlists/sum_nbit_ncc.scd			1024	0	SUM 	1024
+@CMAKE_CURRENT_BINARY_DIR@/netlists/compare_nbit_ncc.scd		16384	2	COMP	16384
+@CMAKE_CURRENT_BINARY_DIR@/netlists/hamming_32bit_32cc.scd		32		2	HAMM	32
+@CMAKE_CURRENT_BINARY_DIR@/netlists/hamming_512bit_512cc.scd	512		2	HAMM	512
+@CMAKE_CURRENT_BINARY_DIR@/netlists/mult_64bit_64cc.scd			128		2	MULT	64
+@CMAKE_CURRENT_BINARY_DIR@/netlists/mult_256bit_256cc.scd		512		2	MULT	256
+@CMAKE_CURRENT_BINARY_DIR@/netlists/aes_1cc.scd					1		0	AES		128
+terminate
+
