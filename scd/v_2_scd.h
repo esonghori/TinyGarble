@@ -18,6 +18,7 @@
 #ifndef SCD_V_2_SCD_H_
 #define SCD_V_2_SCD_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <utility>
