@@ -173,7 +173,7 @@ description (`.scd`) file.
 ## References
 - Ebrahim M. Songhori, Siam U. Hussain, Ahmad-Reza Sadeghi, Thomas Schneider
 and Farinaz Koushanfar, ["TinyGarble: Highly Compressed and Scalable Sequential
-Garbled Circuits."](http://esonghori.github.io/file/TinyGarble.pdf) <i>Security
+Garbled Circuits."](https://encrypto.de/papers/SHSSK15.pdf) <i>Security
 and Privacy, 2015 IEEE Symposium on</i> May, 2015.
 - Mihir Bellare, Viet Tung Hoang, Sriram Keelveedhi, and Phillip Rogaway.
 Efficient garbling from a fixed-key blockcipher. In <i>S&P</i>, pages 478–492.
