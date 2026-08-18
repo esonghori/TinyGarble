@@ -585,8 +585,17 @@ int IdAssignment(const ReadCircuitString& read_circuit_string,
                               wire_index++));  // gates' output
   }
   wire_name_table.insert(pair<string, int64_t>("", ((uint64_t) - 1)));
-  wire_name_table.insert(pair<string, int64_t>("1'b0", CONST_ZERO));
-  wire_name_table.insert(pair<string, int64_t>("1'b1", CONST_ONE));
+
+  // A tied-off pin is a constant, not a wire. Synthesizers disagree on how to
+  // spell a 1-bit constant: Synopsys Design Compiler writes 1'b0, Yosys writes
+  // 1'h0. Accept every spelling, otherwise a netlist with a tied-off pin (e.g.
+  // a DFF whose I pin is hard-wired to zero) fails id assignment.
+  for (const string& zero : { "1'b0", "1'h0", "1'd0" }) {
+    wire_name_table.insert(pair<string, int64_t>(zero, CONST_ZERO));
+  }
+  for (const string& one : { "1'b1", "1'h1", "1'd1" }) {
+    wire_name_table.insert(pair<string, int64_t>(one, CONST_ONE));
+  }
 
   // An assignment (or a BUF cell) aliases two wires. Chains of them can appear
   // in any order in the netlist, so sweep repeatedly until nothing new resolves.

@@ -147,6 +147,44 @@ MU_TEST(Buf4Bit) {
   }
 }
 
+/**
+ * A netlist straight out of a current Yosys: the DFF initial value is a
+ * constant spelled 1'h0 rather than Synopsys' 1'b0. Adds 1 bit per clock cycle.
+ */
+MU_TEST(SumYosys1Bit8cc) {
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
+      + "/scd/netlists/sum_yosys_1bit_8cc.scd";
+  string p_init_str = "";
+  string g_init_str = "0";
+  string e_init_str = "0";
+  string p_input_str = "";
+  int64_t terminate_period = 0;
+  uint64_t clock_cycles = 8;
+  OutputMode output_mode = OutputMode::consecutive;
+  for (int i = 0; i < TEST_REPEAT; i++) {
+    uint8_t x[2];
+    x[0] = (uint8_t) (rand() % 127);
+    x[1] = (uint8_t) (rand() % 127);
+
+    string g_input_str = to_string_hex(x[0], 2);
+    string e_input_str = to_string_hex(x[1], 2);
+    string output_str = "";
+
+    LOG(INFO) << "add with sum_yosys_1bit: " << g_input_str << " + "
+              << e_input_str << endl;
+
+    int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                    e_init_str, p_input_str, g_input_str,
+                                    e_input_str, clock_cycles, terminate_period,
+                                    output_mode, &output_str);
+    mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+    LOG(INFO) << "result: " << output_str << endl;
+
+    uint8_t y = strtol(output_str.c_str(), nullptr, 16);
+    mu_check(y == x[0] + x[1]);
+  }
+}
+
 MU_TEST(Sum8Bit) {
   string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_8bit_1cc.scd";
@@ -513,6 +551,7 @@ MU_TEST_SUITE(TestSuite) {
 
   MU_RUN_TEST(Mux8Bit);
   MU_RUN_TEST(Buf4Bit);
+  MU_RUN_TEST(SumYosys1Bit8cc);
   MU_RUN_TEST(Sum1Bit);
   MU_RUN_TEST(Sum8Bit);
   MU_RUN_TEST(Hamming32Bit1cc);

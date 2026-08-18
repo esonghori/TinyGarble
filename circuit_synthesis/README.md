@@ -65,16 +65,32 @@ the generated netlist file. For counting gates in
 ```	
 ## Manual for Yosys
 
-Working Yosys scripts are checked in next to the benchmarks they synthesize:
+Yosys is a free alternative to Design Compiler and is enough to take a
+benchmark all the way to a `.scd` file. This flow is verified end to end with
+**Yosys 0.33 and Yosys 0.68**: synthesis, `V2SCD_Main` translation, and a
+functional check of the result with `SCD_Evaluator_Main`.
+
+### Running a checked-in benchmark
+
+Working Yosys scripts live next to the benchmarks they synthesize:
 [`sum/sum.yos`](sum/sum.yos) and [`knns_td/knns_td.yos`](knns_td/knns_td.yos).
-Run one from inside its own directory, since the paths in it are relative:
+Run one from inside its own directory, since the paths in it are relative, and
+note that a script file is passed with `-s`:
 ```
 	$ cd sum
-	$ yosys sum.yos
+	$ yosys -s sum.yos
 ```
-It writes the netlist to `sum_syn_yos.v`, which `V2SCD_Main` can then translate.
+That writes the netlist to `sum_syn_yos.v`. Translate it and check it:
+```
+	$ bin/scd/V2SCD_Main -i circuit_synthesis/sum/sum_syn_yos.v -o sum.scd
+	$ bin/scd/SCD_Evaluator_Main -i sum.scd --g_input 05 --e_input 03
+	08
+```
 
-To synthesize your own `benchmark.v`, copy `sum.yos` and adapt it:
+### Synthesizing your own function
+
+Copy `sum.yos` and adapt it. For a function in `benchmark.v` with top module
+`benchmark`:
 ```
 	read_verilog ../syn_lib/*.v
 	read_verilog benchmark.v
@@ -88,12 +104,39 @@ To synthesize your own `benchmark.v`, copy `sum.yos` and adapt it:
 	stat -liberty ../lib/asic_cell_yosys_extended.lib
 	write_verilog -noattr -noexpr benchmark_syn.v
 ```
-Notes:
-- `dfflibmap` is required, otherwise the DFF cells come out without the `I`
-  (initial value) pin that `V2SCD_Main` needs.
-- `-noattr -noexpr` on `write_verilog` is required; the netlist parser does not
-  understand attribute comments or expression syntax.
-- The cell library must contain a `BUF` cell (recent Yosys/ABC versions refuse
-  to map without one). Both libraries in [`lib/`](lib) have one.
-- `../syn_lib` holds the hand-written sequential building blocks the benchmarks
-  instantiate, so it must be read before the benchmark itself.
+Each step that is not obvious is there for a reason:
+
+- **`dfflibmap` is required.** `abc` maps combinational logic only and leaves
+  flip-flops as Yosys internal cells, so without this step the DFFs never get
+  the `I` (initial value) pin that `V2SCD_Main` needs, and you get an error
+  about a missing `I`.
+- **`-noattr -noexpr` on `write_verilog` is required.** The netlist parser does
+  not understand Verilog attributes or expression syntax. Comments are fine.
+- **The cell library needs a `BUF` cell.** Yosys 0.68 warns `genlib library
+  reader cannot detect the buffer gate` without one, and newer ABC versions can
+  refuse to map at all. Both libraries in [`lib/`](lib) now have one. A `BUF` in
+  the resulting netlist is free — it becomes a wire alias, not a gate.
+- **`../syn_lib` must be read before the benchmark**, since it holds the
+  hand-written building blocks (`ADD`, `MULT`, `COMP`, ...) that the benchmarks
+  instantiate.
+
+To override a benchmark's parameters, pass them to `hierarchy`. The sequential
+8-bit / 8-cycle version of `sum`, which adds one bit per clock cycle, is:
+```
+	hierarchy -check -top sum -chparam N 8 -chparam CC 8
+```
+Its netlist is checked in as
+[`scd/netlists/test/sum_yosys_1bit_8cc.v`](../scd/netlists/test/sum_yosys_1bit_8cc.v)
+and is covered by the test suite, so it doubles as a reference for what a
+current Yosys emits.
+
+### Verifying the result
+
+Always cross-check a freshly synthesized circuit in the clear before running the
+GC protocol, since a mis-synthesized circuit and a protocol bug look alike:
+```
+	$ bin/scd/SCD_Evaluator_Main -i sum_seq.scd -c 8 --g_input 6D --e_input 39
+	A6
+```
+Sequential circuits need `-c <clock_cycles>`; without it only the first cycle is
+evaluated and the answer looks wrong rather than failing outright.
