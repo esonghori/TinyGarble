@@ -38,7 +38,7 @@ MU_TEST(SumNbitNcc) {
       "k_nns_31bit_4nei_ncc.v", "mult_32bit_32cc.v", "sha3_24cc.v",
       "encoder_32bit_1cc.v", "mux_8bit_1cc.v", "sum_8bit_1cc.v",
       "non_secret_test_8bit_ncc.v", "sum_nbit_ncc.v", "buf_4bit_1cc.v",
-      "sum_yosys_1bit_8cc.v" };
+      "sum_yosys_1bit_8cc.v", "div4_unsigned_1cc.v" };
 
   for (uint64_t i = 0; i < verilogfilenames.size(); i++) {
 

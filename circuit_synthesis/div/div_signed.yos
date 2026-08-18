@@ -1,0 +1,11 @@
+read_verilog ../syn_lib/*.v
+read_verilog div_signed.v
+hierarchy -check -top div_signed
+proc; fsm; flatten; opt;
+techmap; opt;
+dfflibmap -liberty ../lib/asic_cell_yosys_extended.lib
+abc -liberty ../lib/asic_cell_yosys_extended.lib -script ../lib/script.abc;
+opt; clean;
+opt_clean -purge
+stat -liberty ../lib/asic_cell_yosys_extended.lib
+write_verilog -noattr -noexpr div_signed_syn_yos.v

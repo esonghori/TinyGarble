@@ -185,6 +185,44 @@ MU_TEST(SumYosys1Bit8cc) {
   }
 }
 
+/**
+ * 4-bit unsigned division, checked exhaustively over every input pair. Guards
+ * syn_lib/DIV.v, which is the synthesizable divider that div_unsigned.v uses
+ * in place of the Synopsys DesignWare macro.
+ */
+MU_TEST(Div4BitUnsigned) {
+  string scd_file_address = string(TINYGARBLE_BINARY_DIR)
+      + "/scd/netlists/div4_unsigned_1cc.scd";
+  string p_init_str = "";
+  string g_init_str = "0";
+  string e_init_str = "0";
+  string p_input_str = "";
+  int64_t terminate_period = 0;
+  uint64_t clock_cycles = 1;
+  OutputMode output_mode = OutputMode::consecutive;
+  for (uint8_t a = 0; a < 16; a++) {
+    for (uint8_t b = 1; b < 16; b++) {  // division by zero is not defined
+      string g_input_str = to_string_hex(a, 1);
+      string e_input_str = to_string_hex(b, 1);
+      string output_str = "";
+
+      int ret = EvalauatePlaintextStr(scd_file_address, p_init_str, g_init_str,
+                                      e_init_str, p_input_str, g_input_str,
+                                      e_input_str, clock_cycles,
+                                      terminate_period, output_mode,
+                                      &output_str);
+      mu_assert(ret == SUCCESS, "EvalauatePlaintextStr");
+
+      uint8_t y = strtol(output_str.c_str(), nullptr, 16);
+      if (y != (uint8_t) (a / b)) {
+        LOG(ERROR) << "div4: " << (int) a << " / " << (int) b << " = " << (int) y
+                   << ", expected " << (int) (a / b) << endl;
+      }
+      mu_check(y == (uint8_t )(a / b));
+    }
+  }
+}
+
 MU_TEST(Sum8Bit) {
   string scd_file_address = string(TINYGARBLE_BINARY_DIR)
       + "/scd/netlists/sum_8bit_1cc.scd";
@@ -552,6 +590,7 @@ MU_TEST_SUITE(TestSuite) {
   MU_RUN_TEST(Mux8Bit);
   MU_RUN_TEST(Buf4Bit);
   MU_RUN_TEST(SumYosys1Bit8cc);
+  MU_RUN_TEST(Div4BitUnsigned);
   MU_RUN_TEST(Sum1Bit);
   MU_RUN_TEST(Sum8Bit);
   MU_RUN_TEST(Hamming32Bit1cc);

@@ -182,3 +182,51 @@ GC protocol, since a mis-synthesized circuit and a protocol bug look alike:
 ```
 Sequential circuits need `-c <clock_cycles>`; without it only the first cycle is
 evaluated and the answer looks wrong rather than failing outright.
+
+## Division
+
+`div/div.v` instantiates Synopsys' DesignWare `DW_div` macro, which is not part
+of this repository and is only available inside Design Compiler with a
+DesignWare license. Yosys therefore cannot synthesize it and fails with:
+
+```
+ERROR: Module `\DW_div' referenced in module `\div' in cell `\U1' is not part of the design.
+```
+
+Two synthesizable replacements are provided, both built on the restoring divider
+in [`syn_lib/DIV.v`](syn_lib/DIV.v) and usable with either Yosys or Design
+Compiler:
+
+| Module | Semantics | `0x82 / 0x05` |
+| --- | --- | --- |
+| [`div/div_unsigned.v`](div/div_unsigned.v) | unsigned | `0x1A` (130 / 5 = 26) |
+| [`div/div_signed.v`](div/div_signed.v) | two's complement, truncated toward zero | `0xE7` (-126 / 5 = -25) |
+
+Pick deliberately: the same bit pattern means different numbers to the two. With
+`N=8`, `0x82` is 130 unsigned but -126 signed, so the signed divider returns
+`0xE7` where the unsigned one returns `0x1A`. Neither is wrong; a signed divider
+fed unsigned data is the usual explanation for a divider that "works for small
+numbers" and then fails once an operand's top bit is set.
+
+Division by zero is not defined for either.
+
+```
+	$ cd div
+	$ yosys -s div_unsigned.yos
+	$ bin/scd/V2SCD_Main -i div_unsigned_syn_yos.v -o div.scd
+	$ bin/scd/SCD_Evaluator_Main -i div.scd --g_input 82 --e_input 05
+	1A
+```
+
+## Multidimensional inputs and outputs
+
+The ports must be named `g_input`, `e_input` and `o` and must be
+one-dimensional, because a `.scd` file is a flat vector of wires. A synthesized
+2-D port bit such as `g_input[1][3]` is rejected by the parser.
+
+The restriction applies to the ports, not to the logic.
+[`multidim/multidim.v`](multidim/multidim.v) shows the pattern: keep the ports
+flat, unpack them into 2-D arrays with a `generate` block, and write the logic
+against the arrays. Synthesis flattens the unpacking away, so it costs no gates.
+The example computes the elementwise sum of two `ROWS x COLS` grids of
+`WIDTH`-bit values.
