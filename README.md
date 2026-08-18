@@ -91,6 +91,43 @@ The netlist shrinks from 40 cells to 7 cells plus 1 flip-flop, and the run needs
 ```
 `0x6D + 0x39 = 0xA6`, the same answer from a circuit less than a fifth the size.
 
+## Running the pre-built benchmarks
+
+Most of the shipped circuits are *sequential*, so they need `-c <clock_cycles>`
+and often `--output_mode last_clock`. Omitting these is the most common source of
+wrong-looking answers: the circuit evaluates one cycle, prints a partial result,
+and does not fail. Both parties must pass the same values.
+
+The commands below are verified against `SCD_Evaluator_Main`; each example is a
+complete pair of inputs and the answer it produces.
+
+| Circuit | Invocation | Example |
+| --- | --- | --- |
+| `hamming_32bit_1cc` | `-c 1` | `--input FF55AA77` / `12345678` -> `13` |
+| `hamming_32bit_32cc` | `-c 32 --output_mode last_clock` | same inputs -> `13` |
+| `sum_8bit_1cc` | `-c 1` | `6D` / `39` -> `A6` |
+| `sum_nbit_ncc` | `-c <bits>` (1 bit per cycle) | `-c 8`, `6D` / `39` -> `A6` |
+| `compare_nbit_ncc` | `-c <bits> --output_mode last_clock` | `-c 16`, `0001` / `0000` -> `01` |
+| `mult_8bit_8cc` | `-c 8 --output_mode last_clock` | see note below -> `4D` |
+| `aes_1cc` | `-c 1` | Alice's 128-bit key, Bob's 128-bit plaintext |
+
+Two conventions that are easy to get wrong:
+
+- **`compare` computes `g_input >= e_input`**, so equal inputs give `01`, not
+  `0`.
+- **`mult` feeds one bit of Bob's operand per clock cycle, while Alice's operand
+  is read in full every cycle.** Alice must therefore repeat her value once per
+  cycle. To compute `11 * 7` with `mult_8bit_8cc`, Alice passes `0B` eight times
+  and Bob passes `07`:
+```
+  $ bin/scd/SCD_Evaluator_Main -i bin/scd/netlists/mult_8bit_8cc.scd -c 8 \
+      --g_input 0B0B0B0B0B0B0B0B --e_input 07 --output_mode last_clock
+  4D
+```
+
+`scd/benchmarks.txt.in` lists the cycle counts and output modes used for the
+timing measurements, which is a useful reference for the larger circuits.
+
 ## TinyGarble
 
 ### Dependencies
