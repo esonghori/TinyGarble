@@ -1,5 +1,47 @@
 # Circuit Synthesis
 
+## Source for the shipped netlists
+
+The netlists that appear in `bin/scd/netlists/` after a build are synthesized
+from Verilog that is checked into this directory, one subdirectory per function.
+The netlist file names carry their parameters, so `mult_64bit_64cc` is
+`mult/mult.v` at 64 bits over 64 clock cycles:
+
+| Shipped netlist | Source |
+| --- | --- |
+| `sum_8bit_1cc`, `sum_nbit_ncc` | [`sum/sum.v`](sum/sum.v) |
+| `mult_*bit_*cc` | [`mult/mult.v`](mult/mult.v) |
+| `hamming_*bit_*cc` | [`hamming/hamming.v`](hamming/hamming.v) |
+| `compare_nbit_ncc` | [`compare/compare.v`](compare/compare.v) |
+| `encoder_32bit_1cc` | [`encoder/encoder.v`](encoder/encoder.v) |
+| `aes_1cc`, `aes_11cc` | [`aes/`](aes) |
+| `sha3_24cc` | [`sha3/`](sha3) |
+| `cordic_32bit_31cc` | [`cordic/`](cordic) |
+| `matrix_mult_nxn_32bit_n3cc` | [`matrix_mult/`](matrix_mult) |
+| `k_nns_31bit_4nei_ncc` | [`knns/`](knns) |
+| `knns_td_32bit_4nei_ncc` | [`knns_td/`](knns_td) |
+| `rsa_1024bit_2097152cc` | [`rsa/`](rsa) |
+| `mips_32bit_64mem_ncc` | [`mips/`](mips) |
+| `a23_gc_main_*_w_n_cc` | [`a23/`](a23) |
+| `public_test_8bit_ncc` | [`public_test/public_test.v`](public_test/public_test.v) |
+| `non_secret_test_8bit_ncc` | [`non_secret_test/non_secret_test.v`](non_secret_test/non_secret_test.v) |
+
+The one exception is `mux_8bit_1cc`, which is a hand-written netlist (it
+instantiates `MUX` cells directly) and so has no higher-level source.
+
+Several functions have source here but no pre-built netlist, and need
+synthesizing before use: [`div`](div), [`float`](float), [`argmax`](argmax),
+[`select`](select), [`stable_match`](stable_match),
+[`stack_machine`](stack_machine).
+
+The shared building blocks the benchmarks instantiate (`ADD`, `MULT`, `COMP`,
+`DIV`, `MUX`, shifters, ...) live in [`syn_lib/`](syn_lib) and must be read in
+before the benchmark itself.
+
+For a walkthrough of all four stages on one function, from `sum.v` to two
+parties running the protocol, see the
+[complete workflow example](../README.md#complete-workflow-example).
+
 ## Dependencies
 Netlist generation requires Synopsys Design Compiler or Yosys-ABC synthesis
 tools.

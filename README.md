@@ -32,6 +32,65 @@ file. (We have done steps 1-3 for a number of functions, and you can find their 
 4. Execute `TinyGarble` using `--alice` flag on one party and `--bob` flag
 on the other plus other appropriate arguments.
 
+The source Verilog for step 1 is in the repository: every shipped netlist has
+its function's `.v` under `circuit_synthesis/<function>/`. See
+[*circuit synthesis*](circuit_synthesis/README.md#source-for-the-shipped-netlists)
+for the mapping, and the walkthrough below for all four steps on one function.
+
+## Complete workflow example
+
+All four steps for `sum`, an adder, starting from its Verilog source and ending
+with two parties learning the sum of their private inputs without revealing
+them. Requires Yosys (see [*circuit synthesis*](circuit_synthesis/README.md)).
+
+**1-2. Synthesize `circuit_synthesis/sum/sum.v` into a netlist:**
+```
+  $ cd circuit_synthesis/sum
+  $ yosys -s sum.yos
+  $ cd ../..
+```
+This writes `circuit_synthesis/sum/sum_syn_yos.v`, a netlist of 40 cells.
+
+**3. Translate the netlist to a `.scd`:**
+```
+  $ bin/scd/V2SCD_Main -i circuit_synthesis/sum/sum_syn_yos.v -o sum.scd
+```
+
+Check it in the clear before involving the protocol:
+```
+  $ bin/scd/SCD_Evaluator_Main -i sum.scd --g_input 7F --e_input 7F
+  FE
+```
+
+**4. Run the garbled circuit.** On Alice's terminal:
+```
+  $ bin/garbled_circuit/TinyGarble --alice -i sum.scd --input 7F
+```
+On Bob's terminal:
+```
+  $ bin/garbled_circuit/TinyGarble --bob -i sum.scd --input 7F
+  FE
+```
+`0x7F + 0x7F = 0xFE`. Bob prints the result and Alice prints `0`, because by
+default the output belongs to Bob; use `--output_mask` to change that.
+
+### The same function as a sequential circuit
+
+TinyGarble's distinguishing feature is that a small circuit can be re-evaluated
+over several clock cycles. `sum` is parameterized to do exactly that, adding one
+bit per cycle. Override the parameters at synthesis:
+```
+  hierarchy -check -top sum -chparam N 8 -chparam CC 8
+```
+The netlist shrinks from 40 cells to 7 cells plus 1 flip-flop, and the run needs
+`-c 8` on both sides:
+```
+  $ bin/garbled_circuit/TinyGarble --alice -i sum_seq.scd -c 8 --input 6D
+  $ bin/garbled_circuit/TinyGarble --bob   -i sum_seq.scd -c 8 --input 39
+  A6
+```
+`0x6D + 0x39 = 0xA6`, the same answer from a circuit less than a fifth the size.
+
 ## TinyGarble
 
 ### Dependencies
