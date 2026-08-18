@@ -64,6 +64,35 @@ string Type2StrGate(short itype) {
   return type;
 }
 
+/**
+ * @brief Removes Verilog comments from one line.
+ *
+ * The tokenizer below has no notion of comments, so anything left in them is
+ * parsed as netlist content. @a in_block_comment carries the state of an
+ * unterminated slash-star comment over to the next line.
+ */
+string StripComments(const string& line, bool* in_block_comment) {
+  string stripped;
+  for (uint64_t i = 0; i < line.size();) {
+    if (*in_block_comment) {
+      if (line.compare(i, 2, "*/") == 0) {
+        *in_block_comment = false;
+        i += 2;
+      } else {
+        i++;
+      }
+    } else if (line.compare(i, 2, "/*") == 0) {
+      *in_block_comment = true;
+      i += 2;
+    } else if (line.compare(i, 2, "//") == 0) {
+      break;
+    } else {
+      stripped += line[i++];
+    }
+  }
+  return stripped;
+}
+
 int ParseNetlist(const string &filename,
                  ReadCircuitString* read_circuit_string) {
 
@@ -80,6 +109,7 @@ int ParseNetlist(const string &filename,
   bool is_inport = false;
   bool is_outport = false;
   bool endoffile = false;
+  bool in_block_comment = false;
 
   map<string, string> port;
   string port_key;
@@ -88,6 +118,7 @@ int ParseNetlist(const string &filename,
     CHECK_EXPR_MSG(fin.good(), "File is broken, no endmodule found.");
     string line = "";
     getline(fin, line);
+    line = StripComments(line, &in_block_comment);
     char_separator<char> sep(" ,()\t\r", ";");
     tokenizer<char_separator<char> > tok(line, sep);
     BOOST_FOREACH(string str, tok){
@@ -125,6 +156,18 @@ int ParseNetlist(const string &filename,
         g.input[1] = "";
         g.output = port["Z"];
         read_circuit_string->gate_list_string.push_back(g);
+        port.clear();
+        gate_type = INVALGATE;
+      } else if(gate_type == BUFGATE) {
+        CHECK_EXPR_MSG(port.count("A") > 0 && port["A"]!="",
+            "A is missing: " + line);
+        CHECK_EXPR_MSG(port.count("Z") > 0 && port["Z"]!="",
+            "Z is missing: " + line);
+
+        // A buffer is a wire alias, not a gate. Record it like an "assign"
+        // statement so it costs nothing in the garbled circuit.
+        read_circuit_string->assignment_list_string.push_back(
+            std::make_pair(port["A"], port["Z"]));
         port.clear();
         gate_type = INVALGATE;
       } else if(gate_type == DFFGATE) {
@@ -360,6 +403,8 @@ int ParseNetlist(const string &filename,
       gate_type = XNORGATE;
     } else if(!str.compare("IV")) {
       gate_type = NOTGATE;
+    } else if(!str.compare("BUF")) {
+      gate_type = BUFGATE;
     } else if(!str.compare("DFF")) {
       gate_type = DFFGATE;
     } else if(!str.compare("MUX")) {
@@ -376,8 +421,8 @@ int ParseNetlist(const string &filename,
       port_key = "D";
     } else if(!str.compare(".I")) {
       port_key = "I";
-    } else if (!str.compare(".Z")) {
-      port_key = "Z";
+    } else if (!str.compare(".Z") || !str.compare(".Y")) {
+      port_key = "Z";  // some cell libraries name the output pin Y
     } else if (!str.compare(".Q")) {
       port_key = "Q";
     } else if (!str.compare(".IN0")) {
@@ -543,18 +588,30 @@ int IdAssignment(const ReadCircuitString& read_circuit_string,
   wire_name_table.insert(pair<string, int64_t>("1'b0", CONST_ZERO));
   wire_name_table.insert(pair<string, int64_t>("1'b1", CONST_ONE));
 
-  for (uint64_t i = 0; i < read_circuit_string.assignment_list_string.size();
-      i++) {
-    const auto assign_pair = read_circuit_string.assignment_list_string[i];
-    if (wire_name_table.count(assign_pair.first)) {
-      wire_name_table[assign_pair.second] = wire_name_table[assign_pair.first];
-    } else if (wire_name_table.count(assign_pair.second)) {
-      wire_name_table[assign_pair.first] = wire_name_table[assign_pair.second];
-    } else {
-      LOG(ERROR) << "Can not find wire " << assign_pair.first << " or "
-          << assign_pair.second
-          << " which were mentioned in an assignment statement" << endl;
+  // An assignment (or a BUF cell) aliases two wires. Chains of them can appear
+  // in any order in the netlist, so sweep repeatedly until nothing new resolves.
+  vector<pair<string, string>> pending =
+      read_circuit_string.assignment_list_string;
+  while (!pending.empty()) {
+    vector<pair<string, string>> unresolved;
+    for (const auto& assign_pair : pending) {
+      if (wire_name_table.count(assign_pair.first)) {
+        wire_name_table[assign_pair.second] = wire_name_table[assign_pair.first];
+      } else if (wire_name_table.count(assign_pair.second)) {
+        wire_name_table[assign_pair.first] = wire_name_table[assign_pair.second];
+      } else {
+        unresolved.push_back(assign_pair);
+      }
     }
+    if (unresolved.size() == pending.size()) {  // no progress, give up
+      for (const auto& assign_pair : unresolved) {
+        LOG(ERROR) << "Can not find wire " << assign_pair.first << " or "
+            << assign_pair.second
+            << " which were mentioned in an assignment statement" << endl;
+      }
+      break;
+    }
+    pending = std::move(unresolved);
   }
 
   read_circuit->gate_list.resize(read_circuit->gate_size);

@@ -35,8 +35,12 @@ on the other plus other appropriate arguments.
 ## TinyGarble
 
 ### Dependencies
+TinyGarble requires an **x86-64 CPU with AES-NI**: the garbling core uses SSE
+and AES-NI intrinsics and is compiled with `-march=native`. It does not build on
+ARM (see issue #25).
+
 Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
-(3.1.0 <). On Ubuntu:
+(3.5 <). On Ubuntu:
 
 * g++:
 ```
@@ -80,6 +84,9 @@ And on Bob's terminal, run:
 ```
 Note that, it is supposed that Alice and Bob are in a same mahcine
 (server_ip = 127.0.0.1) in this example.
+Both commands are run from the repository root, so that the relative
+`bin/scd/netlists/...` path resolves. If you `cd bin` first, drop the `bin/`
+prefix from both the binary and the `.scd` path.
 The expected output is 13 in hexadecimal which is the hamming distance between
 the two numbers. For showing more detailes, you may use `--log2std` option.
 
@@ -94,31 +101,35 @@ In `bin` directory call `ctest`:
 * `V2SCD_Main`: Translating netlist Verilog (`.v`) file to simple circuit
 description (`.scd`) file.
 ```
-  -h [ --help ]                         produce help message.
-  -i [ --netlist ]
-                                        Input netlist (verilog .v) file
-                                        address.
-  -o [ --scd ]
-                                        Output simple circuit description (scd)
-                                        file address.
-
+  -h [ --help ]              produce help message.
+  -i [ --netlist ] arg       Input netlist (verilog .v) file address.
+  -b [ --brist_netlist ] arg Input netlist (.txt) file address (in the format
+                             given by www.cs.bris.ac.uk/Research/Cryptography
+                             Security/MPC/).
+  -o [ --scd ] arg           Output simple circuit description (scd) file
+                             address.
 ```
 * `garbled_circuit/TinyGarble`: TinyGarble main binary:
 ```
   -h [ --help ]                         produce help message
   -a [ --alice ]                        Run as Alice (server).
   -b [ --bob ]                          Run as Bob (client).
-  -i [ --scd_file ]                     Simple circuit description (.scd) file
+  -i [ --scd_file ] arg                 Simple circuit description (.scd) file
                                         address.
   -p [ --port ] arg (=1234)             socket port
   -s [ --server_ip ] arg (=127.0.0.1)   Server's (Alice's) IP, required when
                                         running as Bob.
+  --p_init arg (=0)                     File or Hexadecimal public init for
+                                        initializing DFFs. In case of file,
+                                        each line should contain multiple of 4
+                                        bits (e.g., 4bit, 8bit, 32bit).
+  --p_input arg (=0)                    File or Hexadecimal public input.
   --init arg (=0)                       Hexadecimal init for initializing DFFs.
-  --input arg (=0)                      Hexadecimal input.
-  --clock_cycles arg (=1)               Number of clock cycles to evaluate the
+  --input arg (=0)                      File or Hexadecimal input.
+  -c [ --clock_cycles ] arg (=1)        Number of clock cycles to evaluate the
                                         circuit.
   --dump_directory arg                  Directory for dumping memory hex files.
-  --disable_OT                          Disable Oblivious Transfer (OT) for
+  --disable_OT                          Disables Oblivious Transfer (OT) for
                                         transferring labels. WARNING: OT is
                                         crucial for GC security.
   --low_mem_foot                        Enables low memory footprint mode for
@@ -127,23 +138,37 @@ description (`.scd`) file.
                                         cycle which degrades the performance.
   --output_mask arg (=0)                Hexadecimal mask for output. 0
                                         indicates that output belongs to Bob,
-                                        and 1 belongs to Alice.
-  --output_mode arg (=0)                0: normal, 1:separated by clock 2:last
-                                        clock.
+                                        and 1 belongs to Alice. It has the same
+                                        length of the output for a single clock
+                                        in case of sequential circuits.
+  -t [ --terminate_period ] arg (=0)    Terminate signal reveal period: 0: No
+                                        termination or never reveal, T: Reveal
+                                        every T clock cycle.
+  --output_mode arg                     output print mode: {0:consecutive,
+                                        1:separated_clock, 2:last_clock}, e.g.,
+                                        consecutive, 0, 1
 ```
 #### Other binary
 * `scd/SCD_Evaluator_Main`: Evaluating a simple circuit description (`.scd`) file:
 ```
-  -h [ --help ]                         produce help message
-  -i [ --scd_file ] 					scd address
-  --clock_cycles arg (=1)               Number of clock cycles to evaluate the
-                                        circuit.
-  --g_init arg (=0)                     g_init in hexadecimal.
-  --e_init arg (=0)                     e_init in hexadecimal.
-  --g_input arg (=5)                    g_input in hexadecimal.
-  --e_input arg (=4)                    e_input in hexadecimal.
-  --output_mode arg (=0)                0: normal, 1:separated by clock 2:last
-                                        clock.
+  -h [ --help ]                      produce help message
+  -i [ --scd_file ] arg              scd address
+  -c [ --clock_cycles ] arg (=1)     Number of clock cycles to evaluate the
+                                     circuit.
+  --p_init arg (=0)                  p_init file or in hexadecimal. In case of
+                                     file, each line should contain multiple of
+                                     4 bits (e.g., 4bit, 8bit, 32bit).
+  --g_init arg (=0)                  g_init file or in hexadecimal.
+  --e_init arg (=0)                  e_init file or in hexadecimal.
+  --p_input arg (=0)                 p_input file or in hexadecimal.
+  --g_input arg (=0)                 g_input file or in hexadecimal.
+  --e_input arg (=0)                 e_input file or in hexadecimal.
+  -t [ --terminate_period ] arg (=0) Terminate signal reveal period: 0: No
+                                     termination or never reveal, T: Reveal
+                                     every T clock cycle.
+  --output_mode arg                  output print mode: {0:consecutive,
+                                     1:separated_clock, 2:last_clock}, e.g.,
+                                     consecutive, 0, 1
 ```
 * `crypto/OT_Main`: Oblivious Transfer binary:
 ```
@@ -167,8 +192,10 @@ description (`.scd`) file.
 3. `BN_Test`
 4. `OT_Test`
 5. `OT_Extension_Test`
-6. `SCD_Evaluator_Test`
-7. `Garbled_Circuit_Test`
+6. `V2SCD_Test`
+7. `SCD_Evaluator_Test`
+8. `Garbled_Circuit_Test`
+9. `A23_Test` (not registered with `ctest`, run it directly)
 
 ## References
 - Ebrahim M. Songhori, Siam U. Hussain, Ahmad-Reza Sadeghi, Thomas Schneider

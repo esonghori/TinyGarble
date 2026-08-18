@@ -57,6 +57,7 @@ using std::endl;
 #define HADDERGATE 16
 #define FADDERGATE 17
 #define INVALGATE 18
+#define BUFGATE 19
 
 #define RDTSC ({unsigned long long res; \
   unsigned hi, lo;   \

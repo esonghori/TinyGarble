@@ -1,4 +1,10 @@
 library(demo) {
+	/* Newer Yosys/ABC versions require a BUF cell in the library to map. */
+	cell(BUF) {
+		area: 0;
+		pin(A) { direction: input; }
+		pin(Z) { direction: output; function: "A"; }
+	}
 	cell(IV) {
 		area: 0;
 		pin(A) { direction: input; }

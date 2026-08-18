@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1.0 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.5...3.31 FATAL_ERROR)
 project (TinyGarble
   VERSION 3.0.0
   LANGUAGES CXX)
@@ -34,10 +34,12 @@ endif ()
 set(CMAKE_CXX_FLAGS
   "${CMAKE_CXX_FLAGS} -Wall -Wno-strict-aliasing -march=native")
 
-# set -lrt for minunit testing lib.
-if (UNIX)
+# set -lrt for minunit testing lib. macOS has clock_gettime in libc, no librt.
+if (UNIX AND NOT APPLE)
   set(CMAKE_CXX_STANDARD_LIBRARIES "-lrt -lpthread -ldl")
-endif (UNIX)
+elseif (APPLE)
+  set(CMAKE_CXX_STANDARD_LIBRARIES "-lpthread -ldl")
+endif ()
 
 set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -DDEBUG")

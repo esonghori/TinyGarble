@@ -65,20 +65,35 @@ the generated netlist file. For counting gates in
 ```	
 ## Manual for Yosys
 
-Here is how to compile a verilog file named "benchmark.v" using the custom
-library "asic\_cell.lib". We assume that the files are inside a folder named
-"Synthesis\_yosys-abc" inside the "yosys" directory. The final output will be
-written in "benchmark\_syn.v"
+Working Yosys scripts are checked in next to the benchmarks they synthesize:
+[`sum/sum.yos`](sum/sum.yos) and [`knns_td/knns_td.yos`](knns_td/knns_td.yos).
+Run one from inside its own directory, since the paths in it are relative:
 ```
-	$ cd ~/yosys
-	$ ./yosys
-	yosys> read_verilog Synthesis_yosys-abc/benchmark.v
-	yosys> hierarchy -check -top benchmark
-	yosys> proc; opt; memory; opt; fsm; opt; techmap; opt;
-	yosys> abc -liberty Synthesis_yosys-abc/asic_cell_extended.lib
-	yosys> opt
-	yosys> write_verilog Synthesis_yosys-abc/benchmark_syn.v
-	yosys> exit
-```	
-[Note: commands starting with "yosys>" should be called inside design_vision.
-Please ignore "yosys>" for them.]
+	$ cd sum
+	$ yosys sum.yos
+```
+It writes the netlist to `sum_syn_yos.v`, which `V2SCD_Main` can then translate.
+
+To synthesize your own `benchmark.v`, copy `sum.yos` and adapt it:
+```
+	read_verilog ../syn_lib/*.v
+	read_verilog benchmark.v
+	hierarchy -check -top benchmark
+	proc; fsm; flatten; opt;
+	techmap; opt;
+	dfflibmap -liberty ../lib/asic_cell_yosys_extended.lib
+	abc -liberty ../lib/asic_cell_yosys_extended.lib -script ../lib/script.abc;
+	opt; clean;
+	opt_clean -purge
+	stat -liberty ../lib/asic_cell_yosys_extended.lib
+	write_verilog -noattr -noexpr benchmark_syn.v
+```
+Notes:
+- `dfflibmap` is required, otherwise the DFF cells come out without the `I`
+  (initial value) pin that `V2SCD_Main` needs.
+- `-noattr -noexpr` on `write_verilog` is required; the netlist parser does not
+  understand attribute comments or expression syntax.
+- The cell library must contain a `BUF` cell (recent Yosys/ABC versions refuse
+  to map without one). Both libraries in [`lib/`](lib) have one.
+- `../syn_lib` holds the hand-written sequential building blocks the benchmarks
+  instantiate, so it must be read before the benchmark itself.

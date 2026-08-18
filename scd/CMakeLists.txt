@@ -86,8 +86,13 @@ set_tests_properties (SCD_SCD_Evaluator_Test
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/netlists)
 
 execute_process(COMMAND
-                tar -xf ${CMAKE_CURRENT_SOURCE_DIR}/netlists/v.tar.gz 
+                tar -xf ${CMAKE_CURRENT_SOURCE_DIR}/netlists/v.tar.gz
 				     -C ${CMAKE_CURRENT_BINARY_DIR}/netlists)
+
+# Small hand-written netlists kept in the tree instead of the tarball. They land
+# next to the unpacked ones, so V2SCD_ALL.sh translates them too.
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/netlists/test/
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/netlists)
 
 configure_file(
   "V2SCD_ALL.sh.in"
@@ -95,6 +100,7 @@ configure_file(
   @ONLY)
 
 add_custom_command(TARGET V2SCD_Main
+                   POST_BUILD
                    COMMAND
                    sh ${CMAKE_CURRENT_BINARY_DIR}/V2SCD_ALL.sh)
 configure_file(
