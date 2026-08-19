@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
   LogInitial(argc, argv);
 
   srand(time(NULL));
-  SrandSSE(time(NULL));
 
   int m_len = 1;  // number of message pairs
   int port;

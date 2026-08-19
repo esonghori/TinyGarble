@@ -40,7 +40,6 @@ bool dump_enabled = false;
 map<string, ofstream*> dump_map;
 ostream* log_map[2];  // ERROR, INFO
 DummyLog dummy_log;
-bool __dummy_expr__;
 
 DummyLog& DummyLogStream() {
   return dummy_log;

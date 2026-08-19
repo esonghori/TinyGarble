@@ -53,16 +53,6 @@
 using std::ifstream;
 
 /**
- * @brief Kept for source compatibility; seeding is no longer possible.
- *
- * RandomBlock() draws from the operating system's CSPRNG via OpenSSL, which
- * seeds itself. This used to install @a seed into a linear congruential
- * generator, and callers passed time(0).
- */
-void SrandSSE(unsigned int /*seed*/) {
-}
-
-/**
  * @brief A uniformly random 128-bit block, for wire labels and the free-XOR
  * offset R.
  *

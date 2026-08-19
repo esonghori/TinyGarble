@@ -93,7 +93,6 @@ int main(int argc, char* argv[]) {
   LogInitial(argc, argv);
   HashInit();
   srand(time(NULL));
-  SrandSSE(time(NULL));
 
   uint len = 0;
 

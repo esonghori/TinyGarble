@@ -22,6 +22,8 @@ cd bin && ctest -V              # all
 ctest -R Garbled_Circuit -V     # one test
 ```
 
+CI (`.github/workflows/ci.yml`) builds and tests the full matrix: x86-64 and AArch64, each with `ENABLE_LOG` on and off. It also runs AES known-answer vectors against `crypto/neon_compat.h` (a wrong mapping would be self-consistent, so only fixed answers catch it) and asserts `V2SCD_Main` rejects a netlist with an undefined wire in both logging settings.
+
 Tests use `util/minunit.h` (no gtest). ctest decides pass/fail via `FAIL_REGULAR_EXPRESSION` on stdout matching `Failed|failed` — a test binary that returns 0 while printing "failed" still fails, and a crash before printing anything can pass. Registered names: `Util_Util_Test`, `TCPIP_TCPIP_Test`, `Crypto_BN_Test`, `Crypto_OT_Test`, `Crypto_OT_Extension_Test`, `SCD_V2SCD_Test`, `SCD_SCD_Evaluator_Test`, `Garbled_Circuit_Garbled_Circuit_Test`.
 
 Test binaries take `--log2std` / `--error2std` to route logs to stdout (see `util/log.cpp`). Two-party tests (`Crypto_OT_*`, `Garbled_Circuit_*`) `fork()` and talk over localhost TCP via `tcpip/tcpip_testsuit.h`; a leftover process holding port 1234 makes them hang or fail.

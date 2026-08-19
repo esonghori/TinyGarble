@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/esonghori/TinyGarble.svg?branch=develop)](https://travis-ci.org/esonghori/TinyGarble)
+[![CI](https://github.com/esonghori/TinyGarble/actions/workflows/ci.yml/badge.svg)](https://github.com/esonghori/TinyGarble/actions/workflows/ci.yml)
 
 TinyGarble
 =======

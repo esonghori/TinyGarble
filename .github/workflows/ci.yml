@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # The garbling core is architecture-specific: x86-64 uses SSE and AES-NI
+  # directly, AArch64 goes through crypto/neon_compat.h. Both need building, and
+  # both logging settings need building, because the CHECK macros used to drop
+  # their control flow when logging was off.
+  build-and-test:
+    name: ${{ matrix.arch }} / log=${{ matrix.enable_log }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            runner: ubuntu-24.04
+            enable_log: 'ON'
+          - arch: x86-64
+            runner: ubuntu-24.04
+            enable_log: 'OFF'
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+            enable_log: 'ON'
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+            enable_log: 'OFF'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake libssl-dev libboost-program-options-dev
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_LOG=${{ matrix.enable_log }}
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      # ctest decides pass/fail with FAIL_REGULAR_EXPRESSION on stdout, so a
+      # test that returns 0 while printing "failed" still fails. Keep the output.
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+
+  # Guards the AES mapping in crypto/neon_compat.h against the published
+  # vectors. A wrong mapping would still be self-consistent, so the test suite
+  # alone would not catch it; only fixed answers do.
+  aes-known-answer:
+    name: AES known-answer vectors (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake libssl-dev libboost-program-options-dev
+
+      - name: Configure (for tinygarble_config.h)
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_LOG=ON
+
+      - name: Run vectors
+        run: |
+          cat > /tmp/aes_kat.cpp <<'EOF'
+          #include <cstdio>
+          #include <cstring>
+          #include "crypto/aes.h"
+          static bool run(const unsigned char* key, const unsigned char* pt,
+                          const unsigned char* want, const char* name) {
+            AES_KEY k;
+            k.rounds = 10;
+            AESSetEncryptKey(key, 128, &k);
+            unsigned char in[16] __attribute__((aligned(16)));
+            unsigned char out[16] __attribute__((aligned(16)));
+            memcpy(in, pt, 16);
+            AESEncrypt(in, out, &k);
+            bool ok = memcmp(out, want, 16) == 0;
+            printf("%-22s %s\n  got      ", name, ok ? "PASS" : "FAIL");
+            for (int i = 0; i < 16; i++) printf("%02x", out[i]);
+            printf("\n  expected ");
+            for (int i = 0; i < 16; i++) printf("%02x", want[i]);
+            printf("\n");
+            return ok;
+          }
+          int main() {
+            // FIPS-197 Appendix C.1
+            unsigned char k1[16] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+                                    0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
+            unsigned char p1[16] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,
+                                    0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff};
+            unsigned char e1[16] = {0x69,0xc4,0xe0,0xd8,0x6a,0x7b,0x04,0x30,
+                                    0xd8,0xcd,0xb7,0x80,0x70,0xb4,0xc5,0x5a};
+            // NIST SP800-38A F.1.1, first block
+            unsigned char k2[16] = {0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,
+                                    0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c};
+            unsigned char p2[16] = {0x6b,0xc1,0xbe,0xe2,0x2e,0x40,0x9f,0x96,
+                                    0xe9,0x3d,0x7e,0x11,0x73,0x93,0x17,0x2a};
+            unsigned char e2[16] = {0x3a,0xd7,0x7b,0xb4,0x0d,0x7a,0x36,0x60,
+                                    0xa8,0x9e,0xca,0xf3,0x24,0x66,0xef,0x97};
+            bool ok = run(k1, p1, e1, "FIPS-197 C.1");
+            ok = run(k2, p2, e2, "SP800-38A F.1.1") && ok;
+            return ok ? 0 : 1;
+          }
+          EOF
+          FLAGS="-O2"
+          case "$(uname -m)" in
+            aarch64|arm64) FLAGS="$FLAGS -march=armv8-a+crypto" ;;
+            *)             FLAGS="$FLAGS -march=native" ;;
+          esac
+          g++ -std=c++11 $FLAGS -I. -Ibuild -o /tmp/aes_kat /tmp/aes_kat.cpp
+          /tmp/aes_kat
+
+  # A netlist referencing an undefined wire must be rejected in every build.
+  # With logging off, the CHECK macros used to discard their control flow, so
+  # V2SCD_Main accepted it, exited 0, and wrote a malformed .scd.
+  reject-bad-netlist:
+    name: Bad netlist is rejected (log=${{ matrix.enable_log }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        enable_log: ['ON', 'OFF']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake libssl-dev libboost-program-options-dev
+
+      - name: Build V2SCD_Main
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_LOG=${{ matrix.enable_log }}
+          cmake --build build -j"$(nproc)" --target V2SCD_Main
+
+      - name: Undefined wire must fail
+        run: |
+          cat > /tmp/broken.v <<'EOF'
+          module broken ( clk, rst, g_input, e_input, o );
+            input [1:0] g_input;
+            input [1:0] e_input;
+            output [1:0] o;
+            input clk, rst;
+            AND U0 ( .A(g_input[0]), .B(does_not_exist), .Z(o[0]) );
+            AND U1 ( .A(g_input[1]), .B(e_input[1]), .Z(o[1]) );
+          endmodule
+          EOF
+          rm -f /tmp/broken.scd
+          if ./build/scd/V2SCD_Main -i /tmp/broken.v -o /tmp/broken.scd; then
+            echo "::error::V2SCD_Main accepted a netlist with an undefined wire"
+            exit 1
+          fi
+          if [ -e /tmp/broken.scd ]; then
+            echo "::error::V2SCD_Main wrote an scd for a rejected netlist"
+            exit 1
+          fi
+          echo "rejected as expected"
+
+      - name: A good netlist still translates
+        run: |
+          ./build/scd/V2SCD_Main -i scd/netlists/test/buf_4bit_1cc.v -o /tmp/ok.scd
+          head -1 /tmp/ok.scd

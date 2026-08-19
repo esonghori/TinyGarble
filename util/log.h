@@ -58,11 +58,27 @@ class DummyLog : public ostream {
 
 #ifdef ENABLE_LOG
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define LOG(X) LogStream((X)) << __FILENAME__ << ":" <<  __LINE__ << " \033[" \
+  << LOG_COLOR(X) << "m" << #X << "\033[0m: "
+#else /* ENABLE_LOG */
+#define LOG(X) DummyLogStream()
+#endif /* ENABLE_LOG */
+
+/*
+ * These are deliberately NOT conditional on ENABLE_LOG. Only the message
+ * disappears when logging is off, because LOG() becomes a no-op stream; the
+ * test and the `return FAILURE` stay in every build.
+ *
+ * CHECK_EXPR and CHECK_EXPR_MSG used to expand to `__dummy_expr__ = X` without
+ * logging, and CHECK to a bare `X`, which evaluated the expression and threw
+ * the result away. Every input-validation check in the netlist parser therefore
+ * vanished in a non-logging build: V2SCD_Main accepted a netlist referencing an
+ * undefined wire, exited 0, and wrote a malformed .scd. CHECK_ALLOC was worse,
+ * expanding to `X` with no catch, so a bad_alloc propagated out uncaught.
+ */
 #define CHECK_ALLOC(X) try { X; } catch (std::bad_alloc& e) { \
     LOG(ERROR) << e.what() << std::endl; \
     return FAILURE; }
-#define LOG(X) LogStream((X)) << __FILENAME__ << ":" <<  __LINE__ << " \033[" \
-  << LOG_COLOR(X) << "m" << #X << "\033[0m: "
 #define CHECK_EXPR(X) if((X)==false) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
 #define CHECK_EXPR_MSG(X, Y) if((X)==false) { LOG(ERROR) << (#X) << " failed: \"" \
@@ -71,15 +87,6 @@ class DummyLog : public ostream {
   << std::endl; return FAILURE; }
 #define BN_CHECK(X) if((X)==0) { LOG(ERROR) << #X << " failed" \
   << std::endl; return FAILURE; }
-#else /* ENABLE_LOG */
-extern bool __dummy_expr__;
-#define CHECK_ALLOC(X) X
-#define LOG(X) DummyLogStream()
-#define CHECK_EXPR(X) __dummy_expr__ = X
-#define CHECK_EXPR_MSG(X, Y) __dummy_expr__ = X
-#define CHECK(X) X
-#define BN_CHECK(X) X
-#endif /* ENABLE_LOG */
 
 void LogInitial(int argc, char *argv[]);
 void LogFinish();
