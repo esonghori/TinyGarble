@@ -47,15 +47,12 @@
 
 #include <arm_neon.h>
 #include <cstdint>
-#include <cstdlib>
 
 typedef int64x2_t __m128i;
 /* Only ever produced by the cast intrinsics below to feed _mm_shuffle_ps, so
  * making it the same type keeps the casts free and the shuffle exact. */
 typedef int64x2_t __m128;
 typedef int64_t __m64;
-
-/* ---------- reinterpretation helpers ---------- */
 
 #define NC_U8(x) vreinterpretq_u8_s64(x)
 #define NC_S32(x) vreinterpretq_s32_s64(x)
@@ -64,10 +61,6 @@ typedef int64_t __m64;
 #define NC_FROM_U8(x) vreinterpretq_s64_u8(x)
 #define NC_FROM_S32(x) vreinterpretq_s64_s32(x)
 #define NC_FROM_U32(x) vreinterpretq_s64_u32(x)
-#define NC_FROM_U64(x) vreinterpretq_s64_u64(x)
-
-#define _MM_SHUFFLE(fp3, fp2, fp1, fp0) \
-  (((fp3) << 6) | ((fp2) << 4) | ((fp1) << 2) | (fp0))
 
 /* ---------- bitwise and constants ---------- */
 
@@ -77,19 +70,6 @@ static inline __m128i _mm_setzero_si128(void) {
 
 static inline __m128i _mm_xor_si128(__m128i a, __m128i b) {
   return NC_FROM_U8(veorq_u8(NC_U8(a), NC_U8(b)));
-}
-
-static inline __m128i _mm_and_si128(__m128i a, __m128i b) {
-  return NC_FROM_U8(vandq_u8(NC_U8(a), NC_U8(b)));
-}
-
-static inline __m128i _mm_or_si128(__m128i a, __m128i b) {
-  return NC_FROM_U8(vorrq_u8(NC_U8(a), NC_U8(b)));
-}
-
-static inline __m128i _mm_set_epi32(int e3, int e2, int e1, int e0) {
-  int32_t v[4] = { e0, e1, e2, e3 };
-  return NC_FROM_S32(vld1q_s32(v));
 }
 
 /* x86 takes __m64 operands, hi first. */
@@ -125,61 +105,10 @@ static inline void _mm_store_si128(__m128i *p, __m128i a) {
   vst1q_s64((int64_t *) p, a);
 }
 
-static inline void *_mm_malloc(size_t size, size_t align) {
-  void *ptr = nullptr;
-  if (align < sizeof(void *)) {
-    align = sizeof(void *);
-  }
-  if (posix_memalign(&ptr, align, size) != 0) {
-    return nullptr;
-  }
-  return ptr;
-}
-
-static inline void _mm_free(void *ptr) {
-  free(ptr);
-}
-
-/* ---------- arithmetic ---------- */
-
-static inline __m128i _mm_add_epi32(__m128i a, __m128i b) {
-  return NC_FROM_S32(vaddq_s32(NC_S32(a), NC_S32(b)));
-}
+/* ---------- arithmetic and comparison ---------- */
 
 static inline __m128i _mm_add_epi64(__m128i a, __m128i b) {
   return vaddq_s64(a, b);
-}
-
-/* Multiplies the two even-indexed 32-bit lanes into 64-bit results. */
-static inline __m128i _mm_mul_epu32(__m128i a, __m128i b) {
-  uint32x2_t ea = vmovn_u64(NC_U64(a));
-  uint32x2_t eb = vmovn_u64(NC_U64(b));
-  return NC_FROM_U64(vmull_u32(ea, eb));
-}
-
-/* Shift counts may be variable, so these use the register form rather than
- * the immediate form. A negative count on vshlq is a shift right, arithmetic
- * for signed lane types. */
-static inline __m128i _mm_slli_epi32(__m128i a, int count) {
-  if (count < 0 || count > 31) return _mm_setzero_si128();
-  return NC_FROM_S32(vshlq_s32(NC_S32(a), vdupq_n_s32(count)));
-}
-
-static inline __m128i _mm_slli_epi64(__m128i a, int count) {
-  if (count < 0 || count > 63) return _mm_setzero_si128();
-  return vshlq_s64(a, vdupq_n_s64(count));
-}
-
-static inline __m128i _mm_srai_epi32(__m128i a, int count) {
-  if (count < 0) return a;
-  if (count > 31) count = 31;  /* x86 saturates to a sign fill */
-  return NC_FROM_S32(vshlq_s32(NC_S32(a), vdupq_n_s32(-count)));
-}
-
-/* ---------- comparison and extraction ---------- */
-
-static inline __m128i _mm_cmpeq_epi64(__m128i a, __m128i b) {
-  return NC_FROM_U64(vceqq_u64(NC_U64(a), NC_U64(b)));
 }
 
 /** Returns 1 when a AND b is zero across all 128 bits. */
@@ -187,10 +116,6 @@ static inline int _mm_testz_si128(__m128i a, __m128i b) {
   const uint64x2_t t = vandq_u64(NC_U64(a), NC_U64(b));
   return (vgetq_lane_u64(t, 0) | vgetq_lane_u64(t, 1)) == 0 ? 1 : 0;
 }
-
-/* imm must be a compile-time constant, as on x86. */
-#define _mm_extract_epi16(a, imm) \
-  ((int) vgetq_lane_u16(vreinterpretq_u16_s64(a), (imm)))
 
 /* ---------- byte and lane permutation ---------- */
 
@@ -225,21 +150,6 @@ static inline __m128i _mm_shuffle_epi8(__m128i a, __m128i mask) {
     NC_FROM_S32(vld1q_s32(nc_o));                                        \
   })
 
-/* Shifts left by imm *bytes*, zero filling. */
-#define _mm_slli_si128(a, imm)                                           \
-  __extension__({                                                        \
-    __m128i nc_r;                                                        \
-    if ((imm) <= 0) {                                                    \
-      nc_r = (a);                                                        \
-    } else if ((imm) > 15) {                                             \
-      nc_r = _mm_setzero_si128();                                        \
-    } else {                                                             \
-      nc_r = NC_FROM_U8(                                                 \
-          vextq_u8(vdupq_n_u8(0), NC_U8(a), 16 - ((imm) & 0xF)));        \
-    }                                                                    \
-    nc_r;                                                                \
-  })
-
 #define _mm_castsi128_ps(a) (a)
 #define _mm_castps_si128(a) (a)
 
@@ -261,21 +171,6 @@ static inline __m128i _mm_aesenc_si128(__m128i a, __m128i round_key) {
 static inline __m128i _mm_aesenclast_si128(__m128i a, __m128i round_key) {
   return NC_FROM_U8(
       veorq_u8(vaeseq_u8(NC_U8(a), vdupq_n_u8(0)), NC_U8(round_key)));
-}
-
-static inline __m128i _mm_aesdec_si128(__m128i a, __m128i round_key) {
-  return NC_FROM_U8(
-      veorq_u8(vaesimcq_u8(vaesdq_u8(NC_U8(a), vdupq_n_u8(0))),
-               NC_U8(round_key)));
-}
-
-static inline __m128i _mm_aesdeclast_si128(__m128i a, __m128i round_key) {
-  return NC_FROM_U8(
-      veorq_u8(vaesdq_u8(NC_U8(a), vdupq_n_u8(0)), NC_U8(round_key)));
-}
-
-static inline __m128i _mm_aesimc_si128(__m128i a) {
-  return NC_FROM_U8(vaesimcq_u8(NC_U8(a)));
 }
 
 /** The AES S-box (FIPS-197). ARMv8 has no counterpart to AESKEYGENASSIST, so

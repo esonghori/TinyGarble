@@ -193,20 +193,18 @@ DesignWare license. Yosys therefore cannot synthesize it and fails with:
 ERROR: Module `\DW_div' referenced in module `\div' in cell `\U1' is not part of the design.
 ```
 
-Two synthesizable replacements are provided, both built on the restoring divider
-in [`syn_lib/DIV.v`](syn_lib/DIV.v) and usable with either Yosys or Design
-Compiler:
+[`div/div_unsigned.v`](div/div_unsigned.v) is a synthesizable replacement, built
+on the restoring divider in [`syn_lib/DIV.v`](syn_lib/DIV.v) and usable with
+either Yosys or Design Compiler.
 
-| Module | Semantics | `0x82 / 0x05` |
-| --- | --- | --- |
-| [`div/div_unsigned.v`](div/div_unsigned.v) | unsigned | `0x1A` (130 / 5 = 26) |
-| [`div/div_signed.v`](div/div_signed.v) | two's complement, truncated toward zero | `0xE7` (-126 / 5 = -25) |
-
-Pick deliberately: the same bit pattern means different numbers to the two. With
-`N=8`, `0x82` is 130 unsigned but -126 signed, so the signed divider returns
-`0xE7` where the unsigned one returns `0x1A`. Neither is wrong; a signed divider
-fed unsigned data is the usual explanation for a divider that "works for small
-numbers" and then fails once an operand's top bit is set.
+**Mind the signedness.** `DIV.v` is unsigned. `syn_lib/DIV_.v` is the signed
+(two's complement) variant, and wrapping it looks exactly like
+`div_unsigned.v` with `DIV_` in place of `DIV`. The same bit pattern means
+different numbers to the two: with `N=8`, `0x82` is 130 unsigned but -126
+signed, so `0x82 / 0x05` is `0x1A` (26) unsigned and `0xE7` (-25) signed.
+Neither is wrong, but a signed divider fed unsigned data is the usual
+explanation for a divider that "works for small numbers" and then fails once an
+operand's top bit is set.
 
 Division by zero is not defined for either.
 

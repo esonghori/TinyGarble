@@ -75,10 +75,8 @@ typedef __m128i block;
 /**
  * @brief True when two blocks are equal in all 128 bits.
  *
- * This used to be
- *   _mm_extract_epi16(_mm_cmpeq_epi64(X, Y), 0) == 0xffff
- * which reads lane 0 of the comparison and so only tested the low 64 bits: two
- * labels agreeing in their low halves compared equal. GarbleGate uses this to
+ * This used to compare only the low 64 bits, so two labels agreeing in their
+ * low halves compared equal. GarbleGate uses this to
  * decide that two gate inputs carry the same secret wire and to skip garbling
  * the gate, so a half-collision produced a wrong circuit.
  *
@@ -89,48 +87,6 @@ static inline bool CmpBlock(block x, block y) {
   return _mm_testz_si128(diff, diff) != 0;
 }
 #define MakeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
-#define DoubleBlock(B) _mm_slli_epi64(B,1)
-
-
-static inline block Double_Block(block bl) {
-  const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
-  __m128i tmp = _mm_srai_epi32(bl, 31);
-  tmp = _mm_and_si128(tmp, mask);
-  tmp = _mm_shuffle_epi32(tmp, _MM_SHUFFLE(2, 1, 0, 3));
-  bl = _mm_slli_epi32(bl, 1);
-  return _mm_xor_si128(bl, tmp);
-}
-static inline block SlowDouble_Block(block bl) {
-  int i;
-  __m128i tmp = _mm_srai_epi32(bl, 31);
-  for (i = 0; i < 1; i++) {
-    const __m128i mask = _mm_set_epi32(135, 1, 1, 1);
-    tmp = _mm_and_si128(tmp, mask);
-    tmp = _mm_shuffle_epi32(tmp, _MM_SHUFFLE(2, 1, 0, 3));
-    bl = _mm_slli_epi32(bl, 1);
-  }
-  return _mm_xor_si128(bl, tmp);
-}
-
-static inline block LeftShift(block bl) {
-  const __m128i mask = _mm_set_epi32(0, 0, (1 << 31), 0);
-  __m128i tmp = _mm_and_si128(bl, mask);
-  bl = _mm_slli_epi64(bl, 1);
-  return _mm_xor_si128(bl, tmp);
-}
-
-static inline block RightShift(block bl) {
-  const __m128i mask = _mm_set_epi32(0, 1, 0, 0);
-  __m128i tmp = _mm_and_si128(bl, mask);
-  bl = _mm_slli_epi64(bl, 1);
-  return _mm_xor_si128(bl, tmp);
-}
-
-#define ADD128(out, in1, in2)                      \
-       __asm__("addq %2, %0; adcq %3, %1" :           \
-                         "=r"(out.lo64), "=r"(out.hi64) :       \
-                         "emr" (in2.lo64), "emr"(in2.hi64),     \
-                         "0" (in1.lo64), "1" (in1.hi64));
 
 #define _m128_switch_endian(x) \
   _mm_shuffle_epi8((x), _mm_set_epi8(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15))
