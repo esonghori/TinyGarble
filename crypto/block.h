@@ -72,7 +72,22 @@ typedef __m128i block;
 #define get_LSB(x) (*((unsigned short *)&x)&1)
 #define XorBlock(x,y) _mm_xor_si128((x),(y))
 #define ZeroBlock() _mm_setzero_si128()
-#define CmpBlock(X, Y) (_mm_extract_epi16((_mm_cmpeq_epi64((X), (Y))),0)==0xffff)
+/**
+ * @brief True when two blocks are equal in all 128 bits.
+ *
+ * This used to be
+ *   _mm_extract_epi16(_mm_cmpeq_epi64(X, Y), 0) == 0xffff
+ * which reads lane 0 of the comparison and so only tested the low 64 bits: two
+ * labels agreeing in their low halves compared equal. GarbleGate uses this to
+ * decide that two gate inputs carry the same secret wire and to skip garbling
+ * the gate, so a half-collision produced a wrong circuit.
+ *
+ * An inline function rather than a macro so the arguments are evaluated once.
+ */
+static inline bool CmpBlock(block x, block y) {
+  const block diff = _mm_xor_si128(x, y);
+  return _mm_testz_si128(diff, diff) != 0;
+}
 #define MakeBlock(X,Y) _mm_set_epi64((__m64)(X), (__m64)(Y))
 #define DoubleBlock(B) _mm_slli_epi64(B,1)
 

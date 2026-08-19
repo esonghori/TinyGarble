@@ -182,6 +182,12 @@ static inline __m128i _mm_cmpeq_epi64(__m128i a, __m128i b) {
   return NC_FROM_U64(vceqq_u64(NC_U64(a), NC_U64(b)));
 }
 
+/** Returns 1 when a AND b is zero across all 128 bits. */
+static inline int _mm_testz_si128(__m128i a, __m128i b) {
+  const uint64x2_t t = vandq_u64(NC_U64(a), NC_U64(b));
+  return (vgetq_lane_u64(t, 0) | vgetq_lane_u64(t, 1)) == 0 ? 1 : 0;
+}
+
 /* imm must be a compile-time constant, as on x86. */
 #define _mm_extract_epi16(a, imm) \
   ((int) vgetq_lane_u16(vreinterpretq_u16_s64(a), (imm)))
