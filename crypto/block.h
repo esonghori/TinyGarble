@@ -60,9 +60,13 @@
 #ifndef CRYPTO_BLOCK_H_
 #define CRYPTO_BLOCK_H_
 
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "crypto/neon_compat.h"
+#else
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <smmintrin.h>
+#endif
 
 typedef __m128i block;
 #define get_LSB(x) (*((unsigned short *)&x)&1)

@@ -31,8 +31,21 @@ endif ()
 
 ###############
 # Compiler flags
-set(CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -Wall -Wno-strict-aliasing -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-strict-aliasing")
+
+# The garbling core needs 128-bit vectors and hardware AES. On x86-64 that is
+# SSE + AES-NI; on AArch64 it is NEON + the ARMv8 crypto extensions, reached
+# through crypto/neon_compat.h. Apple silicon has crypto in the baseline, other
+# AArch64 targets need it requested explicitly.
+include(CheckCXXCompilerFlag)
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
+  check_cxx_compiler_flag("-march=armv8-a+crypto" HAVE_ARMV8_CRYPTO_FLAG)
+  if (HAVE_ARMV8_CRYPTO_FLAG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv8-a+crypto")
+  endif()
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+endif()
 
 # set -lrt for minunit testing lib. macOS has clock_gettime in libc, no librt.
 if (UNIX AND NOT APPLE)

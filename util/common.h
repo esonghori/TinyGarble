@@ -59,11 +59,22 @@ using std::endl;
 #define INVALGATE 18
 #define BUFGATE 19
 
+// A cheap monotonic hardware counter, used only for the timing figures in the
+// logs. x86 has rdtsc; on AArch64 the analogue is the virtual count register,
+// which ticks at a fixed frequency rather than the core clock, so the "(cc)"
+// numbers in the logs are counter ticks and are not comparable across
+// architectures.
+#if defined(__aarch64__)
+#define RDTSC ({unsigned long long res; \
+  __asm__ __volatile__ ("mrs %0, cntvct_el0" : "=r"(res)); \
+  res;})
+#else
 #define RDTSC ({unsigned long long res; \
   unsigned hi, lo;   \
   __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi)); \
   res =  ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 ); \
   res;})
+#endif
 #define fbits(v, p) ((v & (1 << p))>>p)
 
 extern string dump_prefix;

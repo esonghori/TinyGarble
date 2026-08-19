@@ -131,9 +131,11 @@ timing measurements, which is a useful reference for the larger circuits.
 ## TinyGarble
 
 ### Dependencies
-TinyGarble requires an **x86-64 CPU with AES-NI**: the garbling core uses SSE
-and AES-NI intrinsics and is compiled with `-march=native`. It does not build on
-ARM (see issue #25).
+TinyGarble needs 128-bit vectors and a hardware AES instruction. Both **x86-64
+with AES-NI** and **AArch64 (ARM64) with the ARMv8 crypto extensions** are
+supported; on AArch64 the x86 intrinsics are mapped onto NEON by
+`crypto/neon_compat.h`. The two are bit-compatible, so an x86-64 party and an
+AArch64 party can run the protocol against each other.
 
 Install dependencies: g++, OpenSSL (1.0.1f <), boost(1.55.0 <), and cmake
 (3.5 <). On Ubuntu:

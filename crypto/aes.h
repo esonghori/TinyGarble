@@ -68,9 +68,13 @@
 #ifndef CRYPTO_AES_H_
 #define CRYPTO_AES_H_
 
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "crypto/neon_compat.h"     /* NEON + ARMv8 crypto stand-ins    */
+#else
 #include <xmmintrin.h>              /* SSE instructions and _mm_malloc */
 #include <emmintrin.h>              /* SSE2 instructions               */
-#include <wmmintrin.h>
+#include <wmmintrin.h>              /* AES-NI                          */
+#endif
 
 typedef struct {
   __m128i rd_key[15];

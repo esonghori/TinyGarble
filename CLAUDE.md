@@ -11,7 +11,7 @@ Out-of-source build in `bin/`. `./configure` runs cmake in Release with logging 
 ```
 
 Deps: g++ (>= 4.6.3), OpenSSL, Boost >= 1.45 (`program_options`), cmake >= 3.5.
-`-march=native` is always on, and `crypto/block.h`/`aes.h` use SSE/AES-NI intrinsics — the build is x86-64-specific and will not compile as-is on ARM (issue #25). On an Apple Silicon machine, build and test in a `linux/amd64` container.
+`crypto/block.h`/`aes.h` are written against x86 SSE/AES-NI intrinsics. On AArch64 they include `crypto/neon_compat.h` instead, which maps the ~30 intrinsics this codebase uses onto NEON and the ARMv8 crypto extensions; `-march=native` is used on x86 and `-march=armv8-a+crypto` on ARM. The shim is bit-exact, which is load-bearing: an x86 garbler and an ARM evaluator must agree on every label, so a single-machine test would not catch a discrepancy. If you add an intrinsic, add it to the shim too.
 
 `make` in `bin/` also unpacks `scd/netlists/v.tar.gz` into `bin/scd/netlists/` and runs `bin/scd/V2SCD_ALL.sh`, which translates every unpacked `.v` netlist to `.scd`. Those artifacts are gitignored; the `.v` and `.scd` files under `bin/scd/netlists/` are generated, never edit them.
 
